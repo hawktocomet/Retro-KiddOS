@@ -3,7 +3,7 @@
 A child-friendly gaming environment for the FunnyPlaying Retro Pixel Pocket.
 
 KiddOS is designed to make a handheld gaming device simple and safe for
-young children while preserving a complete adult experience.
+young children, with adult management controls.
 
 ## Project goals
 
@@ -14,8 +14,13 @@ young children while preserving a complete adult experience.
 - A parent center protected by a PIN.
 - Selective game artwork and gameplay-preview management.
 - Low-battery gameplay protection.
-- Preserve the original EmuELEC experience for Adult Mode.
+- Parent management of available games, features, and settings.
+- Potential future parental controls such as playtime limits and schedules.
 - A shared software core supporting desktop development and handheld deployment.
+
+KiddOS provides one child-facing gaming experience. Its parent area exists
+to configure and manage that experience; it is not a separate adult gaming
+mode or frontend.
 
 ## Target hardware
 

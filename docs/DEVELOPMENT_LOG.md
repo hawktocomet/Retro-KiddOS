@@ -38,3 +38,28 @@
 
 The target device has not yet been inspected. Hardware specifications and
 software compatibility still require verification.
+
+
+## 2026-11-09 — Product model clarification
+
+### Decision
+
+KiddOS has one child-facing gaming experience and a separate parent
+management area. There is no separate Adult Mode or adult gaming frontend.
+
+### Parent management responsibilities
+
+- Choose which installed games are visible to the child.
+- Manage game artwork and gameplay previews.
+- Organize games and configure child-facing features.
+- Potentially provide future controls such as playtime limits and schedules.
+
+The parent area configures the child's experience; it is not an alternative
+gaming environment.
+
+### Documentation updated
+
+- README product description and goals.
+- Project vision and product model.
+- Game library and parental visibility.
+- Media Manager parent workflow.
