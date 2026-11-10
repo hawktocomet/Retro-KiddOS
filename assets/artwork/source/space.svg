@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="840" viewBox="0 0 640 840">
+<defs>
+ <linearGradient id="sky" x2="0.2" y2="1"><stop stop-color="#101b55"/><stop offset=".55" stop-color="#293a91"/><stop offset="1" stop-color="#111b48"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#a9d7ff" stop-opacity=".8"/><stop offset="1" stop-color="#6578ff" stop-opacity="0"/></radialGradient>
+ <linearGradient id="planet" x2=".8" y2="1"><stop stop-color="#d6b9ff"/><stop offset=".45" stop-color="#8a78ee"/><stop offset="1" stop-color="#3c4db3"/></linearGradient>
+ <linearGradient id="ship" x2="0" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#a8c8ff"/></linearGradient>
+ <filter id="blur"><feGaussianBlur stdDeviation="24"/></filter>
+ <filter id="shadow"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<rect width="640" height="840" fill="url(#sky)"/>
+<ellipse cx="470" cy="245" rx="220" ry="210" fill="#687bff" opacity=".22" filter="url(#blur)"/>
+<circle cx="475" cy="290" r="164" fill="url(#planet)"/>
+<path d="M323 249 Q470 170 620 252 M318 307 Q475 230 627 316 M350 375 Q484 310 604 380" fill="none" stroke="#e3d8ff" stroke-width="17" opacity=".28"/>
+<path d="M288 296 C365 170 548 141 639 211" fill="none" stroke="#d8d5ff" stroke-width="13" opacity=".7"/>
+<path d="M292 310 C390 220 540 208 640 260" fill="none" stroke="#6de1ff" stroke-width="5" opacity=".8"/>
+<g fill="#e9f4ff">
+ <circle cx="83" cy="113" r="4"/><circle cx="188" cy="72" r="3"/><circle cx="287" cy="155" r="5"/>
+ <circle cx="91" cy="282" r="3"/><circle cx="225" cy="357" r="3"/><circle cx="570" cy="80" r="4"/>
+ <circle cx="540" cy="510" r="3"/><circle cx="125" cy="478" r="4"/><circle cx="255" cy="570" r="3"/>
+</g>
+<g fill="#72d8ff" opacity=".8"><circle cx="150" cy="192" r="8"/><circle cx="380" cy="90" r="5"/><circle cx="42" cy="390" r="5"/></g>
+<ellipse cx="305" cy="665" rx="190" ry="38" fill="#070f34" opacity=".65" filter="url(#shadow)"/>
+<g transform="translate(300 570) rotate(-17)">
+ <path d="M0 -122 C54 -67 64 20 0 112 C-64 20 -54 -67 0 -122Z" fill="url(#ship)" stroke="#d6edff" stroke-width="5"/>
+ <path d="M-29 -27 L-113 58 L-55 51 L0 99 L55 51 L113 58 L29 -27Z" fill="#668cf4" stroke="#b9d6ff" stroke-width="5"/>
+ <path d="M0 -75 C26 -42 29 -2 0 25 C-29 -2 -26 -42 0 -75Z" fill="#4ad8ff" stroke="#e6faff" stroke-width="7"/>
+ <path d="M-23 86 L0 145 L23 86Z" fill="#ffbc74"/>
+ <path d="M-13 93 L0 130 L13 93Z" fill="#fff0a8"/>
+</g>
+<path d="M0 735 Q145 675 265 738 T640 714 V840 H0Z" fill="#111d50"/>
+<path d="M0 780 Q160 718 310 778 T640 755" fill="none" stroke="#667cff" stroke-width="5" opacity=".55"/>
+</svg>

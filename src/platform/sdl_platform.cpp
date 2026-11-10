@@ -13,6 +13,36 @@ struct Color {
     Uint8 r, g, b, a;
 };
 
+std::array<SDL_Texture*, 3> artwork_textures{};
+std::array<SDL_Texture*, 3> action_label_textures{};
+
+SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+                                 const char* path,
+                                 bool magenta_key = false) {
+    SDL_Surface* surface = SDL_LoadBMP(path);
+    if (!surface) {
+        std::cerr << "Could not load " << path << ": "
+                  << SDL_GetError() << '\\n';
+        return nullptr;
+    }
+
+    if (magenta_key) {
+        const Uint32 key = SDL_MapRGB(surface->format, 255, 0, 255);
+        SDL_SetColorKey(surface, SDL_TRUE, key);
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    if (texture) {
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    } else {
+        std::cerr << "Could not create texture for " << path << ": "
+                  << SDL_GetError() << '\\n';
+    }
+    return texture;
+}
+
 void color(SDL_Renderer* r, Color c) {
     SDL_SetRenderDrawColor(r, c.r, c.g, c.b, c.a);
 }
@@ -25,6 +55,80 @@ void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
 void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
     color(r, c);
     SDL_RenderDrawRect(r, &rect);
+}
+
+void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    for (int y = 0; y < rect.h; ++y) {
+        int inset = 0;
+        if (y < radius) {
+            const double dy = radius - y - 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        } else if (y >= rect.h - radius) {
+            const double dy = y - (rect.h - radius) + 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        }
+        SDL_RenderDrawLine(r, rect.x + inset, rect.y + y,
+                           rect.x + rect.w - 1 - inset, rect.y + y);
+    }
+}
+
+void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y,
+                       rect.x + rect.w - radius - 1, rect.y);
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y + rect.h - 1,
+                       rect.x + rect.w - radius - 1, rect.y + rect.h - 1);
+    SDL_RenderDrawLine(r, rect.x, rect.y + radius,
+                       rect.x, rect.y + rect.h - radius - 1);
+    SDL_RenderDrawLine(r, rect.x + rect.w - 1, rect.y + radius,
+                       rect.x + rect.w - 1, rect.y + rect.h - radius - 1);
+
+    for (int i = 0; i <= radius * 2; ++i) {
+        const double angle = (3.14159265358979323846 / 2.0) *
+                             static_cast<double>(i) /
+                             std::max(1, radius * 2);
+        const int dx = static_cast<int>(std::round(radius * std::cos(angle)));
+        const int dy = static_cast<int>(std::round(radius * std::sin(angle)));
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + rect.h - radius - 1 + dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + rect.h - radius - 1 + dy);
+    }
+}
+
+void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+                          int radius, Color background) {
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, background);
+
+    for (int y = 0; y < radius; ++y) {
+        const double dy = radius - y - 0.5;
+        const int inset = radius - static_cast<int>(
+            std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        SDL_RenderDrawLine(r, rect.x, rect.y + y,
+                           rect.x + inset, rect.y + y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, rect.y + y,
+                           rect.x + rect.w - 1, rect.y + y);
+
+        const int bottom_y = rect.y + rect.h - 1 - y;
+        SDL_RenderDrawLine(r, rect.x, bottom_y,
+                           rect.x + inset, bottom_y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, bottom_y,
+                           rect.x + rect.w - 1, bottom_y);
+    }
 }
 
 void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
@@ -175,22 +279,24 @@ void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
 
 void draw_art(SDL_Renderer* r, int index,
               SDL_Rect area, Uint8 alpha) {
-    switch (index) {
-        case 0: draw_space_world(r, area, alpha); break;
-        case 1: draw_forest_world(r, area, alpha); break;
-        default: draw_ocean_world(r, area, alpha); break;
-    }
+    if (index < 0 || index >= static_cast<int>(artwork_textures.size())) return;
+    SDL_Texture* texture = artwork_textures[static_cast<std::size_t>(index)];
+    if (!texture) return;
+
+    SDL_SetTextureAlphaMod(texture, alpha);
+    SDL_RenderCopy(r, texture, nullptr, &area);
+    SDL_SetTextureAlphaMod(texture, 255);
 }
 
 void draw_card(SDL_Renderer* r, int index,
                SDL_Rect rect, bool selected) {
     const Uint8 alpha = selected ? 255 : 145;
 
-    rectangle(r,
-              {rect.x - 5, rect.y - 5, rect.w + 10, rect.h + 10},
-              {7, 13, 32, static_cast<Uint8>(selected ? 255 : 170)});
+    rounded_fill(r,
+                 {rect.x - 5, rect.y - 5, rect.w + 10, rect.h + 10},
+                 30, {7, 13, 32, static_cast<Uint8>(selected ? 255 : 170)});
 
-    rectangle(r, rect, {20, 34, 65, alpha});
+    rounded_fill(r, rect, 25, {20, 34, 65, alpha});
 
     SDL_Rect art{
         rect.x + 9,
@@ -202,16 +308,17 @@ void draw_card(SDL_Renderer* r, int index,
     SDL_RenderSetClipRect(r, &art);
     draw_art(r, index, art, alpha);
     SDL_RenderSetClipRect(r, nullptr);
+    mask_artwork_corners(r, art, 18, {20, 34, 65, alpha});
 
-    outline(r, rect,
+    rounded_outline(r, rect, 25,
             selected
                 ? Color{69, 151, 255, 255}
                 : Color{80, 117, 170, 110});
 
     if (selected) {
-        outline(r,
-                {rect.x - 2, rect.y - 2, rect.w + 4, rect.h + 4},
-                {43, 105, 210, 170});
+        rounded_outline(r,
+                        {rect.x - 2, rect.y - 2, rect.w + 4, rect.h + 4},
+                        27, {43, 105, 210, 170});
     }
 }
 
@@ -285,6 +392,34 @@ bool SDLPlatform::initialize() {
     }
 
     SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+
+    const char* artwork_paths[] = {
+        "assets/artwork/generated/space.bmp",
+        "assets/artwork/generated/forest.bmp",
+        "assets/artwork/generated/ocean.bmp"
+    };
+    const char* label_paths[] = {
+        "assets/artwork/generated/label-play.bmp",
+        "assets/artwork/generated/label-resume.bmp",
+        "assets/artwork/generated/label-start-over.bmp"
+    };
+
+    for (std::size_t i = 0; i < artwork_textures.size(); ++i) {
+        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i]);
+        if (!artwork_textures[i]) {
+            shutdown();
+            return false;
+        }
+    }
+
+    for (std::size_t i = 0; i < action_label_textures.size(); ++i) {
+        action_label_textures[i] =
+            load_bitmap_texture(renderer_, label_paths[i], true);
+        if (!action_label_textures[i]) {
+            shutdown();
+            return false;
+        }
+    }
 
     for (int index = 0; index < SDL_NumJoysticks(); ++index) {
         if (SDL_IsGameController(index)) {
@@ -432,47 +567,14 @@ void SDLPlatform::draw_carousel(int selected_index) {
 
 namespace {
 
-std::array<Uint8, 7> glyph(char ch) {
-    switch (ch) {
-        case 'P': return {30,17,17,30,16,16,16};
-        case 'L': return {16,16,16,16,16,16,31};
-        case 'A': return {14,17,17,31,17,17,17};
-        case 'Y': return {17,17,10,4,4,4,4};
-        case 'R': return {30,17,17,30,20,18,17};
-        case 'E': return {31,16,16,30,16,16,31};
-        case 'S': return {15,16,16,14,1,1,30};
-        case 'U': return {17,17,17,17,17,17,14};
-        case 'M': return {17,27,21,21,17,17,17};
-        case 'O': return {14,17,17,17,17,17,14};
-        case 'V': return {17,17,17,17,17,10,4};
-        case 'T': return {31,4,4,4,4,4,4};
-        default: return {0,0,0,0,0,0,0};
-    }
-}
+void draw_action_label(SDL_Renderer* r, int index,
+                       int x, int y) {
+    if (index < 0 || index >= static_cast<int>(action_label_textures.size())) return;
+    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+    if (!texture) return;
 
-void draw_text(SDL_Renderer* r, const char* value,
-               int x, int y, int scale, Color c) {
-    color(r, c);
-
-    for (const char* ch = value; *ch; ++ch) {
-        const auto rows = glyph(*ch);
-
-        for (int row = 0; row < 7; ++row) {
-            for (int col = 0; col < 5; ++col) {
-                if (rows[row] & (1 << (4 - col))) {
-                    SDL_Rect pixel{
-                        x + col * scale,
-                        y + row * scale,
-                        scale,
-                        scale
-                    };
-                    SDL_RenderFillRect(r, &pixel);
-                }
-            }
-        }
-
-        x += 6 * scale;
-    }
+    SDL_Rect destination{x, y, 350, 72};
+    SDL_RenderCopy(r, texture, nullptr, &destination);
 }
 
 void draw_play_symbol(SDL_Renderer* r, int x, int y) {
@@ -509,7 +611,7 @@ void SDLPlatform::draw_game_actions(
 
     // Keep the selected game's artwork prominent.
     draw_card(renderer_, selected_index,
-              {190, 65, 340, 300}, true);
+              {235, 48, 250, 310}, true);
 
     const int action_count = has_checkpoint ? 2 : 1;
     const int box_height = 112;
@@ -524,15 +626,15 @@ void SDLPlatform::draw_game_actions(
 
         SDL_Rect box{65, y, 590, box_height};
 
-        rectangle(renderer_, box,
-                  selected
-                    ? Color{24, 69, 139, 255}
-                    : Color{16, 30, 65, 255});
+        rounded_fill(renderer_, box, 22,
+                     selected
+                       ? Color{24, 69, 139, 255}
+                       : Color{16, 30, 65, 255});
 
-        outline(renderer_, box,
-                selected
-                    ? Color{75, 165, 255, 255}
-                    : Color{65, 93, 145, 190});
+        rounded_outline(renderer_, box, 22,
+                        selected
+                          ? Color{75, 165, 255, 255}
+                          : Color{65, 93, 145, 190});
 
         const int symbol_x = 145;
         const int symbol_y = y + box_height / 2;
@@ -540,24 +642,21 @@ void SDLPlatform::draw_game_actions(
         if (!has_checkpoint || i == 0) {
             if (has_checkpoint) {
                 draw_resume_symbol(renderer_, symbol_x, symbol_y);
-                draw_text(renderer_, "RESUME", 230, y + 43, 4,
-                          {240, 246, 255, 255});
+                draw_action_label(renderer_, 1, 230, y + 20);
             } else {
                 draw_play_symbol(renderer_, symbol_x - 20, symbol_y);
-                draw_text(renderer_, "PLAY", 230, y + 43, 4,
-                          {240, 246, 255, 255});
+                draw_action_label(renderer_, 0, 230, y + 20);
             }
         } else {
             draw_restart_symbol(renderer_, symbol_x, symbol_y);
-            draw_text(renderer_, "START OVER", 230, y + 43, 4,
-                      {240, 246, 255, 255});
+            draw_action_label(renderer_, 2, 230, y + 20);
         }
 
         if (selected) {
-            outline(renderer_,
-                    {box.x - 4, box.y - 4,
-                     box.w + 8, box.h + 8},
-                    {43, 126, 231, 180});
+            rounded_outline(renderer_,
+                            {box.x - 4, box.y - 4,
+                             box.w + 8, box.h + 8},
+                            26, {43, 126, 231, 180});
         }
     }
 }
@@ -569,6 +668,19 @@ void SDLPlatform::present() {
 
 void SDLPlatform::shutdown() {
     close_controller();
+
+    for (auto& texture : artwork_textures) {
+        if (texture) {
+            SDL_DestroyTexture(texture);
+            texture = nullptr;
+        }
+    }
+    for (auto& texture : action_label_textures) {
+        if (texture) {
+            SDL_DestroyTexture(texture);
+            texture = nullptr;
+        }
+    }
 
     if (renderer_) {
         SDL_DestroyRenderer(renderer_);
