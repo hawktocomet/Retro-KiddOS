@@ -1,53 +1,76 @@
-# KiddOS
+# Retro KiddOS
 
-A child-friendly gaming environment for the FunnyPlaying Retro Pixel Pocket.
+A child-friendly gaming environment for the **FunnyPlaying Retro Pixel
+Pocket**.
 
 KiddOS is designed to make a handheld gaming device simple and safe for
 young children, with adult management controls.
 
-## Project goals
+## Product
 
-- A simple, controller-only child interface.
+KiddOS provides one child-facing gaming experience. Its PIN-protected
+Parent Center exists to configure and manage that experience; it is not a
+separate adult gaming mode or frontend.
+
+The interface is designed for the device's 720 × 720 display and physical
+controls.
+
+### Core goals
+
+- A simple, predictable child interface.
 - Parent-controlled game selection and visibility.
-- A large, artwork-driven game carousel.
+- An artwork-driven game carousel.
+- Play, Resume, and Start Over behavior.
 - Automatic gameplay checkpoints where emulator support permits.
-- A parent center protected by a PIN.
-- Selective game artwork and gameplay-preview management.
+- Parent-managed artwork and gameplay previews.
 - Low-battery gameplay protection.
 - Parent management of available games, features, and settings.
-- Potential future parental controls such as playtime limits and schedules.
-- A shared software core supporting desktop development and handheld deployment.
-
-KiddOS provides one child-facing gaming experience. Its parent area exists
-to configure and manage that experience; it is not a separate adult gaming
-mode or frontend.
+- Potential future controls such as playtime limits and schedules.
 
 ## Target hardware
 
 - FunnyPlaying Retro Pixel Pocket
-- Rockchip RK3326
-- Quad-core ARM processor
-- 1 GB RAM
-- 720 × 720 IPS display
+- Reported Rockchip RK3326
+- Reported quad-core ARM processor and 1 GB RAM
+- Reported 720 × 720 IPS display
 - Customized EmuELEC Linux
 
-Hardware integration will be verified against the actual device.
+Specifications and software compatibility must be verified on the actual
+device. See [Hardware](docs/HARDWARE.md).
 
 ## Development
 
-Initial development takes place on Arch Linux using C++, CMake, and SDL2.
+Initial development takes place on Arch Linux using C++20, CMake, and SDL2.
 
-The desktop prototype targets a 720 × 720 window to match the handheld display.
+The Arch Linux build is a temporary development and testing harness. It
+simulates the handheld's logical 720 × 720 display and input during
+development. It is not a supported desktop edition or product target.
+
+The handheld implementation will be integrated with the actual Retro Pixel
+Pocket firmware after its software and hardware environment are inspected.
 
 ## Project status
 
-Early development. Requirements and architecture are being documented before
-hardware-specific implementation.
+Early development. Product requirements and architecture are being
+consolidated before hardware-specific implementation.
 
 ## Documentation
 
-See the `docs/` directory for project requirements, design decisions,
-architecture, and development history.
+Start with the [Product Specification](docs/PRODUCT_SPECIFICATION.md).
+
+Additional requirements and design references:
+
+- [Project Vision](docs/PROJECT_VISION.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [UI Design](docs/UI_DESIGN.md)
+- [Input Controls](docs/INPUT_CONTROLS.md)
+- [Game Library](docs/GAME_LIBRARY.md)
+- [Save-State System](docs/SAVE_STATE_SYSTEM.md)
+- [Media Manager](docs/MEDIA_MANAGER.md)
+- [Low-Battery Protection](docs/LOW_BATTERY_PROTECTION.md)
+- [Hardware Verification](docs/HARDWARE.md)
+- [Development Log](docs/DEVELOPMENT_LOG.md)
+- [Contributing](CONTRIBUTING.md)
 
 ## License
 

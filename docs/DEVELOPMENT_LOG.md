@@ -63,3 +63,38 @@ gaming environment.
 - Project vision and product model.
 - Game library and parental visibility.
 - Media Manager parent workflow.
+
+## 2026-11-10 — Consolidated product baseline
+
+### Product scope
+
+- Confirmed the FunnyPlaying Retro Pixel Pocket as the sole initial target.
+- Clarified that KiddOS is a handheld product, not a general desktop OS.
+- Clarified that the Arch Linux build is a temporary development and testing
+  harness, not a supported desktop edition.
+- Confirmed the 720 × 720 logical interface and physical-control-first design.
+- Reaffirmed that KiddOS is separate from DualOS.
+
+### Product specification
+
+- Added `docs/PRODUCT_SPECIFICATION.md` as the consolidated product baseline.
+- Documented Kid Mode and the PIN-protected Parent Center.
+- Consolidated game carousel, game actions, previews, and navigation behavior.
+- Consolidated game visibility, save/checkpoint, and media-management rules.
+- Recorded low-battery thresholds as provisional and hardware-dependent.
+- Recorded the hardware inspection gate and non-destructive development rules.
+
+### Architecture and documentation
+
+- Clarified the separation between shared application logic and
+  device-specific integration.
+- Clarified that desktop simulation does not establish handheld compatibility.
+- Updated README, project vision, architecture, and contribution guidance.
+- Retained the detailed UI, input, game library, save, media, battery, and
+  hardware documents as supporting references.
+
+### Not yet implemented
+
+The product specification records intended behavior, not completed features.
+The existing SDL2 prototype remains a basic development harness. Hardware
+integration and the planned product components remain future work.
