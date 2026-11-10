@@ -1,0 +1,270 @@
+
+===== REPOSITORY IDENTITY =====
+/home/hawk/KiddOS
+## main...origin/main
+ M include/kiddos/app/application.hpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+a7a6d4c chore: record milestone run - kid-mode-carousel-layering-and-game-titles
+cb64ee4 chore: record milestone run - kid-mode-sdl-compatible-carousel-artwork
+db8bfc1 chore: record milestone run - kid-mode-reference-matched-game-carousel
+7e10143 chore: record milestone run - kid-mode-carousel-visual-fidelity-audit
+bc33c4e chore: record milestone run - kid-mode-rounded-corner-restoration
+
+===== PROJECT FILE INVENTORY =====
+./CMakeLists.txt
+./CONTRIBUTING.md
+./docs/ARCHITECTURE.md
+./docs/DEVELOPMENT_LOG.md
+./docs/FIRMWARE_AUDIT.md
+./docs/GAME_ACTION_SCREEN.md
+./docs/GAME_LIBRARY.md
+./docs/HARDWARE.md
+./docs/INPUT_CONTROLS.md
+./docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+./docs/LOW_BATTERY_PROTECTION.md
+./docs/MEDIA_MANAGER.md
+./docs/PRODUCT_SPECIFICATION.md
+./docs/PROJECT_VISION.md
+./docs/SAVE_STATE_SYSTEM.md
+./docs/UI_DESIGN.md
+./.gitignore
+./logs/milestone-2-preflight-20261110-144011.log
+./README.md
+./research/milestone-runs/LATEST.txt
+./src/app/application.cpp
+./src/main.cpp
+./src/platform/sdl_platform.cpp
+./tasks/completed/KID-20261110-131847.md
+./tasks/completed/KID-20261110-132322.md
+./tools/kiddos-milestone
+./.workbench/backups/github_sync.py-20261110-132530
+./.workbench/backups/wb-20261110-132530
+./.workbench/inbox/KID-20261110-131847.remote.md
+./.workbench/inbox/KID-20261110-132322.remote.md
+./.workbench/workbench.sqlite3
+
+===== BUILD CONFIGURATION =====
+--- CMakeLists.txt ---
+cmake_minimum_required(VERSION 3.20)
+
+project(KiddOS
+    VERSION 0.2.0
+    DESCRIPTION "A child-friendly gaming environment for the Retro Pixel Pocket"
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+
+add_executable(kiddos
+    src/main.cpp
+    src/app/application.cpp
+    src/platform/sdl_platform.cpp
+)
+
+target_include_directories(kiddos PRIVATE include)
+target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
+
+target_compile_options(kiddos PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+===== SDL2 ENVIRONMENT =====
+2.32.74
+-I/usr/include/SDL2 -D_GNU_SOURCE=1 -D_REENTRANT -lSDL2
+Package SDL2_image was not found in the pkg-config search path.
+Perhaps you should add the directory containing `SDL2_image.pc'
+to the PKG_CONFIG_PATH environment variable
+Package 'SDL2_image' not found
+Package SDL2_ttf was not found in the pkg-config search path.
+Perhaps you should add the directory containing `SDL2_ttf.pc'
+to the PKG_CONFIG_PATH environment variable
+Package 'SDL2_ttf' not found
+
+===== C++ SOURCE INVENTORY =====
+./include/kiddos/app/application.hpp
+./include/kiddos/core/action.hpp
+./include/kiddos/platform/platform.hpp
+./include/kiddos/platform/sdl_platform.hpp
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/kvimfan-aml/sources/khadas-fan.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/wifi_dummy-aml/sources/wifi_dummy.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-firmware/intel-ucode/sources/intel-microcode2ucode.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/sysutils/wait-time-sync/sources/wait-time-sync.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/sysutils/evdev_tools/sources/evkill.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/sysutils/evdev_tools/sources/evtest.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/sysutils/evdev_tools/sources/remap.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/sysutils/evdev_tools/sources/send.c
+./src/app/application.cpp
+./src/main.cpp
+./src/platform/sdl_platform.cpp
+
+===== UI / RENDERING / INPUT REFERENCES =====
+./src/platform/sdl_platform.cpp:16:std::array<SDL_Texture*, 3> artwork_textures{};
+./src/platform/sdl_platform.cpp:17:std::array<SDL_Texture*, 3> action_label_textures{};
+./src/platform/sdl_platform.cpp:18:SDL_Texture* carousel_title_texture{};
+./src/platform/sdl_platform.cpp:19:SDL_Texture* carousel_selected_texture{};
+./src/platform/sdl_platform.cpp:21:SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+./src/platform/sdl_platform.cpp:24:    SDL_Surface* surface = SDL_LoadBMP(path);
+./src/platform/sdl_platform.cpp:36:    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+./src/platform/sdl_platform.cpp:48:void color(SDL_Renderer* r, Color c) {
+./src/platform/sdl_platform.cpp:49:    SDL_SetRenderDrawColor(r, c.r, c.g, c.b, c.a);
+./src/platform/sdl_platform.cpp:52:void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+./src/platform/sdl_platform.cpp:54:    SDL_RenderFillRect(r, &rect);
+./src/platform/sdl_platform.cpp:57:void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+./src/platform/sdl_platform.cpp:59:    SDL_RenderDrawRect(r, &rect);
+./src/platform/sdl_platform.cpp:62:void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+./src/platform/sdl_platform.cpp:78:        SDL_RenderDrawLine(r, rect.x + inset, rect.y + y,
+./src/platform/sdl_platform.cpp:83:void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+./src/platform/sdl_platform.cpp:88:    SDL_RenderDrawLine(r, rect.x + radius, rect.y,
+./src/platform/sdl_platform.cpp:90:    SDL_RenderDrawLine(r, rect.x + radius, rect.y + rect.h - 1,
+./src/platform/sdl_platform.cpp:92:    SDL_RenderDrawLine(r, rect.x, rect.y + radius,
+./src/platform/sdl_platform.cpp:94:    SDL_RenderDrawLine(r, rect.x + rect.w - 1, rect.y + radius,
+./src/platform/sdl_platform.cpp:103:        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+./src/platform/sdl_platform.cpp:105:        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+./src/platform/sdl_platform.cpp:107:        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+./src/platform/sdl_platform.cpp:109:        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+./src/platform/sdl_platform.cpp:114:void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+./src/platform/sdl_platform.cpp:123:        SDL_RenderDrawLine(r, rect.x, rect.y + y,
+./src/platform/sdl_platform.cpp:125:        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, rect.y + y,
+./src/platform/sdl_platform.cpp:129:        SDL_RenderDrawLine(r, rect.x, bottom_y,
+./src/platform/sdl_platform.cpp:131:        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, bottom_y,
+./src/platform/sdl_platform.cpp:136:void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+./src/platform/sdl_platform.cpp:145:        SDL_RenderDrawLine(r, cx - x, cy + y, cx + x, cy + y);
+./src/platform/sdl_platform.cpp:149:void triangle(SDL_Renderer* r, int x1, int y1,
+./src/platform/sdl_platform.cpp:177:            SDL_RenderDrawLine(
+./src/platform/sdl_platform.cpp:188:void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+./src/platform/sdl_platform.cpp:218:void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+./src/platform/sdl_platform.cpp:250:void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+./src/platform/sdl_platform.cpp:272:            SDL_RenderDrawPoint(r, x, wave_y);
+./src/platform/sdl_platform.cpp:282:void draw_art(SDL_Renderer* r, int index,
+./src/platform/sdl_platform.cpp:283:              SDL_Rect area, Uint8 alpha) {
+./src/platform/sdl_platform.cpp:285:    SDL_Texture* texture = artwork_textures[static_cast<std::size_t>(index)];
+./src/platform/sdl_platform.cpp:289:    SDL_RenderCopy(r, texture, nullptr, &area);
+./src/platform/sdl_platform.cpp:293:void draw_card(SDL_Renderer* r, int index,
+./src/platform/sdl_platform.cpp:294:               SDL_Rect rect, bool selected) {
+./src/platform/sdl_platform.cpp:303:    SDL_Rect art{
+./src/platform/sdl_platform.cpp:310:    SDL_RenderSetClipRect(r, &art);
+./src/platform/sdl_platform.cpp:311:    draw_art(r, index, art, alpha);
+./src/platform/sdl_platform.cpp:312:    SDL_RenderSetClipRect(r, nullptr);
+./src/platform/sdl_platform.cpp:327:void draw_status(SDL_Renderer* r) {
+./src/platform/sdl_platform.cpp:336:    SDL_RenderDrawLine(r, 49, 29, 54, 34);
+./src/platform/sdl_platform.cpp:337:    SDL_RenderDrawLine(r, 54, 34, 54, 42);
+./src/platform/sdl_platform.cpp:338:    SDL_RenderDrawLine(r, 54, 42, 49, 47);
+./src/platform/sdl_platform.cpp:378:    renderer_ = SDL_CreateRenderer(
+./src/platform/sdl_platform.cpp:380:        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+./src/platform/sdl_platform.cpp:383:    if (!renderer_) {
+./src/platform/sdl_platform.cpp:384:        renderer_ = SDL_CreateRenderer(
+./src/platform/sdl_platform.cpp:385:            window_, -1, SDL_RENDERER_SOFTWARE
+./src/platform/sdl_platform.cpp:389:    if (!renderer_) {
+./src/platform/sdl_platform.cpp:390:        std::cerr << "Renderer creation failed: "
+./src/platform/sdl_platform.cpp:396:    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+./src/platform/sdl_platform.cpp:399:        "assets/artwork/generated/carousel-star.bmp",
+./src/platform/sdl_platform.cpp:400:        "assets/artwork/generated/carousel-mushroom.bmp",
+./src/platform/sdl_platform.cpp:401:        "assets/artwork/generated/carousel-car.bmp"
+./src/platform/sdl_platform.cpp:410:        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i], true);
+./src/platform/sdl_platform.cpp:419:            load_bitmap_texture(renderer_, label_paths[i], true);
+./src/platform/sdl_platform.cpp:426:    carousel_title_texture =
+./src/platform/sdl_platform.cpp:427:        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-title.bmp", true);
+./src/platform/sdl_platform.cpp:428:    carousel_selected_texture =
+./src/platform/sdl_platform.cpp:429:        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-selected.bmp", true);
+./src/platform/sdl_platform.cpp:430:    if (!carousel_title_texture || !carousel_selected_texture) {
+./src/platform/sdl_platform.cpp:434:    SDL_SetTextureBlendMode(carousel_title_texture, SDL_BLENDMODE_BLEND);
+./src/platform/sdl_platform.cpp:435:    SDL_SetTextureBlendMode(carousel_selected_texture, SDL_BLENDMODE_BLEND);
+./src/platform/sdl_platform.cpp:453:    controller_ = SDL_GameControllerOpen(device_index);
+./src/platform/sdl_platform.cpp:456:        controller_instance_ = SDL_JoystickInstanceID(
+./src/platform/sdl_platform.cpp:457:            SDL_GameControllerGetJoystick(controller_)
+./src/platform/sdl_platform.cpp:464:        SDL_GameControllerClose(controller_);
+./src/platform/sdl_platform.cpp:505:    SDL_Event event;
+./src/platform/sdl_platform.cpp:555:    if (!renderer_) return;
+./src/platform/sdl_platform.cpp:557:    color(renderer_, {8, 15, 35, 255});
+./src/platform/sdl_platform.cpp:558:    SDL_RenderClear(renderer_);
+./src/platform/sdl_platform.cpp:562:void SDLPlatform::draw_carousel(int selected_index) {
+./src/platform/sdl_platform.cpp:563:    if (!renderer_) return;
+./src/platform/sdl_platform.cpp:572:    // Draw the smaller neighboring cards first, behind the main card.
+./src/platform/sdl_platform.cpp:573:    const SDL_Rect side_left{25, 250, 190, 175};
+./src/platform/sdl_platform.cpp:574:    const SDL_Rect side_right{505, 250, 190, 175};
+./src/platform/sdl_platform.cpp:576:    rounded_fill(renderer_, side_left, 24, side_fill);
+./src/platform/sdl_platform.cpp:577:    rounded_outline(renderer_, side_left, 24,
+./src/platform/sdl_platform.cpp:579:    draw_art(renderer_, left,
+./src/platform/sdl_platform.cpp:582:    rounded_fill(renderer_, side_right, 24, side_fill);
+./src/platform/sdl_platform.cpp:583:    rounded_outline(renderer_, side_right, 24,
+./src/platform/sdl_platform.cpp:585:    draw_art(renderer_, right,
+./src/platform/sdl_platform.cpp:588:    // Main card is larger and drawn last so it overlaps both neighbors.
+./src/platform/sdl_platform.cpp:589:    const SDL_Rect center{145, 135, 430, 370};
+./src/platform/sdl_platform.cpp:590:    rounded_fill(renderer_, center, 30, center_fill);
+./src/platform/sdl_platform.cpp:591:    rounded_outline(renderer_, center, 30, center_border);
+./src/platform/sdl_platform.cpp:592:    rounded_outline(renderer_,
+./src/platform/sdl_platform.cpp:598:    draw_art(renderer_, selected_index,
+./src/platform/sdl_platform.cpp:602:    if (carousel_title_texture && selected_index == 1) {
+./src/platform/sdl_platform.cpp:603:        SDL_Rect title{220, 525, 280, 42};
+./src/platform/sdl_platform.cpp:604:        SDL_RenderCopy(renderer_, carousel_title_texture,
+./src/platform/sdl_platform.cpp:608:    draw_status(renderer_);
+./src/platform/sdl_platform.cpp:614:void draw_action_label(SDL_Renderer* r, int index,
+./src/platform/sdl_platform.cpp:617:    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+./src/platform/sdl_platform.cpp:620:    SDL_Rect destination{x, y, 350, 72};
+./src/platform/sdl_platform.cpp:621:    SDL_RenderCopy(r, texture, nullptr, &destination);
+./src/platform/sdl_platform.cpp:624:void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+./src/platform/sdl_platform.cpp:629:void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+./src/platform/sdl_platform.cpp:638:void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+./src/platform/sdl_platform.cpp:649:void SDLPlatform::draw_game_actions(
+./src/platform/sdl_platform.cpp:652:    if (!renderer_) return;
+./src/platform/sdl_platform.cpp:654:    draw_status(renderer_);
+./src/platform/sdl_platform.cpp:657:    draw_card(renderer_, selected_index,
+./src/platform/sdl_platform.cpp:671:        SDL_Rect box{65, y, 590, box_height};
+./src/platform/sdl_platform.cpp:673:        rounded_fill(renderer_, box, 22,
+./src/platform/sdl_platform.cpp:678:        rounded_outline(renderer_, box, 22,
+./src/platform/sdl_platform.cpp:688:                draw_resume_symbol(renderer_, symbol_x, symbol_y);
+./src/platform/sdl_platform.cpp:689:                draw_action_label(renderer_, 1, 230, y + 20);
+./src/platform/sdl_platform.cpp:691:                draw_play_symbol(renderer_, symbol_x - 20, symbol_y);
+./src/platform/sdl_platform.cpp:692:                draw_action_label(renderer_, 0, 230, y + 20);
+./src/platform/sdl_platform.cpp:695:            draw_restart_symbol(renderer_, symbol_x, symbol_y);
+./src/platform/sdl_platform.cpp:696:            draw_action_label(renderer_, 2, 230, y + 20);
+./src/platform/sdl_platform.cpp:700:            rounded_outline(renderer_,
+./src/platform/sdl_platform.cpp:710:    if (renderer_) SDL_RenderPresent(renderer_);
+./src/platform/sdl_platform.cpp:728:    if (carousel_title_texture) {
+./src/platform/sdl_platform.cpp:729:        SDL_DestroyTexture(carousel_title_texture);
+./src/platform/sdl_platform.cpp:730:        carousel_title_texture = nullptr;
+./src/platform/sdl_platform.cpp:732:    if (carousel_selected_texture) {
+./src/platform/sdl_platform.cpp:733:        SDL_DestroyTexture(carousel_selected_texture);
+./src/platform/sdl_platform.cpp:734:        carousel_selected_texture = nullptr;
+./src/platform/sdl_platform.cpp:737:    if (renderer_) {
+./src/platform/sdl_platform.cpp:738:        SDL_DestroyRenderer(renderer_);
+./src/platform/sdl_platform.cpp:739:        renderer_ = nullptr;
+./src/app/application.cpp:32:            render();
+./src/app/application.cpp:95:void Application::render() {
+./src/app/application.cpp:99:        platform_.draw_game_actions(
+./src/app/application.cpp:102:        platform_.draw_carousel(selected_game_);
+./include/kiddos/platform/platform.hpp:14:    virtual void draw_carousel(int selected_index) = 0;
+./include/kiddos/platform/platform.hpp:15:    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+./include/kiddos/platform/sdl_platform.hpp:17:    void draw_carousel(int selected_index) override;
+./include/kiddos/platform/sdl_platform.hpp:18:    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+./include/kiddos/platform/sdl_platform.hpp:24:    SDL_Renderer* renderer_ = nullptr;
+./include/kiddos/platform/sdl_platform.hpp:25:    SDL_GameController* controller_ = nullptr;
+./include/kiddos/platform/sdl_platform.hpp:26:    SDL_JoystickID controller_instance_ = -1;
+./include/kiddos/app/application.hpp:22:    void render();
+
+===== ASSET INVENTORY =====
+
+===== DEPENDENCIES AND SUBMODULES =====
+./CMakeLists.txt:13:find_package(PkgConfig REQUIRED)
+./CMakeLists.txt:14:pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+./CMakeLists.txt:23:target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/easyrpg/wildmidi/sources/CMakeLists.txt:181:        FIND_PACKAGE(ALSA)
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/easyrpg/wildmidi/sources/CMakeLists.txt:182:        FIND_PACKAGE(OpenAL)
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/easyrpg/wildmidi/sources/CMakeLists.txt:183:        FIND_PACKAGE(OSS)
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/easyrpg/wildmidi/sources/CMakeLists.txt:247:    FIND_PACKAGE(OpenAL)
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/easyrpg/wildmidi/sources/CMakeLists.txt:303:ADD_SUBDIRECTORY(src)
+
+===== END OF CODEBASE AUDIT =====
