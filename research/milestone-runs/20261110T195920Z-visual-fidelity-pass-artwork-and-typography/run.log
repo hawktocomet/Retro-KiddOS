@@ -1,0 +1,20 @@
+===== VERIFY BASELINE =====
+
+===== VERIFY ARTWORK TOOLS =====
+
+===== CREATE ORIGINAL SPACE ARTWORK =====
+
+===== CREATE ORIGINAL FOREST ARTWORK =====
+
+===== CREATE ORIGINAL OCEAN ARTWORK =====
+
+===== RASTERIZE ORIGINAL ARTWORK =====
+
+===== CREATE ACTION LABEL ARTWORK =====
+
+===== PATCH SDL ARTWORK LOADING =====
+  File "<stdin>", line 113
+    "draw_text(renderer_, \\"RESUME\\", 230, y + 43, 4,\\n                          {240, 246, 255, 255});",
+                                    ^
+SyntaxError: unexpected character after line continuation character
+ERROR: Renderer patch failed.
