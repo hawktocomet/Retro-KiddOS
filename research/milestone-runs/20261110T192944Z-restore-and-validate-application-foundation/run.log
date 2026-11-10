@@ -1,0 +1,128 @@
+===== RESTORE CMAKE CONFIGURATION =====
+===== RESTORE APPLICATION IMPLEMENTATION =====
+===== RESTORE SDL PLATFORM IMPLEMENTATION =====
+===== BUILD CONFIGURATION =====
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+===== COMPILE =====
+[1/4] Building CXX object CMakeFiles/kiddos.dir/src/main.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos.dir/src/main.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -g -std=c++20 -Wall -Wextra -Wpedantic -D_GNU_SOURCE=1 -D_REENTRANT -MD -MT CMakeFiles/kiddos.dir/src/main.cpp.o -MF CMakeFiles/kiddos.dir/src/main.cpp.o.d -o CMakeFiles/kiddos.dir/src/main.cpp.o -c /home/hawk/KiddOS/src/main.cpp
+/home/hawk/KiddOS/src/main.cpp:1:10: error: ‘#include’ expects ‘"FILENAME"’ or ‘<FILENAME>’
+    1 | #include kiddos/app/application.hpp
+      |          ^~~~~~
+/home/hawk/KiddOS/src/main.cpp:2:10: error: ‘#include’ expects ‘"FILENAME"’ or ‘<FILENAME>’
+    2 | #include kiddos/platform/sdl_platform.hpp
+      |          ^~~~~~
+/home/hawk/KiddOS/src/main.cpp: In function ‘int main()’:
+/home/hawk/KiddOS/src/main.cpp:5:5: error: ‘kiddos’ has not been declared
+    5 |     kiddos::SDLPlatform platform;
+      |     ^~~~~~
+/home/hawk/KiddOS/src/main.cpp:6:5: error: ‘kiddos’ has not been declared
+    6 |     kiddos::Application application(platform);
+      |     ^~~~~~
+/home/hawk/KiddOS/src/main.cpp:7:12: error: ‘application’ was not declared in this scope
+    7 |     return application.run();
+      |            ^~~~~~~~~~~
+[2/4] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos.dir/src/app/application.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -g -std=c++20 -Wall -Wextra -Wpedantic -D_GNU_SOURCE=1 -D_REENTRANT -MD -MT CMakeFiles/kiddos.dir/src/app/application.cpp.o -MF CMakeFiles/kiddos.dir/src/app/application.cpp.o.d -o CMakeFiles/kiddos.dir/src/app/application.cpp.o -c /home/hawk/KiddOS/src/app/application.cpp
+In file included from /home/hawk/KiddOS/src/app/application.cpp:1:
+/home/hawk/KiddOS/include/kiddos/app/application.hpp:3:10: error: ‘#include’ expects ‘"FILENAME"’ or ‘<FILENAME>’
+    3 | #include kiddos/platform/platform.hpp
+      |          ^~~~~~
+/home/hawk/KiddOS/include/kiddos/app/application.hpp:9:34: error: expected ‘)’ before ‘&’ token
+    9 |     explicit Application(Platform& platform);
+      |                         ~        ^
+      |                                  )
+/home/hawk/KiddOS/include/kiddos/app/application.hpp:14:5: error: ‘Platform’ does not name a type
+   14 |     Platform& platform_;
+      |     ^~~~~~~~
+/home/hawk/KiddOS/include/kiddos/app/application.hpp:17:24: error: ‘Action’ has not been declared
+   17 |     void handle_action(Action action);
+      |                        ^~~~~~
+/home/hawk/KiddOS/src/app/application.cpp:5:25: error: expected constructor, destructor, or type conversion before ‘(’ token
+    5 | Application::Application(Platform& platform)
+      |                         ^
+/home/hawk/KiddOS/src/app/application.cpp: In member function ‘int kiddos::Application::run()’:
+/home/hawk/KiddOS/src/app/application.cpp:10:10: error: ‘platform_’ was not declared in this scope
+   10 |     if (!platform_.initialize()) {
+      |          ^~~~~~~~~
+/home/hawk/KiddOS/src/app/application.cpp:18:9: error: ‘Action’ was not declared in this scope
+   18 |         Action action = Action::None;
+      |         ^~~~~~
+/home/hawk/KiddOS/src/app/application.cpp:20:16: error: ‘platform_’ was not declared in this scope
+   20 |         while (platform_.poll_action(action)) {
+      |                ^~~~~~~~~
+/home/hawk/KiddOS/src/app/application.cpp:20:38: error: ‘action’ was not declared in this scope
+   20 |         while (platform_.poll_action(action)) {
+      |                                      ^~~~~~
+/home/hawk/KiddOS/src/app/application.cpp:33:5: error: ‘platform_’ was not declared in this scope
+   33 |     platform_.shutdown();
+      |     ^~~~~~~~~
+/home/hawk/KiddOS/src/app/application.cpp: At global scope:
+/home/hawk/KiddOS/src/app/application.cpp:37:6: error: variable or field ‘handle_action’ declared void
+   37 | void Application::handle_action(Action action) {
+      |      ^~~~~~~~~~~
+/home/hawk/KiddOS/src/app/application.cpp:37:33: error: ‘Action’ was not declared in this scope
+   37 | void Application::handle_action(Action action) {
+      |                                 ^~~~~~
+/home/hawk/KiddOS/src/app/application.cpp: In member function ‘void kiddos::Application::render()’:
+/home/hawk/KiddOS/src/app/application.cpp:55:5: error: ‘platform_’ was not declared in this scope
+   55 |     platform_.begin_frame();
+      |     ^~~~~~~~~
+[3/4] Building CXX object CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -g -std=c++20 -Wall -Wextra -Wpedantic -D_GNU_SOURCE=1 -D_REENTRANT -MD -MT CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o -MF CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o.d -o CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o -c /home/hawk/KiddOS/src/platform/sdl_platform.cpp
+In file included from /home/hawk/KiddOS/src/platform/sdl_platform.cpp:1:
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:3:10: error: ‘#include’ expects ‘"FILENAME"’ or ‘<FILENAME>’
+    3 | #include kiddos/platform/platform.hpp
+      |          ^~~~~~
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:9:43: error: expected class-name before ‘{’ token
+    9 | class SDLPlatform final : public Platform {
+      |                                           ^
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:15:22: error: ‘Action’ has not been declared
+   15 |     bool poll_action(Action& action) override;
+      |                      ^~~~~~
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:29:12: error: ‘Action’ does not name a type
+   29 |     static Action map_key(SDL_Keycode key);
+      |            ^~~~~~
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:30:12: error: ‘Action’ does not name a type
+   30 |     static Action map_controller_button(Uint8 button);
+      |            ^~~~~~
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:12:5: error: ‘kiddos::SDLPlatform::~SDLPlatform()’ marked ‘override’, but does not override
+   12 |     ~SDLPlatform() override;
+      |     ^
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:14:10: error: ‘bool kiddos::SDLPlatform::initialize()’ marked ‘override’, but does not override
+   14 |     bool initialize() override;
+      |          ^~~~~~~~~~
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:15:10: error: ‘bool kiddos::SDLPlatform::poll_action(int&)’ marked ‘override’, but does not override
+   15 |     bool poll_action(Action& action) override;
+      |          ^~~~~~~~~~~
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:16:10: error: ‘void kiddos::SDLPlatform::begin_frame()’ marked ‘override’, but does not override
+   16 |     void begin_frame() override;
+      |          ^~~~~~~~~~~
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:17:10: error: ‘void kiddos::SDLPlatform::present()’ marked ‘override’, but does not override
+   17 |     void present() override;
+      |          ^~~~~~~
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp:18:10: error: ‘void kiddos::SDLPlatform::shutdown()’ marked ‘override’, but does not override
+   18 |     void shutdown() override;
+      |          ^~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:94:1: error: ‘Action’ does not name a type
+   94 | Action SDLPlatform::map_key(SDL_Keycode key) {
+      | ^~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:108:1: error: ‘Action’ does not name a type
+  108 | Action SDLPlatform::map_controller_button(Uint8 button) {
+      | ^~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:127:6: error: ‘bool kiddos::SDLPlatform::poll_action’ is not a static data member of ‘class kiddos::SDLPlatform’
+  127 | bool SDLPlatform::poll_action(Action& action) {
+      |      ^~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:127:31: error: ‘Action’ was not declared in this scope
+  127 | bool SDLPlatform::poll_action(Action& action) {
+      |                               ^~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:127:39: error: ‘action’ was not declared in this scope
+  127 | bool SDLPlatform::poll_action(Action& action) {
+      |                                       ^~~~~~
+ninja: build stopped: subcommand failed.
+ERROR: Compilation failed.
