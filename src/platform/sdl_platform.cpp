@@ -1,6 +1,7 @@
 #include "kiddos/platform/sdl_platform.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <iostream>
 
@@ -427,6 +428,140 @@ void SDLPlatform::draw_carousel(int selected_index) {
 
     draw_status(renderer_);
 }
+
+
+namespace {
+
+std::array<Uint8, 7> glyph(char ch) {
+    switch (ch) {
+        case 'P': return {30,17,17,30,16,16,16};
+        case 'L': return {16,16,16,16,16,16,31};
+        case 'A': return {14,17,17,31,17,17,17};
+        case 'Y': return {17,17,10,4,4,4,4};
+        case 'R': return {30,17,17,30,20,18,17};
+        case 'E': return {31,16,16,30,16,16,31};
+        case 'S': return {15,16,16,14,1,1,30};
+        case 'U': return {17,17,17,17,17,17,14};
+        case 'M': return {17,27,21,21,17,17,17};
+        case 'O': return {14,17,17,17,17,17,14};
+        case 'V': return {17,17,17,17,17,10,4};
+        case 'T': return {31,4,4,4,4,4,4};
+        default: return {0,0,0,0,0,0,0};
+    }
+}
+
+void draw_text(SDL_Renderer* r, const char* value,
+               int x, int y, int scale, Color c) {
+    color(r, c);
+
+    for (const char* ch = value; *ch; ++ch) {
+        const auto rows = glyph(*ch);
+
+        for (int row = 0; row < 7; ++row) {
+            for (int col = 0; col < 5; ++col) {
+                if (rows[row] & (1 << (4 - col))) {
+                    SDL_Rect pixel{
+                        x + col * scale,
+                        y + row * scale,
+                        scale,
+                        scale
+                    };
+                    SDL_RenderFillRect(r, &pixel);
+                }
+            }
+        }
+
+        x += 6 * scale;
+    }
+}
+
+void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+    triangle(r, x, y - 34, x, y + 34,
+             x + 58, y, {220, 237, 255, 255});
+}
+
+void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+    circle(r, x, y, 30, {220, 237, 255, 255});
+    circle(r, x, y, 19, {15, 29, 62, 255});
+    triangle(r, x + 10, y - 36,
+             x + 42, y - 12,
+             x + 7, y - 8,
+             {220, 237, 255, 255});
+}
+
+void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+    circle(r, x, y, 29, {220, 237, 255, 255});
+    circle(r, x, y, 18, {15, 29, 62, 255});
+    triangle(r, x - 27, y - 30,
+             x + 10, y - 31,
+             x - 14, y + 2,
+             {220, 237, 255, 255});
+}
+
+} // namespace
+
+void SDLPlatform::draw_game_actions(
+    int selected_index, bool has_checkpoint, int selected_action) {
+
+    if (!renderer_) return;
+
+    draw_status(renderer_);
+
+    // Keep the selected game's artwork prominent.
+    draw_card(renderer_, selected_index,
+              {190, 65, 340, 300}, true);
+
+    const int action_count = has_checkpoint ? 2 : 1;
+    const int box_height = 112;
+    const int gap = 17;
+    const int total_height =
+        action_count * box_height + (action_count - 1) * gap;
+    const int start_y = 405 + (210 - total_height) / 2;
+
+    for (int i = 0; i < action_count; ++i) {
+        const int y = start_y + i * (box_height + gap);
+        const bool selected = i == selected_action;
+
+        SDL_Rect box{65, y, 590, box_height};
+
+        rectangle(renderer_, box,
+                  selected
+                    ? Color{24, 69, 139, 255}
+                    : Color{16, 30, 65, 255});
+
+        outline(renderer_, box,
+                selected
+                    ? Color{75, 165, 255, 255}
+                    : Color{65, 93, 145, 190});
+
+        const int symbol_x = 145;
+        const int symbol_y = y + box_height / 2;
+
+        if (!has_checkpoint || i == 0) {
+            if (has_checkpoint) {
+                draw_resume_symbol(renderer_, symbol_x, symbol_y);
+                draw_text(renderer_, "RESUME", 230, y + 43, 4,
+                          {240, 246, 255, 255});
+            } else {
+                draw_play_symbol(renderer_, symbol_x - 20, symbol_y);
+                draw_text(renderer_, "PLAY", 230, y + 43, 4,
+                          {240, 246, 255, 255});
+            }
+        } else {
+            draw_restart_symbol(renderer_, symbol_x, symbol_y);
+            draw_text(renderer_, "START OVER", 230, y + 43, 4,
+                      {240, 246, 255, 255});
+        }
+
+        if (selected) {
+            outline(renderer_,
+                    {box.x - 4, box.y - 4,
+                     box.w + 8, box.h + 8},
+                    {43, 126, 231, 180});
+        }
+    }
+}
+
 
 void SDLPlatform::present() {
     if (renderer_) SDL_RenderPresent(renderer_);

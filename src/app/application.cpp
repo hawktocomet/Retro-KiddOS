@@ -45,27 +45,62 @@ void Application::handle_action(Action action) {
             break;
 
         case Action::NavigateLeft:
-            selected_game_ =
-                (selected_game_ + game_count_ - 1) % game_count_;
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + game_count_ - 1) % game_count_;
+            }
             break;
 
         case Action::NavigateRight:
-            selected_game_ =
-                (selected_game_ + 1) % game_count_;
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateUp:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::NavigateDown:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::Confirm:
+            if (!action_screen_) {
+                action_screen_ = true;
+                selected_action_ = 0;
+            }
+            // Game launching is intentionally not implemented yet.
+            break;
+
+        case Action::Back:
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
             break;
 
         case Action::None:
-        case Action::NavigateUp:
-        case Action::NavigateDown:
-        case Action::Confirm:
-        case Action::Back:
             break;
     }
 }
 
 void Application::render() {
     platform_.begin_frame();
-    platform_.draw_carousel(selected_game_);
+    if (action_screen_) {
+        // Game 1 is a temporary checkpoint demonstration fixture.
+        platform_.draw_game_actions(
+            selected_game_, selected_game_ == 1, selected_action_);
+    } else {
+        platform_.draw_carousel(selected_game_);
+    }
     platform_.present();
 }
 

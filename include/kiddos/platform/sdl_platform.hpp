@@ -15,6 +15,7 @@ public:
     bool poll_action(Action& action) override;
     void begin_frame() override;
     void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
     void present() override;
     void shutdown() override;
 

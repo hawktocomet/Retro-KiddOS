@@ -12,6 +12,7 @@ public:
     virtual bool poll_action(Action& action) = 0;
     virtual void begin_frame() = 0;
     virtual void draw_carousel(int selected_index) = 0;
+    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
     virtual void present() = 0;
     virtual void shutdown() = 0;
 };

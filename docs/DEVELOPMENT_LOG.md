@@ -150,3 +150,16 @@ integration and the planned product components remain future work.
 - Built the application successfully and completed a desktop preview run.
 - Added `docs/KID_MODE_CAROUSEL_PROTOTYPE.md` documenting scope and limits.
 - No device firmware, storage, or boot configuration was changed.
+
+## 2026-11-10 — Game selection and action screen
+
+- Added a separate game action screen to the application state.
+- Added large horizontal Play, Resume, and Start Over selections.
+- Added static selected-game artwork to the action screen.
+- Implemented Confirm to enter and Back to return to the carousel.
+- Implemented Up/Down action selection for the checkpoint demonstration.
+- Preserved the selected game when returning to the carousel.
+- Used a temporary sample checkpoint fixture; no real save-state detection
+  or emulator launch is implemented.
+- Built the SDL2 application and ran a headless runtime smoke test.
+- No device firmware, storage, or boot configuration was changed.
