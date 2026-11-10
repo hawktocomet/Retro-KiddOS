@@ -74,7 +74,8 @@ EOF
 
 printf '%s\n' "$RUN" > "$LATEST"
 
-git add -- "$RUN" "$LATEST" tools/kiddos-milestone
+git add -f -- "$RUN" "$LATEST"
+git add -- tools/kiddos-milestone
 
 git commit -m "chore: record milestone run - $SLUG"
 COMMIT_RC=$?
