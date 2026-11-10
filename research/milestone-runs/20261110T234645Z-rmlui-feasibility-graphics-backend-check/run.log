@@ -1,0 +1,55 @@
+===== GRAPHICS PACKAGES =====
+--- sdl2 ---
+2.32.74
+--- egl ---
+1.5
+--- glesv2 ---
+3.2
+--- gl ---
+1.2
+
+===== GRAPHICS HEADERS =====
+AVAILABLE: /usr/include/EGL/egl.h
+AVAILABLE: /usr/include/GLES2/gl2.h
+AVAILABLE: /usr/include/GL/gl.h
+AVAILABLE: /usr/include/SDL2/SDL_opengles2.h
+
+===== GRAPHICS LIBRARIES =====
+	libGLESv2.so.2 (libc6,x86-64) => /usr/lib/libGLESv2.so.2
+	libGLESv2.so (libc6,x86-64) => /usr/lib/libGLESv2.so
+	libGL.so.1 (libc6,x86-64) => /usr/lib/libGL.so.1
+	libGL.so (libc6,x86-64) => /usr/lib/libGL.so
+	libEGL.so.1 (libc6,x86-64) => /usr/lib/libEGL.so.1
+	libEGL.so (libc6,x86-64) => /usr/lib/libEGL.so
+
+===== SDL2 GRAPHICS CAPABILITIES =====
+246: * both SDL_GL_CONTEXT_MAJOR_VERSION and SDL_GL_CONTEXT_MINOR_VERSION
+275:    SDL_GL_CONTEXT_MAJOR_VERSION,       /**< OpenGL context major version. */
+277:    SDL_GL_CONTEXT_EGL,                 /**< deprecated: set SDL_GL_CONTEXT_PROFILE_MASK to SDL_GL_CONTEXT_PROFILE_ES to enable instead. */
+292:    SDL_GL_CONTEXT_PROFILE_ES             = 0x0004 /**< GLX_CONTEXT_ES2_PROFILE_BIT_EXT */
+
+===== REPOSITORY IGNORE RULES =====
+/build/
+/cmake-build-*/
+/.cache/
+*.o
+*.a
+*.so
+*.log
+.DS_Store
+compile_commands.json
+
+===== EXISTING RESEARCH CONTENT =====
+research/rmlui/logs/01-inspection-20261110-184509.log (12041 bytes)
+
+===== PRODUCTION WORKTREE PRESERVATION CHECK =====
+ M include/kiddos/app/application.hpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+
+===== GRAPHICS CHECK COMPLETE =====
