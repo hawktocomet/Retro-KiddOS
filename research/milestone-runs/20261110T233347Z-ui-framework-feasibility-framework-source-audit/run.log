@@ -1,0 +1,819 @@
+Temporary source directory: /tmp/kiddos-ui-audit.Xj1VH5
+
+===== FETCHING RmlUi =====
+Cloning into '/tmp/kiddos-ui-audit.Xj1VH5/RmlUi'...
+Commit: bc6ea0ec9968600d0b6e9dc379c5b9ba20f2806d
+Branch: master
+
+===== FETCHING eepp =====
+Cloning into '/tmp/kiddos-ui-audit.Xj1VH5/eepp'...
+Commit: 3c404de58d175b1a5401c8a0c9b06713c8744805
+Branch: develop
+
+===== FETCHING DearImGui =====
+Cloning into '/tmp/kiddos-ui-audit.Xj1VH5/DearImGui'...
+Commit: d3b36a875f0f7e7446b99606ca3d6df27b7dad7a
+Branch: master
+
+===== LOCAL GRAPHICS / FONT DEPENDENCIES =====
+sdl2             2.32.74
+freetype2        26.7.20
+gl               1.2
+glew             2.3.1
+epoxy            1.5.10
+SDL2_image       Package SDL2_image was not found in the pkg-config search path.
+Perhaps you should add the directory containing `SDL2_image.pc'
+to the PKG_CONFIG_PATH environment variable
+Package 'SDL2_image' not found
+SDL2_ttf         Package SDL2_ttf was not found in the pkg-config search path.
+Perhaps you should add the directory containing `SDL2_ttf.pc'
+to the PKG_CONFIG_PATH environment variable
+Package 'SDL2_ttf' not found
+
+===== RMLUI SOURCE / BACKENDS =====
+--- Renderer and platform backend files ---
+Backends/RmlUi_Backend_GLFW_DX11.cpp
+Backends/RmlUi_Backend_GLFW_DX12.cpp
+Backends/RmlUi_Backend_GLFW_GL2.cpp
+Backends/RmlUi_Backend_GLFW_GL3.cpp
+Backends/RmlUi_Backend_GLFW_VK.cpp
+Backends/RmlUi_Backend_SDL_DX12.cpp
+Backends/RmlUi_Backend_SDL_GL2.cpp
+Backends/RmlUi_Backend_SDL_GL3.cpp
+Backends/RmlUi_Backend_SDL_GPU.cpp
+Backends/RmlUi_Backend_SDL_VK.cpp
+Backends/RmlUi_Backend_SFML_GL2.cpp
+Backends/RmlUi_Backend_Wayland_GL3.cpp
+Backends/RmlUi_Backend_Win32_GL2.cpp
+Backends/RmlUi_Backend_X11_GL2.cpp
+Backends/RmlUi_BackwardCompatible/RmlUi_Backend_BackwardCompatible_GLFW_GL2.cpp
+Backends/RmlUi_BackwardCompatible/RmlUi_Backend_BackwardCompatible_GLFW_GL3.cpp
+Backends/RmlUi_BackwardCompatible/RmlUi_Renderer_BackwardCompatible_GL2.cpp
+Backends/RmlUi_BackwardCompatible/RmlUi_Renderer_BackwardCompatible_GL2.h
+Backends/RmlUi_BackwardCompatible/RmlUi_Renderer_BackwardCompatible_GL3.cpp
+Backends/RmlUi_BackwardCompatible/RmlUi_Renderer_BackwardCompatible_GL3.h
+Backends/RmlUi_Include_GL3.h
+Backends/RmlUi_Platform_GLFW.cpp
+Backends/RmlUi_Platform_GLFW.h
+Backends/RmlUi_Platform_SDL.cpp
+Backends/RmlUi_Platform_SDL.h
+Backends/RmlUi_Renderer_GL2.cpp
+Backends/RmlUi_Renderer_GL2.h
+Backends/RmlUi_Renderer_GL3.cpp
+Backends/RmlUi_Renderer_GL3.h
+Backends/RmlUi_Renderer_SDL_GPU.cpp
+Backends/RmlUi_Renderer_SDL_GPU.h
+--- SDL renderer references ---
+Backends/RmlUi_Platform_SDL.h:8:#if RMLUI_SDL_VERSION_MAJOR == 3
+Backends/RmlUi_Platform_SDL.h:10:#elif RMLUI_SDL_VERSION_MAJOR == 2
+Backends/RmlUi_Platform_SDL.h:13:	#error "Unspecified RMLUI_SDL_VERSION_MAJOR. Please set this definition to the major version of the SDL library being linked to."
+Backends/RmlUi_Backend_SDL_GL3.cpp:188:	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
+Backends/RmlUi_Backend_SDL_GL2.cpp:186:	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
+--- Controller / spatial navigation implementation ---
+Include/RmlUi/Core/Context.h:156:	bool ProcessKeyDown(Input::KeyIdentifier key_identifier, int key_modifier_state);
+Source/Lua/Context.cpp:163:int ContextProcessKeyDown(lua_State* L, Context* obj)
+Source/Lua/Context.cpp:167:	lua_pushboolean(L, obj->ProcessKeyDown(key_identifier, key_modifier_state));
+Source/Lua/Context.cpp:294:	RMLUI_LUAMETHOD(Context, ProcessKeyDown),
+Source/Core/StyleSheetSpecification.cpp:378:	RegisterProperty(PropertyId::NavUp, "nav-up", "none", false, false).AddParser("keyword", "none, auto, horizontal, vertical, tree-order").AddParser("string");
+Source/Core/StyleSheetSpecification.cpp:380:	RegisterProperty(PropertyId::NavDown, "nav-down", "none", false, false).AddParser("keyword", "none, auto, horizontal, vertical, tree-order").AddParser("string");
+Source/Core/StyleSheetSpecification.cpp:382:	RegisterShorthand(ShorthandId::Nav, "nav", "nav-up, nav-right, nav-down, nav-left", ShorthandType::Box);
+Source/Core/Context.cpp:527:bool Context::ProcessKeyDown(Input::KeyIdentifier key_identifier, int key_modifier_state)
+Backends/RmlUi_Platform_X11.cpp:258:			propagates = context->ProcessKeyDown(key_identifier, key_modifier_state);
+Backends/RmlUi_Platform_Win32.cpp:256:	case WM_KEYDOWN: result = context->ProcessKeyDown(RmlWin32::ConvertKey((int)w_param), RmlWin32::GetKeyModifierState()); break;
+Backends/RmlUi_Platform_SFML.cpp:135:		result = context->ProcessKeyDown(RmlSFML::ConvertKey(key_pressed->code), RmlSFML::GetKeyModifierState());
+Backends/RmlUi_Platform_SFML.cpp:161:	case sf::Event::KeyPressed: result = context->ProcessKeyDown(RmlSFML::ConvertKey(ev.key.code), RmlSFML::GetKeyModifierState()); break;
+Backends/RmlUi_Platform_SDL.cpp:207:		result = context->ProcessKeyDown(ConvertKey(GetKey(ev)), GetKeyModifierState());
+Backends/RmlUi_Platform_GLFW.cpp:97:		result = context->ProcessKeyDown(RmlGLFW::ConvertKey(key), RmlGLFW::ConvertKeyModifiers(mods));
+Backends/RmlUi_Backend_Wayland_GL3.cpp:279:		propagates = data->context->ProcessKeyDown(rml_key, modifiers);
+Samples/tutorial/template/src/main.cpp:65:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/tutorial/drag/src/main.cpp:72:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/shell/src/Shell.cpp:51:bool Shell::ProcessKeyDownShortcuts(Rml::Context* context, Rml::Input::KeyIdentifier key, int key_modifier, float native_dp_ratio, bool priority)
+Samples/shell/include/Shell.h:22:bool ProcessKeyDownShortcuts(Rml::Context* context, Rml::Input::KeyIdentifier key, int key_modifier, float native_dp_ratio, bool priority);
+Samples/lua_invaders/src/main.cpp:77:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts);
+Samples/invaders/src/main.cpp:86:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts);
+Samples/basic/variables/src/main.cpp:79:	default: return Shell::ProcessKeyDownShortcuts(context, key, key_modifier, native_dp_ratio, priority);
+Samples/basic/tree_view/src/main.cpp:64:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/basic/transform/src/main.cpp:128:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts);
+Samples/basic/svg/src/main.cpp:105:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/basic/lottie/src/main.cpp:57:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/basic/load_document/src/main.cpp:58:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/basic/ime/src/main.cpp:102:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/basic/harfbuzz/src/main.cpp:137:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/basic/effects/src/main.cpp:115:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, false);
+Samples/basic/drag/src/main.cpp:61:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/basic/demo/src/main.cpp:73:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/basic/demo/data/demo.rml:873:			<label><input type="radio" name="animal" value="no" style="nav-down: #lasagne"/> I don't like animals </label>
+Samples/basic/data_binding/src/main.cpp:476:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts);
+Samples/basic/custom_log/src/main.cpp:70:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts);
+Samples/basic/bitmap_font/src/main.cpp:81:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts, true);
+Samples/basic/benchmark/src/main.cpp:193:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts);
+Samples/basic/animation/src/main.cpp:287:		running = Backend::ProcessEvents(context, &Shell::ProcessKeyDownShortcuts);
+--- Build dependencies and options ---
+--- License ---
+MIT License
+
+Copyright (c) 2008-2014 CodePoint Ltd, Shift Technology Ltd, and contributors
+Copyright (c) 2019-2026 The RmlUi Team, and contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+===== EEPP SOURCE / SDL2 / CONTROLLER SUPPORT =====
+--- SDL and graphics backend files ---
+src/tools/eproc/window_icon.hpp
+src/tools/eproc/window_icon.cpp
+src/tools/eproc/platform/windows/process_collector_windows.hpp
+src/tools/eproc/platform/windows/process_collector_windows.cpp
+src/tools/eproc/gui_window_tracker_macos.mm
+src/tools/eproc/gui_window_tracker.hpp
+src/tools/eproc/gui_window_tracker.cpp
+src/tools/ecode/uidownloadwindow.hpp
+src/tools/ecode/uidownloadwindow.cpp
+src/thirdparty/pcre2/deps/sljit/sljit_src/allocator_src/sljitWXExecAllocatorWindows.c
+src/thirdparty/pcre2/deps/sljit/sljit_src/allocator_src/sljitExecAllocatorWindows.c
+src/thirdparty/mojoAL-SDL3/mojoal.c
+src/thirdparty/mojoAL-SDL3/README.md
+src/thirdparty/mojoAL-SDL3/LICENSE.txt
+src/thirdparty/mojoAL-SDL3/AL/alc.h
+src/thirdparty/mojoAL-SDL3/AL/al.h
+src/thirdparty/mojoAL-SDL3/.clang-format
+src/thirdparty/libzip/zip_source_window.c
+src/thirdparty/libvorbis/lib/window.h
+src/thirdparty/libvorbis/lib/window.c
+src/thirdparty/SDL2/src/video/yuv2rgb/yuv_rgb_std_func.h
+src/thirdparty/SDL2/src/video/yuv2rgb/yuv_rgb_sse_func.h
+src/thirdparty/SDL2/src/video/yuv2rgb/yuv_rgb.h
+src/thirdparty/SDL2/src/video/yuv2rgb/yuv_rgb.c
+src/thirdparty/SDL2/src/video/yuv2rgb/README.md
+src/thirdparty/SDL2/src/video/yuv2rgb/LICENSE
+src/thirdparty/SDL2/src/video/x11/imKStoUCS.h
+src/thirdparty/SDL2/src/video/x11/imKStoUCS.c
+src/thirdparty/SDL2/src/video/x11/edid.h
+src/thirdparty/SDL2/src/video/x11/edid-parse.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11xinput2.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11xinput2.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11window.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11window.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11vulkan.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11vulkan.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11video.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11video.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11touch.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11touch.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11sym.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11shape.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11shape.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11opengles.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11opengles.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11opengl.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11opengl.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11mouse.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11mouse.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11modes.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11modes.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11messagebox.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11messagebox.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11keyboard.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11keyboard.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11framebuffer.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11framebuffer.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11events.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11events.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11dyn.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11dyn.c
+src/thirdparty/SDL2/src/video/x11/SDL_x11clipboard.h
+src/thirdparty/SDL2/src/video/x11/SDL_x11clipboard.c
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtvideo_cpp.h
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtvideo.cpp
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtpointerinput.cpp
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtopengles.h
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtopengles.cpp
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtmouse_c.h
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtmouse.cpp
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtmessagebox.h
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtmessagebox.cpp
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtkeyboard.cpp
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtgamebar_cpp.h
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtgamebar.cpp
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtevents_c.h
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtevents.cpp
+src/thirdparty/SDL2/src/video/windows/wmmsg.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowswindow.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowswindow.c
+src/thirdparty/SDL2/src/video/windows/SDL_windowsvulkan.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowsvulkan.c
+src/thirdparty/SDL2/src/video/windows/SDL_windowsvideo.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowsvideo.c
+src/thirdparty/SDL2/src/video/windows/SDL_windowstaskdialog.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowsshape.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowsshape.c
+src/thirdparty/SDL2/src/video/windows/SDL_windowsopengles.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowsopengles.c
+src/thirdparty/SDL2/src/video/windows/SDL_windowsopengl.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowsopengl.c
+src/thirdparty/SDL2/src/video/windows/SDL_windowsmouse.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowsmouse.c
+src/thirdparty/SDL2/src/video/windows/SDL_windowsmodes.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowsmodes.c
+src/thirdparty/SDL2/src/video/windows/SDL_windowsmessagebox.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowsmessagebox.c
+src/thirdparty/SDL2/src/video/windows/SDL_windowskeyboard.h
+src/thirdparty/SDL2/src/video/windows/SDL_windowskeyboard.c
+src/thirdparty/SDL2/src/video/windows/SDL_windowsframebuffer.h
+--- SDL2 integration references ---
+src/thirdparty/mojoAL/mojoal.c:71:	!defined( EE_SDL2_FROM_ROOTPATH )
+src/thirdparty/mojoAL/mojoal.c:72:#include <SDL2/SDL.h>
+src/thirdparty/mojoAL/mojoal.c:77:/* really old SDL2 headers don't have SDL_clamp. */
+src/thirdparty/mojoAL/mojoal.c:751:    if (SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
+src/thirdparty/mojoAL/mojoal.c:757:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL/mojoal.c:764:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL/mojoal.c:772:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL/mojoal.c:778:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL/mojoal.c:785:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL/mojoal.c:855:    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL/mojoal.c:2499:    if (SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
+src/thirdparty/mojoAL/mojoal.c:2504:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL/mojoal.c:2530:    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL/mojoal.c:2730:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL/mojoal.c:2743:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL/mojoal.c:2764:    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:1988:    if (!SDL_Init(SDL_INIT_AUDIO)) {
+src/thirdparty/mojoAL-SDL3/mojoal.c:1994:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:2001:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:2034:            SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:2040:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:2046:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:2055:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:2121:    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:2578:    if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+src/thirdparty/mojoAL-SDL3/mojoal.c:2583:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:2621:    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:2806:        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/mojoal.c:2828:    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+src/thirdparty/mojoAL-SDL3/README.md:18:## SDL2
+src/thirdparty/mojoAL-SDL3/README.md:20:MojoAL was originally written for SDL2. This is still living in the `sdl2`
+src/thirdparty/emscripten-browser-clipboard/emscripten_browser_clipboard.h:38:  /// SDL2's Emscripten backend prevents the default action for every Ctrl key event, which suppresses
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtmouse.cpp:165:        //     - src/main/winrt/SDL2-WinRTResource_BlankCursor.cur -- cursor pixel data
+src/thirdparty/SDL2/src/video/winrt/SDL_winrtmouse.cpp:166:        //     - src/main/winrt/SDL2-WinRTResources.rc             -- declares the cursor resource, and its ID (of 5000)
+src/thirdparty/SDL2/src/video/windows/SDL_windowswindow.c:546:     * so switch them around because SDL2 wants them in positive. */
+src/thirdparty/SDL2/src/video/uikit/SDL_uikitwindow.m:118:        /* SDL_CreateWindow sets the window w&h to the display's bounds if the
+src/thirdparty/SDL2/src/video/uikit/SDL_uikitopengles.m:222:        /* The context was retained in SDL_GL_CreateContext, so we release it
+src/thirdparty/SDL2/src/video/raspberry/SDL_rpiopengles.c:55:     * Run your SDL2 program with "SDL_RPI_DOUBLE_BUFFER=1 <program_name>" to enable this. */
+src/thirdparty/SDL2/src/video/kmsdrm/SDL_kmsdrmopengles.c:139:           Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>" to enable this. */
+src/thirdparty/SDL2/src/video/haiku/SDL_bvideo.cc:166:    if (SDL_InitBeApp() < 0) {
+src/thirdparty/SDL2/src/video/haiku/SDL_bmessagebox.cc:312:		  HAIKU_SDL_DefTitle("SDL2 MessageBox"),
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:76:        if (!Module['SDL2']) Module['SDL2'] = {};
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:77:        var SDL2 = Module['SDL2'];
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:78:        if (SDL2.ctxCanvas !== Module['canvas']) {
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:79:            SDL2.ctx = Module['createContext'](Module['canvas'], false, true);
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:80:            SDL2.ctxCanvas = Module['canvas'];
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:82:        if (SDL2.w !== w || SDL2.h !== h || SDL2.imageCtx !== SDL2.ctx) {
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:83:            SDL2.image = SDL2.ctx.createImageData(w, h);
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:84:            SDL2.w = w;
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:85:            SDL2.h = h;
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:86:            SDL2.imageCtx = SDL2.ctx;
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:88:        var data = SDL2.image.data;
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:108:            if (SDL2.data32Data !== data) {
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:109:                SDL2.data32 = new Int32Array(data.buffer);
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:110:                SDL2.data8 = new Uint8Array(data.buffer);
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:112:            var data32 = SDL2.data32;
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:123:            var data8 = SDL2.data8;
+src/thirdparty/SDL2/src/video/emscripten/SDL_emscriptenframebuffer.c:154:        SDL2.ctx.putImageData(SDL2.image, 0, 0);
+src/thirdparty/SDL2/src/video/dummy/SDL_nullvideo.c:27: *  applications that call SDL_Init(SDL_INIT_VIDEO) when they don't need it,
+src/thirdparty/SDL2/src/video/directfb/SDL_DirectFB_window.c:210:        SDL_InitFormat(&format, SDL_PIXELFORMAT_ARGB8888);
+src/thirdparty/SDL2/src/video/cocoa/SDL_cocoaopengl.m:101:           window was created via SDL_CreateWindowFrom, and SDL doesn't allow
+src/thirdparty/SDL2/src/video/android/SDL_androidevents.c:66:            data->egl_context = (EGLContext) SDL_GL_CreateContext(window);
+src/thirdparty/SDL2/src/video/SDL_video.c:220:        window = SDL_CreateWindow("OpenGL test", -32, -32, 32, 32, SDL_WINDOW_OPENGL|SDL_WINDOW_HIDDEN);
+src/thirdparty/SDL2/src/video/SDL_video.c:222:            context = SDL_GL_CreateContext(window);
+src/thirdparty/SDL2/src/video/SDL_video.c:259:SDL_CreateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
+src/thirdparty/SDL2/src/video/SDL_video.c:480:    if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0 ||
+src/thirdparty/SDL2/src/video/SDL_video.c:545:        _this->CreateWindowFramebuffer = SDL_CreateWindowTexture;
+src/thirdparty/SDL2/src/video/SDL_video.c:1426:SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
+src/thirdparty/SDL2/src/video/SDL_video.c:1594:SDL_CreateWindowFrom(const void *data)
+src/thirdparty/SDL2/src/video/SDL_video.c:2306:SDL_CreateWindowFramebuffer(SDL_Window * window)
+src/thirdparty/SDL2/src/video/SDL_video.c:2339:        window->surface = SDL_CreateWindowFramebuffer(window);
+src/thirdparty/SDL2/src/video/SDL_video.c:2861:    SDL_QuitSubSystem(SDL_INIT_EVENTS);
+src/thirdparty/SDL2/src/video/SDL_video.c:3514:SDL_GL_CreateContext(SDL_Window * window)
+src/thirdparty/SDL2/src/video/SDL_surface.c:1212:    if (SDL_InitFormat(format, pixel_format) < 0) {
+src/thirdparty/SDL2/src/video/SDL_shape.c:36:    result = SDL_CreateWindow(title,-1000,-1000,w,h,(flags | SDL_WINDOW_BORDERLESS) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE) /* & (~SDL_WINDOW_SHOWN) */);
+src/thirdparty/SDL2/src/video/SDL_pixels_c.h:32:extern int SDL_InitFormat(SDL_PixelFormat * format, Uint32 pixel_format);
+src/thirdparty/SDL2/src/video/SDL_pixels.c:525:    if (SDL_InitFormat(format, pixel_format) < 0) {
+src/thirdparty/SDL2/src/video/SDL_pixels.c:544:SDL_InitFormat(SDL_PixelFormat * format, Uint32 pixel_format)
+src/thirdparty/SDL2/src/video/SDL_bmp.c:644:                SDL_InitFormat(&format, SDL_PIXELFORMAT_BGRA32);
+src/thirdparty/SDL2/src/video/SDL_bmp.c:646:                SDL_InitFormat(&format, SDL_PIXELFORMAT_BGR24);
+src/thirdparty/SDL2/src/test/SDL_test_harness.c:164:* Note: SDL_Init(SDL_INIT_TIMER) will be called if it wasn't done so before.
+src/thirdparty/SDL2/src/test/SDL_test_harness.c:188:    if (SDL_WasInit(SDL_INIT_TIMER) == 0) {
+src/thirdparty/SDL2/src/test/SDL_test_harness.c:189:        if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
+src/thirdparty/SDL2/src/test/SDL_test_font.c:27:/* Originally part of SDL2_gfx */
+src/thirdparty/SDL2/src/test/SDL_test_common.c:505:    if (state->flags & SDL_INIT_VIDEO) {
+src/thirdparty/SDL2/src/test/SDL_test_common.c:511:    if (state->flags & SDL_INIT_AUDIO) {
+src/thirdparty/SDL2/src/test/SDL_test_common.c:570:    switch (state->flags & (SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+src/thirdparty/SDL2/src/test/SDL_test_common.c:571:        case SDL_INIT_VIDEO:
+src/thirdparty/SDL2/src/test/SDL_test_common.c:573:        case SDL_INIT_AUDIO:
+src/thirdparty/SDL2/src/test/SDL_test_common.c:575:        case (SDL_INIT_VIDEO | SDL_INIT_AUDIO):
+src/thirdparty/SDL2/src/test/SDL_test_common.c:841:    if (state->flags & SDL_INIT_VIDEO) {
+src/thirdparty/SDL2/src/test/SDL_test_common.c:1047:                SDL_CreateWindow(title, r.x, r.y, r.w, r.h, state->window_flags);
+src/thirdparty/SDL2/src/test/SDL_test_common.c:1132:    if (state->flags & SDL_INIT_AUDIO) {
+src/thirdparty/SDL2/src/test/SDL_test_common.c:1938:    if (state->flags & SDL_INIT_VIDEO) {
+src/thirdparty/SDL2/src/test/SDL_test_common.c:1941:    if (state->flags & SDL_INIT_AUDIO) {
+src/thirdparty/SDL2/src/sensor/SDL_sensor.c:79:    if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) {
+src/thirdparty/SDL2/src/sensor/SDL_sensor.c:463:    SDL_QuitSubSystem(SDL_INIT_EVENTS);
+src/thirdparty/SDL2/src/sensor/SDL_sensor.c:508:    if (!SDL_WasInit(SDL_INIT_SENSOR)) {
+src/thirdparty/SDL2/src/render/opengles2/SDL_render_gles2.c:2004:    data->context = SDL_GL_CreateContext(window);
+src/thirdparty/SDL2/src/render/opengles/SDL_render_gles.c:1178:    data->context = SDL_GL_CreateContext(window);
+src/thirdparty/SDL2/src/render/opengl/SDL_render_gl.c:1638:    data->context = SDL_GL_CreateContext(window);
+src/thirdparty/SDL2/src/render/SDL_render.c:731:SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags,
+src/thirdparty/SDL2/src/render/SDL_render.c:734:    *window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_UNDEFINED,
+src/thirdparty/SDL2/src/main/winrt/SDL2-WinRTResources.rc:3:5000 CURSOR "SDL2-WinRTResource_BlankCursor.cur"
+src/thirdparty/SDL2/src/main/windows/version.rc:29:            VALUE "OriginalFilename", "SDL2.dll\0"
+src/thirdparty/SDL2/src/main/haiku/SDL_BeApp.h:29:extern int SDL_InitBeApp(void);
+src/thirdparty/SDL2/src/main/haiku/SDL_BeApp.cc:83:SDL_InitBeApp(void)
+src/thirdparty/SDL2/src/joystick/steam/SDL_steamcontroller.h:30:void SDL_InitSteamControllers(SteamControllerConnectedCallback_t connectedCallback,
+src/thirdparty/SDL2/src/joystick/steam/SDL_steamcontroller.c:28:void SDL_InitSteamControllers(SteamControllerConnectedCallback_t connectedCallback,
+src/thirdparty/SDL2/src/joystick/linux/SDL_sysjoystick.c:526:    SDL_InitSteamControllers(SteamControllerConnectedCallback,
+src/thirdparty/SDL2/src/joystick/SDL_joystick.c:217:    if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) {
+src/thirdparty/SDL2/src/joystick/SDL_joystick.c:889:    SDL_QuitSubSystem(SDL_INIT_EVENTS);
+src/thirdparty/SDL2/src/joystick/SDL_joystick.c:1219:    if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
+src/thirdparty/SDL2/src/dynapi/SDL_dynapi_procs.h:85:SDL_DYNAPI_PROC(int,SDL_Init,(Uint32 a),(a),return)
+src/thirdparty/SDL2/src/dynapi/SDL_dynapi_procs.h:86:SDL_DYNAPI_PROC(int,SDL_InitSubSystem,(Uint32 a),(a),return)
+src/thirdparty/SDL2/src/dynapi/SDL_dynapi_procs.h:331:SDL_DYNAPI_PROC(int,SDL_CreateWindowAndRenderer,(int a, int b, Uint32 c, SDL_Window **d, SDL_Renderer **e),(a,b,c,d,e),return)
+src/thirdparty/SDL2/src/dynapi/SDL_dynapi_procs.h:542:SDL_DYNAPI_PROC(SDL_Window*,SDL_CreateWindow,(const char *a, int b, int c, int d, int e, Uint32 f),(a,b,c,d,e,f),return)
+src/thirdparty/SDL2/src/dynapi/SDL_dynapi_procs.h:543:SDL_DYNAPI_PROC(SDL_Window*,SDL_CreateWindowFrom,(const void *a),(a),return)
+src/thirdparty/SDL2/src/dynapi/SDL_dynapi_procs.h:587:SDL_DYNAPI_PROC(SDL_GLContext,SDL_GL_CreateContext,(SDL_Window *a),(a),return)
+src/thirdparty/SDL2/src/dynapi/SDL_dynapi_overrides.h:54:#define SDL_Init SDL_Init_REAL
+--- Gamepad / focus / navigation references ---
+src/tools/uieditor/uieditor.hpp:118:	void createKeyBindings();
+src/tools/uieditor/uieditor.cpp:976:void App::createKeyBindings() {
+src/tools/uieditor/uieditor.cpp:986:		mAppUISceneNode->addKeyBindingString( binding.shortcut, binding.command );
+src/tools/uieditor/uieditor.cpp:987:		mAppUISceneNode->setKeyBindingCommand(
+src/tools/uieditor/uieditor.cpp:990:	mAppUISceneNode->addKeyBinding( { KEY_BACKSLASH, 0 }, "toggle-console" );
+src/tools/uieditor/uieditor.cpp:1171:	createKeyBindings();
+src/tools/eterm/settingspanel.cpp:31:	panel->addCategory( "general.keybindings", app.i18n( "general", "General" ),
+src/tools/eterm/settingspanel.cpp:34:		{ "keybindingsEditor",
+src/tools/eterm/settingspanel.cpp:35:		  "general.keybindings",
+src/tools/eterm/settingspanel.cpp:38:		[&app]( UIWidget* parent ) { return app.createKeybindingsEditor( parent ); }, true );
+src/tools/eterm/settingspanel.cpp:500:					"Disable global keybindings in newly created terminals." ) },
+src/tools/eterm/settingspanel.cpp:768:	settingsWindow->setKeyBindingCommand( "closeWindow",
+src/tools/eterm/settingspanel.cpp:770:	settingsWindow->getKeyBindings().addKeybind( { KEY_ESCAPE }, "closeWindow" );
+src/tools/eterm/keybindings.cpp:6:#include <eepp/ui/tools/keybindingsconfig.hpp>
+src/tools/eterm/keybindings.cpp:7:#include <eepp/ui/tools/uikeybindingseditor.hpp>
+src/tools/eterm/keybindings.cpp:12:static constexpr std::array<KeybindingsConfig::Context, 1> keybindingContexts{ { { "eterm" } } };
+src/tools/eterm/keybindings.cpp:14:KeyBindings::ShortcutMap App::getDefaultKeybindings() const {
+src/tools/eterm/keybindings.cpp:68:bool App::loadKeybindings( bool defaultsOnly, std::string* outputError ) {
+src/tools/eterm/keybindings.cpp:70:	if ( !KeybindingsConfig::loadContext(
+src/tools/eterm/keybindings.cpp:71:			 defaultsOnly ? "" : keybindingsPath, "eterm",
+src/tools/eterm/keybindings.cpp:72:			 [this] { return getDefaultKeybindings(); }, appWindow->getInput(), keybindings,
+src/tools/eterm/keybindings.cpp:84:void App::applyKeybindings( UITerminal* terminal ) {
+src/tools/eterm/keybindings.cpp:85:	terminal->getKeyBindings().reset();
+src/tools/eterm/keybindings.cpp:86:	keybindings.apply( terminal->getKeyBindings() );
+src/tools/eterm/keybindings.cpp:89:void App::applyKeybindings() {
+src/tools/eterm/keybindings.cpp:90:	mainLayout->getKeyBindings().reset();
+src/tools/eterm/keybindings.cpp:91:	keybindings.apply( mainLayout->getKeyBindings(), [this]( const std::string& command ) {
+src/tools/eterm/keybindings.cpp:96:void App::applyKeybindings( UICodeEditor* editor ) {
+src/tools/eterm/keybindings.cpp:97:	editor->getKeyBindings().setKeybinds( *UICodeEditor::getDefaultKeybindings() );
+src/tools/eterm/keybindings.cpp:98:	editor->addKeyBinding( { KEY_S, KeyMod::getDefaultModifier() }, "save-doc", true );
+src/tools/eterm/keybindings.cpp:100:	keybindings.apply( editor->getKeyBindings(), [editor]( const std::string& command ) {
+src/tools/eterm/keybindings.cpp:105:bool App::reloadKeybindings( std::string* error ) {
+src/tools/eterm/keybindings.cpp:106:	if ( !FileSystem::fileExists( keybindingsPath ) ) {
+src/tools/eterm/keybindings.cpp:108:			*error = "Keybindings file does not exist: " + keybindingsPath;
+src/tools/eterm/keybindings.cpp:111:	if ( !loadKeybindings( false, error ) )
+src/tools/eterm/keybindings.cpp:113:	applyKeybindings();
+src/tools/eterm/keybindings.cpp:114:	forEachTerminal( [this]( UITerminal* terminal ) { applyKeybindings( terminal ); } );
+src/tools/eterm/keybindings.cpp:115:	if ( keybindingsFileEditor && tabSplitter->ownedWidgetExists( keybindingsFileEditor ) )
+src/tools/eterm/keybindings.cpp:116:		applyKeybindings( keybindingsFileEditor );
+src/tools/eterm/keybindings.cpp:118:	syncGlobalMenuKeybindings();
+src/tools/eterm/keybindings.cpp:123:UIWidget* App::createKeybindingsEditor( UIWidget* parent ) {
+src/tools/eterm/keybindings.cpp:124:	return UIKeybindingsEditor::NewForFile(
+src/tools/eterm/keybindings.cpp:125:		parent, { .path = keybindingsPath,
+src/tools/eterm/keybindings.cpp:126:				  .contexts = keybindingContexts,
+src/tools/eterm/keybindings.cpp:130:					  [this]( KeybindingsConfig::Catalog& catalog ) {
+src/tools/eterm/keybindings.cpp:136:						  catalog.add( "eterm", getDefaultKeybindings(), commands,
+src/tools/eterm/keybindings.cpp:142:						  return reloadKeybindings( &error ) ? String() : String( error );
+src/tools/eterm/keybindings.cpp:147:						  openKeybindingsFile();
+src/tools/eterm/keybindings.cpp:151:void App::openKeybindingsFile() {
+src/tools/eterm/keybindings.cpp:152:	if ( keybindingsFileEditor && tabSplitter->ownedWidgetExists( keybindingsFileEditor ) ) {
+src/tools/eterm/keybindings.cpp:153:		if ( auto* tabs = tabSplitter->tabWidgetFromWidget( keybindingsFileEditor ) )
+src/tools/eterm/keybindings.cpp:154:			tabs->setTabSelected( tabs->getTabFromOwnedWidget( keybindingsFileEditor ) );
+src/tools/eterm/keybindings.cpp:155:		keybindingsFileEditor->setFocus();
+src/tools/eterm/keybindings.cpp:160:	if ( editor->loadFromFile( keybindingsPath ) == TextDocument::LoadStatus::Failed ) {
+src/tools/eterm/keybindings.cpp:169:	applyKeybindings( editor );
+src/tools/eterm/keybindings.cpp:171:		if ( keybindingsFileEditor == editor )
+src/tools/eterm/keybindings.cpp:172:			keybindingsFileEditor = nullptr;
+src/tools/eterm/keybindings.cpp:178:	keybindingsFileEditor = editor;
+src/tools/eterm/keybindings.cpp:179:	auto* tab = tabSplitter->createWidgetInTabWidget( target, editor, "keybindings.cfg" ).first;
+src/tools/eterm/keybindings.cpp:194:	if ( ( filename == "keybindings.cfg" || oldFilename == "keybindings.cfg" ) &&
+src/tools/eterm/keybindings.cpp:197:		keybindingsChanged.store( true, std::memory_order_release );
+src/tools/eterm/eterm.hpp:13:#include <eepp/ui/tools/keybindingsconfig.hpp>
+src/tools/eterm/eterm.hpp:132:		commandTarget.setCommand( "open-keybindings", [this] {
+src/tools/eterm/eterm.hpp:133:			settingsActions->showSettings( "general.keybindings" );
+src/tools/eterm/eterm.hpp:135:		commandTarget.setCommand( "open-keybindings-file", [this] { openKeybindingsFile(); } );
+src/tools/eterm/eterm.hpp:152:	void addTabKeyBindings( UITerminal* terminal );
+src/tools/eterm/eterm.hpp:159:	void syncGlobalMenuKeybindings();
+src/tools/eterm/eterm.hpp:162:	KeyBindings::ShortcutMap getDefaultKeybindings() const;
+src/tools/eterm/eterm.hpp:164:	bool loadKeybindings( bool defaultsOnly = false, std::string* error = nullptr );
+src/tools/eterm/eterm.hpp:166:	bool reloadKeybindings( std::string* error = nullptr );
+src/tools/eterm/eterm.hpp:168:	UIWidget* createKeybindingsEditor( UIWidget* parent );
+src/tools/eterm/eterm.hpp:170:	void applyKeybindings( UITerminal* terminal );
+src/tools/eterm/eterm.hpp:172:	void applyKeybindings();
+src/tools/eterm/eterm.hpp:174:	void applyKeybindings( UICodeEditor* editor );
+src/tools/eterm/eterm.hpp:176:	void openKeybindingsFile();
+src/tools/eterm/eterm.hpp:213:	UICodeEditor* keybindingsFileEditor{ nullptr };
+src/tools/eterm/eterm.hpp:222:	KeybindingsConfig::Section keybindings;
+src/tools/eterm/eterm.hpp:223:	std::string keybindingsPath;
+src/tools/eterm/eterm.hpp:225:	std::atomic<bool> keybindingsChanged{ false };
+src/tools/eterm/eterm.cpp:386:	win->setKeyBindingCommand( "close-maximized-tab-widget",
+src/tools/eterm/eterm.cpp:388:	win->getKeyBindings().addKeybind( { KEY_ESCAPE }, "close-maximized-tab-widget" );
+src/tools/eterm/eterm.cpp:389:	win->setCheckEphemeralCloseFn( []( Node* focusNode ) {
+src/tools/eterm/eterm.cpp:390:		if ( focusNode->isType( UI_TYPE_POPUPMENU ) )
+src/tools/eterm/eterm.cpp:392:		if ( focusNode->getSceneNode()->isUISceneNode() ) {
+src/tools/eterm/eterm.cpp:393:			auto* sceneNode = static_cast<UISceneNode*>( focusNode->getSceneNode() );
+src/tools/eterm/eterm.cpp:396:				 ( focusNode == widgetTreeView || widgetTreeView->inParentTreeOf( focusNode ) ) )
+src/tools/eterm/eterm.cpp:413:	if ( !tabWidget->inParentTreeOf( scene->getEventDispatcher()->getFocusNode() ) )
+src/tools/eterm/eterm.cpp:692:									terminal->getKeyBindings().getCommandKeybindString( command ) );
+src/tools/eterm/eterm.cpp:714:			terminal->getKeyBindings().getCommandKeybindString(
+src/tools/eterm/eterm.cpp:837:	addTabKeyBindings( terminal );
+src/tools/eterm/eterm.cpp:846:									terminal->getKeyBindings().getCommandKeybindString( command ) );
+src/tools/eterm/eterm.cpp:854:		addItem( i18n( "key_bindings", "Keybindings" ), "keybindings", "open-keybindings" );
+src/tools/eterm/eterm.cpp:918:void App::addTabKeyBindings( UITerminal* terminal ) {
+src/tools/eterm/eterm.cpp:924:	applyKeybindings( terminal );
+src/tools/eterm/eterm.cpp:937:	if ( command == "open-keybindings" ) {
+src/tools/eterm/eterm.cpp:938:		settingsActions->showSettings( "general.keybindings" );
+src/tools/eterm/eterm.cpp:953:void App::syncGlobalMenuKeybindings() {
+src/tools/eterm/eterm.cpp:957:	KeyBindings bindings( appWindow->getInput() );
+src/tools/eterm/eterm.cpp:958:	keybindings.apply( bindings );
+src/tools/eterm/eterm.cpp:988:	addCommand( fileMenu, i18n( "key_bindings", "Keybindings..." ), "open-keybindings" );
+src/tools/eterm/eterm.cpp:1020:	syncGlobalMenuKeybindings();
+src/tools/eterm/eterm.cpp:1093:				 "preferences, window state, and keybindings. --profile takes precedence." );
+src/tools/eterm/eterm.cpp:1293:	keybindingsPath = config->getConfigPath() + "keybindings.cfg";
+src/tools/eterm/eterm.cpp:1294:	if ( !loadKeybindings() )
+src/tools/eterm/eterm.cpp:1295:		loadKeybindings( true );
+src/tools/eterm/eterm.cpp:1462:	applyKeybindings();
+src/tools/eterm/eterm.cpp:1558:		if ( keybindingsChanged.exchange( false, std::memory_order_acq_rel ) )
+src/tools/eterm/eterm.cpp:1559:			reloadKeybindings();
+src/tools/eproc/settingspanel.cpp:229:	window->setKeyBindingCommand( "closeWindow", [window] { window->closeWindow(); } );
+src/tools/eproc/settingspanel.cpp:230:	window->getKeyBindings().addKeybind( { KEY_ESCAPE }, "closeWindow" );
+src/tools/eproc/performance_layout.hpp:21:	KeyBindings* getOwnKeyBindings() override { return &getKeyBindings(); }
+src/tools/eproc/eproc.cpp:948:	ui->setKeyBindingCommand( "next-tab", [this] { mTabWidget->focusNextTab(); } );
+src/tools/eproc/eproc.cpp:949:	ui->setKeyBindingCommand( "previous-tab", [this] { mTabWidget->focusPreviousTab(); } );
+src/tools/eproc/eproc.cpp:954:	ui->setKeyBindingCommand( "switch-to-tab-1", [selectTab] { selectTab( 0 ); } );
+src/tools/eproc/eproc.cpp:955:	ui->setKeyBindingCommand( "switch-to-tab-2", [selectTab] { selectTab( 1 ); } );
+src/tools/eproc/eproc.cpp:956:	ui->addKeyBindingString( "mod+tab", "next-tab" );
+src/tools/eproc/eproc.cpp:957:	ui->addKeyBindingString( "mod+shift+tab", "previous-tab" );
+src/tools/eproc/eproc.cpp:958:	ui->addKeyBindingString( "mod+1", "switch-to-tab-1" );
+src/tools/eproc/eproc.cpp:959:	ui->addKeyBindingString( "mod+2", "switch-to-tab-2" );
+src/tools/eproc/eproc.cpp:976:				auto* focused = mApp->getUI()->getEventDispatcher()->getFocusNode();
+src/tools/eproc/eproc.cpp:1273:	performanceLayout->getKeyBindings().addKeybindString( "up", "previous-performance-metric" );
+src/tools/eproc/eproc.cpp:1274:	performanceLayout->getKeyBindings().addKeybindString( "down", "next-performance-metric" );
+src/tools/eeiv/eeiv.hpp:100:	void registerKeyBindings();
+src/tools/eeiv/eeiv.hpp:103:	KeyBindings::ShortcutMap getDefaultKeybindings() const;
+src/tools/eeiv/eeiv.hpp:105:	/** Load keybindings.cfg, or only the defaults, and install it. On failure the active
+src/tools/eeiv/eeiv.hpp:107:	bool loadKeybindings( bool defaultsOnly = false, std::string* error = nullptr );
+src/tools/eeiv/eeiv.hpp:110:	UIWidget* createKeybindingsEditor( UIWidget* parent );
+src/tools/eeiv/eeiv.cpp:5:#include <eepp/ui/tools/keybindingsconfig.hpp>
+src/tools/eeiv/eeiv.cpp:7:#include <eepp/ui/tools/uikeybindingseditor.hpp>
+src/tools/eeiv/eeiv.cpp:140:	panel->addCategory( "general.keybindings", "General", "Keyboard Shortcuts" );
+src/tools/eeiv/eeiv.cpp:142:		{ "keybindingsEditor", "general.keybindings", "Keyboard Shortcuts", {} },
+src/tools/eeiv/eeiv.cpp:143:		[this]( UIWidget* parent ) { return createKeybindingsEditor( parent ); }, true );
+src/tools/eeiv/eeiv.cpp:448:	for ( auto* node = mUIApplication->getUI()->getEventDispatcher()->getFocusNode(); node;
+src/tools/eeiv/eeiv.cpp:686:	registerKeyBindings();
+src/tools/eeiv/eeiv.cpp:748:void App::registerKeyBindings() {
+src/tools/eeiv/eeiv.cpp:754:		ui->setKeyBindingCommand( name, [this, withConsole, fn = std::move( fn )] {
+src/tools/eeiv/eeiv.cpp:853:	// A broken keybindings.cfg must not disable the keyboard: fall back to the defaults.
+src/tools/eeiv/eeiv.cpp:854:	if ( !loadKeybindings() )
+src/tools/eeiv/eeiv.cpp:855:		loadKeybindings( true );
+src/tools/eeiv/eeiv.cpp:858:KeyBindings::ShortcutMap App::getDefaultKeybindings() const {
+src/tools/eeiv/eeiv.cpp:861:	auto defaults = UIImageViewer::getDefaultKeybindings();
+src/tools/eeiv/eeiv.cpp:899:bool App::loadKeybindings( bool defaultsOnly, std::string* error ) {
+src/tools/eeiv/eeiv.cpp:900:	KeybindingsConfig::Section bindings;
+src/tools/eeiv/eeiv.cpp:902:	if ( !KeybindingsConfig::loadContext(
+src/tools/eeiv/eeiv.cpp:903:			 defaultsOnly ? "" : mStorePath + "keybindings.cfg", "eeiv",
+src/tools/eeiv/eeiv.cpp:904:			 [this] { return getDefaultKeybindings(); }, getWindow()->getInput(), bindings,
+src/tools/eeiv/eeiv.cpp:912:	auto& scene = mUIApplication->getUI()->getKeyBindings();
+src/tools/eeiv/eeiv.cpp:913:	auto& viewer = mImageViewer->getKeyBindings();
+src/tools/eeiv/eeiv.cpp:925:UIWidget* App::createKeybindingsEditor( UIWidget* parent ) {
+src/tools/eeiv/eeiv.cpp:926:	static constexpr KeybindingsConfig::Context contexts[] = { { "eeiv" } };
+src/tools/eeiv/eeiv.cpp:927:	const auto path = mStorePath + "keybindings.cfg";
+src/tools/eeiv/eeiv.cpp:928:	return UIKeybindingsEditor::NewForFile(
+src/tools/eeiv/eeiv.cpp:933:			  [this]( KeybindingsConfig::Catalog& catalog ) {
+src/tools/eeiv/eeiv.cpp:934:				  catalog.add( "eeiv", getDefaultKeybindings(), {}, "Image Viewer" );
+src/tools/eeiv/eeiv.cpp:939:				  return loadKeybindings( false, &error ) ? String() : String( error );
+src/tools/eeiv/eeiv.cpp:978:	auto& scene = mUIApplication->getUI()->getKeyBindings();
+src/tools/eeiv/eeiv.cpp:979:	auto& viewer = mImageViewer->getKeyBindings();
+src/tools/eeiv/eeiv.cpp:982:		auto shortcut = scene.getCommandKeybindString( command );
+src/tools/eeiv/eeiv.cpp:984:			shortcut = viewer.getCommandKeybindString( command );
+src/tools/eefm/terminalpanel.hpp:42:	void applyKeybindings();
+src/tools/eefm/terminalpanel.hpp:83:	KeyBindings::ShortcutMap mTerminalBindings;
+src/tools/eefm/terminalpanel.cpp:246:	mTerminalBindings = mTerminal->getKeyBindings().getShortcutMap();
+src/tools/eefm/terminalpanel.cpp:247:	applyKeybindings();
+src/tools/eefm/terminalpanel.cpp:256:void TerminalPanel::applyKeybindings() {
+src/tools/eefm/terminalpanel.cpp:261:	auto& bindings = mTerminal->getKeyBindings();
+src/tools/eefm/terminalpanel.cpp:263:	bindings.addKeybinds( mTerminalBindings );
+src/tools/eefm/terminalpanel.cpp:264:	for ( const auto& [shortcut, command] : mUI->getKeyBindings().getShortcutMap() ) {
+src/tools/eefm/terminalpanel.cpp:266:			bindings.addKeybind( shortcut, command );
+src/tools/eefm/settingsactions.cpp:4:#include "placescontroller.hpp"
+src/tools/eefm/settingsactions.cpp:147:	panel->addCategory( "general.keybindings", mUI->i18n( "eefm_general", "General" ),
+src/tools/eefm/settingsactions.cpp:150:		{ "keybindingsEditor",
+src/tools/eefm/settingsactions.cpp:151:		  "general.keybindings",
+src/tools/eefm/settingsactions.cpp:154:		[this]( UIWidget* parent ) { return mApp.createKeybindingsEditor( parent ); }, true );
+src/tools/eefm/settingsactions.cpp:606:	window->setKeyBindingCommand( "closeWindow", [window] { window->closeWindow(); } );
+src/tools/eefm/settingsactions.cpp:607:	window->getKeyBindings().addKeybind( { KEY_ESCAPE }, "closeWindow" );
+src/tools/eefm/propertiesdialog.hpp:44: * controller; asynchronous deliveries borrow it weakly and cannot outlive the window. */
+src/tools/eefm/propertiesdialog.cpp:108:	// UI listeners own the controller. Worker continuations use weak references only.
+src/tools/eefm/propertiesdialog.cpp:119:	mBox->addKeyBinding( { KEY_ESCAPE, KEYMOD_NONE }, "close-properties" );
+src/tools/eefm/propertiesdialog.cpp:120:	mBox->setKeyBindingCommand( "close-properties", [self] {
+src/tools/eefm/propertiesdialog.cpp:125:	mBox->addKeyBinding( { KEY_RETURN, KEYMOD_NONE }, "accept-properties" );
+--- Build options and external dependencies ---
+--- License files ---
+./LICENSE
+Copyright (c) 2022 Martín Lucas Golini
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+===== DEAR IMGUI SOURCE / SDL2 BACKENDS =====
+--- Relevant SDL backend files ---
+-rw-r--r-- 1 hawk hawk  52K Nov 10 18:33 backends/imgui_impl_sdl2.cpp
+-rw-r--r-- 1 hawk hawk 4.1K Nov 10 18:33 backends/imgui_impl_sdl2.h
+-rw-r--r-- 1 hawk hawk  16K Nov 10 18:33 backends/imgui_impl_sdlrenderer2.cpp
+-rw-r--r-- 1 hawk hawk 3.3K Nov 10 18:33 backends/imgui_impl_sdlrenderer2.h
+--- SDL2 gamepad support ---
+backends/imgui_impl_sdl2.cpp:10://  [X] Platform: Gamepad support.
+backends/imgui_impl_sdl2.cpp:36://  2025-03-21: Fill gamepad inputs and set ImGuiBackendFlags_HasGamepad regardless of ImGuiConfigFlags_NavEnableGamepad being set.
+backends/imgui_impl_sdl2.cpp:42://  2025-01-20: Made ImGui_ImplSDL2_SetGamepadMode(ImGui_ImplSDL2_GamepadMode_Manual) accept an empty array.
+backends/imgui_impl_sdl2.cpp:54://  2024-02-14: Inputs: Handle gamepad disconnection. Added ImGui_ImplSDL2_SetGamepadMode().
+backends/imgui_impl_sdl2.cpp:88://  2019-04-23: Inputs: Added support for SDL_GameController (if ImGuiConfigFlags_NavEnableGamepad is set by user application).
+backends/imgui_impl_sdl2.cpp:173:    // Gamepad handling
+backends/imgui_impl_sdl2.cpp:174:    ImVector<SDL_GameController*> Gamepads;
+backends/imgui_impl_sdl2.cpp:175:    ImGui_ImplSDL2_GamepadMode    GamepadMode;
+backends/imgui_impl_sdl2.cpp:176:    bool                          WantUpdateGamepadsList;
+backends/imgui_impl_sdl2.cpp:501:            bd->WantUpdateGamepadsList = true;
+backends/imgui_impl_sdl2.cpp:567:    // Gamepad handling
+backends/imgui_impl_sdl2.cpp:568:    bd->GamepadMode = ImGui_ImplSDL2_GamepadMode_AutoFirst;
+backends/imgui_impl_sdl2.cpp:569:    bd->WantUpdateGamepadsList = true;
+backends/imgui_impl_sdl2.cpp:661:static void ImGui_ImplSDL2_CloseGamepads();
+backends/imgui_impl_sdl2.cpp:674:    ImGui_ImplSDL2_CloseGamepads();
+backends/imgui_impl_sdl2.cpp:678:    io.BackendFlags &= ~(ImGuiBackendFlags_HasMouseCursors | ImGuiBackendFlags_HasSetMousePos | ImGuiBackendFlags_HasGamepad);
+backends/imgui_impl_sdl2.cpp:798:static void ImGui_ImplSDL2_CloseGamepads()
+backends/imgui_impl_sdl2.cpp:801:    if (bd->GamepadMode != ImGui_ImplSDL2_GamepadMode_Manual)
+backends/imgui_impl_sdl2.cpp:802:        for (SDL_GameController* gamepad : bd->Gamepads)
+backends/imgui_impl_sdl2.cpp:803:            SDL_GameControllerClose(gamepad);
+backends/imgui_impl_sdl2.cpp:804:    bd->Gamepads.resize(0);
+backends/imgui_impl_sdl2.cpp:807:void ImGui_ImplSDL2_SetGamepadMode(ImGui_ImplSDL2_GamepadMode mode, struct _SDL_GameController** manual_gamepads_array, int manual_gamepads_count)
+backends/imgui_impl_sdl2.cpp:810:    ImGui_ImplSDL2_CloseGamepads();
+backends/imgui_impl_sdl2.cpp:811:    if (mode == ImGui_ImplSDL2_GamepadMode_Manual)
+backends/imgui_impl_sdl2.cpp:815:            bd->Gamepads.push_back(manual_gamepads_array[n]);
+backends/imgui_impl_sdl2.cpp:820:        bd->WantUpdateGamepadsList = true;
+backends/imgui_impl_sdl2.cpp:822:    bd->GamepadMode = mode;
+backends/imgui_impl_sdl2.cpp:825:static void ImGui_ImplSDL2_UpdateGamepadButton(ImGui_ImplSDL2_Data* bd, ImGuiIO& io, ImGuiKey key, SDL_GameControllerButton button_no)
+backends/imgui_impl_sdl2.cpp:828:    for (SDL_GameController* gamepad : bd->Gamepads)
+backends/imgui_impl_sdl2.cpp:829:        merged_value |= SDL_GameControllerGetButton(gamepad, button_no) != 0;
+backends/imgui_impl_sdl2.cpp:834:static void ImGui_ImplSDL2_UpdateGamepadAnalog(ImGui_ImplSDL2_Data* bd, ImGuiIO& io, ImGuiKey key, SDL_GameControllerAxis axis_no, float v0, float v1)
+backends/imgui_impl_sdl2.cpp:837:    for (SDL_GameController* gamepad : bd->Gamepads)
+backends/imgui_impl_sdl2.cpp:839:        float vn = Saturate((float)(SDL_GameControllerGetAxis(gamepad, axis_no) - v0) / (float)(v1 - v0));
+backends/imgui_impl_sdl2.cpp:846:static void ImGui_ImplSDL2_UpdateGamepads()
+backends/imgui_impl_sdl2.cpp:852:    if (bd->WantUpdateGamepadsList && bd->GamepadMode != ImGui_ImplSDL2_GamepadMode_Manual)
+backends/imgui_impl_sdl2.cpp:854:        ImGui_ImplSDL2_CloseGamepads();
+backends/imgui_impl_sdl2.cpp:857:            if (SDL_IsGameController(n))
+backends/imgui_impl_sdl2.cpp:858:                if (SDL_GameController* gamepad = SDL_GameControllerOpen(n))
+backends/imgui_impl_sdl2.cpp:860:                    bd->Gamepads.push_back(gamepad);
+backends/imgui_impl_sdl2.cpp:861:                    if (bd->GamepadMode == ImGui_ImplSDL2_GamepadMode_AutoFirst)
+backends/imgui_impl_sdl2.cpp:864:        bd->WantUpdateGamepadsList = false;
+backends/imgui_impl_sdl2.cpp:867:    io.BackendFlags &= ~ImGuiBackendFlags_HasGamepad;
+backends/imgui_impl_sdl2.cpp:868:    if (bd->Gamepads.Size == 0)
+backends/imgui_impl_sdl2.cpp:870:    io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+backends/imgui_impl_sdl2.cpp:874:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadStart,       SDL_CONTROLLER_BUTTON_START);
+backends/imgui_impl_sdl2.cpp:875:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadBack,        SDL_CONTROLLER_BUTTON_BACK);
+backends/imgui_impl_sdl2.cpp:876:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadFaceLeft,    SDL_CONTROLLER_BUTTON_X);              // Xbox X, PS Square
+backends/imgui_impl_sdl2.cpp:877:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadFaceRight,   SDL_CONTROLLER_BUTTON_B);              // Xbox B, PS Circle
+backends/imgui_impl_sdl2.cpp:878:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadFaceUp,      SDL_CONTROLLER_BUTTON_Y);              // Xbox Y, PS Triangle
+backends/imgui_impl_sdl2.cpp:879:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadFaceDown,    SDL_CONTROLLER_BUTTON_A);              // Xbox A, PS Cross
+backends/imgui_impl_sdl2.cpp:880:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadDpadLeft,    SDL_CONTROLLER_BUTTON_DPAD_LEFT);
+backends/imgui_impl_sdl2.cpp:881:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadDpadRight,   SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
+backends/imgui_impl_sdl2.cpp:882:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadDpadUp,      SDL_CONTROLLER_BUTTON_DPAD_UP);
+backends/imgui_impl_sdl2.cpp:883:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadDpadDown,    SDL_CONTROLLER_BUTTON_DPAD_DOWN);
+backends/imgui_impl_sdl2.cpp:884:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadL1,          SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
+backends/imgui_impl_sdl2.cpp:885:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadR1,          SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+backends/imgui_impl_sdl2.cpp:886:    ImGui_ImplSDL2_UpdateGamepadAnalog(bd, io, ImGuiKey_GamepadL2,          SDL_CONTROLLER_AXIS_TRIGGERLEFT,  0.0f, 32767);
+backends/imgui_impl_sdl2.cpp:887:    ImGui_ImplSDL2_UpdateGamepadAnalog(bd, io, ImGuiKey_GamepadR2,          SDL_CONTROLLER_AXIS_TRIGGERRIGHT, 0.0f, 32767);
+backends/imgui_impl_sdl2.cpp:888:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadL3,          SDL_CONTROLLER_BUTTON_LEFTSTICK);
+backends/imgui_impl_sdl2.cpp:889:    ImGui_ImplSDL2_UpdateGamepadButton(bd, io, ImGuiKey_GamepadR3,          SDL_CONTROLLER_BUTTON_RIGHTSTICK);
+backends/imgui_impl_sdl2.cpp:890:    ImGui_ImplSDL2_UpdateGamepadAnalog(bd, io, ImGuiKey_GamepadLStickLeft,  SDL_CONTROLLER_AXIS_LEFTX,  -thumb_dead_zone, -32768);
+backends/imgui_impl_sdl2.cpp:891:    ImGui_ImplSDL2_UpdateGamepadAnalog(bd, io, ImGuiKey_GamepadLStickRight, SDL_CONTROLLER_AXIS_LEFTX,  +thumb_dead_zone, +32767);
+backends/imgui_impl_sdl2.cpp:892:    ImGui_ImplSDL2_UpdateGamepadAnalog(bd, io, ImGuiKey_GamepadLStickUp,    SDL_CONTROLLER_AXIS_LEFTY,  -thumb_dead_zone, -32768);
+backends/imgui_impl_sdl2.cpp:893:    ImGui_ImplSDL2_UpdateGamepadAnalog(bd, io, ImGuiKey_GamepadLStickDown,  SDL_CONTROLLER_AXIS_LEFTY,  +thumb_dead_zone, +32767);
+backends/imgui_impl_sdl2.cpp:894:    ImGui_ImplSDL2_UpdateGamepadAnalog(bd, io, ImGuiKey_GamepadRStickLeft,  SDL_CONTROLLER_AXIS_RIGHTX, -thumb_dead_zone, -32768);
+backends/imgui_impl_sdl2.cpp:895:    ImGui_ImplSDL2_UpdateGamepadAnalog(bd, io, ImGuiKey_GamepadRStickRight, SDL_CONTROLLER_AXIS_RIGHTX, +thumb_dead_zone, +32767);
+backends/imgui_impl_sdl2.cpp:896:    ImGui_ImplSDL2_UpdateGamepadAnalog(bd, io, ImGuiKey_GamepadRStickUp,    SDL_CONTROLLER_AXIS_RIGHTY, -thumb_dead_zone, -32768);
+backends/imgui_impl_sdl2.cpp:897:    ImGui_ImplSDL2_UpdateGamepadAnalog(bd, io, ImGuiKey_GamepadRStickDown,  SDL_CONTROLLER_AXIS_RIGHTY, +thumb_dead_zone, +32767);
+backends/imgui_impl_sdl2.cpp:954:    ImGui_ImplSDL2_UpdateGamepads();
+backends/imgui_impl_sdl2.h:9://  [X] Platform: Gamepad support.
+backends/imgui_impl_sdl2.h:27:struct _SDL_GameController;
+backends/imgui_impl_sdl2.h:45:// Gamepad selection automatically starts in AutoFirst mode, picking first available SDL_Gamepad. You may override this.
+backends/imgui_impl_sdl2.h:47:enum ImGui_ImplSDL2_GamepadMode { ImGui_ImplSDL2_GamepadMode_AutoFirst, ImGui_ImplSDL2_GamepadMode_AutoAll, ImGui_ImplSDL2_GamepadMode_Manual };
+backends/imgui_impl_sdl2.h:48:IMGUI_IMPL_API void     ImGui_ImplSDL2_SetGamepadMode(ImGui_ImplSDL2_GamepadMode mode, struct _SDL_GameController** manual_gamepads_array = nullptr, int manual_gamepads_count = -1);
+--- SDL_Renderer compatibility ---
+1:// dear imgui: Renderer Backend for SDL_Renderer for SDL2
+4:// Note that SDL_Renderer is an _optional_ component of SDL2, which IMHO is now largely obsolete.
+9:// please be aware that SDL_Renderer currently offers a limited graphic API to the end-user
+36://  2024-05-14: *BREAKING CHANGE* ImGui_ImplSDLRenderer3_RenderDrawData() requires SDL_Renderer* passed as parameter.
+39://  2021-12-21: Update SDL_RenderGeometryRaw() format to work with SDL 2.0.19.
+60:#if !SDL_VERSION_ATLEAST(2,0,17)
+61:#error This backend requires SDL 2.0.17+ because of SDL_RenderGeometry() function
+64:// SDL_Renderer data
+67:    SDL_Renderer*   Renderer;       // Main viewport's renderer
+85:static void ImGui_ImplSDLRenderer2_SetupRenderState(SDL_Renderer* renderer)
+103:void ImGui_ImplSDLRenderer2_RenderDrawData(ImDrawData* draw_data, SDL_Renderer* renderer)
+106:    // If the user has specified a scale factor to SDL_Renderer already via SDL_RenderSetScale(), SDL will scale whatever we pass
+107:    // to SDL_RenderGeometryRaw() by that scale factor. In that case we don't want to be also scaling it ourselves here.
+128:    // Backup SDL_Renderer state that will be modified to restore it afterwards
+187:#if SDL_VERSION_ATLEAST(2,0,19)
+195:                SDL_RenderGeometryRaw(renderer, tex,
+206:    // Restore modified SDL_Renderer state
+223:        SDL_Texture* sdl_texture = SDL_CreateTexture(bd->Renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, tex->Width, tex->Height);
+272:bool ImGui_ImplSDLRenderer2_Init(SDL_Renderer* renderer)
+277:    IM_ASSERT(renderer != nullptr && "SDL_Renderer not initialized!");
+--- Navigation and styling model references ---
+imgui.h:1751:    ImGuiConfigFlags_NavEnableKeyboard      = 1 << 0,   // Master keyboard navigation enable flag. Enable full Tabbing + directional arrows + Space/Enter to activate. Note: some features such as basic Tabbing and CtrL+Tab are enabled by regardless of this flag (and may be disabled via other means, see #4828, #9218).
+imgui.h:1752:    ImGuiConfigFlags_NavEnableGamepad       = 1 << 1,   // Master gamepad navigation enable flag. Backend also needs to set ImGuiBackendFlags_HasGamepad.
+imgui.cpp:159:   - Extended features with `io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard`:
+imgui.cpp:171:   - Output when ImGuiConfigFlags_NavEnableKeyboard set,
+imgui.cpp:177:   - Enable with 'io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad'.
+imgui.cpp:287:     // TODO: Set optional io.ConfigFlags values, e.g. 'io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard' to enable keyboard controls.
+imgui.cpp:343:     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable keyboard controls
+imgui.cpp:5659:        else if (io.NavActive && (io.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) && io.ConfigNavCaptureKeyboard)
+imgui.cpp:13448:    else if (g.NavInputSource == ImGuiInputSource_Keyboard && (g.IO.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) == 0)
+imgui.cpp:13450:    else if (g.NavInputSource == ImGuiInputSource_Gamepad && (g.IO.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) == 0)
+imgui.cpp:13816:    // - Tabbing with _NavEnableKeyboard (space/enter/arrows): goes through every item.
+imgui.cpp:13817:    // - Tabbing without _NavEnableKeyboard: goes through inputable items only.
+imgui.cpp:13822:        can_stop = (item_flags & ImGuiItemFlags_NoTabStop) == 0 && ((g.IO.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) || (item_flags & ImGuiItemFlags_Inputable));
+imgui.cpp:14117:    const bool nav_gamepad_active = (io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) != 0 && (io.BackendFlags & ImGuiBackendFlags_HasGamepad) != 0;
+imgui.cpp:14123:    const bool nav_keyboard_active = (io.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) != 0;
+imgui.cpp:14345:    const bool nav_gamepad_active = (io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) != 0 && (io.BackendFlags & ImGuiBackendFlags_HasGamepad) != 0;
+imgui.cpp:14346:    const bool nav_keyboard_active = (io.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) != 0;
+imgui.cpp:14375:    // FIXME-NAV: Consider enabling those keys even without the master ImGuiConfigFlags_NavEnableKeyboard flag?
+imgui.cpp:14477:    // (this is ALWAYS ENABLED, regardless of ImGuiConfigFlags_NavEnableKeyboard flag!)
+imgui.cpp:14479:    const bool nav_keyboard_active = (g.IO.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) != 0;
+imgui.cpp:14615:    const bool nav_gamepad_active = (g.IO.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) != 0 && (g.IO.BackendFlags & ImGuiBackendFlags_HasGamepad) != 0;
+imgui.cpp:14616:    const bool nav_keyboard_active = (g.IO.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) != 0;
+imgui.cpp:14666:    const bool nav_keyboard_active = (g.IO.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) != 0;
+imgui.cpp:14667:    const bool nav_gamepad_active = (g.IO.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) != 0;
+imgui.cpp:14934:    const bool nav_gamepad_active = (io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) != 0 && (io.BackendFlags & ImGuiBackendFlags_HasGamepad) != 0;
+imgui.cpp:14935:    const bool nav_keyboard_active = (io.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) != 0;
+imgui.cpp:14940:    const bool start_windowing_with_keyboard = allow_windowing && !g.NavWindowingTarget && (keyboard_next_window || keyboard_prev_window); // Note: enabled even without NavEnableKeyboard!
+docs/FAQ.md:212:- Keyboard: set `io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard` to enable.
+docs/FAQ.md:213:- Gamepad: set `io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad` to enable (with a supporting backend).
+docs/FAQ.md:934:Somewhat. You can alter the look of the interface to some degree: changing colors, sizes, padding, rounding, and fonts. However, as Dear ImGui is designed and optimized to create debug tools, the amount of skinning you can apply is limited. There is only so much you can stray away from the default look and feel of the interface. Dear ImGui is NOT designed to create a user interface for games, although with ingenious use of the low-level API you can do it.
+--- License ---
+The MIT License (MIT)
+
+Copyright (c) 2014-2026 Omar Cornut
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+===== CURRENT KIDDOS INTEGRATION CONSTRAINTS =====
+--- SDL renderer creation and version assumptions ---
+src/platform/sdl_platform.cpp:378:    renderer_ = SDL_CreateRenderer(
+src/platform/sdl_platform.cpp:380:        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+src/platform/sdl_platform.cpp:384:        renderer_ = SDL_CreateRenderer(
+src/platform/sdl_platform.cpp:385:            window_, -1, SDL_RENDERER_SOFTWARE
+--- Platform abstraction ---
+#pragma once
+
+#include "kiddos/core/action.hpp"
+
+namespace kiddos {
+
+class Platform {
+public:
+    virtual ~Platform() = default;
+
+    virtual bool initialize() = 0;
+    virtual bool poll_action(Action& action) = 0;
+    virtual void begin_frame() = 0;
+    virtual void draw_carousel(int selected_index) = 0;
+    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+    virtual void present() = 0;
+    virtual void shutdown() = 0;
+};
+
+} // namespace kiddos
+--- Application interface ---
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+
+#include <SDL.h>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+--- Current CMake ---
+cmake_minimum_required(VERSION 3.20)
+
+project(KiddOS
+    VERSION 0.2.0
+    DESCRIPTION "A child-friendly gaming environment for the Retro Pixel Pocket"
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+
+add_executable(kiddos
+    src/main.cpp
+    src/app/application.cpp
+    src/platform/sdl_platform.cpp
+)
+
+target_include_directories(kiddos PRIVATE include)
+target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
+
+target_compile_options(kiddos PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+===== AUDIT CHECKSUM / SOURCE IDENTITIES =====
+RmlUi        bc6ea0ec9968600d0b6e9dc379c5b9ba20f2806d
+eepp         3c404de58d175b1a5401c8a0c9b06713c8744805
+DearImGui    d3b36a875f0f7e7446b99606ca3d6df27b7dad7a
+
+===== SOURCE AUDIT COMPLETE =====
+Temporary source directory: /tmp/kiddos-ui-audit.Xj1VH5
