@@ -1,0 +1,1019 @@
+===== REPOSITORY STATUS =====
+## main...origin/main
+ M CMakeLists.txt
+ M docs/DEVELOPMENT_LOG.md
+ M src/main.cpp
+?? docs/FIRMWARE_AUDIT.md
+?? include/
+?? src/app/
+?? src/platform/
+?? tasks/
+
+===== EXISTING CHANGE SUMMARY =====
+ CMakeLists.txt          |  7 ++--
+ docs/DEVELOPMENT_LOG.md | 27 ++++++++++++++++
+ src/main.cpp            | 85 +++----------------------------------------------
+ 3 files changed, 37 insertions(+), 82 deletions(-)
+5	2	CMakeLists.txt
+27	0	docs/DEVELOPMENT_LOG.md
+5	80	src/main.cpp
+
+===== TRACKED SOURCE CHANGES =====
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index bb2d9ee..d0ceb9f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,8 +1,8 @@
+ cmake_minimum_required(VERSION 3.20)
+ 
+ project(KiddOS
+-    VERSION 0.1.0
+-    DESCRIPTION "A child-friendly gaming environment for the Retro Pixel Pocket"
++    VERSION 0.2.0
++    DESCRIPTION A child-friendly gaming environment for the Retro Pixel Pocket
+     LANGUAGES CXX
+ )
+ 
+@@ -15,8 +15,11 @@ pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+ 
+ add_executable(kiddos
+     src/main.cpp
++    src/app/application.cpp
++    src/platform/sdl_platform.cpp
+ )
+ 
++target_include_directories(kiddos PRIVATE include)
+ target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
+ 
+ target_compile_options(kiddos PRIVATE
+diff --git a/docs/DEVELOPMENT_LOG.md b/docs/DEVELOPMENT_LOG.md
+index 5aaf4c4..29478f2 100644
+--- a/docs/DEVELOPMENT_LOG.md
++++ b/docs/DEVELOPMENT_LOG.md
+@@ -98,3 +98,30 @@ gaming environment.
+ The product specification records intended behavior, not completed features.
+ The existing SDL2 prototype remains a basic development harness. Hardware
+ integration and the planned product components remain future work.
++
++## 2026-11-10 — Manufacturer firmware source audit
++
++- Cloned the public `FRetroPixel/RetroPixel_Pocket` repository for local,
++  read-only source inspection.
++- Audited revision
++  `13e1c48d86c95ae2b8a99d6baf02e4e394629cb3` (2025-12-02).
++- Confirmed the `RPPOCKET` build target selects an RK3326 v6.0 device tree,
++  ARM64/Cortex-A35 settings, Mali G31/libmali, and the inherited RG351MP
++  Linux/U-Boot platform identifiers.
++- Identified configured Linux graphics, input, RK817 battery/charger, and
++  Rockchip thermal support.
++- Inspected inherited battery, ADC key, volume, headphone, joystick LED,
++  and suspend/resume utilities.
++- Confirmed the inspected headphone script only handles D007 Plus and
++  PowKiddy XU10, while the joystick LED script only handles D007 Plus.
++  Neither contains an RPPOCKET-specific implementation.
++- Confirmed the kernel and U-Boot package definitions refer to external
++  source directories not present in the inspected checkout.
++- No firmware was built or flashed. No device storage or boot configuration
++  was changed.
++- Added `docs/FIRMWARE_AUDIT.md` with findings, confidence levels, and the
++  runtime verification plan.
++- Next: continue source audit of boot flow, package startup, frontend/game
++  launching, and external kernel/U-Boot source availability. After the
++  handheld arrives, verify actual hardware interfaces before implementing
++  device-specific adapters.
+diff --git a/src/main.cpp b/src/main.cpp
+index 6c43c6b..7a6afad 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -1,83 +1,8 @@
+-#include <SDL.h>
+-
+-#include <iostream>
+-
+-namespace {
+-constexpr int kWindowWidth = 720;
+-constexpr int kWindowHeight = 720;
+-
+-constexpr Uint8 kBackgroundRed = 9;
+-constexpr Uint8 kBackgroundGreen = 17;
+-constexpr Uint8 kBackgroundBlue = 38;
+-}
++#include kiddos/app/application.hpp
++#include kiddos/platform/sdl_platform.hpp
+ 
+ int main() {
+-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+-        std::cerr << "SDL initialization failed: " << SDL_GetError() << '\n';
+-        return 1;
+-    }
+-
+-    SDL_Window* window = SDL_CreateWindow(
+-        "KiddOS",
+-        SDL_WINDOWPOS_CENTERED,
+-        SDL_WINDOWPOS_CENTERED,
+-        kWindowWidth,
+-        kWindowHeight,
+-        SDL_WINDOW_SHOWN
+-    );
+-
+-    if (window == nullptr) {
+-        std::cerr << "Window creation failed: " << SDL_GetError() << '\n';
+-        SDL_Quit();
+-        return 1;
+-    }
+-
+-    SDL_Renderer* renderer = SDL_CreateRenderer(
+-        window,
+-        -1,
+-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+-    );
+-
+-    if (renderer == nullptr) {
+-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+-    }
+-
+-    if (renderer == nullptr) {
+-        std::cerr << "Renderer creation failed: " << SDL_GetError() << '\n';
+-        SDL_DestroyWindow(window);
+-        SDL_Quit();
+-        return 1;
+-    }
+-
+-    bool running = true;
+-    SDL_Event event;
+-
+-    while (running) {
+-        while (SDL_PollEvent(&event)) {
+-            if (event.type == SDL_QUIT) {
+-                running = false;
+-            }
+-
+-            if (event.type == SDL_KEYDOWN &&
+-                event.key.keysym.sym == SDLK_ESCAPE) {
+-                running = false;
+-            }
+-        }
+-
+-        SDL_SetRenderDrawColor(
+-            renderer,
+-            kBackgroundRed,
+-            kBackgroundGreen,
+-            kBackgroundBlue,
+-            255
+-        );
+-        SDL_RenderClear(renderer);
+-        SDL_RenderPresent(renderer);
+-    }
+-
+-    SDL_DestroyRenderer(renderer);
+-    SDL_DestroyWindow(window);
+-    SDL_Quit();
+-
+-    return 0;
++    kiddos::SDLPlatform platform;
++    kiddos::Application application(platform);
++    return application.run();
+ }
+
+===== EXISTING FIRMWARE AUDIT =====
+# Manufacturer Firmware Audit
+
+**Project:** Retro KiddOS  
+**Audit date:** 2026-11-10  
+**Repository:** https://github.com/FRetroPixel/RetroPixel_Pocket  
+**Audited revision:** `13e1c48d86c95ae2b8a99d6baf02e4e394629cb3`  
+**Revision date:** 2025-12-02  
+**Local checkout:** `research/firmware/manufacturer/RetroPixel_Pocket`
+
+## 1. Purpose and scope
+
+This audit examines the publicly available manufacturer firmware source to
+identify reusable platform components and gaps relevant to Retro KiddOS.
+
+The objective is to learn from the existing firmware without assuming that
+its inherited device utilities are compatible with the Retro Pixel Pocket.
+
+This is a source-code audit. The physical device has not yet been inspected,
+and no firmware has been built or flashed as part of this work.
+
+## 2. Firmware lineage and build structure
+
+The manufacturer repository is based on the EmuELEC/AmberELEC family of
+firmware projects.
+
+The manufacturer adds a Rockchip device target named `RPPOCKET`.
+
+Relevant source locations:
+
+- `projects/Rockchip/devices/RPPOCKET/options`
+- `projects/Rockchip/devices/RPPOCKET/linux/linux.aarch64.conf`
+- `projects/Rockchip/packages/linux/package.mk`
+- `projects/Rockchip/packages/u-boot/package.mk`
+- `projects/Rockchip/bootloader/install`
+- `projects/Rockchip/bootloader/release`
+
+The RPPOCKET build target is not a completely independent firmware
+implementation. It uses existing platform infrastructure and inherited
+package and service conventions.
+
+The checked-out repository does not contain all external build dependencies.
+In particular, its Linux and U-Boot package definitions refer to external
+source directories:
+
+- `extpackage/linux-kernel-rppocket`
+- `extpackage/u-boot-rppocket`
+
+Those sources were not present in the inspected checkout. They must be
+obtained and audited separately before making source-level claims about the
+complete kernel or bootloader implementation.
+
+## 3. Target configuration
+
+The RPPOCKET options select the following build configuration:
+
+| Setting | Configured value |
+|---|---|
+| Target architecture | ARM64 |
+| CPU target | Cortex-A35 |
+| CPU features | CRC, FP, SIMD, crypto |
+| Kernel image | `Image` |
+| Device tree | `rockchip/rk3326-rppocket_v6_0-linux.dtb` |
+| GPU family | Mali G31 |
+| OpenGL ES implementation | `libmali` |
+| Console | `ttyFIQ0,115200n8` |
+| Linux platform identifier | `RG351MP` |
+| U-Boot system identifier | `rg351mp` |
+
+The configuration also contains an ARM build branch.
+
+**Interpretation:** The checked-in target configuration is strong evidence
+that the manufacturer builds for an RK3326-oriented platform and selects a
+specific Retro Pixel Pocket device tree. It is not independent confirmation
+of the physical device's silicon or board revision. Those details must be
+verified on the actual hardware.
+
+The inherited `RG351MP` identifiers are a warning against assuming that
+every generic platform script or path is correct for this device.
+
+## 4. Kernel configuration capabilities
+
+The ARM64 kernel configuration enables several useful platform facilities.
+
+### Display and graphics
+
+Relevant configuration includes:
+
+- Rockchip DRM/KMS support
+- MIPI DSI support
+- Panel support
+- Mali Bifrost Linux driver configuration
+- Framebuffer compatibility
+- Backlight class and PWM support
+- Rockchip RGA2 support
+
+The device options select `libmali` as the OpenGL ES implementation.
+
+**KiddOS implication:** There is a promising Linux graphics foundation for
+a native SDL2 interface. We still need to verify the actual display device,
+available DRM nodes, Mali userspace libraries, SDL video backend, and
+rendering performance on the hardware.
+
+### Input
+
+Relevant configuration includes:
+
+- Linux input subsystem
+- evdev
+- joydev
+- ADC joystick support
+- ODROID GO 3 joystick driver
+- XU10 joystick driver
+- GPIO input support
+- Rockchip keyboard support
+
+SARADC support is also enabled.
+
+**KiddOS implication:** Linux input interfaces should provide a foundation
+for physical controls. The actual event devices, button mappings, analog
+ranges, and repeat behavior must be discovered on the device. We should
+build our own input mapping layer rather than assume inherited event paths.
+
+### Battery and charging
+
+Relevant configuration includes:
+
+- Power supply subsystem
+- GPIO charger support
+- RK817 battery support
+- RK817 charger support
+
+**KiddOS implication:** The kernel configuration anticipates battery and
+charging integration. We need to inspect the actual power-supply devices,
+their reported properties, and charging behavior before implementing
+battery UI or protection logic.
+
+### Thermal management
+
+Relevant configuration includes:
+
+- Generic thermal framework
+- Rockchip thermal support
+- CPU thermal support
+- Devfreq thermal support
+
+**KiddOS implication:** The kernel has thermal-management facilities.
+Actual sensor names, temperature readings, cooling devices, and throttling
+behavior remain to be verified.
+
+## 5. Existing utilities and services
+
+The manufacturer firmware includes an `odroidgoa-utils` package with
+scripts and systemd services.
+
+These are useful examples of firmware integration, but several scripts
+contain explicit device checks for other handhelds.
+
+### Battery utility
+
+`odroidgoa-utils/sources/battery.sh`
+
+The script:
+
+- Reads battery capacity and status from
+  `/sys/class/power_supply/battery/`.
+- Controls GPIO77 for power LED behavior.
+- Polls battery state every 15 seconds.
+- Uses several capacity thresholds for LED behavior.
+
+A systemd service starts this script when the expected battery capacity
+path exists.
+
+**Assessment:** The battery interface is plausible, but the GPIO number,
+LED behavior, service policy, and sysfs path must be verified. KiddOS
+should use discovered Linux power-supply and LED interfaces rather than
+copy these assumptions.
+
+### Headphone detection
+
+`odroidgoa-utils/sources/headphone_sense.sh`
+
+The script explicitly handles:
+
+- `SZDiiER D007 Plus`
+- `PowKiddy Magicx XU10`
+
+It uses model-specific GPIOs, fixed input event paths, mixer controls,
+and EmuELEC settings commands.
+
+There is no RPPOCKET-specific branch.
+
+**Assessment:** This script does not provide a working RPPOCKET headphone
+implementation based on the inspected source. Its general approach is
+useful, but the actual headphone event and audio-routing interfaces must
+be discovered.
+
+### Joystick LED handling
+
+`odroidgoa-utils/sources/joyled.sh`
+
+The script only runs its LED behavior when the device-tree model is
+`SZDiiER D007 Plus`.
+
+It assumes:
+
+- An ODROID GO 3 joystick path
+- Specific joystick axis numbering
+- `left_joystick` and `right_joystick` LED devices
+
+There is no RPPOCKET-specific implementation.
+
+**Assessment:** Do not reuse this script as the basis for KiddOS input or
+LED support.
+
+### ADC key handling
+
+The ADC key scripts contain device-specific checks and assumptions about
+input paths and event codes. They are not a generic input abstraction.
+
+**Assessment:** Treat these as inherited platform utilities, not as a
+reliable button mapping specification for the Retro Pixel Pocket.
+
+### Volume and brightness controls
+
+The volume sensing and helper scripts use fixed event-device assumptions,
+EmuELEC settings helpers, ALSA mixer controls, and a fixed backlight path.
+
+**Assessment:** The underlying Linux interfaces are relevant, but the
+implementation should be replaced with a device-independent KiddOS
+hardware adapter after runtime discovery.
+
+### Sleep and resume
+
+The `enable-oga-sleep` package includes suspend configuration and a
+pre-sleep/post-resume script.
+
+The script saves and restores brightness and ALSA state, unloads and
+reloads `dwc2`, and stops and restarts headphone and volume services.
+
+**Assessment:** Existing firmware support demonstrates that suspend and
+resume are part of the platform's intended behavior. The particular script
+contains assumptions about backlight paths, services, storage, and USB
+module handling. KiddOS should implement and test its own suspend/resume
+sequence rather than adopting it unchanged.
+
+## 6. RPPOCKET-specific build references
+
+The inspected source contains RPPOCKET references in:
+
+- Rockchip bootloader release selection
+- Rockchip `rkbin` package selection
+- U-Boot package selection
+- Kernel device-tree selection
+- Bootloader installation configuration
+
+The bootloader installation configuration references:
+
+`/extlinux/rk3326-rppocket_v6_0-linux.dtb.conf`
+
+The kernel and U-Boot package definitions point to external source
+directories, so the full implementation cannot yet be audited from this
+checkout alone.
+
+## 7. Implications for Retro KiddOS
+
+The existing firmware provides a useful Linux foundation. KiddOS should
+reuse platform capabilities where appropriate, but own its application
+behavior and hardware integration.
+
+### KiddOS should own
+
+- Child-facing interface and navigation
+- Parent Center and access control
+- Game library and metadata
+- Game launching and return-to-shell behavior
+- Save management and save policies
+- Media interface
+- Audio and display settings UI
+- Low-battery user experience
+- Input mapping and navigation behavior
+- Application lifecycle and recovery behavior
+
+### KiddOS should integrate with Linux for
+
+- Display and graphics
+- Physical input
+- Audio output and volume
+- Battery and charging state
+- Backlight control
+- Thermal monitoring
+- Suspend and resume
+- Storage and filesystem access
+
+### Recommended architecture direction
+
+Create a small platform abstraction layer between KiddOS UI/application
+code and Linux hardware interfaces.
+
+The application should not directly depend on fixed event numbers, GPIO
+numbers, sysfs paths, or manufacturer-specific helper scripts.
+
+Hardware discovery should inform device adapters for:
+
+- Display
+- Input
+- Audio
+- Battery and charging
+- Backlight
+- LEDs, if present
+- Thermal monitoring
+- Power management
+
+The desktop SDL2 build remains a development harness. The target firmware
+integration must be tested on the actual handheld.
+
+## 8. Runtime verification required
+
+When the Retro Pixel Pocket arrives, collect the following before writing
+hardware-specific adapters:
+
+1. Device-tree model and compatible strings
+2. Kernel version and boot command line
+3. Display devices, DRM nodes, and available graphics drivers
+4. SDL video drivers and renderer availability
+5. Input devices, event capabilities, button mappings, and analog ranges
+6. Power-supply devices and reported battery/charging properties
+7. Backlight and LED interfaces
+8. ALSA cards, playback devices, mixer controls, and headphone behavior
+9. Thermal zones and cooling devices
+10. Suspend/resume behavior
+11. Storage devices, partition layout, and mount behavior
+12. Existing game launcher, frontend, and service startup sequence
+
+These checks should be read-only wherever possible. Do not flash firmware,
+repartition storage, or change boot configuration as part of initial
+discovery.
+
+## 9. Audit conclusions
+
+| Area | Source-level finding | Confidence |
+|---|---|---|
+| RPPOCKET build target | Explicit target and device-tree selection exist | High |
+| ARM64 configuration | Explicit Cortex-A35 ARM64 build settings | High |
+| Graphics foundation | DRM/KMS, Mali, RGA2 and display support configured | High |
+| Input foundation | Linux input, ADC and joystick drivers configured | High |
+| Battery foundation | RK817 battery and charger support configured | High |
+| Thermal foundation | Rockchip thermal support configured | High |
+| Headphone utility | No RPPOCKET branch in inspected script | High |
+| Joystick LED utility | Only handles D007 Plus | High |
+| Suspend/resume | Generic inherited implementation exists | High |
+| Physical hardware details | Not independently verified | Pending |
+| Actual graphics/input/audio behavior | Requires device testing | Pending |
+| Complete kernel/U-Boot source | External source directories not present | Pending |
+
+**Overall conclusion:** The manufacturer firmware is a useful starting point
+for understanding the target Linux platform, but it is not a ready-made
+KiddOS implementation. We should build KiddOS as its own application and
+hardware integration layer, using the manufacturer firmware as a reference
+for boot, kernel, and platform configuration.
+
+===== EXISTING SOURCE TREE =====
+
+----- include -----
+include/kiddos/app/application.hpp
+include/kiddos/core/action.hpp
+include/kiddos/platform/platform.hpp
+include/kiddos/platform/sdl_platform.hpp
+
+----- src/app -----
+src/app/application.cpp
+
+----- src/platform -----
+src/platform/sdl_platform.cpp
+
+----- tasks -----
+tasks/completed/KID-20261110-131847.md
+tasks/completed/KID-20261110-132322.md
+
+===== COMPLETE EXISTING SOURCE CONTENTS =====
+
+========================================
+FILE: include/kiddos/app/application.hpp
+========================================
+#pragma once
+
+#include kiddos/platform/platform.hpp
+
+namespace kiddos {
+
+class Application {
+public:
+    explicit Application(Platform& platform);
+
+    int run();
+
+private:
+    Platform& platform_;
+    bool running_ = true;
+
+    void handle_action(Action action);
+    void render();
+};
+
+} // namespace kiddos
+
+========================================
+FILE: include/kiddos/core/action.hpp
+========================================
+#pragma once
+
+namespace kiddos {
+
+enum class Action {
+    None,
+    NavigateLeft,
+    NavigateRight,
+    NavigateUp,
+    NavigateDown,
+    Confirm,
+    Back,
+    Quit
+};
+
+} // namespace kiddos
+
+========================================
+FILE: include/kiddos/platform/platform.hpp
+========================================
+#pragma once
+
+#include kiddos/core/action.hpp
+
+namespace kiddos {
+
+class Platform {
+public:
+    virtual ~Platform() = default;
+
+    virtual bool initialize() = 0;
+    virtual bool poll_action(Action& action) = 0;
+    virtual void begin_frame() = 0;
+    virtual void present() = 0;
+    virtual void shutdown() = 0;
+};
+
+} // namespace kiddos
+
+========================================
+FILE: include/kiddos/platform/sdl_platform.hpp
+========================================
+#pragma once
+
+#include kiddos/platform/platform.hpp
+
+#include <SDL.h>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    void begin_frame() override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+
+========================================
+FILE: src/app/application.cpp
+========================================
+#include kiddos/app/application.hpp
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+        return 1;
+    }
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+                break;
+            }
+        }
+
+            break;
+        }
+
+        render();
+    }
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::None:
+        case Action::NavigateLeft:
+        case Action::NavigateRight:
+        case Action::NavigateUp:
+        case Action::NavigateDown:
+        case Action::Confirm:
+        case Action::Back:
+            // Navigation behavior will be implemented by the UI layer.
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    platform_.present();
+}
+
+} // namespace kiddos
+
+========================================
+FILE: src/platform/sdl_platform.cpp
+========================================
+#include kiddos/platform/sdl_platform.hpp
+
+#include <iostream>
+
+namespace kiddos {
+
+SDLPlatform::~SDLPlatform() {
+    shutdown();
+}
+
+bool SDLPlatform::initialize() {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+        std::cerr << SDL initialization failed:  << SDL_GetError() << '\n';
+        return false;
+    }
+
+    initialized_ = true;
+
+    window_ = SDL_CreateWindow(
+        KiddOS,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        720,
+        720,
+        SDL_WINDOW_SHOWN
+    );
+
+        std::cerr << Window creation failed:  << SDL_GetError() << '\n';
+        shutdown();
+        return false;
+    }
+
+    renderer_ = SDL_CreateRenderer(
+        window_, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
+
+        renderer_ = SDL_CreateRenderer(
+            window_, -1, SDL_RENDERER_SOFTWARE
+        );
+    }
+
+        std::cerr << Renderer creation failed:  << SDL_GetError() << '\n';
+        shutdown();
+        return false;
+    }
+
+    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+
+    for (int index = 0; index < SDL_NumJoysticks(); ++index) {
+        if (SDL_IsGameController(index)) {
+            open_controller(index);
+            if (controller_) {
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
+void SDLPlatform::open_controller(int device_index) {
+        return;
+    }
+
+    controller_ = SDL_GameControllerOpen(device_index);
+    if (controller_) {
+        controller_instance_ =
+            SDL_JoystickInstanceID(
+                SDL_GameControllerGetJoystick(controller_)
+            );
+    }
+}
+
+void SDLPlatform::close_controller() {
+    if (controller_) {
+        SDL_GameControllerClose(controller_);
+        controller_ = nullptr;
+    }
+    controller_instance_ = -1;
+}
+
+Action SDLPlatform::map_key(SDL_Keycode key) {
+    switch (key) {
+        case SDLK_LEFT:  return Action::NavigateLeft;
+        case SDLK_RIGHT: return Action::NavigateRight;
+        case SDLK_UP:    return Action::NavigateUp;
+        case SDLK_DOWN:  return Action::NavigateDown;
+        case SDLK_RETURN:
+        case SDLK_SPACE: return Action::Confirm;
+        case SDLK_ESCAPE:return Action::Back;
+        case SDLK_q:     return Action::Quit;
+        default:         return Action::None;
+    }
+}
+
+Action SDLPlatform::map_controller_button(Uint8 button) {
+    switch (button) {
+        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+            return Action::NavigateLeft;
+        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+            return Action::NavigateRight;
+        case SDL_CONTROLLER_BUTTON_DPAD_UP:
+            return Action::NavigateUp;
+        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+            return Action::NavigateDown;
+        case SDL_CONTROLLER_BUTTON_A:
+            return Action::Confirm;
+        case SDL_CONTROLLER_BUTTON_B:
+            return Action::Back;
+        default:
+            return Action::None;
+    }
+}
+
+bool SDLPlatform::poll_action(Action& action) {
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        action = Action::None;
+
+        switch (event.type) {
+            case SDL_QUIT:
+                action = Action::Quit;
+                return true;
+
+            case SDL_KEYDOWN:
+                    action = map_key(event.key.keysym.sym);
+                }
+                break;
+
+            case SDL_CONTROLLERBUTTONDOWN:
+                if (event.cbutton.which == controller_instance_) {
+                    action = map_controller_button(event.cbutton.button);
+                }
+                break;
+
+            case SDL_CONTROLLERDEVICEADDED:
+                open_controller(event.cdevice.which);
+                break;
+
+            case SDL_CONTROLLERDEVICEREMOVED:
+                if (event.cdevice.which == controller_instance_) {
+                    close_controller();
+                }
+                break;
+
+            case SDL_WINDOWEVENT:
+                if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
+                    action = Action::Quit;
+                    return true;
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        if (action != Action::None) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void SDLPlatform::begin_frame() {
+        return;
+    }
+
+    SDL_SetRenderDrawColor(renderer_, 9, 17, 38, 255);
+    SDL_RenderClear(renderer_);
+}
+
+void SDLPlatform::present() {
+    if (renderer_) {
+        SDL_RenderPresent(renderer_);
+    }
+}
+
+void SDLPlatform::shutdown() {
+    close_controller();
+
+    if (renderer_) {
+        SDL_DestroyRenderer(renderer_);
+        renderer_ = nullptr;
+    }
+
+    if (window_) {
+        SDL_DestroyWindow(window_);
+        window_ = nullptr;
+    }
+
+    if (initialized_) {
+        SDL_Quit();
+        initialized_ = false;
+    }
+}
+
+} // namespace kiddos
+
+========================================
+FILE: tasks/completed/KID-20261110-131847.md
+========================================
+# KID-20261110-131847 — Workbench v0.1 — Core Engine Validation
+
+- Status: Completed
+- Created: 2026-11-10T13:18:47-05:00
+- Updated: 2026-11-10T13:23:20-05:00
+
+## Task notes and decisions
+
+- Core engine smoke test passed: task creation, command execution, SQLite persistence, results retrieval, and status tracking.
+
+## Final summary
+
+Workbench v0.1 validated. Task creation, command execution, SQLite persistence, results retrieval, checkpoint updates, GitHub synchronization, idempotent sync, pull, and byte-for-byte artifact comparison all passed.
+
+## Execution summary
+
+- Commands executed: 1
+- Successful commands: 1
+- Failed commands: 0
+
+Raw command output remains in the local Workbench database.
+It is not included in this shared task artifact.
+
+========================================
+FILE: tasks/completed/KID-20261110-132322.md
+========================================
+# KID-20261110-132322 — Workbench v0.2 — Reliability and Safety Hardening
+
+- Status: Completed
+- Created: 2026-11-10T13:23:22-05:00
+- Updated: 2026-11-10T13:56:38.525327-05:00
+
+## Task notes and decisions
+
+- Reliability validation passed: Python syntax checks, CLI command registration, SQLite integrity, backup creation, explicit task-ID sync and pull, idempotent synchronization, and byte-for-byte remote artifact comparison. Existing task records and sync state preserved.
+
+- Lifecycle test: temporarily pausing v0.2.
+
+- Isolated synchronization conflict tests passed. A changed previously tracked remote artifact was rejected without changing local sync state. An existing untracked remote artifact was rejected without creating sync state. Both tests used mocked GitHub responses in temporary directories; no GitHub PUT requests or real repository changes occurred.
+
+- Process-group timeout hardening completed. Replaced subprocess.run with Popen(start_new_session=True) and process-group termination: SIGTERM followed by SIGKILL after a 2-second grace period. Preserved 600-second production timeout, stdout/stderr capture, and exit code 124. Validation: Python syntax compilation PASS; ordinary execution/output capture PASS; 0.5-second timeout test PASS; spawned child termination PASS; SQLite integrity_check ok; executable mode 755. Patch was syntax-validated before atomic replacement and a timestamped backup was preserved. This is process-group cleanup, not a security sandbox.
+
+- Workbench v0.2 reliability validation: ordinary command execution and output capture pass; timeout enforcement returns exit code 124; process-group child cleanup previously validated; Ctrl+C is captured and recorded as exit code 130; Python compilation passes; SQLite integrity_check returns ok. An earlier importlib test failure was a test-harness issue, resolved using runpy.run_path. Consolidating validation and proceeding toward v0.2 completion.
+
+## Final summary
+
+Workbench v0.2 reliability and safety hardening completed. Validated ordinary command execution, output capture, process-group timeout enforcement and child cleanup, Ctrl+C interruption recording, Python compilation, SQLite integrity, and GitHub sync conflict protections. Checkpoint and execution history retained.
+
+## Execution summary
+
+- Commands executed: 35
+- Successful commands: 27
+- Failed commands: 8
+
+Raw command output remains in the local Workbench database.
+It is not included in this shared task artifact.
+
+===== EXISTING BUILD CONFIGURATION =====
+cmake_minimum_required(VERSION 3.20)
+
+project(KiddOS
+    VERSION 0.2.0
+    DESCRIPTION A child-friendly gaming environment for the Retro Pixel Pocket
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+
+add_executable(kiddos
+    src/main.cpp
+    src/app/application.cpp
+    src/platform/sdl_platform.cpp
+)
+
+target_include_directories(kiddos PRIVATE include)
+target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
+
+target_compile_options(kiddos PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+===== AUDIT COMPLETE =====
+No existing implementation files were modified.
