@@ -1,0 +1,723 @@
+===== REPOSITORY =====
+/home/hawk/KiddOS
+## main...origin/main
+ M include/kiddos/app/application.hpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+e40d4a0 chore: record milestone run - ui-framework-feasibility-framework-source-audit
+
+===== EXISTING RMLUI RESEARCH DIRECTORY =====
+research/rmlui/logs/01-inspection-20261110-184509.log
+
+===== MILESTONE WORKFLOW =====
+#!/bin/bash
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [ -z "$ROOT" ]; then
+    echo "ERROR: Not inside a Git repository."
+    exit 1
+fi
+
+cd "$ROOT" || exit 1
+
+TITLE="$1"
+if [ -z "$TITLE" ]; then
+    echo "Usage: ./tools/kiddos-milestone 'Milestone name' <<'TASK'"
+    exit 1
+fi
+
+BRANCH="$(git branch --show-current)"
+if [ -z "$BRANCH" ]; then
+    echo "ERROR: No current Git branch."
+    exit 1
+fi
+
+if ! git remote get-url origin >/dev/null 2>&1; then
+    echo "ERROR: GitHub origin remote unavailable."
+    exit 1
+fi
+
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+SLUG="$(printf '%s' "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//' | cut -c1-55)"
+RUN="research/milestone-runs/${STAMP}-${SLUG}"
+LOG="$RUN/run.log"
+REPORT="$RUN/REPORT.md"
+LATEST="research/milestone-runs/LATEST.txt"
+TASKFILE="$(mktemp)"
+
+if [ -t 0 ]; then
+    echo "ERROR: Supply commands through a TASK heredoc."
+    rm -f "$TASKFILE"
+    exit 1
+fi
+
+mkdir -p "$RUN"
+cat > "$TASKFILE"
+
+echo "Running: $TITLE"
+echo "Full output is being captured."
+
+bash "$TASKFILE" > "$LOG" 2>&1
+TASK_RC=$?
+rm -f "$TASKFILE"
+
+LINES="$(wc -l < "$LOG")"
+SIZE="$(du -h "$LOG" | cut -f1)"
+
+if [ "$TASK_RC" -eq 0 ]; then
+    RESULT="SUCCESS"
+else
+    RESULT="FAILED (exit code $TASK_RC)"
+fi
+
+cat > "$REPORT" <<EOF
+# Milestone Run Report
+
+- Title: $TITLE
+- Timestamp (UTC): $STAMP
+- Result: $RESULT
+- Branch: $BRANCH
+- Log: $LOG
+- Lines captured: $LINES
+- Log size: $SIZE
+
+Full terminal output is available in run.log.
+EOF
+
+printf '%s\n' "$RUN" > "$LATEST"
+
+git add -f -- "$RUN" "$LATEST"
+git add -- tools/kiddos-milestone
+
+git commit -m "chore: record milestone run - $SLUG"
+COMMIT_RC=$?
+
+if [ "$COMMIT_RC" -ne 0 ]; then
+    echo "ERROR: Could not commit milestone results."
+    exit 2
+fi
+
+git push origin "$BRANCH"
+PUSH_RC=$?
+
+if [ "$PUSH_RC" -ne 0 ]; then
+    echo "ERROR: GitHub upload failed. Results remain local."
+    exit 3
+fi
+
+echo
+echo "======================================"
+echo "MILESTONE REPORT"
+echo "======================================"
+echo "Title: $TITLE"
+echo "Result: $RESULT"
+echo "Output lines: $LINES"
+echo "GitHub upload: VERIFIED"
+echo "Report: $REPORT"
+echo "Full log: $LOG"
+echo
+echo "LAST 20 LINES:"
+tail -n 20 "$LOG"
+echo
+echo "======================================"
+
+exit "$TASK_RC"
+
+===== BUILD CONFIGURATION =====
+cmake_minimum_required(VERSION 3.20)
+
+project(KiddOS
+    VERSION 0.2.0
+    DESCRIPTION "A child-friendly gaming environment for the Retro Pixel Pocket"
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+
+add_executable(kiddos
+    src/main.cpp
+    src/app/application.cpp
+    src/platform/sdl_platform.cpp
+)
+
+target_include_directories(kiddos PRIVATE include)
+target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
+
+target_compile_options(kiddos PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+===== SDL2 APPLICATION STRUCTURE =====
+include/kiddos/app/application.hpp
+include/kiddos/core/action.hpp
+include/kiddos/platform/platform.hpp
+include/kiddos/platform/sdl_platform.hpp
+src/app/application.cpp
+src/main.cpp
+src/platform/sdl_platform.cpp
+
+===== EXISTING PLATFORM IMPLEMENTATION =====
+#include "kiddos/platform/sdl_platform.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <iostream>
+
+namespace kiddos {
+
+namespace {
+
+struct Color {
+    Uint8 r, g, b, a;
+};
+
+std::array<SDL_Texture*, 3> artwork_textures{};
+std::array<SDL_Texture*, 3> action_label_textures{};
+SDL_Texture* carousel_title_texture{};
+SDL_Texture* carousel_selected_texture{};
+
+SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+                                 const char* path,
+                                 bool magenta_key = false) {
+    SDL_Surface* surface = SDL_LoadBMP(path);
+    if (!surface) {
+        std::cerr << "Could not load " << path << ": "
+                  << SDL_GetError() << '\\n';
+        return nullptr;
+    }
+
+    if (magenta_key) {
+        const Uint32 key = SDL_MapRGB(surface->format, 255, 0, 255);
+        SDL_SetColorKey(surface, SDL_TRUE, key);
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    if (texture) {
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    } else {
+        std::cerr << "Could not create texture for " << path << ": "
+                  << SDL_GetError() << '\\n';
+    }
+    return texture;
+}
+
+void color(SDL_Renderer* r, Color c) {
+    SDL_SetRenderDrawColor(r, c.r, c.g, c.b, c.a);
+}
+
+void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+    color(r, c);
+    SDL_RenderFillRect(r, &rect);
+}
+
+void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+    color(r, c);
+    SDL_RenderDrawRect(r, &rect);
+}
+
+void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    for (int y = 0; y < rect.h; ++y) {
+        int inset = 0;
+        if (y < radius) {
+            const double dy = radius - y - 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        } else if (y >= rect.h - radius) {
+            const double dy = y - (rect.h - radius) + 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        }
+        SDL_RenderDrawLine(r, rect.x + inset, rect.y + y,
+                           rect.x + rect.w - 1 - inset, rect.y + y);
+    }
+}
+
+void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y,
+                       rect.x + rect.w - radius - 1, rect.y);
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y + rect.h - 1,
+                       rect.x + rect.w - radius - 1, rect.y + rect.h - 1);
+    SDL_RenderDrawLine(r, rect.x, rect.y + radius,
+                       rect.x, rect.y + rect.h - radius - 1);
+    SDL_RenderDrawLine(r, rect.x + rect.w - 1, rect.y + radius,
+                       rect.x + rect.w - 1, rect.y + rect.h - radius - 1);
+
+    for (int i = 0; i <= radius * 2; ++i) {
+        const double angle = (3.14159265358979323846 / 2.0) *
+                             static_cast<double>(i) /
+                             std::max(1, radius * 2);
+        const int dx = static_cast<int>(std::round(radius * std::cos(angle)));
+        const int dy = static_cast<int>(std::round(radius * std::sin(angle)));
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + rect.h - radius - 1 + dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + rect.h - radius - 1 + dy);
+    }
+}
+
+void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+                          int radius, Color background) {
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, background);
+
+    for (int y = 0; y < radius; ++y) {
+        const double dy = radius - y - 0.5;
+        const int inset = radius - static_cast<int>(
+            std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        SDL_RenderDrawLine(r, rect.x, rect.y + y,
+                           rect.x + inset, rect.y + y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, rect.y + y,
+                           rect.x + rect.w - 1, rect.y + y);
+
+        const int bottom_y = rect.y + rect.h - 1 - y;
+        SDL_RenderDrawLine(r, rect.x, bottom_y,
+                           rect.x + inset, bottom_y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, bottom_y,
+                           rect.x + rect.w - 1, bottom_y);
+    }
+}
+
+void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+    color(r, c);
+
+    for (int y = -radius; y <= radius; ++y) {
+        const int x = static_cast<int>(
+            std::sqrt(static_cast<double>(
+                radius * radius - y * y
+            ))
+        );
+        SDL_RenderDrawLine(r, cx - x, cy + y, cx + x, cy + y);
+    }
+}
+
+void triangle(SDL_Renderer* r, int x1, int y1,
+              int x2, int y2, int x3, int y3, Color c) {
+    color(r, c);
+
+    const int min_y = std::min({y1, y2, y3});
+    const int max_y = std::max({y1, y2, y3});
+
+    for (int y = min_y; y <= max_y; ++y) {
+        int intersections[3];
+        int count = 0;
+
+        const int xs[] = {x1, x2, x3};
+        const int ys[] = {y1, y2, y3};
+
+        for (int i = 0; i < 3; ++i) {
+            const int j = (i + 1) % 3;
+
+            if ((ys[i] <= y && ys[j] > y) ||
+                (ys[j] <= y && ys[i] > y)) {
+                const int x = xs[i] +
+                    (y - ys[i]) * (xs[j] - xs[i]) /
+                    (ys[j] - ys[i]);
+
+                intersections[count++] = x;
+            }
+        }
+
+        if (count == 2) {
+            SDL_RenderDrawLine(
+                r,
+                std::min(intersections[0], intersections[1]),
+                y,
+                std::max(intersections[0], intersections[1]),
+                y
+            );
+        }
+    }
+}
+
+void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(17, 24, 67));
+
+    circle(r, a.x + a.w * 68 / 100,
+           a.y + a.h * 29 / 100,
+           a.w / 5, c(91, 99, 255));
+
+    circle(r, a.x + a.w * 68 / 100,
+           a.y + a.h * 29 / 100,
+           a.w / 7, c(168, 154, 255));
+
+    for (int i = 0; i < 12; ++i) {
+        const int x = a.x + (i * 47 + 19) % a.w;
+        const int y = a.y + (i * 71 + 31) % (a.h * 65 / 100);
+        circle(r, x, y, 2, c(220, 231, 255));
+    }
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 2, a.y + a.h / 3,
+             a.x + a.w, a.y + a.h, c(39, 63, 139));
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 3, a.y + a.h * 60 / 100,
+             a.x + a.w * 72 / 100, a.y + a.h, c(26, 43, 103));
+}
+
+void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(17, 73, 87));
+
+    circle(r, a.x + a.w * 70 / 100,
+           a.y + a.h * 25 / 100,
+           a.w / 7, c(113, 224, 203));
+
+    triangle(r, a.x, a.y + a.h * 80 / 100,
+             a.x + a.w / 2, a.y + a.h / 3,
+             a.x + a.w, a.y + a.h * 80 / 100,
+             c(32, 119, 107));
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 2, a.y + a.h / 2,
+             a.x + a.w, a.y + a.h,
+             c(16, 69, 78));
+
+    for (int i = 0; i < 6; ++i) {
+        const int x = a.x + (i * 61 + 23) % a.w;
+        rectangle(r, {x, a.y + a.h * 65 / 100, 8, a.h / 4},
+                  c(85, 62, 49));
+        triangle(r, x - 19, a.y + a.h * 68 / 100,
+                 x + 4, a.y + a.h * 39 / 100,
+                 x + 27, a.y + a.h * 68 / 100,
+                 c(42, 160, 120));
+    }
+}
+
+void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(25, 91, 157));
+
+    circle(r, a.x + a.w / 2,
+           a.y + a.h / 3,
+           a.w / 6, c(255, 207, 124));
+
+    rectangle(r,
+              {a.x, a.y + a.h * 57 / 100,
+               a.w, a.h * 43 / 100},
+              c(19, 111, 184));
+
+    for (int i = 0; i < 5; ++i) {
+        const int y = a.y + a.h * 63 / 100 + i * a.h / 14;
+        color(r, c(108, 206, 239));
+        for (int x = a.x + 8; x < a.x + a.w - 8; x += 2) {
+            const int wave_y = y +
+                static_cast<int>(std::sin(x * 0.055 + i) * 5);
+            SDL_RenderDrawPoint(r, x, wave_y);
+        }
+    }
+
+    triangle(r, a.x, a.y + a.h * 60 / 100,
+             a.x + a.w / 3, a.y + a.h * 43 / 100,
+             a.x + a.w * 55 / 100, a.y + a.h * 60 / 100,
+             c(39, 139, 166));
+}
+
+void draw_art(SDL_Renderer* r, int index,
+              SDL_Rect area, Uint8 alpha) {
+    if (index < 0 || index >= static_cast<int>(artwork_textures.size())) return;
+    SDL_Texture* texture = artwork_textures[static_cast<std::size_t>(index)];
+    if (!texture) return;
+
+    SDL_SetTextureAlphaMod(texture, alpha);
+    SDL_RenderCopy(r, texture, nullptr, &area);
+    SDL_SetTextureAlphaMod(texture, 255);
+}
+
+void draw_card(SDL_Renderer* r, int index,
+               SDL_Rect rect, bool selected) {
+    const Uint8 alpha = selected ? 255 : 145;
+
+    rounded_fill(r,
+                 {rect.x - 5, rect.y - 5, rect.w + 10, rect.h + 10},
+                 30, {7, 13, 32, static_cast<Uint8>(selected ? 255 : 170)});
+
+    rounded_fill(r, rect, 25, {20, 34, 65, alpha});
+
+    SDL_Rect art{
+        rect.x + 9,
+        rect.y + 9,
+        rect.w - 18,
+        rect.h - 18
+    };
+
+    SDL_RenderSetClipRect(r, &art);
+    draw_art(r, index, art, alpha);
+    SDL_RenderSetClipRect(r, nullptr);
+    mask_artwork_corners(r, art, 18, {20, 34, 65, alpha});
+
+    rounded_outline(r, rect, 25,
+            selected
+                ? Color{69, 151, 255, 255}
+                : Color{80, 117, 170, 110});
+
+    if (selected) {
+        rounded_outline(r,
+                        {rect.x - 2, rect.y - 2, rect.w + 4, rect.h + 4},
+                        27, {43, 105, 210, 170});
+    }
+}
+
+void draw_status(SDL_Renderer* r) {
+    const Color white{205, 222, 255, 220};
+    color(r, white);
+
+    // Sound status: speaker and sound waves.
+    triangle(r, 31, 34, 43, 25, 43, 51, white);
+    rectangle(r, {25, 33, 10, 12}, white);
+
+    color(r, {80, 157, 255, 220});
+    SDL_RenderDrawLine(r, 49, 29, 54, 34);
+    SDL_RenderDrawLine(r, 54, 34, 54, 42);
+    SDL_RenderDrawLine(r, 54, 42, 49, 47);
+
+    // Battery status: outline, terminal, charge fill.
+    outline(r, {657, 27, 34, 19}, white);
+    rectangle(r, {691, 33, 4, 7}, white);
+    rectangle(r, {661, 31, 22, 11},
+              {67, 157, 255, 240});
+}
+
+} // namespace
+
+SDLPlatform::~SDLPlatform() {
+    shutdown();
+}
+
+bool SDLPlatform::initialize() {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+        std::cerr << "SDL initialization failed: "
+                  << SDL_GetError() << '\n';
+        return false;
+    }
+
+    initialized_ = true;
+
+    window_ = SDL_CreateWindow(
+        "Retro KiddOS - Kid Mode",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        720,
+        720,
+        SDL_WINDOW_SHOWN
+    );
+
+    if (!window_) {
+        std::cerr << "Window creation failed: "
+                  << SDL_GetError() << '\n';
+        shutdown();
+        return false;
+    }
+
+    renderer_ = SDL_CreateRenderer(
+        window_, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
+
+    if (!renderer_) {
+        renderer_ = SDL_CreateRenderer(
+            window_, -1, SDL_RENDERER_SOFTWARE
+        );
+    }
+
+    if (!renderer_) {
+        std::cerr << "Renderer creation failed: "
+                  << SDL_GetError() << '\n';
+        shutdown();
+        return false;
+    }
+
+    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+
+    const char* artwork_paths[] = {
+        "assets/artwork/generated/carousel-star.bmp",
+        "assets/artwork/generated/carousel-mushroom.bmp",
+        "assets/artwork/generated/carousel-car.bmp"
+    };
+    const char* label_paths[] = {
+        "assets/artwork/generated/label-play.bmp",
+        "assets/artwork/generated/label-resume.bmp",
+        "assets/artwork/generated/label-start-over.bmp"
+    };
+
+    for (std::size_t i = 0; i < artwork_textures.size(); ++i) {
+        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i], true);
+        if (!artwork_textures[i]) {
+            shutdown();
+            return false;
+        }
+    }
+
+    for (std::size_t i = 0; i < action_label_textures.size(); ++i) {
+        action_label_textures[i] =
+            load_bitmap_texture(renderer_, label_paths[i], true);
+        if (!action_label_textures[i]) {
+            shutdown();
+            return false;
+        }
+    }
+
+    carousel_title_texture =
+        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-title.bmp", true);
+    carousel_selected_texture =
+        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-selected.bmp", true);
+    if (!carousel_title_texture || !carousel_selected_texture) {
+        shutdown();
+        return false;
+    }
+    SDL_SetTextureBlendMode(carousel_title_texture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(carousel_selected_texture, SDL_BLENDMODE_BLEND);
+
+
+    for (int index = 0; index < SDL_NumJoysticks(); ++index) {
+        if (SDL_IsGameController(index)) {
+            open_controller(index);
+            if (controller_) {
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
+void SDLPlatform::open_controller(int device_index) {
+    if (controller_) return;
+
+    controller_ = SDL_GameControllerOpen(device_index);
+
+    if (controller_) {
+        controller_instance_ = SDL_JoystickInstanceID(
+            SDL_GameControllerGetJoystick(controller_)
+        );
+    }
+}
+
+===== DESIGN REQUIREMENTS =====
+# User Interface Design
+
+## Visual direction
+
+- Dark navy background.
+- Bright blue highlights.
+- Large rounded horizontal selection boxes.
+- Minimal, clean presentation.
+- Symbols are primary; text is secondary.
+
+## Kid Mode game carousel
+
+- One large selected game centered on screen.
+- Neighboring games appear smaller and muted on either side.
+- Neighboring games have no prominent text labels.
+- Left and right controls browse games.
+- Sound indicator in the upper-left.
+- Battery indicator in the upper-right.
+
+## Game actions
+
+Large, stacked, full-width horizontal boxes.
+
+Each box has one oversized symbol on the left and its label to the right.
+The symbol must be visually dominant. Do not replace these with small square
+cards or tiny icons.
+
+Examples:
+
+- Play or Resume: large play/continue symbol.
+- Start Over: large circular restart symbol.
+
+## Preview behavior
+
+When available, static artwork is shown first. A muted gameplay preview may
+replace it after approximately 2.5 seconds, using exactly the same display
+area. Browsing to another game restarts the timer. Launching a game stops
+preview playback immediately.
+
+If no preview video exists, static artwork remains visible.
+
+===== HARDWARE REQUIREMENTS =====
+# Hardware Target
+
+## Primary device
+
+FunnyPlaying Retro Pixel Pocket.
+
+Reported specifications:
+
+- Rockchip RK3326
+- Quad-core ARM processor
+- 1 GB RAM
+- 3.1-inch IPS display
+- 720 × 720 resolution
+- 3000 mAh battery
+- Wi-Fi
+- microSD/TF storage
+- Customized EmuELEC Linux
+
+## Verification status
+
+These specifications are the current project baseline. The device has not
+yet been received or inspected by the development environment.
+
+The following must be verified on the actual device:
+
+- CPU architecture and userspace ABI
+- EmuELEC version and modifications
+- Kernel version and device tree
+- Available SDL version and libraries
+- GPU driver and hardware acceleration
+- Display orientation and scaling
+- Physical button mappings
+- Battery reporting and charger detection
+- Video decoding support
+- Existing frontend and emulator launch mechanisms
+- Available storage and filesystem layout
+
+No firmware flashing or destructive storage operations are authorized by
+this document.
+
+===== DEPENDENCIES =====
+2.32.74
+cmake version 4.4.4
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+g++ (GCC) 16.2.1 20260810
+
+===== INSPECTION COMPLETE =====
