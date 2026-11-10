@@ -1,0 +1,32 @@
+===== CONVERT CAROUSEL ARTWORK TO SDL-COMPATIBLE BMP =====
+star PNG conversion exit=0
+star BMP conversion exit=0
+assets/artwork/generated/carousel-star.bmp: PC bitmap, Windows 3.x format, 160 x 160 x 24, image size 76800, cbSize 76854, bits offset 54
+mushroom PNG conversion exit=0
+mushroom BMP conversion exit=0
+assets/artwork/generated/carousel-mushroom.bmp: PC bitmap, Windows 3.x format, 180 x 160 x 24, image size 86400, cbSize 86454, bits offset 54
+car PNG conversion exit=0
+car BMP conversion exit=0
+assets/artwork/generated/carousel-car.bmp: PC bitmap, Windows 3.x format, 180 x 160 x 24, image size 86400, cbSize 86454, bits offset 54
+title PNG conversion exit=0
+title BMP conversion exit=0
+assets/artwork/generated/carousel-title.bmp: PC bitmap, Windows 3.x format, 360 x 52 x 24, image size 56160, cbSize 56214, bits offset 54
+selected PNG conversion exit=0
+selected BMP conversion exit=0
+assets/artwork/generated/carousel-selected.bmp: PC bitmap, Windows 3.x format, 150 x 34 x 24, image size 15368, cbSize 15422, bits offset 54
+===== BUILD =====
+ninja: no work to do.
+BUILD_STATUS=0
+===== DIFF CHECK =====
+DIFF_STATUS=0
+===== DESKTOP PREVIEW =====
+PREVIEW_STATUS=0
+===== SOURCE STATUS =====
+ M include/kiddos/app/application.hpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
