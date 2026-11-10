@@ -1,1 +1,1 @@
-research/milestone-runs/20261110T234949Z-lvgl-feasibility-sdl2-and-ui-capability-audit
+research/milestone-runs/20261110T235035Z-lvgl-feasibility-sdl-controller-bridge-and-configuratio
