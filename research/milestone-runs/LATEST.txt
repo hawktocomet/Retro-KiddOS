@@ -1,1 +1,1 @@
-research/milestone-runs/20261110T235035Z-lvgl-feasibility-sdl-controller-bridge-and-configuratio
+research/milestone-runs/20261110T235853Z-lvgl-feasibility-isolated-sdl-prototype
