@@ -1,0 +1,11 @@
+===== ENVIRONMENT VERIFICATION =====
+ERROR: Working tree is not clean.
+Resolve existing changes before starting.
+ M CMakeLists.txt
+ M docs/DEVELOPMENT_LOG.md
+ M src/main.cpp
+?? docs/FIRMWARE_AUDIT.md
+?? include/
+?? src/app/
+?? src/platform/
+?? tasks/
