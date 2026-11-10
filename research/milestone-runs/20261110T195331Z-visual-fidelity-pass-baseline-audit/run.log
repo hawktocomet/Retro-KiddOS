@@ -1,0 +1,47 @@
+===== REPOSITORY STATE =====
+b038a64 chore: record milestone run - validate-and-commit-game-action-screen
+main
+
+===== EXISTING ASSET INFRASTRUCTURE =====
+./assets
+./assets/artwork
+./assets/fonts
+
+===== AVAILABLE FONT SUPPORT =====
+SDL2_ttf: not currently available through pkg-config
+Adwaita Mono
+Adwaita Sans
+C059
+D050000L
+DejaVu Math TeX Gyre
+DejaVu Sans
+DejaVu Sans,DejaVu Sans Condensed
+DejaVu Sans,DejaVu Sans Light
+DejaVu Sans Mono
+DejaVu Serif
+DejaVu Serif,DejaVu Serif Condensed
+JetBrainsMono Nerd Font,JetBrainsMono NF
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF ExtraBold
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF ExtraLight
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF Light
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF Medium
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF SemiBold
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF Thin
+JetBrainsMono Nerd Font Mono,JetBrainsMono NFM
+JetBrainsMono Nerd Font Mono,JetBrainsMono NFM,JetBrainsMono NFM ExtraBold
+
+===== BUILD CURRENT APPLICATION =====
+ninja: no work to do.
+
+===== VISIBLE DESKTOP PREVIEW =====
+Inspect the carousel first.
+LEFT/RIGHT: browse games
+RETURN: open selected game
+UP/DOWN: change action
+ESCAPE: return to carousel
+Q: exit
+
+The preview will remain open for up to 75 seconds.
+PASS: Preview closed normally.
+
+===== BASELINE AUDIT COMPLETE =====
