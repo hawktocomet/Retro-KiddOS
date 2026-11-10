@@ -1,0 +1,478 @@
+Temporary source: /tmp/tmp.e6NVwYF1Sn
+
+===== FETCH LVGL =====
+Commit:
+cff1c632206a267534102ee1065f51ac87be4099
+Version:
+rg: /tmp/tmp.e6NVwYF1Sn/lvgl/lv_version.h: No such file or directory (os error 2)
+/tmp/tmp.e6NVwYF1Sn/lvgl/include/lvgl/lv_version.h:9:#define LVGL_VERSION_MAJOR 10
+/tmp/tmp.e6NVwYF1Sn/lvgl/include/lvgl/lv_version.h:10:#define LVGL_VERSION_MINOR 0
+/tmp/tmp.e6NVwYF1Sn/lvgl/include/lvgl/lv_version.h:11:#define LVGL_VERSION_PATCH 0
+
+===== SDL2 BACKEND IMPLEMENTATION =====
+/tmp/tmp.e6NVwYF1Sn/lvgl/Kconfig:1204:config LV_USE_DRAW_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/Kconfig:2758:config LV_USE_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/Kconfig:2764:if LV_USE_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/Kconfig:2783:		select LV_USE_DRAW_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/Kconfig:2864:endif #LV_USE_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/lv_init.c:45:#if LV_USE_DRAW_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/lv_init.c:243:#if LV_USE_DRAW_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/draw/sdl/Kconfig:1:config LV_USE_DRAW_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/draw/sdl/lv_draw_sdl.c:10:#if LV_USE_DRAW_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/draw/sdl/lv_draw_sdl.c:166:        layer->user_data = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/draw/sdl/lv_draw_sdl.c:348:    SDL_Texture * texture = SDL_CreateTexture(lv_sdl_window_get_renderer(disp), SDL_PIXELFORMAT_ARGB8888,
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/draw/sdl/lv_draw_sdl.c:401:    SDL_RenderCopyEx(renderer, src_texture, NULL, &rect, draw_dsc->rotation / 10, &center, SDL_FLIP_NONE);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/draw/sdl/lv_draw_sdl.c:489:    SDL_RenderCopy(renderer, texture, NULL, &rect);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/draw/sdl/lv_draw_sdl.c:551:#endif /*LV_USE_DRAW_SDL*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/draw/sdl/lv_draw_sdl.h:18:#if LV_USE_DRAW_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/draw/sdl/lv_draw_sdl.h:65:#endif /*LV_USE_DRAW_SDL*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/Kconfig:1:config LV_USE_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/Kconfig:7:if LV_USE_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/Kconfig:26:		select LV_USE_DRAW_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/Kconfig:107:endif #LV_USE_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_texture.c:12:#if LV_USE_SDL && !LV_SDL_USE_EGL && LV_USE_DRAW_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_texture.c:69:    ddata->renderer = SDL_CreateRenderer(lv_sdl_window_get_window(display), -1,
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_texture.c:114:        SDL_RenderPresent(ddata->renderer);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_texture.c:130:    SDL_RenderPresent(ddata->renderer);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_texture.c:134:#endif /*LV_USE_SDL && !LV_SDL_USE_EGL && LV_USE_DRAW_SDL*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_window.c:15:#if LV_USE_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_window.c:58:lv_display_t * lv_sdl_window_create(int32_t hor_res, int32_t ver_res)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_window.c:357:#endif /*LV_USE_SDL*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_keyboard.c:12:#if LV_USE_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_keyboard.c:224:#endif /*LV_USE_SDL*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_mouse.c:12:#if LV_USE_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_mouse.c:203:#endif /*LV_USE_SDL*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_mousewheel.c:12:#if LV_USE_SDL && LV_SDL_MOUSEWHEEL_MODE == LV_SDL_MOUSEWHEEL_MODE_ENCODER
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_mousewheel.c:143:#endif /*LV_USE_SDL*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_private.h:19:#if LV_USE_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_private.h:76:#endif /*LV_USE_SDL*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_sw.c:17:#if LV_USE_SDL && !LV_SDL_USE_EGL && !LV_USE_DRAW_SDL
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_sw.c:98:    ddata->renderer = SDL_CreateRenderer(lv_sdl_window_get_window(display), -1,
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_sw.c:188:    ddata->texture = SDL_CreateTexture(ddata->renderer, px_format,
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_sw.c:348:    SDL_RenderCopy(ddata->renderer, ddata->texture, NULL, NULL);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_sw.c:349:    SDL_RenderPresent(ddata->renderer);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/sdl/lv_sdl_sw.c:353:#endif /*LV_USE_SDL && !LV_SDL_USE_EGL && !LV_USE_DRAW_SDL*/
+
+===== CONTROLLER AND FOCUS NAVIGATION =====
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:54:lv_group_t * lv_group_create(void)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:97:            lv_indev_set_group(indev, NULL);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:126:void lv_group_add_obj(lv_group_t * group, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:177:    if(focused == obj1) lv_group_focus_obj(obj2);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:178:    else if(focused == obj2) lv_group_focus_obj(obj1);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:240:void lv_group_focus_obj(lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:273:void lv_group_focus_next(lv_group_t * group)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:284:void lv_group_focus_prev(lv_group_t * group)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:295:void lv_group_focus_freeze(lv_group_t * group, bool en)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:315:void lv_group_set_focus_cb(lv_group_t * group, lv_group_focus_cb_t focus_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:367:lv_group_focus_cb_t lv_group_get_focus_cb(const lv_group_t * group)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:466:        lv_group_focus_next(g);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:468:        lv_group_focus_prev(g);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group.c:567:        lv_indev_type_t indev_type = lv_indev_get_type(indev);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_group_private.h:37:    lv_group_focus_cb_t focus_cb;              /**< A function to call when a new object is focused (optional)*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:411:            lv_group_focus_next(group);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1650:            if(c == LV_KEY_RIGHT || c == LV_KEY_UP) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1653:            else if(c == LV_KEY_LEFT || c == LV_KEY_DOWN) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1661:            if(c != LV_KEY_ENTER && was_checked != has_state(obj, LV_STATE_CHECKED)) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1682:            else if(c == LV_KEY_RIGHT) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1689:            else if(c == LV_KEY_LEFT) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1713:        lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1714:        if(indev_type == LV_INDEV_TYPE_KEYPAD || indev_type == LV_INDEV_TYPE_ENCODER) state |= LV_STATE_FOCUS_KEY;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class.c:124:        lv_group_add_obj(def_group, obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_tree.c:702:        lv_indev_type_t indev_type = lv_indev_get_type(indev);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/monkey/lv_monkey.c:33:    LV_KEY_RIGHT,
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/monkey/lv_monkey.c:34:    LV_KEY_LEFT,
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/monkey/lv_monkey.c:38:    LV_KEY_ENTER,
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/monkey/lv_monkey.c:165:        case LV_INDEV_TYPE_ENCODER:
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/monkey/lv_monkey.c:171:        case LV_INDEV_TYPE_KEYPAD: {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/test/lv_test_helpers.c:47:    lv_indev_read(lv_test_indev_get_indev(LV_INDEV_TYPE_ENCODER));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/test/lv_test_helpers.c:48:    lv_indev_read(lv_test_indev_get_indev(LV_INDEV_TYPE_KEYPAD));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/test/lv_test_helpers.c:57:    lv_indev_read(lv_test_indev_get_indev(LV_INDEV_TYPE_ENCODER));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/test/lv_test_helpers.c:58:    lv_indev_read(lv_test_indev_get_indev(LV_INDEV_TYPE_KEYPAD));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/test/lv_test_indev.c:50:    lv_indev_set_type(_state.keypad_indev, LV_INDEV_TYPE_KEYPAD);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/test/lv_test_indev.c:54:    lv_indev_set_type(_state.encoder_indev, LV_INDEV_TYPE_ENCODER);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/test/lv_test_indev.c:70:lv_indev_t * lv_test_indev_get_indev(lv_indev_type_t type)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/test/lv_test_indev.c:75:        case LV_INDEV_TYPE_KEYPAD:
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/test/lv_test_indev.c:77:        case LV_INDEV_TYPE_ENCODER:
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/debugging/test/lv_test_indev_gesture.c:72:lv_indev_t * lv_test_indev_get_gesture_indev(lv_indev_type_t type)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/table/lv_table.c:608:        lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/table/lv_table.c:632:        if(c == LV_KEY_LEFT) col--;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/table/lv_table.c:633:        else if(c == LV_KEY_RIGHT) col++;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/table/lv_table.c:1028:    lv_indev_type_t type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:593:        lv_indev_type_t indev_type = lv_indev_get_type(indev);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:751:        lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:752:        if(indev_type == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:761:        if(c == LV_KEY_RIGHT || c == LV_KEY_UP) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:764:        else if(c == LV_KEY_LEFT || c == LV_KEY_DOWN) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/textarea/lv_textarea.c:897:        if(c == LV_KEY_RIGHT)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/textarea/lv_textarea.c:899:        else if(c == LV_KEY_LEFT)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/textarea/lv_textarea.c:913:        else if(c == LV_KEY_ENTER && lv_textarea_get_one_line(obj))
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/textarea/lv_textarea.c:1175:    if(lv_indev_get_type(click_source) == LV_INDEV_TYPE_KEYPAD ||
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/textarea/lv_textarea.c:1176:       lv_indev_get_type(click_source) == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/tabview/lv_tabview.c:108:    if(g) lv_group_add_obj(g, button);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/slider/lv_slider.c:338:        lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/slider/lv_slider.c:339:        if(indev_type == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/slider/lv_slider.c:360:        lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/slider/lv_slider.c:361:        if(indev_type == LV_INDEV_TYPE_ENCODER || indev_type == LV_INDEV_TYPE_KEYPAD) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/slider/lv_slider.c:398:        if(c == LV_KEY_RIGHT || c == LV_KEY_UP) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/slider/lv_slider.c:402:        else if(c == LV_KEY_LEFT || c == LV_KEY_DOWN) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/spinbox/lv_spinbox.c:472:        if(indev != NULL && lv_indev_get_type(indev) == LV_INDEV_TYPE_ENCODER
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/spinbox/lv_spinbox.c:535:        lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/spinbox/lv_spinbox.c:538:        if(c == LV_KEY_RIGHT) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/spinbox/lv_spinbox.c:539:            if(indev_type == LV_INDEV_TYPE_ENCODER)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/spinbox/lv_spinbox.c:544:        else if(c == LV_KEY_LEFT) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/spinbox/lv_spinbox.c:545:            if(indev_type == LV_INDEV_TYPE_ENCODER)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/dropdown/lv_dropdown.c:852:        lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/dropdown/lv_dropdown.c:855:        if(indev_type == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/dropdown/lv_dropdown.c:955:        if(c == LV_KEY_RIGHT || c == LV_KEY_DOWN) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/dropdown/lv_dropdown.c:964:        else if(c == LV_KEY_LEFT || c == LV_KEY_UP) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/dropdown/lv_dropdown.c:978:        else if(c == LV_KEY_ENTER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/dropdown/lv_dropdown.c:1363:            lv_indev_type_t indev_type = lv_indev_get_type(indev);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/dropdown/lv_dropdown.c:1364:            if(indev_type == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/dropdown/lv_dropdown.c:1393:    if(lv_indev_get_type(indev) == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/roller/lv_roller.c:456:        lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/roller/lv_roller.c:459:        if(indev_type == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/roller/lv_roller.c:490:        if(c == LV_KEY_RIGHT || c == LV_KEY_DOWN) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/roller/lv_roller.c:497:        else if(c == LV_KEY_LEFT || c == LV_KEY_UP) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/roller/lv_roller.c:812:    lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/roller/lv_roller.c:813:    if(indev_type == LV_INDEV_TYPE_ENCODER || indev_type == LV_INDEV_TYPE_KEYPAD) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/roller/lv_roller.c:816:        if(indev_type == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:395:        lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:429:            lv_indev_type_t indev_type = lv_indev_get_type(indev);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:491:        lv_indev_type_t indev_type = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:497:            if(indev_type == LV_INDEV_TYPE_KEYPAD || (indev_type == LV_INDEV_TYPE_ENCODER && editing)) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:532:        if(c == LV_KEY_RIGHT) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:548:        else if(c == LV_KEY_LEFT) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_gridnav.c:152:        if(key == LV_KEY_RIGHT && !(dsc->ctrl & LV_GRIDNAV_CTRL_VERTICAL_MOVE_ONLY)) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_gridnav.c:167:                        lv_group_focus_next(lv_obj_get_group(obj));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_gridnav.c:172:        else if(key == LV_KEY_LEFT && !(dsc->ctrl & LV_GRIDNAV_CTRL_VERTICAL_MOVE_ONLY)) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_gridnav.c:187:                        lv_group_focus_prev(lv_obj_get_group(obj));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_gridnav.c:206:                        lv_group_focus_next(lv_obj_get_group(obj));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_gridnav.c:225:                        lv_group_focus_prev(lv_obj_get_group(obj));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_gridnav.c:289:            lv_indev_type_t t = indev != NULL ? lv_indev_get_type(indev) : LV_INDEV_TYPE_NONE;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_gridnav.c:290:            if(t == LV_INDEV_TYPE_ENCODER || t == LV_INDEV_TYPE_KEYPAD) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev_private.h:34:    lv_indev_type_t type;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:179:    else if(indev->type == LV_INDEV_TYPE_KEYPAD || indev->type == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:244:        else if(indev->type == LV_INDEV_TYPE_ENCODER && data.enc_diff) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:251:        else if(indev->type == LV_INDEV_TYPE_KEYPAD) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:254:        else if(indev->type == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:291:void lv_indev_set_type(lv_indev_t * indev, lv_indev_type_t indev_type)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:325:lv_indev_type_t lv_indev_get_type(const lv_indev_t * indev)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:474:void lv_indev_set_group(lv_indev_t * indev, lv_group_t * group)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:478:    if(indev->type == LV_INDEV_TYPE_KEYPAD || indev->type == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:522:    if(indev->type == LV_INDEV_TYPE_KEYPAD)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:814: * Process a new point from LV_INDEV_TYPE_KEYPAD input device
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:876:            lv_group_focus_next(g);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:882:            lv_group_focus_prev(g);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:887:            if(data->key == LV_KEY_ENTER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:889:                if(lv_group_send_data(g, LV_KEY_ENTER) == LV_RESULT_INVALID) return;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:912:        if(g == NULL || data->key == LV_KEY_ENTER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:919:            if(g == NULL || data->key == LV_KEY_ENTER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:932:            if(g == NULL || data->key == LV_KEY_ENTER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:938:                lv_group_focus_next(g);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:944:                lv_group_focus_prev(g);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:960:        if(g == NULL || data->key == LV_KEY_ENTER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:980: * Process a new point from LV_INDEV_TYPE_ENCODER input device
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1022:        if(data->key == LV_KEY_ENTER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1032:        else if(data->key == LV_KEY_LEFT) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1036:        else if(data->key == LV_KEY_RIGHT) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1063:            if(data->key == LV_KEY_ENTER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1096:            if(data->key == LV_KEY_ENTER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1101:            else if(data->key == LV_KEY_LEFT) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1105:            else if(data->key == LV_KEY_RIGHT) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1121:        if(data->key == LV_KEY_ENTER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1150:                    lv_group_send_data(g, LV_KEY_ENTER);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1178:                    lv_group_send_data(g, LV_KEY_LEFT);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1184:                    lv_group_send_data(g, LV_KEY_RIGHT);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1195:                    lv_group_focus_prev(g);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1201:                    lv_group_focus_next(g);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1739:        if(indev->type == LV_INDEV_TYPE_ENCODER) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1740:            /* Before v9.6, LV_INDEV_TYPE_ENCODER set LV_KEY_ENTER as the last key on EVERY frame.
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1744:             * explicitly set the key, as it was previously always defaulting to LV_KEY_ENTER.
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1745:             * To maintain compatibility, we initialize the key to LV_KEY_ENTER here.
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1747:            indev->keypad.last_key = LV_KEY_ENTER;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1773:            lv_group_focus_obj(indev_obj_act);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1814:            lv_group_focus_obj(indev_obj_act);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/indev/lv_indev.c:1943:    if(indev->type == LV_INDEV_TYPE_POINTER || indev->type == LV_INDEV_TYPE_KEYPAD) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/drivers/evdev/lv_evdev.c:94:            return LV_KEY_RIGHT;
+
+===== ANIMATION AND IMAGE SUPPORT =====
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/animimage/lv_animimage.c:116:    lv_anim_start(&animimg->anim);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/animimage/lv_animimage.c:159:void lv_animimg_set_start_cb(lv_obj_t * obj, lv_anim_start_cb_t start_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/animimage/lv_animimage.c:205:lv_anim_t * lv_animimg_get_anim(lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/animimage/lv_animimage.c:248:    lv_image_set_src(obj, animimg->dsc[idx]);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/animimage/lv_animimage_private.h:34:    lv_anim_t anim;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/cache/instance/lv_image_cache.c:131:        if(lhs_src_type == LV_IMAGE_SRC_FILE) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/cache/instance/lv_image_cache.c:137:        else if(lhs_src_type == LV_IMAGE_SRC_VARIABLE) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/cache/instance/lv_image_cache.c:165:    if(entry->src_type == LV_IMAGE_SRC_FILE) lv_free((void *)entry->src);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/cache/instance/lv_image_cache.c:182:        case LV_IMAGE_SRC_FILE:
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/cache/instance/lv_image_cache.c:186:        case LV_IMAGE_SRC_VARIABLE:
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/cache/instance/lv_image_header_cache.c:123:        if(lhs_src_type == LV_IMAGE_SRC_FILE) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/cache/instance/lv_image_header_cache.c:129:        else if(lhs_src_type == LV_IMAGE_SRC_VARIABLE) {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/cache/instance/lv_image_header_cache.c:150:    if(entry->src_type == LV_IMAGE_SRC_FILE) lv_free((void *)entry->src);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/cache/instance/lv_image_header_cache.c:167:        case LV_IMAGE_SRC_FILE:
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/cache/instance/lv_image_header_cache.c:171:        case LV_IMAGE_SRC_VARIABLE:
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:60:static void lv_bar_anim_completed(lv_anim_t * a);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:735:static void lv_bar_anim_completed(lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:785:        lv_anim_t a;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:792:        lv_anim_start(&a);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:39:static void anim_completed_handler(lv_anim_t * a);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:40:static int32_t lv_anim_path_cubic_bezier(const lv_anim_t * a, int32_t x1,
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:42:static void lv_anim_pause_for_internal(lv_anim_t * a, uint32_t ms);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:43:static void resolve_time(lv_anim_t * a);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:44:static bool remove_concurrent_anims(const lv_anim_t * a_current);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:66:    lv_ll_init(anim_ll_p, sizeof(lv_anim_t));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:102:void lv_anim_init(lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:105:    lv_memzero(a, sizeof(lv_anim_t));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:118:lv_anim_t * lv_anim_start(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:129:    lv_anim_t * new_anim = lv_ll_ins_head(anim_ll_p);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:134:    lv_memcpy(new_anim, a, sizeof(lv_anim_t));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:168:uint32_t lv_anim_get_playtime(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:185:    lv_anim_t * a;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:212:lv_anim_t * lv_anim_get(void * var, lv_anim_exec_xcb_t exec_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:215:    lv_anim_t * a;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:233:    lv_anim_t * a;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:287:int32_t lv_anim_path_linear(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:303:int32_t lv_anim_path_ease_in(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:310:int32_t lv_anim_path_ease_out(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:317:int32_t lv_anim_path_ease_in_out(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:324:int32_t lv_anim_path_overshoot(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:330:int32_t lv_anim_path_bounce(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:383:int32_t lv_anim_path_step(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:392:int32_t lv_anim_path_custom_bezier3(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:399:void lv_anim_set_var(lv_anim_t * a, void * var)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:405:void lv_anim_set_exec_cb(lv_anim_t * a, lv_anim_exec_xcb_t exec_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:411:void lv_anim_set_duration(lv_anim_t * a, uint32_t duration)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:417:void lv_anim_set_delay(lv_anim_t * a, uint32_t delay)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:423:void lv_anim_set_values(lv_anim_t * a, int32_t start, int32_t end)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:431:void lv_anim_set_custom_exec_cb(lv_anim_t * a, lv_anim_custom_exec_cb_t exec_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:437:void lv_anim_set_path_cb(lv_anim_t * a, lv_anim_path_cb_t path_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:443:void lv_anim_set_start_cb(lv_anim_t * a, lv_anim_start_cb_t start_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:449:void lv_anim_set_get_value_cb(lv_anim_t * a, lv_anim_get_value_cb_t get_value_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:455:void lv_anim_set_completed_cb(lv_anim_t * a, lv_anim_completed_cb_t completed_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:461:void lv_anim_set_deleted_cb(lv_anim_t * a, lv_anim_deleted_cb_t deleted_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:467:void lv_anim_set_reverse_duration(lv_anim_t * a, uint32_t duration)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:473:void lv_anim_set_reverse_time(lv_anim_t * a, uint32_t duration)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:479:void lv_anim_set_reverse_delay(lv_anim_t * a, uint32_t delay)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:485:void lv_anim_set_repeat_count(lv_anim_t * a, uint32_t cnt)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:491:void lv_anim_set_repeat_delay(lv_anim_t * a, uint32_t delay)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:497:void lv_anim_set_early_apply(lv_anim_t * a, bool en)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:503:void lv_anim_set_user_data(lv_anim_t * a, void * user_data)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:509:void lv_anim_set_bezier3_param(lv_anim_t * a, int16_t x1, int16_t y1, int16_t x2, int16_t y2)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:520:uint32_t lv_anim_get_delay(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:526:uint32_t lv_anim_get_time(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:532:uint32_t lv_anim_get_repeat_count(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:538:void * lv_anim_get_user_data(const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:544:bool lv_anim_custom_delete(lv_anim_t * a, lv_anim_custom_exec_cb_t exec_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:549:lv_anim_t * lv_anim_custom_get(lv_anim_t * a, lv_anim_custom_exec_cb_t exec_cb)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:568:bool lv_anim_is_paused(lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:574:void lv_anim_pause(lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:580:void lv_anim_pause_for(lv_anim_t * a, uint32_t ms)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:586:void lv_anim_resume(lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:595:void lv_anim_set_external_data(lv_anim_t * anim, void * data, void (* free_cb)(void * data))
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:618:    lv_anim_t * a = lv_ll_get_head(anim_ll_p);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:709:static void anim_completed_handler(lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:798:static int32_t lv_anim_path_cubic_bezier(const lv_anim_t * a, int32_t x1, int32_t y1, int32_t x2, int32_t y2)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:812:static void lv_anim_pause_for_internal(lv_anim_t * a, uint32_t ms)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:820:static void resolve_time(lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:834:static bool remove_concurrent_anims(const lv_anim_t * a_current)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:838:    lv_anim_t * a;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim.c:877:    lv_anim_t * anim = a;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:2: * @file lv_anim_timeline.c
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:11:#include "lv_anim_timeline_private.h"
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:25:static void anim_timeline_set_act_time(lv_anim_timeline_t * at, uint32_t act_time);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:26:static int32_t anim_timeline_path_cb(const lv_anim_t * a);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:27:static void exec_anim(lv_anim_t * a, int32_t v);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:41:lv_anim_timeline_t * lv_anim_timeline_create(void)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:43:    lv_anim_timeline_t * at = lv_malloc_zeroed(sizeof(lv_anim_timeline_t));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:48:void lv_anim_timeline_delete(lv_anim_timeline_t * at)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:52:    lv_anim_timeline_pause(at);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:58:void lv_anim_timeline_add(lv_anim_timeline_t * at, uint32_t start_time, const lv_anim_t * a)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:64:    at->anim_dsc = lv_realloc(at->anim_dsc, at->anim_dsc_cnt * sizeof(lv_anim_timeline_dsc_t));
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:73:uint32_t lv_anim_timeline_start(lv_anim_timeline_t * at)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:77:    uint32_t playtime = lv_anim_timeline_get_playtime(at);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:90:    lv_anim_t a;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:113:    lv_anim_start(&a);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:118:uint32_t lv_anim_timeline_restart(lv_anim_timeline_t * at)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:122:    lv_anim_timeline_set_progress(at, at->reverse ? LV_ANIM_TIMELINE_PROGRESS_MAX : 0);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:123:    return lv_anim_timeline_start(at);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/misc/lv_anim_timeline.c:126:void lv_anim_timeline_pause(lv_anim_timeline_t * at)
+
+===== CUSTOM WIDGET AND STYLE SUPPORT =====
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/3dtexture/lv_3dtexture.c:31:static void lv_3dtexture_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/3dtexture/lv_3dtexture.c:32:static void lv_3dtexture_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/3dtexture/lv_3dtexture.c:33:static void lv_3dtexture_event(const lv_obj_class_t * class_p, lv_event_t * e);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/3dtexture/lv_3dtexture.c:40:const lv_obj_class_t lv_3dtexture_class = {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/3dtexture/lv_3dtexture.c:62:    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/3dtexture/lv_3dtexture.c:63:    lv_obj_class_init_obj(obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/3dtexture/lv_3dtexture.c:109:static void lv_3dtexture_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/3dtexture/lv_3dtexture.c:122:static void lv_3dtexture_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/3dtexture/lv_3dtexture.c:129:static void lv_3dtexture_event(const lv_obj_class_t * class_p, lv_event_t * e)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/animimage/lv_animimage.c:40:static void lv_animimg_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/animimage/lv_animimage.c:72:const lv_obj_class_t lv_animimg_class = {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/animimage/lv_animimage.c:91:    lv_obj_t * obj = lv_obj_class_create_obj(&lv_animimg_class, parent);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/animimage/lv_animimage.c:92:    lv_obj_class_init_obj(obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/animimage/lv_animimage.c:216:static void lv_animimg_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:59:static void lv_obj_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:60:static void lv_obj_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:62:static void lv_obj_event(const lv_obj_class_t * class_p, lv_event_t * e);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:347:const lv_obj_class_t lv_obj_class = {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:373:    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:377:    lv_obj_class_init_obj(obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1070:bool lv_obj_check_type(const lv_obj_t * obj, const lv_obj_class_t * class_p)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1077:bool lv_obj_has_class(const lv_obj_t * obj, const lv_obj_class_t * class_p)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1082:    const lv_obj_class_t * obj_class = obj->class_p;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1091:const lv_obj_class_t * lv_obj_get_class(const lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1267:static void lv_obj_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1307:static void lv_obj_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj.c:1582:static void lv_obj_event(const lv_obj_class_t * class_p, lv_event_t * e)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class.c:30:static void lv_obj_construct(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class.c:31:static uint32_t get_instance_size(const lv_obj_class_t * class_p);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class.c:45:lv_obj_t * lv_obj_class_create_obj(const lv_obj_class_t * class_p, lv_obj_t * parent)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class.c:107:void lv_obj_class_init_obj(lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class.c:166:    const lv_obj_class_t * class_p = obj->class_p;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class.c:180:    const lv_obj_class_t * class_p = obj->class_p;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class.c:204:static void lv_obj_construct(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class.c:220:        const lv_obj_class_t * original_class_p = obj->class_p;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class.c:235:static uint32_t get_instance_size(const lv_obj_class_t * class_p)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class_private.h:31:struct _lv_obj_class_t {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class_private.h:32:    const lv_obj_class_t * base_class;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class_private.h:34:    void (*constructor_cb)(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class_private.h:35:    void (*destructor_cb)(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class_private.h:38:    void (*event_cb)(const lv_obj_class_t * class_p, lv_event_t * e);  /**< Widget type specific event function*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_class_private.h:60:    uint32_t theme_inheritable : 1;    /**< Value from ::lv_obj_class_theme_inheritable_t*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:41:static void lv_arc_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:43:static void lv_arc_event(const lv_obj_class_t * class_p, lv_event_t * e);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:124:const lv_obj_class_t lv_arc_class  = {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:145:    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:146:    lv_obj_class_init_obj(obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:540:static void lv_arc_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arc/lv_arc.c:573:static void lv_arc_event(const lv_obj_class_t * class_p, lv_event_t * e)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_event.c:78:lv_result_t lv_obj_event_base(const lv_obj_class_t * class_p, lv_event_t * e)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_event.c:83:    const lv_obj_class_t * base;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arclabel/lv_arclabel.c:49:static void lv_arclabel_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arclabel/lv_arclabel.c:51:static void lv_arclabel_event(const lv_obj_class_t * class_p, lv_event_t * e);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arclabel/lv_arclabel.c:66:const lv_obj_class_t lv_arclabel_class  = {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arclabel/lv_arclabel.c:86:    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arclabel/lv_arclabel.c:87:    lv_obj_class_init_obj(obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arclabel/lv_arclabel.c:380:static void lv_arclabel_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/arclabel/lv_arclabel.c:404:static void lv_arclabel_event(const lv_obj_class_t * class_p, lv_event_t * e)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_id_builtin.c:28:    const lv_obj_class_t * class_p;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_id_builtin.c:46:void lv_obj_assign_id(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:52:static void lv_bar_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:53:static void lv_bar_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:54:static void lv_bar_event(const lv_obj_class_t * class_p, lv_event_t * e);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:110:const lv_obj_class_t lv_bar_class = {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:133:    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:134:    lv_obj_class_init_obj(obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:322:static void lv_bar_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:351:static void lv_bar_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/bar/lv_bar.c:683:static void lv_bar_event(const lv_obj_class_t * class_p, lv_event_t * e)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_private.h:62:    const lv_obj_class_t * class_p;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/barcode/lv_barcode.c:30:static void lv_barcode_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/barcode/lv_barcode.c:31:static void lv_barcode_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/barcode/lv_barcode.c:32:static void lv_barcode_event(const lv_obj_class_t * class_p, lv_event_t * e);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/barcode/lv_barcode.c:50:const lv_obj_class_t lv_barcode_class = {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/barcode/lv_barcode.c:71:    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/barcode/lv_barcode.c:72:    lv_obj_class_init_obj(obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/barcode/lv_barcode.c:264:static void lv_barcode_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/barcode/lv_barcode.c:286:static void lv_barcode_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/barcode/lv_barcode.c:302:static void lv_barcode_event(const lv_obj_class_t * class_p, lv_event_t * e)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_property.c:212:lv_prop_id_t lv_obj_class_property_get_id(const lv_obj_class_t * clz, const char * name)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_property.c:242:    const lv_obj_class_t * clz;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_property.c:270:    const lv_obj_class_t * clz;
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/button/lv_button.c:27:static void lv_button_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/button/lv_button.c:32:const lv_obj_class_t lv_button_class  = {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/button/lv_button.c:53:    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/button/lv_button.c:54:    lv_obj_class_init_obj(obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/button/lv_button.c:62:static void lv_button_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:34:static void lv_buttonmatrix_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:35:static void lv_buttonmatrix_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:36:static void lv_buttonmatrix_event(const lv_obj_class_t * class_p, lv_event_t * e);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:79:const lv_obj_class_t lv_buttonmatrix_class = {
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:104:    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:105:    lv_obj_class_init_obj(obj);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:327:static void lv_buttonmatrix_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:349:static void lv_buttonmatrix_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c:362:static void lv_buttonmatrix_event(const lv_obj_class_t * class_p, lv_event_t * e)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_style.c:116:void lv_obj_add_style(lv_obj_t * obj, const lv_style_t * style, lv_style_selector_t selector)
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_style.c:201:    /*Similar to lv_obj_add_style, delete transition*/
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_style.c:430:    lv_style_set_prop(style, prop, value);
+/tmp/tmp.e6NVwYF1Sn/lvgl/src/core/lv_obj_style.c:515:    lv_style_set_prop((lv_style_t *)style_trans->style, tr_dsc->prop, v1);  /*Be sure `trans_style` has a valid value*/
+
+===== BUILD CONFIGURATION =====
+cmake_minimum_required(VERSION 3.12.4)
+
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if(NOT ESP_PLATFORM)
+  if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_LIST_DIR)
+    project(
+      lvgl
+      LANGUAGES C CXX
+      HOMEPAGE_URL https://github.com/lvgl/lvgl)
+  else()
+    enable_language(C CXX)
+  endif()
+  if(NOT (CMAKE_C_COMPILER_ID STREQUAL "MSVC"))
+    enable_language(ASM)
+  endif()
+endif()
+
+set(LVGL_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+if(MSVC)
+  add_compile_options(/utf-8)
+endif()
+
+if(ESP_PLATFORM)
+  include(${CMAKE_CURRENT_LIST_DIR}/env_support/cmake/esp.cmake)
+elseif(MICROPY_DIR)
+  include(${CMAKE_CURRENT_LIST_DIR}/env_support/cmake/micropython.cmake)
+else()
+  include(${CMAKE_CURRENT_LIST_DIR}/env_support/cmake/main.cmake)
+endif()
+
+if(MSVC)
+  # Required for reliable variadic macro dispatch (e.g. LV_CHECK_OBJ) on MSVC.
+  target_compile_options(lvgl PUBLIC /Zc:preprocessor)
+
+  #[[
+      unfortunately CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS does not work for global data.
+      for global data we still need decl specs.
+      Check out the docs to learn more about the limitations of CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS
+      https://cmake.org/cmake/help/latest/prop_tgt/WINDOWS_EXPORT_ALL_SYMBOLS.html#prop_tgt:WINDOWS_EXPORT_ALL_SYMBOLS
+
+      For all compiled sources within the library (i.e. basically all lvgl files) we need to use dllexport.
+      For all compiled sources from outside the library (i.e. files which include lvgl headers) we need to use dllimport.
+      We can do this by using CMakes INTERFACE and PRIVATE keyword.
+    ]]
+  if (BUILD_SHARED_LIBS)
+    target_compile_definitions(
+      lvgl
+      INTERFACE "LV_ATTRIBUTE_EXTERN_DATA=__declspec(dllimport)"
+      PRIVATE "LV_ATTRIBUTE_EXTERN_DATA=__declspec(dllexport)")
+  endif()
+endif()
+
+===== LICENSE =====
+MIT licence
+Copyright (c) 2025 LVGL Kft
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+===== PRODUCTION WORKTREE PRESERVATION =====
+ M include/kiddos/app/application.hpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+
+===== LVGL SOURCE AUDIT COMPLETE =====
