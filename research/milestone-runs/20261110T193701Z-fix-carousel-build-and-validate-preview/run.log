@@ -1,0 +1,36 @@
+===== VERIFY EXPECTED WORKING TREE =====
+ M include/kiddos/app/application.hpp
+ M include/kiddos/platform/platform.hpp
+ M include/kiddos/platform/sdl_platform.hpp
+ M src/app/application.cpp
+ M src/platform/sdl_platform.cpp
+===== FIX PLATFORM-INDEPENDENT FRAME DELAY =====
+===== VERIFY CORRECTION =====
+3:#include <chrono>
+4:#include <thread>
+33:            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+===== BUILD =====
+[1/3] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+[2/3] Building CXX object CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o
+[3/3] Linking CXX executable kiddos
+===== STATIC VALIDATION =====
+===== LAUNCH KID MODE PREVIEW =====
+Use LEFT and RIGHT arrows to browse the three games.
+Close the window or wait up to 45 seconds.
+PASS: Preview completed.
+===== COMMIT IMPLEMENTATION =====
+fatal: pathspec 'docs/KID_MODE_CAROUSEL_PROTOTYPE.md' did not match any files
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   include/kiddos/app/application.hpp
+	modified:   include/kiddos/platform/platform.hpp
+	modified:   include/kiddos/platform/sdl_platform.hpp
+	modified:   src/app/application.cpp
+	modified:   src/platform/sdl_platform.cpp
+
+no changes added to commit (use "git add" and/or "git commit -a")
+ERROR: Implementation commit failed.
