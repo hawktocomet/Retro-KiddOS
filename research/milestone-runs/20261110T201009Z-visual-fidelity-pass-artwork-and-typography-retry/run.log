@@ -1,0 +1,48 @@
+===== VERIFY GENERATED ARTWORK =====
+
+===== PATCH SDL RENDERER =====
+Renderer patch applied successfully.
+
+===== BUILD =====
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/2] Building CXX object CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:25:40: warning: multi-character character constant [-Wmultichar]
+   25 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:41:40: warning: multi-character character constant [-Wmultichar]
+   41 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:174:6: warning: ‘void kiddos::{anonymous}::draw_ocean_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  174 | void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:142:6: warning: ‘void kiddos::{anonymous}::draw_forest_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  142 | void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:112:6: warning: ‘void kiddos::{anonymous}::draw_space_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  112 | void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+[2/2] Linking CXX executable kiddos
+
+===== VERIFY ARTWORK =====
+assets/artwork/generated/forest.bmp (1612938 bytes)
+assets/artwork/generated/label-play.bmp (504138 bytes)
+assets/artwork/generated/label-resume.bmp (504138 bytes)
+assets/artwork/generated/label-start-over.bmp (504138 bytes)
+assets/artwork/generated/ocean.bmp (1612938 bytes)
+assets/artwork/generated/space.bmp (1612938 bytes)
+assets/artwork/source/forest.svg (3088 bytes)
+assets/artwork/source/ocean.svg (2981 bytes)
+assets/artwork/source/space.svg (2642 bytes)
+
+===== DESKTOP PREVIEW =====
+LEFT/RIGHT: browse games
+ENTER: open selected game's actions
+UP/DOWN: change selected action
+ESC: return to carousel
+Close the preview after inspecting both screens.
+PASS: Preview closed normally.
+
+===== SOURCE VALIDATION =====
+Renderer and artwork validation completed.
