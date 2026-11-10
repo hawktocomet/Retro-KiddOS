@@ -1,0 +1,460 @@
+===== WORKTREE =====
+
+===== CAROUSEL RENDERING REFERENCES =====
+src/platform/sdl_platform.cpp:16:std::array<SDL_Texture*, 3> artwork_textures{};
+src/platform/sdl_platform.cpp:60:void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+src/platform/sdl_platform.cpp:282:    if (index < 0 || index >= static_cast<int>(artwork_textures.size())) return;
+src/platform/sdl_platform.cpp:283:    SDL_Texture* texture = artwork_textures[static_cast<std::size_t>(index)];
+src/platform/sdl_platform.cpp:292:               SDL_Rect rect, bool selected) {
+src/platform/sdl_platform.cpp:293:    const Uint8 alpha = selected ? 255 : 145;
+src/platform/sdl_platform.cpp:295:    rounded_fill(r,
+src/platform/sdl_platform.cpp:297:                 30, {7, 13, 32, static_cast<Uint8>(selected ? 255 : 170)});
+src/platform/sdl_platform.cpp:299:    rounded_fill(r, rect, 25, {20, 34, 65, alpha});
+src/platform/sdl_platform.cpp:314:            selected
+src/platform/sdl_platform.cpp:318:    if (selected) {
+src/platform/sdl_platform.cpp:407:    for (std::size_t i = 0; i < artwork_textures.size(); ++i) {
+src/platform/sdl_platform.cpp:408:        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i]);
+src/platform/sdl_platform.cpp:409:        if (!artwork_textures[i]) {
+src/platform/sdl_platform.cpp:547:void SDLPlatform::draw_carousel(int selected_index) {
+src/platform/sdl_platform.cpp:550:    const int left = (selected_index + 2) % 3;
+src/platform/sdl_platform.cpp:551:    const int right = (selected_index + 1) % 3;
+src/platform/sdl_platform.cpp:560:    // Selected game: large, centered artwork.
+src/platform/sdl_platform.cpp:561:    draw_card(renderer_, selected_index,
+src/platform/sdl_platform.cpp:606:    int selected_index, bool has_checkpoint, int selected_action) {
+src/platform/sdl_platform.cpp:612:    // Keep the selected game's artwork prominent.
+src/platform/sdl_platform.cpp:613:    draw_card(renderer_, selected_index,
+src/platform/sdl_platform.cpp:625:        const bool selected = i == selected_action;
+src/platform/sdl_platform.cpp:629:        rounded_fill(renderer_, box, 22,
+src/platform/sdl_platform.cpp:630:                     selected
+src/platform/sdl_platform.cpp:635:                        selected
+src/platform/sdl_platform.cpp:655:        if (selected) {
+src/platform/sdl_platform.cpp:672:    for (auto& texture : artwork_textures) {
+src/app/application.cpp:49:                selected_game_ =
+src/app/application.cpp:50:                    (selected_game_ + game_count_ - 1) % game_count_;
+src/app/application.cpp:56:                selected_game_ =
+src/app/application.cpp:57:                    (selected_game_ + 1) % game_count_;
+src/app/application.cpp:62:            if (action_screen_ && selected_game_ == 1) {
+src/app/application.cpp:63:                selected_action_ =
+src/app/application.cpp:64:                    (selected_action_ + 1) % 2;
+src/app/application.cpp:69:            if (action_screen_ && selected_game_ == 1) {
+src/app/application.cpp:70:                selected_action_ =
+src/app/application.cpp:71:                    (selected_action_ + 1) % 2;
+src/app/application.cpp:78:                selected_action_ = 0;
+src/app/application.cpp:86:                selected_action_ = 0;
+src/app/application.cpp:100:            selected_game_, selected_game_ == 1, selected_action_);
+src/app/application.cpp:102:        platform_.draw_carousel(selected_game_);
+include/kiddos/platform/platform.hpp:14:    virtual void draw_carousel(int selected_index) = 0;
+include/kiddos/platform/platform.hpp:15:    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+include/kiddos/platform/sdl_platform.hpp:17:    void draw_carousel(int selected_index) override;
+include/kiddos/platform/sdl_platform.hpp:18:    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+include/kiddos/app/application.hpp:16:    int selected_game_ = 0;
+include/kiddos/app/application.hpp:18:    int selected_action_ = 0;
+
+===== SDL PLATFORM SOURCE =====
+#include "kiddos/platform/sdl_platform.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <iostream>
+
+namespace kiddos {
+
+namespace {
+
+struct Color {
+    Uint8 r, g, b, a;
+};
+
+std::array<SDL_Texture*, 3> artwork_textures{};
+std::array<SDL_Texture*, 3> action_label_textures{};
+
+SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+                                 const char* path,
+                                 bool magenta_key = false) {
+    SDL_Surface* surface = SDL_LoadBMP(path);
+    if (!surface) {
+        std::cerr << "Could not load " << path << ": "
+                  << SDL_GetError() << '\\n';
+        return nullptr;
+    }
+
+    if (magenta_key) {
+        const Uint32 key = SDL_MapRGB(surface->format, 255, 0, 255);
+        SDL_SetColorKey(surface, SDL_TRUE, key);
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    if (texture) {
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    } else {
+        std::cerr << "Could not create texture for " << path << ": "
+                  << SDL_GetError() << '\\n';
+    }
+    return texture;
+}
+
+void color(SDL_Renderer* r, Color c) {
+    SDL_SetRenderDrawColor(r, c.r, c.g, c.b, c.a);
+}
+
+void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+    color(r, c);
+    SDL_RenderFillRect(r, &rect);
+}
+
+void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+    color(r, c);
+    SDL_RenderDrawRect(r, &rect);
+}
+
+void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    for (int y = 0; y < rect.h; ++y) {
+        int inset = 0;
+        if (y < radius) {
+            const double dy = radius - y - 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        } else if (y >= rect.h - radius) {
+            const double dy = y - (rect.h - radius) + 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        }
+        SDL_RenderDrawLine(r, rect.x + inset, rect.y + y,
+                           rect.x + rect.w - 1 - inset, rect.y + y);
+    }
+}
+
+void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y,
+                       rect.x + rect.w - radius - 1, rect.y);
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y + rect.h - 1,
+                       rect.x + rect.w - radius - 1, rect.y + rect.h - 1);
+    SDL_RenderDrawLine(r, rect.x, rect.y + radius,
+                       rect.x, rect.y + rect.h - radius - 1);
+    SDL_RenderDrawLine(r, rect.x + rect.w - 1, rect.y + radius,
+                       rect.x + rect.w - 1, rect.y + rect.h - radius - 1);
+
+    for (int i = 0; i <= radius * 2; ++i) {
+        const double angle = (3.14159265358979323846 / 2.0) *
+                             static_cast<double>(i) /
+                             std::max(1, radius * 2);
+        const int dx = static_cast<int>(std::round(radius * std::cos(angle)));
+        const int dy = static_cast<int>(std::round(radius * std::sin(angle)));
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + rect.h - radius - 1 + dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + rect.h - radius - 1 + dy);
+    }
+}
+
+void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+                          int radius, Color background) {
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, background);
+
+    for (int y = 0; y < radius; ++y) {
+        const double dy = radius - y - 0.5;
+        const int inset = radius - static_cast<int>(
+            std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        SDL_RenderDrawLine(r, rect.x, rect.y + y,
+                           rect.x + inset, rect.y + y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, rect.y + y,
+                           rect.x + rect.w - 1, rect.y + y);
+
+        const int bottom_y = rect.y + rect.h - 1 - y;
+        SDL_RenderDrawLine(r, rect.x, bottom_y,
+                           rect.x + inset, bottom_y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, bottom_y,
+                           rect.x + rect.w - 1, bottom_y);
+    }
+}
+
+void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+    color(r, c);
+
+    for (int y = -radius; y <= radius; ++y) {
+        const int x = static_cast<int>(
+            std::sqrt(static_cast<double>(
+                radius * radius - y * y
+            ))
+        );
+        SDL_RenderDrawLine(r, cx - x, cy + y, cx + x, cy + y);
+    }
+}
+
+void triangle(SDL_Renderer* r, int x1, int y1,
+              int x2, int y2, int x3, int y3, Color c) {
+    color(r, c);
+
+    const int min_y = std::min({y1, y2, y3});
+    const int max_y = std::max({y1, y2, y3});
+
+    for (int y = min_y; y <= max_y; ++y) {
+        int intersections[3];
+        int count = 0;
+
+        const int xs[] = {x1, x2, x3};
+        const int ys[] = {y1, y2, y3};
+
+        for (int i = 0; i < 3; ++i) {
+            const int j = (i + 1) % 3;
+
+            if ((ys[i] <= y && ys[j] > y) ||
+                (ys[j] <= y && ys[i] > y)) {
+                const int x = xs[i] +
+                    (y - ys[i]) * (xs[j] - xs[i]) /
+                    (ys[j] - ys[i]);
+
+                intersections[count++] = x;
+            }
+        }
+
+        if (count == 2) {
+            SDL_RenderDrawLine(
+                r,
+                std::min(intersections[0], intersections[1]),
+                y,
+                std::max(intersections[0], intersections[1]),
+                y
+            );
+        }
+    }
+}
+
+void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(17, 24, 67));
+
+    circle(r, a.x + a.w * 68 / 100,
+           a.y + a.h * 29 / 100,
+           a.w / 5, c(91, 99, 255));
+
+    circle(r, a.x + a.w * 68 / 100,
+           a.y + a.h * 29 / 100,
+           a.w / 7, c(168, 154, 255));
+
+    for (int i = 0; i < 12; ++i) {
+        const int x = a.x + (i * 47 + 19) % a.w;
+        const int y = a.y + (i * 71 + 31) % (a.h * 65 / 100);
+        circle(r, x, y, 2, c(220, 231, 255));
+    }
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 2, a.y + a.h / 3,
+             a.x + a.w, a.y + a.h, c(39, 63, 139));
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 3, a.y + a.h * 60 / 100,
+             a.x + a.w * 72 / 100, a.y + a.h, c(26, 43, 103));
+}
+
+void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(17, 73, 87));
+
+    circle(r, a.x + a.w * 70 / 100,
+           a.y + a.h * 25 / 100,
+           a.w / 7, c(113, 224, 203));
+
+    triangle(r, a.x, a.y + a.h * 80 / 100,
+             a.x + a.w / 2, a.y + a.h / 3,
+             a.x + a.w, a.y + a.h * 80 / 100,
+             c(32, 119, 107));
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 2, a.y + a.h / 2,
+             a.x + a.w, a.y + a.h,
+             c(16, 69, 78));
+
+    for (int i = 0; i < 6; ++i) {
+        const int x = a.x + (i * 61 + 23) % a.w;
+        rectangle(r, {x, a.y + a.h * 65 / 100, 8, a.h / 4},
+                  c(85, 62, 49));
+        triangle(r, x - 19, a.y + a.h * 68 / 100,
+                 x + 4, a.y + a.h * 39 / 100,
+                 x + 27, a.y + a.h * 68 / 100,
+                 c(42, 160, 120));
+    }
+}
+
+void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(25, 91, 157));
+
+    circle(r, a.x + a.w / 2,
+           a.y + a.h / 3,
+           a.w / 6, c(255, 207, 124));
+
+    rectangle(r,
+              {a.x, a.y + a.h * 57 / 100,
+               a.w, a.h * 43 / 100},
+              c(19, 111, 184));
+
+    for (int i = 0; i < 5; ++i) {
+        const int y = a.y + a.h * 63 / 100 + i * a.h / 14;
+        color(r, c(108, 206, 239));
+        for (int x = a.x + 8; x < a.x + a.w - 8; x += 2) {
+            const int wave_y = y +
+                static_cast<int>(std::sin(x * 0.055 + i) * 5);
+            SDL_RenderDrawPoint(r, x, wave_y);
+        }
+    }
+
+    triangle(r, a.x, a.y + a.h * 60 / 100,
+             a.x + a.w / 3, a.y + a.h * 43 / 100,
+             a.x + a.w * 55 / 100, a.y + a.h * 60 / 100,
+             c(39, 139, 166));
+}
+
+void draw_art(SDL_Renderer* r, int index,
+
+===== APPLICATION STATE AND NAVIGATION =====
+#include "kiddos/app/application.hpp"
+
+#include <chrono>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+            if (!running_) {
+                break;
+            }
+        }
+
+        if (running_) {
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::NavigateLeft:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + game_count_ - 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateRight:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateUp:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::NavigateDown:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::Confirm:
+            if (!action_screen_) {
+                action_screen_ = true;
+                selected_action_ = 0;
+            }
+            // Game launching is intentionally not implemented yet.
+            break;
+
+        case Action::Back:
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
+            break;
+
+        case Action::None:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    if (action_screen_) {
+        // Game 1 is a temporary checkpoint demonstration fixture.
+        platform_.draw_game_actions(
+            selected_game_, selected_game_ == 1, selected_action_);
+    } else {
+        platform_.draw_carousel(selected_game_);
+    }
+    platform_.present();
+}
+
+} // namespace kiddos
+
+sed: can't read src/app/application.hpp: No such file or directory
+
+===== AVAILABLE ARTWORK =====
+assets/artwork/generated/forest.bmp 1612938 bytes
+assets/artwork/generated/label-play.bmp 504138 bytes
+assets/artwork/generated/label-resume.bmp 504138 bytes
+assets/artwork/generated/label-start-over.bmp 504138 bytes
+assets/artwork/generated/ocean.bmp 1612938 bytes
+assets/artwork/generated/space.bmp 1612938 bytes
+assets/artwork/source/forest.svg 3088 bytes
+assets/artwork/source/ocean.svg 2981 bytes
+assets/artwork/source/space.svg 2642 bytes
+
+===== BUILD CONFIGURATION =====
+14:pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+16:add_executable(kiddos
+23:target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
