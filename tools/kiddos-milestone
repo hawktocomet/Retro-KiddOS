@@ -1,0 +1,111 @@
+#!/bin/bash
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [ -z "$ROOT" ]; then
+    echo "ERROR: Not inside a Git repository."
+    exit 1
+fi
+
+cd "$ROOT" || exit 1
+
+TITLE="$1"
+if [ -z "$TITLE" ]; then
+    echo "Usage: ./tools/kiddos-milestone 'Milestone name' <<'TASK'"
+    exit 1
+fi
+
+BRANCH="$(git branch --show-current)"
+if [ -z "$BRANCH" ]; then
+    echo "ERROR: No current Git branch."
+    exit 1
+fi
+
+if ! git remote get-url origin >/dev/null 2>&1; then
+    echo "ERROR: GitHub origin remote unavailable."
+    exit 1
+fi
+
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+SLUG="$(printf '%s' "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//' | cut -c1-55)"
+RUN="research/milestone-runs/${STAMP}-${SLUG}"
+LOG="$RUN/run.log"
+REPORT="$RUN/REPORT.md"
+LATEST="research/milestone-runs/LATEST.txt"
+TASKFILE="$(mktemp)"
+
+if [ -t 0 ]; then
+    echo "ERROR: Supply commands through a TASK heredoc."
+    rm -f "$TASKFILE"
+    exit 1
+fi
+
+mkdir -p "$RUN"
+cat > "$TASKFILE"
+
+echo "Running: $TITLE"
+echo "Full output is being captured."
+
+bash "$TASKFILE" > "$LOG" 2>&1
+TASK_RC=$?
+rm -f "$TASKFILE"
+
+LINES="$(wc -l < "$LOG")"
+SIZE="$(du -h "$LOG" | cut -f1)"
+
+if [ "$TASK_RC" -eq 0 ]; then
+    RESULT="SUCCESS"
+else
+    RESULT="FAILED (exit code $TASK_RC)"
+fi
+
+cat > "$REPORT" <<EOF
+# Milestone Run Report
+
+- Title: $TITLE
+- Timestamp (UTC): $STAMP
+- Result: $RESULT
+- Branch: $BRANCH
+- Log: $LOG
+- Lines captured: $LINES
+- Log size: $SIZE
+
+Full terminal output is available in run.log.
+EOF
+
+printf '%s\n' "$RUN" > "$LATEST"
+
+git add -- "$RUN" "$LATEST" tools/kiddos-milestone
+
+git commit -m "chore: record milestone run - $SLUG"
+COMMIT_RC=$?
+
+if [ "$COMMIT_RC" -ne 0 ]; then
+    echo "ERROR: Could not commit milestone results."
+    exit 2
+fi
+
+git push origin "$BRANCH"
+PUSH_RC=$?
+
+if [ "$PUSH_RC" -ne 0 ]; then
+    echo "ERROR: GitHub upload failed. Results remain local."
+    exit 3
+fi
+
+echo
+echo "======================================"
+echo "MILESTONE REPORT"
+echo "======================================"
+echo "Title: $TITLE"
+echo "Result: $RESULT"
+echo "Output lines: $LINES"
+echo "GitHub upload: VERIFIED"
+echo "Report: $REPORT"
+echo "Full log: $LOG"
+echo
+echo "LAST 20 LINES:"
+tail -n 20 "$LOG"
+echo
+echo "======================================"
+
+exit "$TASK_RC"
