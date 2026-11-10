@@ -133,3 +133,20 @@ integration and the planned product components remain future work.
 - Configured and compiled the C++20 SDL2 application.
 - Ran a headless SDL runtime smoke test using SDL's dummy video driver.
 - No device firmware, storage, or boot configuration was changed.
+
+## 2026-11-10 — First visible Kid Mode carousel
+
+- Added the first three-game Kid Mode carousel to the SDL2 desktop harness.
+- Implemented a centered selected game with smaller neighboring previews.
+- Added procedural placeholder artwork and the approved navy/blue visual
+  treatment.
+- Added left/right keyboard and controller navigation with wrapping
+  selection.
+- Added visual sound-status and battery-status indicators.
+- Kept rendering behind the platform interface and selection state in the
+  application layer.
+- Replaced an SDL-specific delay call in application logic with a
+  platform-independent C++ thread sleep.
+- Built the application successfully and completed a desktop preview run.
+- Added `docs/KID_MODE_CAROUSEL_PROTOTYPE.md` documenting scope and limits.
+- No device firmware, storage, or boot configuration was changed.

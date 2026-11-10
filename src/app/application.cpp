@@ -1,5 +1,8 @@
 #include "kiddos/app/application.hpp"
 
+#include <chrono>
+#include <thread>
+
 namespace kiddos {
 
 Application::Application(Platform& platform)
@@ -27,6 +30,7 @@ int Application::run() {
 
         if (running_) {
             render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
         }
     }
 
@@ -40,9 +44,17 @@ void Application::handle_action(Action action) {
             running_ = false;
             break;
 
-        case Action::None:
         case Action::NavigateLeft:
+            selected_game_ =
+                (selected_game_ + game_count_ - 1) % game_count_;
+            break;
+
         case Action::NavigateRight:
+            selected_game_ =
+                (selected_game_ + 1) % game_count_;
+            break;
+
+        case Action::None:
         case Action::NavigateUp:
         case Action::NavigateDown:
         case Action::Confirm:
@@ -53,6 +65,7 @@ void Application::handle_action(Action action) {
 
 void Application::render() {
     platform_.begin_frame();
+    platform_.draw_carousel(selected_game_);
     platform_.present();
 }
 

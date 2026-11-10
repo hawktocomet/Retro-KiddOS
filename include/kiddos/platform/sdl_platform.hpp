@@ -14,6 +14,7 @@ public:
     bool initialize() override;
     bool poll_action(Action& action) override;
     void begin_frame() override;
+    void draw_carousel(int selected_index) override;
     void present() override;
     void shutdown() override;
 
