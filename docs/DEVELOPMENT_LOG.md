@@ -98,3 +98,30 @@ gaming environment.
 The product specification records intended behavior, not completed features.
 The existing SDL2 prototype remains a basic development harness. Hardware
 integration and the planned product components remain future work.
+
+## 2026-11-10 — Manufacturer firmware source audit
+
+- Cloned the public `FRetroPixel/RetroPixel_Pocket` repository for local,
+  read-only source inspection.
+- Audited revision
+  `13e1c48d86c95ae2b8a99d6baf02e4e394629cb3` (2025-12-02).
+- Confirmed the `RPPOCKET` build target selects an RK3326 v6.0 device tree,
+  ARM64/Cortex-A35 settings, Mali G31/libmali, and the inherited RG351MP
+  Linux/U-Boot platform identifiers.
+- Identified configured Linux graphics, input, RK817 battery/charger, and
+  Rockchip thermal support.
+- Inspected inherited battery, ADC key, volume, headphone, joystick LED,
+  and suspend/resume utilities.
+- Confirmed the inspected headphone script only handles D007 Plus and
+  PowKiddy XU10, while the joystick LED script only handles D007 Plus.
+  Neither contains an RPPOCKET-specific implementation.
+- Confirmed the kernel and U-Boot package definitions refer to external
+  source directories not present in the inspected checkout.
+- No firmware was built or flashed. No device storage or boot configuration
+  was changed.
+- Added `docs/FIRMWARE_AUDIT.md` with findings, confidence levels, and the
+  runtime verification plan.
+- Next: continue source audit of boot flow, package startup, frontend/game
+  launching, and external kernel/U-Boot source availability. After the
+  handheld arrives, verify actual hardware interfaces before implementing
+  device-specific adapters.
