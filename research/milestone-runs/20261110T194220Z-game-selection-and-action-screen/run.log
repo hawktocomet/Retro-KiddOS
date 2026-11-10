@@ -1,0 +1,211 @@
+===== BASELINE =====
+## main...origin/main
+9046699 chore: record milestone run - document-and-commit-first-kid-mode-carousel
+
+===== IMPLEMENTATION FILES =====
+--- Application header ---
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+
+namespace kiddos {
+
+class Application {
+public:
+    explicit Application(Platform& platform);
+
+    int run();
+
+private:
+    Platform& platform_;
+    bool running_ = true;
+    int selected_game_ = 0;
+    static constexpr int game_count_ = 3;
+
+    void handle_action(Action action);
+    void render();
+};
+
+} // namespace kiddos
+--- Application source ---
+#include "kiddos/app/application.hpp"
+
+#include <chrono>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+            if (!running_) {
+                break;
+            }
+        }
+
+        if (running_) {
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::NavigateLeft:
+            selected_game_ =
+                (selected_game_ + game_count_ - 1) % game_count_;
+            break;
+
+        case Action::NavigateRight:
+            selected_game_ =
+                (selected_game_ + 1) % game_count_;
+            break;
+
+        case Action::None:
+        case Action::NavigateUp:
+        case Action::NavigateDown:
+        case Action::Confirm:
+        case Action::Back:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    platform_.draw_carousel(selected_game_);
+    platform_.present();
+}
+
+} // namespace kiddos
+--- Platform interface ---
+#pragma once
+
+#include "kiddos/core/action.hpp"
+
+namespace kiddos {
+
+class Platform {
+public:
+    virtual ~Platform() = default;
+
+    virtual bool initialize() = 0;
+    virtual bool poll_action(Action& action) = 0;
+    virtual void begin_frame() = 0;
+    virtual void draw_carousel(int selected_index) = 0;
+    virtual void present() = 0;
+    virtual void shutdown() = 0;
+};
+
+} // namespace kiddos
+--- SDL platform header ---
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+
+#include <SDL.h>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+
+===== BUILD ENVIRONMENT =====
+cmake version 4.4.4
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+1.13.2
+2.32.74
+
+===== PRODUCT REQUIREMENTS =====
+130:### Game selection and actions
+131-
+132-Selecting a game opens its game detail/action screen.
+133-
+134-- Show static game artwork.
+135-- Present available actions as large, stacked, full-width horizontal boxes.
+136-- Each action has an oversized symbol on the left and its label on the right.
+137-- Do not replace these with small square cards or tiny icons.
+138-
+139-Available actions depend on save state:
+140-
+141-- First launch: Play.
+142-- Valid automatic checkpoint: Resume and Start Over.
+143-
+144-### Gameplay previews
+145-
+146-- Static artwork appears first.
+147-- If a preview video exists, a muted preview may begin after approximately
+148-  2.5 seconds.
+20:## Game actions
+21-
+22-Large, stacked, full-width horizontal boxes.
+23-
+24-Each box has one oversized symbol on the left and its label to the right.
+25-The symbol must be visually dominant. Do not replace these with small square
+26-cards or tiny icons.
+27-
+28-Examples:
+29-
+30-- Play or Resume: large play/continue symbol.
+31-- Start Over: large circular restart symbol.
+32-
+33-## Preview behavior
+34-
+35-When available, static artwork is shown first. A muted gameplay preview may
+
+===== IMPLEMENTATION PLAN =====
+1. Add action-screen state to Application.
+2. Add game-action rendering to Platform.
+3. Draw static game artwork and large horizontal action boxes.
+4. Implement Up/Down selection and Back navigation.
+5. Demonstrate first-launch and checkpoint layouts.
+6. Keep game launching and save-state operations unimplemented.
+7. Build and run headless smoke tests.
+8. Document and commit the milestone.
