@@ -1,0 +1,51 @@
+===== WORKTREE BASELINE =====
+ M src/platform/sdl_platform.cpp
+?? assets/
+
+===== VERIFY SOURCE AND ARTWORK =====
+
+===== RESTORE ROUNDED SHAPE HELPERS =====
+Rounded cards, artwork corners, action panels, and focus outlines updated.
+
+===== BUILD =====
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/2] Building CXX object CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:25:40: warning: multi-character character constant [-Wmultichar]
+   25 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:41:40: warning: multi-character character constant [-Wmultichar]
+   41 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:248:6: warning: ‘void kiddos::{anonymous}::draw_ocean_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  248 | void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:216:6: warning: ‘void kiddos::{anonymous}::draw_forest_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  216 | void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:186:6: warning: ‘void kiddos::{anonymous}::draw_space_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  186 | void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+[2/2] Linking CXX executable kiddos
+
+===== DESKTOP PREVIEW =====
+Inspect the carousel and selected-game action screen.
+Check the card corners, artwork corners, panel corners, and blue focus outline.
+Close the preview when finished.
+
+===== VALIDATE AND COMMIT SOURCE =====
+[main eebf74a] feat: restore rounded Kid Mode visual treatment
+ 10 files changed, 295 insertions(+), 72 deletions(-)
+ create mode 100644 assets/artwork/generated/forest.bmp
+ create mode 100644 assets/artwork/generated/label-play.bmp
+ create mode 100644 assets/artwork/generated/label-resume.bmp
+ create mode 100644 assets/artwork/generated/label-start-over.bmp
+ create mode 100644 assets/artwork/generated/ocean.bmp
+ create mode 100644 assets/artwork/generated/space.bmp
+ create mode 100644 assets/artwork/source/forest.svg
+ create mode 100644 assets/artwork/source/ocean.svg
+ create mode 100644 assets/artwork/source/space.svg
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   e9c502e..eebf74a  main -> main
+PASS: Source changes pushed to GitHub.
