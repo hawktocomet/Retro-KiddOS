@@ -1,0 +1,403 @@
+Temporary source: /tmp/tmp.8jEJ5tcrkZ
+
+===== FETCH PINNED RMLUI SOURCE =====
+Pinned commit:
+bc6ea0ec9968600d0b6e9dc379c5b9ba20f2806d
+
+===== SDL RENDERER BACKEND FILES =====
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_DX12.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GL2.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GL3.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_VK.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_BackwardCompatible/RmlUi_Renderer_BackwardCompatible_GL2.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_BackwardCompatible/RmlUi_Renderer_BackwardCompatible_GL2.h
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_BackwardCompatible/RmlUi_Renderer_BackwardCompatible_GL3.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_BackwardCompatible/RmlUi_Renderer_BackwardCompatible_GL3.h
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Platform_SDL.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Platform_SDL.h
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_DX11.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_DX11.h
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_DX12.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_DX12.h
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_GL2.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_GL2.h
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_GL3.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_GL3.h
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_VK.cpp
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_VK.h
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_SDL_GPU/compile_shaders.py
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_SDL_GPU/shader_frag_color.frag
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_SDL_GPU/shader_frag_texture.frag
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_SDL_GPU/ShadersCompiledSPV.h
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_SDL_GPU/shader_vert.vert
+
+===== SDL RENDERER IMPLEMENTATION REFERENCES =====
+
+===== BACKEND BUILD OPTIONS =====
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/CMakeLists.txt:27:option(RMLUI_BACKEND_SIMULATE_TOUCH "Simulate touch events with mouse events" OFF)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/CMakeLists.txt:29:set(RMLUI_BACKEND "auto" CACHE STRING "Backend to use when building the RmlUi samples. Choose one from ./CMake/OptionsLists.cmake.")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/CMakeLists.txt:30:set_property(CACHE RMLUI_BACKEND PROPERTY STRINGS ${RMLUI_BACKEND_OPTIONS})
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/CMakeLists.txt:31:if(NOT RMLUI_BACKEND IN_LIST RMLUI_BACKEND_OPTIONS)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/CMakeLists.txt:32:	message(FATAL_ERROR "The RmlUi backend '${RMLUI_BACKEND}' specified in RMLUI_BACKEND is not valid. Available options: ${RMLUI_BACKEND_OPTIONS}")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/CMakeLists.txt:3:if(RMLUI_BACKEND MATCHES "VK$")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/CMakeLists.txt:7:		target_compile_definitions(rmlui_backend_${RMLUI_BACKEND} INTERFACE "RMLUI_VK_DEBUG")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/CMakeLists.txt:11:if(RMLUI_BACKEND MATCHES "(DX11|DX12)$")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/CMakeLists.txt:16:		target_compile_definitions(rmlui_backend_${RMLUI_BACKEND} INTERFACE "RMLUI_DX_DEBUG")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:14:if(RMLUI_BACKEND_SIMULATE_TOUCH)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:15:	set(RMLUI_BACKEND_SIMULATE_TOUCH_SUPPORTED
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:16:		"SDL_GL2"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:17:		"SDL_GL3"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:19:		"SDL_GPU"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:21:	if(NOT RMLUI_BACKEND IN_LIST RMLUI_BACKEND_SIMULATE_TOUCH_SUPPORTED)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:22:		message(WARNING "RMLUI_BACKEND_SIMULATE_TOUCH enabled but not supported on selected backend ${RMLUI_BACKEND}")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:24:		target_compile_definitions(rmlui_backend_common_headers INTERFACE "RMLUI_BACKEND_SIMULATE_TOUCH")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:90:if(RMLUI_BACKEND MATCHES "^Wayland")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:151:add_library(rmlui_backend_SDL_GL2 INTERFACE)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:152:target_sources(rmlui_backend_SDL_GL2 INTERFACE
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:155:	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Backend_SDL_GL2.cpp"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:159:target_link_libraries(rmlui_backend_SDL_GL2 INTERFACE rmlui_backend_common_headers OpenGL::GL SDL::SDL SDL_image::SDL_image)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:161:add_library(rmlui_backend_SDL_GL3 INTERFACE)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:162:target_sources(rmlui_backend_SDL_GL3 INTERFACE
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:165:	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Backend_SDL_GL3.cpp"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:170:target_link_libraries(rmlui_backend_SDL_GL3 INTERFACE rmlui_backend_common_headers SDL::SDL SDL_image::SDL_image)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:174:	target_link_libraries(rmlui_backend_SDL_GL3 INTERFACE ${CMAKE_DL_LIBS})
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:178:	target_link_libraries(rmlui_backend_SDL_GL3 INTERFACE OpenGL::GL)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:209:add_library(rmlui_backend_SDL_GPU INTERFACE)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:210:target_sources(rmlui_backend_SDL_GPU INTERFACE
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:211:	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Renderer_SDL_GPU.cpp"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:213:	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Backend_SDL_GPU.cpp"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:215:	"${CMAKE_CURRENT_LIST_DIR}/RmlUi_Renderer_SDL_GPU.h"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/CMakeLists.txt:217:target_link_libraries(rmlui_backend_SDL_GPU INTERFACE rmlui_backend_common_headers SDL::SDL SDL_image::SDL_image)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_DX12.cpp:129:#if defined RMLUI_BACKEND_SIMULATE_TOUCH
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GL2.cpp:15:#if SDL_MAJOR_VERSION == 2 && !(SDL_VIDEO_RENDER_OGL)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GL2.cpp:130:#if defined RMLUI_BACKEND_SIMULATE_TOUCH
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GL2.cpp:169:	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/basic/CMakeLists.txt:35:	if(RMLUI_BACKEND MATCHES "^Win32" OR (RMLUI_IME_SAMPLE_USE_NOTO_FONTS AND RMLUI_BACKEND MATCHES "^SDL"))
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/basic/CMakeLists.txt:37:	elseif(RMLUI_BACKEND MATCHES "^SDL")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/basic/CMakeLists.txt:40:		message(STATUS "IME sample disabled - only available with SDL or Win32 backends, see RMLUI_BACKEND")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GL3.cpp:18:#elif SDL_MAJOR_VERSION == 2 && !(SDL_VIDEO_RENDER_OGL)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GL3.cpp:135:#if defined RMLUI_BACKEND_SIMULATE_TOUCH
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:3:#include "RmlUi_Renderer_SDL_GPU.h"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:8:#ifndef RMLUI_BACKEND_SDL_GPU_DEBUG
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:9:	#define RMLUI_BACKEND_SDL_GPU_DEBUG false
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:18:	BackendData(SDL_Window* window, SDL_GPUDevice* device) : system_interface(window), render_interface(device, window) {}
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:21:	RenderInterface_SDL_GPU render_interface;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:25:	SDL_GPUDevice* device = nullptr;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:26:	SDL_GPUCommandBuffer* command_buffer = nullptr;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:46:#if defined RMLUI_BACKEND_SIMULATE_TOUCH
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:73:	SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, RMLUI_BACKEND_SDL_GPU_DEBUG);
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:74:	SDL_GPUDevice* device = SDL_CreateGPUDeviceWithProperties(props);
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:212:	SDL_GPUTexture* swapchain_texture;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:229:	SDL_GPUColorTargetInfo color_info{};
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:231:	color_info.load_op = SDL_GPU_LOADOP_CLEAR;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:232:	color_info.store_op = SDL_GPU_STOREOP_STORE;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_GPU.cpp:233:	SDL_GPURenderPass* render_pass = SDL_BeginGPURenderPass(data->command_buffer, &color_info, 1, nullptr);
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Backend_SDL_VK.cpp:56:#if defined RMLUI_BACKEND_SIMULATE_TOUCH
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/shell/CMakeLists.txt:19:target_link_libraries(rmlui_shell PRIVATE rmlui_backend_${RMLUI_BACKEND})
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/shell/CMakeLists.txt:31:if(RMLUI_BACKEND MATCHES "GL2$")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/shell/CMakeLists.txt:34:if(RMLUI_BACKEND MATCHES "GL3$")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/shell/CMakeLists.txt:37:if(RMLUI_BACKEND MATCHES "DX12$")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/shell/CMakeLists.txt:40:if(RMLUI_BACKEND MATCHES "VK$")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Samples/basic/effects/CMakeLists.txt:1:if(NOT RMLUI_BACKEND MATCHES "(GL3|DX11|DX12|VK)$")
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Include_Vulkan.h:1:#ifndef RMLUI_BACKENDS_INCLUDE_VULKAN_H
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Include_Vulkan.h:2:	#define RMLUI_BACKENDS_INCLUDE_VULKAN_H
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Platform_SDL.cpp:179:#ifndef RMLUI_BACKEND_SIMULATE_TOUCH
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:7:class RenderInterface_SDL_GPU : public Rml::RenderInterface {
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:9:	RenderInterface_SDL_GPU(SDL_GPUDevice* device, SDL_Window* window);
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:11:	void BeginFrame(SDL_GPUCommandBuffer* command_buffer, SDL_GPUTexture* swapchain_texture, uint32_t width, uint32_t height);
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:24:	SDL_GPUDevice* device;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:26:	SDL_GPUGraphicsPipeline* texture_pipeline;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:27:	SDL_GPUGraphicsPipeline* color_pipeline;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:28:	SDL_GPUSampler* linear_sampler;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:29:	SDL_GPUCommandBuffer* command_buffer;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:30:	SDL_GPUTexture* swapchain_texture;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:33:	SDL_GPURenderPass* render_pass;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:34:	SDL_GPUCopyPass* copy_pass;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:41:		virtual void Update(RenderInterface_SDL_GPU& interface) = 0;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:46:		void Update(RenderInterface_SDL_GPU& interface) override;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:53:		void Update(RenderInterface_SDL_GPU& interface) override;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:62:		void Update(RenderInterface_SDL_GPU& interface) override;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:71:		void Update(RenderInterface_SDL_GPU& interface) override;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:78:		void Update(RenderInterface_SDL_GPU& interface) override;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:85:		void Update(RenderInterface_SDL_GPU& interface) override;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:99:		SDL_GPUTransferBuffer* transfer_buffer;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:100:		SDL_GPUBuffer* buffer;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:101:		SDL_GPUBufferUsageFlags usage;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.h:121:	Buffer* RequestBuffer(int capacity, SDL_GPUBufferUsageFlags usage);
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp:1:#include "RmlUi_Renderer_SDL_GPU.h"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp:2:#include "RmlUi_SDL_GPU/ShadersCompiledSPV.h"
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp:29:	SDL_GPUShaderStage stage;
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp:40:	{{X(shader_frag_color_spirv), X(shader_frag_color_msl), X(shader_frag_color_dxil)}, 0, 0, SDL_GPU_SHADERSTAGE_FRAGMENT},
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp:41:	{{X(shader_frag_texture_spirv), X(shader_frag_texture_msl), X(shader_frag_texture_dxil)}, 0, 1, SDL_GPU_SHADERSTAGE_FRAGMENT},
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp:42:	{{X(shader_vert_spirv), X(shader_vert_msl), X(shader_vert_dxil)}, 2, 0, SDL_GPU_SHADERSTAGE_VERTEX}};
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp:46:static SDL_GPUShader* CreateShaderFromMemory(SDL_GPUDevice* device, ShaderType type)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp:48:	SDL_GPUShaderFormat sdl_shader_format = SDL_GetGPUShaderFormats(device);
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp:51:	if (sdl_shader_format & SDL_GPU_SHADERFORMAT_SPIRV)
+/tmp/tmp.8jEJ5tcrkZ/RmlUi/Backends/RmlUi_Renderer_SDL_GPU.cpp:53:		sdl_shader_format = SDL_GPU_SHADERFORMAT_SPIRV;
+
+===== CUSTOM RENDERER INTERFACE =====
+22:    implementation of this class and install it through Rml::SetRenderInterface() in order for anything to be rendered.
+25:class RMLUICORE_API RenderInterface : public NonCopyMoveable {
+28:	virtual ~RenderInterface();
+40:	virtual CompiledGeometryHandle CompileGeometry(Span<const Vertex> vertices, Span<const int> indices) = 0;
+45:	virtual void RenderGeometry(CompiledGeometryHandle geometry, Vector2f translation, TextureHandle texture) = 0;
+54:	virtual TextureHandle LoadTexture(Vector2i& texture_dimensions, const String& source) = 0;
+86:	virtual void RenderToClipMask(ClipMaskOperation operation, CompiledGeometryHandle geometry, Vector2f translation);
+137:	virtual void RenderShader(CompiledShaderHandle shader, CompiledGeometryHandle geometry, Vector2f translation, TextureHandle texture);
+
+===== SDL PLATFORM INPUT SUPPORT =====
+#include "RmlUi_Platform_SDL.h"
+#include <RmlUi/Core/Context.h>
+#include <RmlUi/Core/Input.h>
+#include <RmlUi/Core/StringUtilities.h>
+#include <RmlUi/Core/SystemInterface.h>
+#include <RmlUi/Core/TextInputContext.h>
+
+static Rml::TouchList TouchEventToTouchList(SDL_Event& ev, Rml::Context* context, SDL_FingerID finger_id)
+{
+	const Rml::Vector2f position = Rml::Vector2f{ev.tfinger.x, ev.tfinger.y} * Rml::Vector2f{context->GetDimensions()};
+	return {Rml::Touch{static_cast<Rml::TouchId>(finger_id), position}};
+}
+
+SystemInterface_SDL::SystemInterface_SDL(SDL_Window* in_window) : window(in_window)
+{
+	RMLUI_ASSERTMSG(window, "Please provide a valid SDL window to the SDL system interface");
+
+#if SDL_MAJOR_VERSION >= 3
+	cursor_default = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
+	cursor_move = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_MOVE);
+	cursor_pointer = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
+	cursor_resize = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE);
+	cursor_cross = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+	cursor_text = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT);
+	cursor_unavailable = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED);
+#else
+	cursor_default = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+	cursor_move = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+	cursor_pointer = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+	cursor_resize = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+	cursor_cross = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+	cursor_text = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+	cursor_unavailable = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
+	(void)window; // Window is unused on SDL 2.
+#endif
+}
+
+SystemInterface_SDL::~SystemInterface_SDL()
+{
+#if SDL_MAJOR_VERSION >= 3
+	auto DestroyCursor = [](SDL_Cursor* cursor) { SDL_DestroyCursor(cursor); };
+#else
+	auto DestroyCursor = [](SDL_Cursor* cursor) { SDL_FreeCursor(cursor); };
+#endif
+
+	DestroyCursor(cursor_default);
+	DestroyCursor(cursor_move);
+	DestroyCursor(cursor_pointer);
+	DestroyCursor(cursor_resize);
+	DestroyCursor(cursor_cross);
+	DestroyCursor(cursor_text);
+	DestroyCursor(cursor_unavailable);
+}
+
+double SystemInterface_SDL::GetElapsedTime()
+{
+	static const Uint64 start = SDL_GetPerformanceCounter();
+	static const double frequency = double(SDL_GetPerformanceFrequency());
+	return double(SDL_GetPerformanceCounter() - start) / frequency;
+}
+
+void SystemInterface_SDL::SetMouseCursor(const Rml::String& cursor_name)
+{
+	SDL_Cursor* cursor = nullptr;
+
+	if (cursor_name.empty() || cursor_name == "arrow")
+		cursor = cursor_default;
+	else if (cursor_name == "move")
+		cursor = cursor_move;
+	else if (cursor_name == "pointer")
+		cursor = cursor_pointer;
+	else if (cursor_name == "resize")
+		cursor = cursor_resize;
+	else if (cursor_name == "cross")
+		cursor = cursor_cross;
+	else if (cursor_name == "text")
+		cursor = cursor_text;
+	else if (cursor_name == "unavailable")
+		cursor = cursor_unavailable;
+	else if (Rml::StringUtilities::StartsWith(cursor_name, "rmlui-scroll"))
+		cursor = cursor_move;
+
+	if (cursor)
+		SDL_SetCursor(cursor);
+}
+
+void SystemInterface_SDL::SetClipboardText(const Rml::String& text)
+{
+	SDL_SetClipboardText(text.c_str());
+}
+
+void SystemInterface_SDL::GetClipboardText(Rml::String& text)
+{
+	char* raw_text = SDL_GetClipboardText();
+	text = Rml::String(raw_text);
+	SDL_free(raw_text);
+}
+
+void SystemInterface_SDL::ActivateKeyboard(Rml::Vector2f caret_position, float line_height)
+{
+#if SDL_MAJOR_VERSION >= 3
+	const SDL_Rect rect = {int(caret_position.x), int(caret_position.y), 1, int(line_height)};
+	SDL_SetTextInputArea(window, &rect, 0);
+	SDL_StartTextInput(window);
+#else
+	(void)caret_position;
+	(void)line_height;
+	SDL_StartTextInput();
+#endif
+}
+
+void SystemInterface_SDL::DeactivateKeyboard()
+{
+#if SDL_MAJOR_VERSION >= 3
+	SDL_StopTextInput(window);
+#else
+	SDL_StopTextInput();
+#endif
+}
+
+bool RmlSDL::InputEventHandler(Rml::Context* context, SDL_Window* window, SDL_Event& ev)
+{
+#if SDL_MAJOR_VERSION >= 3
+	#define RMLSDL_WINDOW_EVENTS_BEGIN
+	#define RMLSDL_WINDOW_EVENTS_END
+	auto GetKey = [](const SDL_Event& event) { return event.key.key; };
+	auto GetPixelDensity = [](SDL_Window* target_window) { return SDL_GetWindowPixelDensity(target_window); };
+	auto GetFingerId = [](const SDL_Event& event) { return event.tfinger.fingerID; };
+	constexpr auto event_mouse_motion = SDL_EVENT_MOUSE_MOTION;
+	constexpr auto event_mouse_down = SDL_EVENT_MOUSE_BUTTON_DOWN;
+	constexpr auto event_mouse_up = SDL_EVENT_MOUSE_BUTTON_UP;
+	constexpr auto event_mouse_wheel = SDL_EVENT_MOUSE_WHEEL;
+	constexpr auto event_key_down = SDL_EVENT_KEY_DOWN;
+	constexpr auto event_key_up = SDL_EVENT_KEY_UP;
+	constexpr auto event_text_input = SDL_EVENT_TEXT_INPUT;
+	constexpr auto event_window_size_changed = SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED;
+	constexpr auto event_window_leave = SDL_EVENT_WINDOW_MOUSE_LEAVE;
+	constexpr auto event_finger_down = SDL_EVENT_FINGER_DOWN;
+	constexpr auto event_finger_up = SDL_EVENT_FINGER_UP;
+	constexpr auto event_finger_motion = SDL_EVENT_FINGER_MOTION;
+
+	constexpr auto rmlsdl_true = true;
+	constexpr auto rmlsdl_false = false;
+#else
+	(void)window;
+	#define RMLSDL_WINDOW_EVENTS_BEGIN \
+	case SDL_WINDOWEVENT:              \
+	{                                  \
+		switch (ev.window.event)       \
+		{
+	#define RMLSDL_WINDOW_EVENTS_END \
+		}                            \
+		}                            \
+		break;
+	auto GetKey = [](const SDL_Event& event) { return event.key.keysym.sym; };
+	auto GetPixelDensity = [](SDL_Window* /*target_window*/) { return 1.f; };
+	auto GetFingerId = [](const SDL_Event& event) { return event.tfinger.fingerId; };
+	constexpr auto event_mouse_motion = SDL_MOUSEMOTION;
+	constexpr auto event_mouse_down = SDL_MOUSEBUTTONDOWN;
+	constexpr auto event_mouse_up = SDL_MOUSEBUTTONUP;
+	constexpr auto event_mouse_wheel = SDL_MOUSEWHEEL;
+	constexpr auto event_key_down = SDL_KEYDOWN;
+	constexpr auto event_key_up = SDL_KEYUP;
+	constexpr auto event_text_input = SDL_TEXTINPUT;
+	constexpr auto event_window_size_changed = SDL_WINDOWEVENT_SIZE_CHANGED;
+	constexpr auto event_window_leave = SDL_WINDOWEVENT_LEAVE;
+	constexpr auto event_finger_down = SDL_FINGERDOWN;
+	constexpr auto event_finger_up = SDL_FINGERUP;
+	constexpr auto event_finger_motion = SDL_FINGERMOTION;
+
+	constexpr auto rmlsdl_true = SDL_TRUE;
+	constexpr auto rmlsdl_false = SDL_FALSE;
+#endif
+
+	bool result = true;
+
+	switch (ev.type)
+	{
+#ifndef RMLUI_BACKEND_SIMULATE_TOUCH
+	case event_mouse_motion:
+	{
+		const float pixel_density = GetPixelDensity(window);
+		result = context->ProcessMouseMove(int(ev.motion.x * pixel_density), int(ev.motion.y * pixel_density), GetKeyModifierState());
+	}
+	break;
+	case event_mouse_down:
+	{
+		result = context->ProcessMouseButtonDown(ConvertMouseButton(ev.button.button), GetKeyModifierState());
+		SDL_CaptureMouse(rmlsdl_true);
+	}
+	break;
+	case event_mouse_up:
+	{
+		SDL_CaptureMouse(rmlsdl_false);
+		result = context->ProcessMouseButtonUp(ConvertMouseButton(ev.button.button), GetKeyModifierState());
+	}
+	break;
+#endif
+
+	case event_mouse_wheel:
+	{
+		result = context->ProcessMouseWheel(float(-ev.wheel.y), GetKeyModifierState());
+	}
+	break;
+	case event_key_down:
+	{
+		result = context->ProcessKeyDown(ConvertKey(GetKey(ev)), GetKeyModifierState());
+		if (GetKey(ev) == SDLK_RETURN || GetKey(ev) == SDLK_KP_ENTER)
+			result &= context->ProcessTextInput('\n');
+	}
+	break;
+	case event_key_up:
+	{
+		result = context->ProcessKeyUp(ConvertKey(GetKey(ev)), GetKeyModifierState());
+	}
+	break;
+	case event_text_input:
+	{
+		result = context->ProcessTextInput(Rml::String(&ev.text.text[0]));
+	}
+	break;
+	case event_finger_down:
+	{
+		const Rml::TouchList touches = TouchEventToTouchList(ev, context, GetFingerId(ev));
+		result = context->ProcessTouchStart(touches, GetKeyModifierState());
+	}
+	break;
+	case event_finger_motion:
+	{
+		const Rml::TouchList touches = TouchEventToTouchList(ev, context, GetFingerId(ev));
+		result = context->ProcessTouchMove(touches, GetKeyModifierState());
+	}
+	break;
+	case event_finger_up:
+	{
+		const Rml::TouchList touches = TouchEventToTouchList(ev, context, GetFingerId(ev));
+		result = context->ProcessTouchEnd(touches, GetKeyModifierState());
+	}
+	break;
+
+		RMLSDL_WINDOW_EVENTS_BEGIN
+
+	case event_window_size_changed:
+	{
+		Rml::Vector2i dimensions(ev.window.data1, ev.window.data2);
+		context->SetDimensions(dimensions);
+	}
+	break;
+	case event_window_leave:
+	{
+
+===== SOURCE VERIFICATION COMPLETE =====
