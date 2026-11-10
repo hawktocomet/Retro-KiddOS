@@ -1,0 +1,68 @@
+===== TRACKED ASSET FILES =====
+
+===== ARTWORK INVENTORY =====
+
+===== FONT INVENTORY =====
+
+===== FILE TYPES AND SIZES =====
+
+===== IMAGE DIMENSIONS =====
+
+===== FONT RENDERING LIBRARIES =====
+26.7.20
+	libfreetype.so.6 (libc6,x86-64) => /usr/lib/libfreetype.so.6
+	libfreetype.so (libc6,x86-64) => /usr/lib/libfreetype.so
+
+===== RELEVANT SYSTEM PACKAGES =====
+fontconfig 2:2.18.3-2
+freetype2 2.15.0-1
+harfbuzz 15.0.0-1
+harfbuzz-icu 15.0.0-1
+sdl2-compat 2.32.74-1
+
+===== RENDERER SOURCE REFERENCES =====
+src/platform/sdl_platform.cpp:16:void color(SDL_Renderer* r, Color c) {
+src/platform/sdl_platform.cpp:20:void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+src/platform/sdl_platform.cpp:22:    SDL_RenderFillRect(r, &rect);
+src/platform/sdl_platform.cpp:25:void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+src/platform/sdl_platform.cpp:27:    SDL_RenderDrawRect(r, &rect);
+src/platform/sdl_platform.cpp:30:void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+src/platform/sdl_platform.cpp:39:        SDL_RenderDrawLine(r, cx - x, cy + y, cx + x, cy + y);
+src/platform/sdl_platform.cpp:43:void triangle(SDL_Renderer* r, int x1, int y1,
+src/platform/sdl_platform.cpp:71:            SDL_RenderDrawLine(
+src/platform/sdl_platform.cpp:82:void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:112:void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:144:void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:166:            SDL_RenderDrawPoint(r, x, wave_y);
+src/platform/sdl_platform.cpp:176:void draw_art(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:185:void draw_card(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:202:    SDL_RenderSetClipRect(r, &art);
+src/platform/sdl_platform.cpp:203:    draw_art(r, index, art, alpha);
+src/platform/sdl_platform.cpp:204:    SDL_RenderSetClipRect(r, nullptr);
+src/platform/sdl_platform.cpp:218:void draw_status(SDL_Renderer* r) {
+src/platform/sdl_platform.cpp:227:    SDL_RenderDrawLine(r, 49, 29, 54, 34);
+src/platform/sdl_platform.cpp:228:    SDL_RenderDrawLine(r, 54, 34, 54, 42);
+src/platform/sdl_platform.cpp:229:    SDL_RenderDrawLine(r, 54, 42, 49, 47);
+src/platform/sdl_platform.cpp:409:    SDL_RenderClear(renderer_);
+src/platform/sdl_platform.cpp:419:    draw_card(renderer_, left,
+src/platform/sdl_platform.cpp:422:    draw_card(renderer_, right,
+src/platform/sdl_platform.cpp:426:    draw_card(renderer_, selected_index,
+src/platform/sdl_platform.cpp:453:void draw_text(SDL_Renderer* r, const char* value,
+src/platform/sdl_platform.cpp:469:                    SDL_RenderFillRect(r, &pixel);
+src/platform/sdl_platform.cpp:478:void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:483:void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:492:void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:503:void SDLPlatform::draw_game_actions(
+src/platform/sdl_platform.cpp:511:    draw_card(renderer_, selected_index,
+src/platform/sdl_platform.cpp:543:                draw_text(renderer_, "RESUME", 230, y + 43, 4,
+src/platform/sdl_platform.cpp:547:                draw_text(renderer_, "PLAY", 230, y + 43, 4,
+src/platform/sdl_platform.cpp:552:            draw_text(renderer_, "START OVER", 230, y + 43, 4,
+src/platform/sdl_platform.cpp:567:    if (renderer_) SDL_RenderPresent(renderer_);
+src/app/application.cpp:99:        platform_.draw_game_actions(
+include/kiddos/platform/platform.hpp:15:    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+include/kiddos/platform/sdl_platform.hpp:18:    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+include/kiddos/platform/sdl_platform.hpp:24:    SDL_Renderer* renderer_ = nullptr;
+
+===== FINAL REPOSITORY STATE =====
+
+ASSET INVENTORY COMPLETE
