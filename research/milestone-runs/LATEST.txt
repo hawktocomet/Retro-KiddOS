@@ -1,1 +1,1 @@
-research/milestone-runs/20261110T195412Z-visual-fidelity-pass-asset-inventory
+research/milestone-runs/20261110T195450Z-visual-fidelity-pass-rendering-capabilities
