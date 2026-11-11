@@ -1,0 +1,285 @@
+=== NAVIGATION HINT ARTWORK ===
+assets/artwork/source/branding/navigation-hints.svg-5-    <circle cx="315" cy="15" r="10"/>
+assets/artwork/source/branding/navigation-hints.svg-6-    <rect x="462" y="5" width="43" height="20" rx="6"/>
+assets/artwork/source/branding/navigation-hints.svg-7-  </g>
+assets/artwork/source/branding/navigation-hints.svg-8-  <g fill="#9DB1CF" font-family="DejaVu Sans" font-size="12" font-weight="500" letter-spacing="1">
+assets/artwork/source/branding/navigation-hints.svg:9:    <text x="116" y="19">BROWSE</text>
+assets/artwork/source/branding/navigation-hints.svg-10-    <text x="332" y="19">PLAY</text>
+assets/artwork/source/branding/navigation-hints.svg:11:    <text x="483.5" y="19" text-anchor="middle" font-size="9">START</text>
+assets/artwork/source/branding/navigation-hints.svg:12:    <text x="516" y="19">PARENT MENU</text>
+assets/artwork/source/branding/navigation-hints.svg-13-  </g>
+assets/artwork/source/branding/navigation-hints.svg-14-  <text x="315" y="19" text-anchor="middle" fill="#9DB1CF" font-family="DejaVu Sans" font-size="11" font-weight="bold">A</text>
+assets/artwork/source/branding/navigation-hints.svg-15-</svg>
+--
+src/app/home_carousel_screen.cpp-16-constexpr ui::Rect right_art{548, 258, 148, 148};
+src/app/home_carousel_screen.cpp-17-
+src/app/home_carousel_screen.cpp-18-constexpr ui::Rect title_rect{145, 465, 430, 54};
+src/app/home_carousel_screen.cpp-19-constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+src/app/home_carousel_screen.cpp:20:constexpr ui::Rect hints_rect{0, 662, 720, 42};
+src/app/home_carousel_screen.cpp-21-
+src/app/home_carousel_screen.cpp-22-constexpr std::array<const char*, HomeCarouselScreen::game_count>
+src/app/home_carousel_screen.cpp-23-artwork_paths{
+src/app/home_carousel_screen.cpp-24-    "assets/artwork/generated/carousel-star.png",
+--
+src/app/home_carousel_screen.cpp-35-
+src/app/home_carousel_screen.cpp-36-constexpr const char* wordmark_path =
+src/app/home_carousel_screen.cpp-37-    "assets/artwork/generated/kiddos-wordmark.png";
+src/app/home_carousel_screen.cpp-38-
+src/app/home_carousel_screen.cpp:39:constexpr const char* hints_path =
+src/app/home_carousel_screen.cpp:40:    "assets/artwork/generated/navigation-hints.png";
+src/app/home_carousel_screen.cpp-41-
+src/app/home_carousel_screen.cpp:42:ui::Rect bounds_for_game(int game, int selected) {
+src/app/home_carousel_screen.cpp:43:    if (game == selected) return center_art;
+src/app/home_carousel_screen.cpp:44:    if ((game + 1) % HomeCarouselScreen::game_count == selected) {
+src/app/home_carousel_screen.cpp-45-        return left_art;
+src/app/home_carousel_screen.cpp-46-    }
+src/app/home_carousel_screen.cpp-47-    return right_art;
+src/app/home_carousel_screen.cpp-48-}
+src/app/home_carousel_screen.cpp-49-
+src/app/home_carousel_screen.cpp:50:int opacity_for_game(int game, int selected) {
+src/app/home_carousel_screen.cpp:51:    return game == selected ? 255 : 118;
+src/app/home_carousel_screen.cpp-52-}
+src/app/home_carousel_screen.cpp-53-
+src/app/home_carousel_screen.cpp-54-void fill_speaker_cone(
+src/app/home_carousel_screen.cpp-55-    ui::Renderer& renderer,
+--
+src/app/home_carousel_screen.cpp-79-void draw_arc(
+src/app/home_carousel_screen.cpp-80-    ui::Renderer& renderer,
+src/app/home_carousel_screen.cpp-81-    ui::Point center,
+src/app/home_carousel_screen.cpp-82-    int radius,
+src/app/home_carousel_screen.cpp:83:    double start_degrees,
+src/app/home_carousel_screen.cpp-84-    double end_degrees,
+src/app/home_carousel_screen.cpp-85-    ui::Color color
+src/app/home_carousel_screen.cpp-86-) {
+src/app/home_carousel_screen.cpp-87-    constexpr double pi = 3.14159265358979323846;
+src/app/home_carousel_screen.cpp-88-    const int steps = std::max(2, radius * 2);
+src/app/home_carousel_screen.cpp:89:    const double delta = (end_degrees - start_degrees) / steps;
+src/app/home_carousel_screen.cpp-90-
+src/app/home_carousel_screen.cpp-91-    auto point_at = [&](double degrees) {
+src/app/home_carousel_screen.cpp-92-        const double radians = degrees * pi / 180.0;
+src/app/home_carousel_screen.cpp-93-        return ui::Point{
+--
+src/app/home_carousel_screen.cpp-95-            center.y + static_cast<int>(std::lround(radius * std::sin(radians)))
+src/app/home_carousel_screen.cpp-96-        };
+src/app/home_carousel_screen.cpp-97-    };
+src/app/home_carousel_screen.cpp-98-
+src/app/home_carousel_screen.cpp:99:    ui::Point previous = point_at(start_degrees);
+src/app/home_carousel_screen.cpp-100-    for (int i = 1; i <= steps; ++i) {
+src/app/home_carousel_screen.cpp:101:        const ui::Point point = point_at(start_degrees + delta * i);
+src/app/home_carousel_screen.cpp-102-        renderer.draw_line(previous, point, color);
+src/app/home_carousel_screen.cpp-103-        previous = point;
+src/app/home_carousel_screen.cpp-104-    }
+src/app/home_carousel_screen.cpp-105-}
+--
+src/app/home_carousel_screen.cpp-142-
+src/app/home_carousel_screen.cpp-143-} // namespace
+src/app/home_carousel_screen.cpp-144-
+src/app/home_carousel_screen.cpp-145-HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+src/app/home_carousel_screen.cpp:146:    // A soft electric-blue backlight sits behind the selected artwork.
+src/app/home_carousel_screen.cpp-147-    // It is deliberately borderless and low-contrast.
+src/app/home_carousel_screen.cpp-148-    highlight_ = &root().add<ui::Panel>(ui::PanelStyle{
+src/app/home_carousel_screen.cpp-149-        {24, 82, 190, 38}, {0, 0, 0, 0}, 0, 28
+src/app/home_carousel_screen.cpp-150-    });
+--
+src/app/home_carousel_screen.cpp-176-    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+src/app/home_carousel_screen.cpp-177-    wordmark_->set_bounds(wordmark_rect);
+src/app/home_carousel_screen.cpp-178-    wordmark_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp-179-
+src/app/home_carousel_screen.cpp:180:    hints_texture_.load(renderer, hints_path, false);
+src/app/home_carousel_screen.cpp:181:    hints_ = &root().add<ui::Image>(&hints_texture_);
+src/app/home_carousel_screen.cpp:182:    hints_->set_bounds(hints_rect);
+src/app/home_carousel_screen.cpp:183:    hints_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp-184-
+src/app/home_carousel_screen.cpp-185-    root().add<StatusIndicators>();
+src/app/home_carousel_screen.cpp-186-
+src/app/home_carousel_screen.cpp:187:    set_selected_game(1);
+src/app/home_carousel_screen.cpp-188-}
+src/app/home_carousel_screen.cpp-189-
+src/app/home_carousel_screen.cpp-190-HomeCarouselScreen::~HomeCarouselScreen() {
+src/app/home_carousel_screen.cpp-191-    for (auto* image : game_images_) {
+--
+src/app/home_carousel_screen.cpp-193-    }
+src/app/home_carousel_screen.cpp-194-
+src/app/home_carousel_screen.cpp-195-    if (title_) title_->set_texture(nullptr);
+src/app/home_carousel_screen.cpp-196-    if (wordmark_) wordmark_->set_texture(nullptr);
+src/app/home_carousel_screen.cpp:197:    if (hints_) hints_->set_texture(nullptr);
+src/app/home_carousel_screen.cpp-198-}
+src/app/home_carousel_screen.cpp-199-
+src/app/home_carousel_screen.cpp:200:void HomeCarouselScreen::set_selected_game(int index) {
+src/app/home_carousel_screen.cpp-201-    if (index < 0 || index >= game_count) return;
+src/app/home_carousel_screen.cpp-202-
+src/app/home_carousel_screen.cpp:203:    if (selected_game_ == index) return;
+src/app/home_carousel_screen.cpp-204-
+src/app/home_carousel_screen.cpp:205:    const int previous = selected_game_;
+src/app/home_carousel_screen.cpp:206:    selected_game_ = index;
+src/app/home_carousel_screen.cpp-207-
+src/app/home_carousel_screen.cpp-208-    for (int game = 0; game < game_count; ++game) {
+src/app/home_carousel_screen.cpp-209-        const auto slot = static_cast<std::size_t>(game);
+src/app/home_carousel_screen.cpp-210-        const ui::Rect target = bounds_for_game(game, index);
+src/app/home_carousel_screen.cpp-211-
+src/app/home_carousel_screen.cpp-212-        // The preview moving from one side to the other is the far-side
+src/app/home_carousel_screen.cpp-213-        // item. Fade it out and reposition it rather than sliding it
+src/app/home_carousel_screen.cpp:214:        // through the selected artwork.
+src/app/home_carousel_screen.cpp-215-        if (previous >= 0) {
+src/app/home_carousel_screen.cpp-216-            const int old_offset =
+src/app/home_carousel_screen.cpp-217-                (game - previous + game_count) % game_count;
+src/app/home_carousel_screen.cpp-218-            const int new_offset =
+--
+include/kiddos/app/home_carousel_screen.hpp-17-
+include/kiddos/app/home_carousel_screen.hpp-18-    explicit HomeCarouselScreen(SDL_Renderer* renderer);
+include/kiddos/app/home_carousel_screen.hpp-19-    ~HomeCarouselScreen() override;
+include/kiddos/app/home_carousel_screen.hpp-20-
+include/kiddos/app/home_carousel_screen.hpp:21:    void set_selected_game(int index);
+include/kiddos/app/home_carousel_screen.hpp:22:    int selected_game() const noexcept { return selected_game_; }
+include/kiddos/app/home_carousel_screen.hpp-23-    void update(float delta_seconds) override;
+include/kiddos/app/home_carousel_screen.hpp-24-
+include/kiddos/app/home_carousel_screen.hpp-25-private:
+include/kiddos/app/home_carousel_screen.hpp-26-    std::array<ui::Texture, game_count> artworks_{};
+include/kiddos/app/home_carousel_screen.hpp-27-    std::array<ui::Texture, game_count> title_textures_{};
+include/kiddos/app/home_carousel_screen.hpp-28-
+include/kiddos/app/home_carousel_screen.hpp-29-    ui::Texture wordmark_texture_{};
+include/kiddos/app/home_carousel_screen.hpp:30:    ui::Texture hints_texture_{};
+include/kiddos/app/home_carousel_screen.hpp-31-
+include/kiddos/app/home_carousel_screen.hpp-32-    std::array<ui::Image*, game_count> game_images_{};
+include/kiddos/app/home_carousel_screen.hpp-33-    std::array<ui::Rect, game_count> target_bounds_{};
+include/kiddos/app/home_carousel_screen.hpp-34-    std::array<int, game_count> target_opacity_{};
+include/kiddos/app/home_carousel_screen.hpp-35-    ui::Panel* highlight_ = nullptr;
+include/kiddos/app/home_carousel_screen.hpp-36-
+include/kiddos/app/home_carousel_screen.hpp-37-    ui::Image* title_ = nullptr;
+include/kiddos/app/home_carousel_screen.hpp-38-    ui::Image* wordmark_ = nullptr;
+include/kiddos/app/home_carousel_screen.hpp:39:    ui::Image* hints_ = nullptr;
+include/kiddos/app/home_carousel_screen.hpp-40-
+include/kiddos/app/home_carousel_screen.hpp:41:    int selected_game_ = -1;
+include/kiddos/app/home_carousel_screen.hpp-42-};
+include/kiddos/app/home_carousel_screen.hpp-43-
+include/kiddos/app/home_carousel_screen.hpp-44-} // namespace kiddos::app
+
+=== CAROUSEL IMAGE SIZING AND OPACITY ===
+src/app/home_carousel_screen.cpp-146-    // A soft electric-blue backlight sits behind the selected artwork.
+src/app/home_carousel_screen.cpp-147-    // It is deliberately borderless and low-contrast.
+src/app/home_carousel_screen.cpp-148-    highlight_ = &root().add<ui::Panel>(ui::PanelStyle{
+src/app/home_carousel_screen.cpp-149-        {24, 82, 190, 38}, {0, 0, 0, 0}, 0, 28
+src/app/home_carousel_screen.cpp-150-    });
+src/app/home_carousel_screen.cpp:151:    highlight_->set_bounds({216, 154, 288, 288});
+src/app/home_carousel_screen.cpp-152-
+src/app/home_carousel_screen.cpp-153-    for (int i = 0; i < game_count; ++i) {
+src/app/home_carousel_screen.cpp-154-        const auto index = static_cast<std::size_t>(i);
+src/app/home_carousel_screen.cpp-155-
+src/app/home_carousel_screen.cpp:156:        artworks_[index].load(renderer, artwork_paths[index], false);
+src/app/home_carousel_screen.cpp-157-        title_textures_[index].load(renderer, title_paths[index], false);
+src/app/home_carousel_screen.cpp-158-
+src/app/home_carousel_screen.cpp:159:        auto& image = root().add<ui::Image>(&artworks_[index]);
+src/app/home_carousel_screen.cpp-160-        image.set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp-161-        game_images_[index] = &image;
+src/app/home_carousel_screen.cpp-162-    }
+src/app/home_carousel_screen.cpp-163-
+src/app/home_carousel_screen.cpp-164-    for (int i = 0; i < game_count; ++i) {
+src/app/home_carousel_screen.cpp-165-        const auto index = static_cast<std::size_t>(i);
+src/app/home_carousel_screen.cpp:166:        game_images_[index]->set_bounds(bounds_for_game(i, 1));
+src/app/home_carousel_screen.cpp:167:        game_images_[index]->set_opacity(
+src/app/home_carousel_screen.cpp-168-            static_cast<std::uint8_t>(opacity_for_game(i, 1)));
+src/app/home_carousel_screen.cpp-169-    }
+src/app/home_carousel_screen.cpp-170-
+src/app/home_carousel_screen.cpp-171-    title_ = &root().add<ui::Image>();
+src/app/home_carousel_screen.cpp:172:    title_->set_bounds(title_rect);
+src/app/home_carousel_screen.cpp-173-    title_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp-174-
+src/app/home_carousel_screen.cpp-175-    wordmark_texture_.load(renderer, wordmark_path, false);
+src/app/home_carousel_screen.cpp-176-    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+src/app/home_carousel_screen.cpp:177:    wordmark_->set_bounds(wordmark_rect);
+src/app/home_carousel_screen.cpp-178-    wordmark_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp-179-
+src/app/home_carousel_screen.cpp-180-    hints_texture_.load(renderer, hints_path, false);
+src/app/home_carousel_screen.cpp-181-    hints_ = &root().add<ui::Image>(&hints_texture_);
+src/app/home_carousel_screen.cpp:182:    hints_->set_bounds(hints_rect);
+src/app/home_carousel_screen.cpp-183-    hints_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp-184-
+src/app/home_carousel_screen.cpp-185-    root().add<StatusIndicators>();
+src/app/home_carousel_screen.cpp-186-
+src/app/home_carousel_screen.cpp-187-    set_selected_game(1);
+--
+src/app/home_carousel_screen.cpp-198-}
+src/app/home_carousel_screen.cpp-199-
+src/app/home_carousel_screen.cpp-200-void HomeCarouselScreen::set_selected_game(int index) {
+src/app/home_carousel_screen.cpp-201-    if (index < 0 || index >= game_count) return;
+src/app/home_carousel_screen.cpp-202-
+src/app/home_carousel_screen.cpp:203:    if (selected_game_ == index) return;
+src/app/home_carousel_screen.cpp-204-
+src/app/home_carousel_screen.cpp:205:    const int previous = selected_game_;
+src/app/home_carousel_screen.cpp:206:    selected_game_ = index;
+src/app/home_carousel_screen.cpp-207-
+src/app/home_carousel_screen.cpp-208-    for (int game = 0; game < game_count; ++game) {
+src/app/home_carousel_screen.cpp-209-        const auto slot = static_cast<std::size_t>(game);
+src/app/home_carousel_screen.cpp-210-        const ui::Rect target = bounds_for_game(game, index);
+src/app/home_carousel_screen.cpp-211-
+--
+src/app/home_carousel_screen.cpp-218-            const int new_offset =
+src/app/home_carousel_screen.cpp-219-                (game - index + game_count) % game_count;
+src/app/home_carousel_screen.cpp-220-
+src/app/home_carousel_screen.cpp-221-            if (old_offset != 0 && new_offset != 0 &&
+src/app/home_carousel_screen.cpp-222-                old_offset != new_offset) {
+src/app/home_carousel_screen.cpp:223:                game_images_[slot]->set_bounds(target);
+src/app/home_carousel_screen.cpp:224:                game_images_[slot]->set_opacity(0);
+src/app/home_carousel_screen.cpp-225-            }
+src/app/home_carousel_screen.cpp-226-        }
+src/app/home_carousel_screen.cpp-227-
+src/app/home_carousel_screen.cpp-228-        target_bounds_[slot] = target;
+src/app/home_carousel_screen.cpp-229-        target_opacity_[slot] = opacity_for_game(game, index);
+--
+src/app/home_carousel_screen.cpp-252-        const ui::Rect next = interpolate_rect(current, target, amount);
+src/app/home_carousel_screen.cpp-253-
+src/app/home_carousel_screen.cpp-254-        const int opacity = interpolate(
+src/app/home_carousel_screen.cpp-255-            image->opacity(), target_opacity_[i], amount);
+src/app/home_carousel_screen.cpp-256-
+src/app/home_carousel_screen.cpp:257:        image->set_bounds(next);
+src/app/home_carousel_screen.cpp:258:        image->set_opacity(static_cast<std::uint8_t>(
+src/app/home_carousel_screen.cpp-259-            std::clamp(opacity, 0, 255)));
+src/app/home_carousel_screen.cpp-260-
+src/app/home_carousel_screen.cpp-261-        if (std::abs(next.x - target.x) <= 1 &&
+src/app/home_carousel_screen.cpp-262-            std::abs(next.y - target.y) <= 1 &&
+src/app/home_carousel_screen.cpp-263-            std::abs(next.w - target.w) <= 1 &&
+src/app/home_carousel_screen.cpp-264-            std::abs(next.h - target.h) <= 1) {
+src/app/home_carousel_screen.cpp:265:            image->set_bounds(target);
+src/app/home_carousel_screen.cpp-266-        }
+src/app/home_carousel_screen.cpp-267-
+src/app/home_carousel_screen.cpp-268-        if (std::abs(opacity - target_opacity_[i]) <= 1) {
+src/app/home_carousel_screen.cpp:269:            image->set_opacity(
+src/app/home_carousel_screen.cpp-270-                static_cast<std::uint8_t>(target_opacity_[i]));
+src/app/home_carousel_screen.cpp-271-        }
+src/app/home_carousel_screen.cpp-272-    }
+src/app/home_carousel_screen.cpp-273-}
+src/app/home_carousel_screen.cpp-274-
+--
+include/kiddos/app/home_carousel_screen.hpp-17-
+include/kiddos/app/home_carousel_screen.hpp-18-    explicit HomeCarouselScreen(SDL_Renderer* renderer);
+include/kiddos/app/home_carousel_screen.hpp-19-    ~HomeCarouselScreen() override;
+include/kiddos/app/home_carousel_screen.hpp-20-
+include/kiddos/app/home_carousel_screen.hpp-21-    void set_selected_game(int index);
+include/kiddos/app/home_carousel_screen.hpp:22:    int selected_game() const noexcept { return selected_game_; }
+include/kiddos/app/home_carousel_screen.hpp-23-    void update(float delta_seconds) override;
+include/kiddos/app/home_carousel_screen.hpp-24-
+include/kiddos/app/home_carousel_screen.hpp-25-private:
+include/kiddos/app/home_carousel_screen.hpp:26:    std::array<ui::Texture, game_count> artworks_{};
+include/kiddos/app/home_carousel_screen.hpp-27-    std::array<ui::Texture, game_count> title_textures_{};
+include/kiddos/app/home_carousel_screen.hpp-28-
+include/kiddos/app/home_carousel_screen.hpp-29-    ui::Texture wordmark_texture_{};
+include/kiddos/app/home_carousel_screen.hpp-30-    ui::Texture hints_texture_{};
+include/kiddos/app/home_carousel_screen.hpp-31-
+--
+include/kiddos/app/home_carousel_screen.hpp-36-
+include/kiddos/app/home_carousel_screen.hpp-37-    ui::Image* title_ = nullptr;
+include/kiddos/app/home_carousel_screen.hpp-38-    ui::Image* wordmark_ = nullptr;
+include/kiddos/app/home_carousel_screen.hpp-39-    ui::Image* hints_ = nullptr;
+include/kiddos/app/home_carousel_screen.hpp-40-
+include/kiddos/app/home_carousel_screen.hpp:41:    int selected_game_ = -1;
+include/kiddos/app/home_carousel_screen.hpp-42-};
+include/kiddos/app/home_carousel_screen.hpp-43-
+include/kiddos/app/home_carousel_screen.hpp-44-} // namespace kiddos::app
+
+=== CURRENT WORKTREE ===
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
