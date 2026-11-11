@@ -1,0 +1,195 @@
+
+--- main.c:18-30 ---
+  18: static lv_group_t *focus_group;
+  19: static uint32_t keypad_key;
+  20: static bool keypad_pressed;
+  21: 
+  22: static void read_controller(lv_indev_t *indev, lv_indev_data_t *data)
+  23: {
+  24:     (void)indev;
+  25:     data->key = keypad_key;
+  26:     data->state = keypad_pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+  27: }
+  28: 
+  29: static void flush_to_sdl(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
+  30: {
+
+--- main.c:150-162 ---
+ 150:         LV_DISPLAY_RENDER_MODE_PARTIAL);
+ 151: 
+ 152:     make_ui();
+ 153: 
+ 154:     keypad = lv_indev_create();
+ 155:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 156:     lv_indev_set_read_cb(keypad, read_controller);
+ 157:     lv_indev_set_group(keypad, focus_group);
+ 158:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 159: 
+ 160: 
+ 161:     printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+ 162:     printf("Press Escape or close the window to exit.\n");
+
+--- main.c:151-163 ---
+ 151: 
+ 152:     make_ui();
+ 153: 
+ 154:     keypad = lv_indev_create();
+ 155:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 156:     lv_indev_set_read_cb(keypad, read_controller);
+ 157:     lv_indev_set_group(keypad, focus_group);
+ 158:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 159: 
+ 160: 
+ 161:     printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+ 162:     printf("Press Escape or close the window to exit.\n");
+ 163: 
+
+--- main.c:152-164 ---
+ 152:     make_ui();
+ 153: 
+ 154:     keypad = lv_indev_create();
+ 155:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 156:     lv_indev_set_read_cb(keypad, read_controller);
+ 157:     lv_indev_set_group(keypad, focus_group);
+ 158:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 159: 
+ 160: 
+ 161:     printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+ 162:     printf("Press Escape or close the window to exit.\n");
+ 163: 
+ 164:     int running = 1;
+
+--- main.c:153-165 ---
+ 153: 
+ 154:     keypad = lv_indev_create();
+ 155:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 156:     lv_indev_set_read_cb(keypad, read_controller);
+ 157:     lv_indev_set_group(keypad, focus_group);
+ 158:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 159: 
+ 160: 
+ 161:     printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+ 162:     printf("Press Escape or close the window to exit.\n");
+ 163: 
+ 164:     int running = 1;
+ 165:     while (running) {
+
+--- main.c:154-166 ---
+ 154:     keypad = lv_indev_create();
+ 155:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 156:     lv_indev_set_read_cb(keypad, read_controller);
+ 157:     lv_indev_set_group(keypad, focus_group);
+ 158:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 159: 
+ 160: 
+ 161:     printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+ 162:     printf("Press Escape or close the window to exit.\n");
+ 163: 
+ 164:     int running = 1;
+ 165:     while (running) {
+ 166:         SDL_Event event;
+
+--- main.c:161-173 ---
+ 161:     printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+ 162:     printf("Press Escape or close the window to exit.\n");
+ 163: 
+ 164:     int running = 1;
+ 165:     while (running) {
+ 166:         SDL_Event event;
+ 167:         while (SDL_PollEvent(&event)) {
+ 168:             if (event.type == SDL_QUIT)
+ 169:                 running = 0;
+ 170:             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+ 171:                 running = 0;
+ 172: 
+ 173:             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+
+--- main.c:163-175 ---
+ 163: 
+ 164:     int running = 1;
+ 165:     while (running) {
+ 166:         SDL_Event event;
+ 167:         while (SDL_PollEvent(&event)) {
+ 168:             if (event.type == SDL_QUIT)
+ 169:                 running = 0;
+ 170:             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+ 171:                 running = 0;
+ 172: 
+ 173:             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+ 174:                 switch (event.cbutton.button) {
+ 175:                     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+
+--- main.c:166-178 ---
+ 166:         SDL_Event event;
+ 167:         while (SDL_PollEvent(&event)) {
+ 168:             if (event.type == SDL_QUIT)
+ 169:                 running = 0;
+ 170:             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+ 171:                 running = 0;
+ 172: 
+ 173:             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+ 174:                 switch (event.cbutton.button) {
+ 175:                     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 176:                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 177:                     case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 178:                     case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+
+--- main.c:181-193 ---
+ 181:                     default: break;
+ 182:                 }
+ 183:             }
+ 184: 
+ 185:             if (event.type == SDL_KEYUP) {
+ 186:                 switch (event.key.keysym.sym) {
+ 187:                     case SDLK_LEFT:
+ 188:                     case SDLK_RIGHT:
+ 189:                     case SDLK_UP:
+ 190:                     case SDLK_DOWN:
+ 191:                     case SDLK_RETURN:
+ 192:                         keypad_pressed = false;
+ 193:                         break;
+
+--- main.c:194-206 ---
+ 194:                     default: break;
+ 195:                 }
+ 196:             }
+ 197: 
+ 198:             if (event.type == SDL_KEYDOWN) {
+ 199:                 switch (event.key.keysym.sym) {
+ 200:                     case SDLK_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 201:                     case SDLK_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 202:                     case SDLK_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 203:                     case SDLK_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 204:                     case SDLK_RETURN: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 205:                     default: break;
+ 206:                 }
+
+--- main.c:205-217 ---
+ 205:                     default: break;
+ 206:                 }
+ 207:             }
+ 208:         }
+ 209:         lv_timer_handler();
+ 210: 
+ 211: 
+ 212: 
+ 213:         SDL_Delay(5);
+ 214:     }
+ 215: 
+ 216:     lv_deinit();
+ 217:     if (controller) SDL_GameControllerClose(controller);
+
+--- main.c:209-221 ---
+ 209:         lv_timer_handler();
+ 210: 
+ 211: 
+ 212: 
+ 213:         SDL_Delay(5);
+ 214:     }
+ 215: 
+ 216:     lv_deinit();
+ 217:     if (controller) SDL_GameControllerClose(controller);
+ 218:     SDL_DestroyTexture(texture);
+ 219:     SDL_DestroyRenderer(renderer);
+ 220:     SDL_DestroyWindow(window);
+ 221:     SDL_Quit();
