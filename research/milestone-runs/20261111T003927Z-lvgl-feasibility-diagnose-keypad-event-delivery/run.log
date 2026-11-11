@@ -1,0 +1,319 @@
+
+--- main.c:16-24 ---
+  16: static uint8_t draw_buffer[SCREEN_W * BUFFER_ROWS * 2];
+  17: static lv_indev_t *keypad;
+  18: static lv_group_t *focus_group;
+  19: static uint32_t keypad_key;
+  20: static bool keypad_pressed;
+  21: 
+  22: static void read_controller(lv_indev_t *indev, lv_indev_data_t *data)
+  23: {
+  24:     (void)indev;
+
+--- main.c:17-25 ---
+  17: static lv_indev_t *keypad;
+  18: static lv_group_t *focus_group;
+  19: static uint32_t keypad_key;
+  20: static bool keypad_pressed;
+  21: 
+  22: static void read_controller(lv_indev_t *indev, lv_indev_data_t *data)
+  23: {
+  24:     (void)indev;
+  25:     data->key = keypad_key;
+
+--- main.c:19-27 ---
+  19: static uint32_t keypad_key;
+  20: static bool keypad_pressed;
+  21: 
+  22: static void read_controller(lv_indev_t *indev, lv_indev_data_t *data)
+  23: {
+  24:     (void)indev;
+  25:     data->key = keypad_key;
+  26:     data->state = keypad_pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+  27:     keypad_pressed = false;
+
+--- main.c:22-30 ---
+  22: static void read_controller(lv_indev_t *indev, lv_indev_data_t *data)
+  23: {
+  24:     (void)indev;
+  25:     data->key = keypad_key;
+  26:     data->state = keypad_pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+  27:     keypad_pressed = false;
+  28: }
+  29: 
+  30: static void flush_to_sdl(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
+
+--- main.c:23-31 ---
+  23: {
+  24:     (void)indev;
+  25:     data->key = keypad_key;
+  26:     data->state = keypad_pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+  27:     keypad_pressed = false;
+  28: }
+  29: 
+  30: static void flush_to_sdl(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
+  31: {
+
+--- main.c:24-32 ---
+  24:     (void)indev;
+  25:     data->key = keypad_key;
+  26:     data->state = keypad_pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+  27:     keypad_pressed = false;
+  28: }
+  29: 
+  30: static void flush_to_sdl(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
+  31: {
+  32:     SDL_Rect rect = {
+
+--- main.c:152-160 ---
+ 152: 
+ 153:     make_ui();
+ 154: 
+ 155:     keypad = lv_indev_create();
+ 156:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 157:     lv_indev_set_read_cb(keypad, read_controller);
+ 158:     lv_indev_set_group(keypad, focus_group);
+ 159:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 160: 
+
+--- main.c:153-161 ---
+ 153:     make_ui();
+ 154: 
+ 155:     keypad = lv_indev_create();
+ 156:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 157:     lv_indev_set_read_cb(keypad, read_controller);
+ 158:     lv_indev_set_group(keypad, focus_group);
+ 159:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 160: 
+ 161:     /* Feasibility test: inject one SDL right-arrow event and verify LVGL focus moves. */
+
+--- main.c:154-162 ---
+ 154: 
+ 155:     keypad = lv_indev_create();
+ 156:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 157:     lv_indev_set_read_cb(keypad, read_controller);
+ 158:     lv_indev_set_group(keypad, focus_group);
+ 159:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 160: 
+ 161:     /* Feasibility test: inject one SDL right-arrow event and verify LVGL focus moves. */
+ 162:     lv_obj_t *initial_focus = lv_group_get_focused(focus_group);
+
+--- main.c:155-163 ---
+ 155:     keypad = lv_indev_create();
+ 156:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 157:     lv_indev_set_read_cb(keypad, read_controller);
+ 158:     lv_indev_set_group(keypad, focus_group);
+ 159:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 160: 
+ 161:     /* Feasibility test: inject one SDL right-arrow event and verify LVGL focus moves. */
+ 162:     lv_obj_t *initial_focus = lv_group_get_focused(focus_group);
+ 163:     bool navigation_test_reported = false;
+
+--- main.c:156-164 ---
+ 156:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 157:     lv_indev_set_read_cb(keypad, read_controller);
+ 158:     lv_indev_set_group(keypad, focus_group);
+ 159:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 160: 
+ 161:     /* Feasibility test: inject one SDL right-arrow event and verify LVGL focus moves. */
+ 162:     lv_obj_t *initial_focus = lv_group_get_focused(focus_group);
+ 163:     bool navigation_test_reported = false;
+ 164:     uint32_t navigation_test_started = SDL_GetTicks();
+
+--- main.c:163-171 ---
+ 163:     bool navigation_test_reported = false;
+ 164:     uint32_t navigation_test_started = SDL_GetTicks();
+ 165:     SDL_Event navigation_test_event = {0};
+ 166:     navigation_test_event.type = SDL_KEYDOWN;
+ 167:     navigation_test_event.key.keysym.sym = SDLK_RIGHT;
+ 168:     SDL_PushEvent(&navigation_test_event);
+ 169: 
+ 170:     printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+ 171:     printf("Press Escape or close the window to exit.\n");
+
+--- main.c:165-173 ---
+ 165:     SDL_Event navigation_test_event = {0};
+ 166:     navigation_test_event.type = SDL_KEYDOWN;
+ 167:     navigation_test_event.key.keysym.sym = SDLK_RIGHT;
+ 168:     SDL_PushEvent(&navigation_test_event);
+ 169: 
+ 170:     printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+ 171:     printf("Press Escape or close the window to exit.\n");
+ 172: 
+ 173:     int running = 1;
+
+--- main.c:173-181 ---
+ 173:     int running = 1;
+ 174:     while (running) {
+ 175:         SDL_Event event;
+ 176:         while (SDL_PollEvent(&event)) {
+ 177:             if (event.type == SDL_QUIT)
+ 178:                 running = 0;
+ 179:             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+ 180:                 running = 0;
+ 181: 
+
+--- main.c:176-184 ---
+ 176:         while (SDL_PollEvent(&event)) {
+ 177:             if (event.type == SDL_QUIT)
+ 178:                 running = 0;
+ 179:             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+ 180:                 running = 0;
+ 181: 
+ 182:             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+ 183:                 switch (event.cbutton.button) {
+ 184:                     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+
+--- main.c:179-187 ---
+ 179:             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+ 180:                 running = 0;
+ 181: 
+ 182:             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+ 183:                 switch (event.cbutton.button) {
+ 184:                     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 185:                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 186:                     case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 187:                     case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+
+--- main.c:181-189 ---
+ 181: 
+ 182:             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+ 183:                 switch (event.cbutton.button) {
+ 184:                     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 185:                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 186:                     case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 187:                     case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 188:                     case SDL_CONTROLLER_BUTTON_A: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 189:                     case SDL_CONTROLLER_BUTTON_B: keypad_key = LV_KEY_ESC; keypad_pressed = true; break;
+
+--- main.c:182-190 ---
+ 182:             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+ 183:                 switch (event.cbutton.button) {
+ 184:                     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 185:                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 186:                     case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 187:                     case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 188:                     case SDL_CONTROLLER_BUTTON_A: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 189:                     case SDL_CONTROLLER_BUTTON_B: keypad_key = LV_KEY_ESC; keypad_pressed = true; break;
+ 190:                     default: break;
+
+--- main.c:183-191 ---
+ 183:                 switch (event.cbutton.button) {
+ 184:                     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 185:                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 186:                     case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 187:                     case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 188:                     case SDL_CONTROLLER_BUTTON_A: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 189:                     case SDL_CONTROLLER_BUTTON_B: keypad_key = LV_KEY_ESC; keypad_pressed = true; break;
+ 190:                     default: break;
+ 191:                 }
+
+--- main.c:184-192 ---
+ 184:                     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 185:                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 186:                     case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 187:                     case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 188:                     case SDL_CONTROLLER_BUTTON_A: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 189:                     case SDL_CONTROLLER_BUTTON_B: keypad_key = LV_KEY_ESC; keypad_pressed = true; break;
+ 190:                     default: break;
+ 191:                 }
+ 192:             }
+
+--- main.c:185-193 ---
+ 185:                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 186:                     case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 187:                     case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 188:                     case SDL_CONTROLLER_BUTTON_A: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 189:                     case SDL_CONTROLLER_BUTTON_B: keypad_key = LV_KEY_ESC; keypad_pressed = true; break;
+ 190:                     default: break;
+ 191:                 }
+ 192:             }
+ 193: 
+
+--- main.c:186-194 ---
+ 186:                     case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 187:                     case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 188:                     case SDL_CONTROLLER_BUTTON_A: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 189:                     case SDL_CONTROLLER_BUTTON_B: keypad_key = LV_KEY_ESC; keypad_pressed = true; break;
+ 190:                     default: break;
+ 191:                 }
+ 192:             }
+ 193: 
+ 194:             if (event.type == SDL_KEYDOWN) {
+
+--- main.c:191-199 ---
+ 191:                 }
+ 192:             }
+ 193: 
+ 194:             if (event.type == SDL_KEYDOWN) {
+ 195:                 switch (event.key.keysym.sym) {
+ 196:                     case SDLK_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 197:                     case SDLK_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 198:                     case SDLK_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 199:                     case SDLK_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+
+--- main.c:193-201 ---
+ 193: 
+ 194:             if (event.type == SDL_KEYDOWN) {
+ 195:                 switch (event.key.keysym.sym) {
+ 196:                     case SDLK_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 197:                     case SDLK_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 198:                     case SDLK_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 199:                     case SDLK_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 200:                     case SDLK_RETURN: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 201:                     default: break;
+
+--- main.c:194-202 ---
+ 194:             if (event.type == SDL_KEYDOWN) {
+ 195:                 switch (event.key.keysym.sym) {
+ 196:                     case SDLK_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 197:                     case SDLK_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 198:                     case SDLK_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 199:                     case SDLK_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 200:                     case SDLK_RETURN: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 201:                     default: break;
+ 202:                 }
+
+--- main.c:195-203 ---
+ 195:                 switch (event.key.keysym.sym) {
+ 196:                     case SDLK_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 197:                     case SDLK_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 198:                     case SDLK_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 199:                     case SDLK_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 200:                     case SDLK_RETURN: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 201:                     default: break;
+ 202:                 }
+ 203:             }
+
+--- main.c:196-204 ---
+ 196:                     case SDLK_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+ 197:                     case SDLK_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 198:                     case SDLK_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 199:                     case SDLK_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 200:                     case SDLK_RETURN: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 201:                     default: break;
+ 202:                 }
+ 203:             }
+ 204:         }
+
+--- main.c:197-205 ---
+ 197:                     case SDLK_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+ 198:                     case SDLK_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+ 199:                     case SDLK_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+ 200:                     case SDLK_RETURN: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+ 201:                     default: break;
+ 202:                 }
+ 203:             }
+ 204:         }
+ 205:         lv_timer_handler();
+
+--- main.c:202-210 ---
+ 202:                 }
+ 203:             }
+ 204:         }
+ 205:         lv_timer_handler();
+ 206: 
+ 207:         if (!navigation_test_reported) {
+ 208:             if (lv_group_get_focused(focus_group) != initial_focus) {
+ 209:                 printf("SYNTHETIC_RIGHT_NAV=PASS\\n");
+ 210:                 navigation_test_reported = true;
