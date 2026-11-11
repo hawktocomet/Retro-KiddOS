@@ -1,0 +1,62 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/19] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o
+[2/19] Building CXX object CMakeFiles/kiddos_ui_theme_test.dir/tests/ui_theme_test.cpp.o
+[3/19] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/checkbox.cpp.o
+[4/19] Linking CXX static library libkiddos_ui.a
+[5/19] Linking CXX executable kiddos_ui_focus_test
+[6/19] Linking CXX executable kiddos_ui_panel_test
+[7/19] Linking CXX executable kiddos
+[8/19] Linking CXX executable kiddos_ui_image_test
+[9/19] Linking CXX executable kiddos_ui_progress_bar_test
+[10/19] Linking CXX executable kiddos_ui_controller_test
+[11/19] Linking CXX executable kiddos_ui_label_test
+[12/19] Linking CXX executable kiddos_ui_layout_test
+[13/19] Linking CXX executable kiddos_ui_button_test
+[14/19] Linking CXX executable kiddos_ui_toggle_test
+[15/19] Linking CXX executable kiddos_ui_theme_test
+[16/19] Linking CXX executable kiddos_ui_slider_test
+[17/19] Building CXX object CMakeFiles/kiddos_ui_checkbox_test.dir/tests/ui_checkbox_test.cpp.o
+[18/19] Linking CXX executable kiddos_ui_list_view_test
+[19/19] Linking CXX executable kiddos_ui_checkbox_test
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_ui_layout
+ 1/14 Test  #1: kiddos_ui_layout .................   Passed    0.01 sec
+      Start  2: kiddos_ui_geometry
+ 2/14 Test  #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+      Start  3: kiddos_ui_focus
+ 3/14 Test  #3: kiddos_ui_focus ..................   Passed    0.01 sec
+      Start  4: kiddos_ui_button
+ 4/14 Test  #4: kiddos_ui_button .................   Passed    0.01 sec
+      Start  5: kiddos_ui_controller
+ 5/14 Test  #5: kiddos_ui_controller .............   Passed    0.01 sec
+      Start  6: kiddos_ui_image
+ 6/14 Test  #6: kiddos_ui_image ..................   Passed    0.01 sec
+      Start  7: kiddos_ui_label
+ 7/14 Test  #7: kiddos_ui_label ..................   Passed    0.01 sec
+      Start  8: kiddos_ui_panel
+ 8/14 Test  #8: kiddos_ui_panel ..................   Passed    0.01 sec
+      Start  9: kiddos_ui_progress_bar
+ 9/14 Test  #9: kiddos_ui_progress_bar ...........   Passed    0.01 sec
+      Start 10: kiddos_ui_toggle
+10/14 Test #10: kiddos_ui_toggle .................   Passed    0.01 sec
+      Start 11: kiddos_ui_slider
+11/14 Test #11: kiddos_ui_slider .................   Passed    0.01 sec
+      Start 12: kiddos_ui_theme
+12/14 Test #12: kiddos_ui_theme ..................   Passed    0.01 sec
+      Start 13: kiddos_ui_list_view
+13/14 Test #13: kiddos_ui_list_view ..............   Passed    0.01 sec
+      Start 14: kiddos_ui_checkbox
+14/14 Test #14: kiddos_ui_checkbox ...............   Passed    0.01 sec
+
+100% tests passed out of 14
+
+Total Test time (real) =   0.12 sec
+[main b78301c] feat: complete reusable KiddOS UI checkbox
+ 8 files changed, 233 insertions(+)
+ create mode 100644 include/kiddos/ui/checkbox.hpp
+ create mode 100644 src/ui/checkbox.cpp
+ create mode 100644 tests/ui_checkbox_test.cpp
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   fb381f5..b78301c  main -> main
