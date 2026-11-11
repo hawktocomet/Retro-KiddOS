@@ -13,6 +13,11 @@ magenta (255, 0, 255) pixels as transparent. This matches the generated
 Kid Mode artwork, which is exported with a magenta background. Loaded
 textures use alpha blending.
 
+Artwork that must not show magenta keying fringes on anti-aliased edges
+should be exported with a transparent background instead (PNG) and loaded
+without the magenta key. The home carousel uses transparent PNG exports of
+the same SVG sources for this reason.
+
 `Image` is a reusable element that holds a non-owning pointer to a `Texture`.
 The texture must outlive the image element.
 

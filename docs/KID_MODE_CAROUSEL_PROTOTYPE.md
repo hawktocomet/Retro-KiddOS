@@ -21,6 +21,13 @@ harness and is not a device firmware build.
   geometry and colors.
 - The game action screen remains on the platform-owned manual rendering
   path, with selection state managed by the application.
+- A KiddOS wordmark centered at the top of the screen.
+- The selected game's title centered directly below the main card,
+  following the selection (SUPER MARIO, STAR, CAR).
+- Physical control hints along the bottom of the screen: browse with
+  left/right, select with A, and hold START + SELECT for the parent menu.
+- Clean rounded card borders: the UI renderer traces continuous corner
+  arcs, and panels draw a uniform single-pass border.
 
 ## Desktop controls
 

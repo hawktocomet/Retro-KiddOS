@@ -28,7 +28,12 @@ public:
 
 private:
     std::array<ui::Texture, game_count> artworks_{};
-    ui::Texture title_texture_{};
+
+    // One title asset per game, shown centered below the center card for
+    // whichever game is currently selected.
+    std::array<ui::Texture, game_count> title_textures_{};
+    ui::Texture wordmark_texture_{};
+    ui::Texture hints_texture_{};
 
     // Non-owning references into the root container, used to update the
     // carousel when the selection changes.
@@ -36,6 +41,8 @@ private:
     ui::Image* side_right_art_ = nullptr;
     ui::Image* center_art_ = nullptr;
     ui::Image* title_ = nullptr;
+    ui::Image* wordmark_ = nullptr;
+    ui::Image* hints_ = nullptr;
 
     int selected_game_ = 1;
 };

@@ -41,11 +41,37 @@ void Panel::draw(Renderer& renderer) {
     const Rect rect = bounds();
     if (rect.empty()) return;
 
-    renderer.fill_rounded_rect(rect, style_.corner_radius, style_.background);
+    const int radius = style_.corner_radius;
+    const int thickness = std::min(
+        style_.border_thickness, std::min(rect.w, rect.h) / 2
+    );
 
-    if (style_.border_thickness <= 0) return;
+    // An opaque background allows a clean, uniform border: fill the card
+    // with the border color, then the inset area with the background. This
+    // avoids stacking nested outlines, which look crude at small radii.
+    if (thickness > 0 && style_.background.a == 255) {
+        renderer.fill_rounded_rect(rect, radius, style_.border);
 
-    for (int inset = 0; inset < style_.border_thickness; ++inset) {
+        const Rect inner{
+            rect.x + thickness,
+            rect.y + thickness,
+            rect.w - thickness * 2,
+            rect.h - thickness * 2
+        };
+
+        if (!inner.empty()) {
+            renderer.fill_rounded_rect(
+                inner, std::max(0, radius - thickness), style_.background
+            );
+        }
+        return;
+    }
+
+    renderer.fill_rounded_rect(rect, radius, style_.background);
+
+    // Transparent backgrounds (for example glow outlines) draw the border
+    // as clean rounded outlines instead of covering the content beneath.
+    for (int inset = 0; inset < thickness; ++inset) {
         const Rect outline{
             rect.x + inset,
             rect.y + inset,
@@ -56,7 +82,7 @@ void Panel::draw(Renderer& renderer) {
         if (outline.empty()) break;
         renderer.outline_rounded_rect(
             outline,
-            std::max(0, style_.corner_radius - inset),
+            std::max(0, radius - inset),
             style_.border
         );
     }

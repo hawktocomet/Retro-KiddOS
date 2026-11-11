@@ -1,5 +1,36 @@
 # Development Log
 
+## 2026-11-11 — Home carousel visual revision
+
+- Refined panel borders: `ui::Panel` now draws a clean, uniform border by
+  filling the card with the border color and insetting the background,
+  instead of stacking nested outlines. Transparent-background panels (the
+  selected-card glow) keep drawing as rounded outlines.
+- Refined `ui::Renderer` rounded rectangles: fills sample corner arcs at
+  pixel centers and outlines trace the true circle with dense, deduplicated
+  angle steps, removing jagged corners, gaps, and double-blended pixels on
+  semi-transparent borders.
+- Replaced the sound status icon with a speaker cabinet, a seam-free flared
+  cone, and two sound-wave arcs drawn from renderer primitives.
+- The selected game's title now always appears centered below the center
+  card and follows the selection. Titles are transparent PNG exports from
+  the existing SVG pipeline (DejaVu Sans Bold, white): SUPER MARIO, STAR,
+  and CAR. STAR and CAR use the placeholder games' existing identifiers.
+- Added a KiddOS wordmark centered at the top of the screen and physical
+  control hints along the bottom (browse, select, parent menu), matching
+  docs/INPUT_CONTROLS.md Kid Mode controls.
+- Exported transparent PNG versions of the carousel artwork and title from
+  the committed SVG sources so no magenta keying artifacts remain on the
+  home screen; the magenta-keyed BMPs remain in use by the manual game
+  action rendering path.
+- Updated the carousel screen tests: element structure, per-selection
+  title textures, wordmark and hint presence, border and glow continuity,
+  and absence of magenta fringes.
+- Built the project, ran the complete CTest suite (26/26 passed), and ran
+  a headless SDL runtime smoke test with the dummy video driver.
+- Visual approval is left to the reviewer; no device firmware, storage, or
+  boot configuration was changed.
+
 ## 2026-11-09 — Project foundation
 
 ### Project setup
