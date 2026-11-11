@@ -1,0 +1,355 @@
+=== LVGL CMake options ===
+
+=== Current adapter build configuration ===
+cmake_minimum_required(VERSION 3.16)
+project(kiddos_lvgl_sdl_adapter C)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+set(LV_CONF_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lv_conf.h" CACHE STRING "" FORCE)
+set(LV_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(LV_BUILD_DEMOS OFF CACHE BOOL "" FORCE)
+set(LV_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(LVGL_DIR "/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099" CACHE PATH "" FORCE)
+
+find_package(SDL2 REQUIRED)
+add_subdirectory("${LVGL_DIR}" "${CMAKE_BINARY_DIR}/lvgl")
+
+add_executable(kiddos_lvgl_sdl_adapter main.c)
+target_include_directories(kiddos_lvgl_sdl_adapter PRIVATE "${LVGL_DIR}")
+target_link_libraries(kiddos_lvgl_sdl_adapter PRIVATE lvgl SDL2::SDL2)
+
+=== Existing KiddOS SDL platform interface ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+
+#include <SDL.h>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+#include "kiddos/platform/sdl_platform.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <iostream>
+
+namespace kiddos {
+
+namespace {
+
+struct Color {
+    Uint8 r, g, b, a;
+};
+
+std::array<SDL_Texture*, 3> artwork_textures{};
+std::array<SDL_Texture*, 3> action_label_textures{};
+SDL_Texture* carousel_title_texture{};
+SDL_Texture* carousel_selected_texture{};
+
+SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+                                 const char* path,
+                                 bool magenta_key = false) {
+    SDL_Surface* surface = SDL_LoadBMP(path);
+    if (!surface) {
+        std::cerr << "Could not load " << path << ": "
+                  << SDL_GetError() << '\\n';
+        return nullptr;
+    }
+
+    if (magenta_key) {
+        const Uint32 key = SDL_MapRGB(surface->format, 255, 0, 255);
+        SDL_SetColorKey(surface, SDL_TRUE, key);
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    if (texture) {
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    } else {
+        std::cerr << "Could not create texture for " << path << ": "
+                  << SDL_GetError() << '\\n';
+    }
+    return texture;
+}
+
+void color(SDL_Renderer* r, Color c) {
+    SDL_SetRenderDrawColor(r, c.r, c.g, c.b, c.a);
+}
+
+void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+    color(r, c);
+    SDL_RenderFillRect(r, &rect);
+}
+
+void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+    color(r, c);
+    SDL_RenderDrawRect(r, &rect);
+}
+
+void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    for (int y = 0; y < rect.h; ++y) {
+        int inset = 0;
+        if (y < radius) {
+            const double dy = radius - y - 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        } else if (y >= rect.h - radius) {
+            const double dy = y - (rect.h - radius) + 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        }
+        SDL_RenderDrawLine(r, rect.x + inset, rect.y + y,
+                           rect.x + rect.w - 1 - inset, rect.y + y);
+    }
+}
+
+void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y,
+                       rect.x + rect.w - radius - 1, rect.y);
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y + rect.h - 1,
+                       rect.x + rect.w - radius - 1, rect.y + rect.h - 1);
+    SDL_RenderDrawLine(r, rect.x, rect.y + radius,
+                       rect.x, rect.y + rect.h - radius - 1);
+    SDL_RenderDrawLine(r, rect.x + rect.w - 1, rect.y + radius,
+                       rect.x + rect.w - 1, rect.y + rect.h - radius - 1);
+
+    for (int i = 0; i <= radius * 2; ++i) {
+        const double angle = (3.14159265358979323846 / 2.0) *
+                             static_cast<double>(i) /
+                             std::max(1, radius * 2);
+        const int dx = static_cast<int>(std::round(radius * std::cos(angle)));
+        const int dy = static_cast<int>(std::round(radius * std::sin(angle)));
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + rect.h - radius - 1 + dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + rect.h - radius - 1 + dy);
+    }
+}
+
+void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+                          int radius, Color background) {
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, background);
+
+    for (int y = 0; y < radius; ++y) {
+        const double dy = radius - y - 0.5;
+        const int inset = radius - static_cast<int>(
+            std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        SDL_RenderDrawLine(r, rect.x, rect.y + y,
+                           rect.x + inset, rect.y + y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, rect.y + y,
+                           rect.x + rect.w - 1, rect.y + y);
+
+        const int bottom_y = rect.y + rect.h - 1 - y;
+        SDL_RenderDrawLine(r, rect.x, bottom_y,
+                           rect.x + inset, bottom_y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, bottom_y,
+                           rect.x + rect.w - 1, bottom_y);
+    }
+}
+
+void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+    color(r, c);
+
+    for (int y = -radius; y <= radius; ++y) {
+        const int x = static_cast<int>(
+            std::sqrt(static_cast<double>(
+                radius * radius - y * y
+            ))
+        );
+        SDL_RenderDrawLine(r, cx - x, cy + y, cx + x, cy + y);
+    }
+}
+
+void triangle(SDL_Renderer* r, int x1, int y1,
+              int x2, int y2, int x3, int y3, Color c) {
+    color(r, c);
+
+    const int min_y = std::min({y1, y2, y3});
+    const int max_y = std::max({y1, y2, y3});
+
+    for (int y = min_y; y <= max_y; ++y) {
+        int intersections[3];
+        int count = 0;
+
+        const int xs[] = {x1, x2, x3};
+        const int ys[] = {y1, y2, y3};
+
+        for (int i = 0; i < 3; ++i) {
+            const int j = (i + 1) % 3;
+
+            if ((ys[i] <= y && ys[j] > y) ||
+                (ys[j] <= y && ys[i] > y)) {
+                const int x = xs[i] +
+                    (y - ys[i]) * (xs[j] - xs[i]) /
+                    (ys[j] - ys[i]);
+
+                intersections[count++] = x;
+            }
+        }
+
+        if (count == 2) {
+            SDL_RenderDrawLine(
+                r,
+                std::min(intersections[0], intersections[1]),
+                y,
+                std::max(intersections[0], intersections[1]),
+                y
+            );
+        }
+    }
+}
+
+void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(17, 24, 67));
+
+    circle(r, a.x + a.w * 68 / 100,
+           a.y + a.h * 29 / 100,
+           a.w / 5, c(91, 99, 255));
+
+    circle(r, a.x + a.w * 68 / 100,
+           a.y + a.h * 29 / 100,
+           a.w / 7, c(168, 154, 255));
+
+    for (int i = 0; i < 12; ++i) {
+        const int x = a.x + (i * 47 + 19) % a.w;
+        const int y = a.y + (i * 71 + 31) % (a.h * 65 / 100);
+        circle(r, x, y, 2, c(220, 231, 255));
+    }
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 2, a.y + a.h / 3,
+             a.x + a.w, a.y + a.h, c(39, 63, 139));
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 3, a.y + a.h * 60 / 100,
+             a.x + a.w * 72 / 100, a.y + a.h, c(26, 43, 103));
+}
+
+void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(17, 73, 87));
+
+    circle(r, a.x + a.w * 70 / 100,
+           a.y + a.h * 25 / 100,
+           a.w / 7, c(113, 224, 203));
+
+    triangle(r, a.x, a.y + a.h * 80 / 100,
+             a.x + a.w / 2, a.y + a.h / 3,
+             a.x + a.w, a.y + a.h * 80 / 100,
+             c(32, 119, 107));
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 2, a.y + a.h / 2,
+             a.x + a.w, a.y + a.h,
+             c(16, 69, 78));
+
+    for (int i = 0; i < 6; ++i) {
+        const int x = a.x + (i * 61 + 23) % a.w;
+        rectangle(r, {x, a.y + a.h * 65 / 100, 8, a.h / 4},
+                  c(85, 62, 49));
+        triangle(r, x - 19, a.y + a.h * 68 / 100,
+                 x + 4, a.y + a.h * 39 / 100,
+                 x + 27, a.y + a.h * 68 / 100,
+                 c(42, 160, 120));
+    }
+}
+
+void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(25, 91, 157));
+
+    circle(r, a.x + a.w / 2,
+           a.y + a.h / 3,
+           a.w / 6, c(255, 207, 124));
+
+
+=== Target/build configuration references ===
+CMakeLists.txt:14:pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+CMakeLists.txt:23:target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
+docs/PROJECT_VISION.md:49:expose the original EmuELEC frontend as an alternative user experience.
+docs/HARDWARE.md:9:- Rockchip RK3326
+docs/HARDWARE.md:17:- Customized EmuELEC Linux
+docs/HARDWARE.md:27:- EmuELEC version and modifications
+docs/ARCHITECTURE.md:47:- SDL2
+docs/ARCHITECTURE.md:50:These are initial development choices, not a commitment to use SDL2 for
+docs/ARCHITECTURE.md:76:- Retro Pixel Pocket / EmuELEC platform integration.
+docs/INPUT_CONTROLS.md:22:implementation depends on auditing EmuELEC input handling and emulator
+docs/DEVELOPMENT_LOG.md:10:- Confirmed GCC 16.2, CMake 4.4.4, Ninja 1.13.2, Git 2.56.0, SDL2 2.32.74,
+docs/DEVELOPMENT_LOG.md:15:- C++20 and SDL2 desktop prototype.
+docs/DEVELOPMENT_LOG.md:17:- Shared core with desktop and EmuELEC platform adapters.
+docs/DEVELOPMENT_LOG.md:22:- Added a 720 × 720 SDL2 window.
+docs/DEVELOPMENT_LOG.md:35:- EmuELEC integration.
+docs/DEVELOPMENT_LOG.md:99:The existing SDL2 prototype remains a basic development harness. Hardware
+docs/DEVELOPMENT_LOG.md:108:- Confirmed the `RPPOCKET` build target selects an RK3326 v6.0 device tree,
+docs/DEVELOPMENT_LOG.md:133:- Configured and compiled the C++20 SDL2 application.
+docs/DEVELOPMENT_LOG.md:139:- Added the first three-game Kid Mode carousel to the SDL2 desktop harness.
+docs/DEVELOPMENT_LOG.md:164:- Built the SDL2 application and ran a headless runtime smoke test.
+docs/PRODUCT_SPECIFICATION.md:48:- Rockchip RK3326
+docs/PRODUCT_SPECIFICATION.md:56:- Customized EmuELEC Linux
+docs/PRODUCT_SPECIFICATION.md:318:- SDL2
+docs/PRODUCT_SPECIFICATION.md:328:Pocket firmware and EmuELEC environment after inspection.
+docs/PRODUCT_SPECIFICATION.md:330:Do not assume SDL2, graphics acceleration, audio, video decoding, battery
+docs/PRODUCT_SPECIFICATION.md:343:- EmuELEC version and modifications.
+docs/PRODUCT_SPECIFICATION.md:391:- EmuELEC integration and available system libraries.
+docs/FIRMWARE_AUDIT.md:23:The manufacturer repository is based on the EmuELEC/AmberELEC family of
+docs/FIRMWARE_AUDIT.md:72:that the manufacturer builds for an RK3326-oriented platform and selects a
+docs/FIRMWARE_AUDIT.md:99:a native SDL2 interface. We still need to verify the actual display device,
+docs/FIRMWARE_AUDIT.md:188:and EmuELEC settings commands.
+docs/FIRMWARE_AUDIT.md:226:EmuELEC settings helpers, ALSA mixer controls, and a fixed backlight path.
+docs/FIRMWARE_AUDIT.md:313:The desktop SDL2 build remains a development harness. The target firmware
+docs/KID_MODE_CAROUSEL_PROTOTYPE.md:6:Kid Mode screen. It runs in the temporary Arch Linux SDL2 development
+docs/KID_MODE_CAROUSEL_PROTOTYPE.md:38:The SDL2 application compiled successfully and the preview process completed.
