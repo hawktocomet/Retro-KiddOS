@@ -102,4 +102,16 @@ RadioGroupStyle Theme::radio_group_style() const noexcept {
 }
 
 
+SelectStyle Theme::select_style() const noexcept {
+    SelectStyle style;
+    style.background = colors_.surface;
+    style.border = colors_.border;
+    style.focused_border = colors_.primary_bright;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    style.arrow = colors_.primary_bright;
+    return style;
+}
+
+
 } // namespace kiddos::ui

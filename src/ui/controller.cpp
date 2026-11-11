@@ -2,6 +2,7 @@
 #include "kiddos/ui/toggle.hpp"
 #include "kiddos/ui/checkbox.hpp"
 #include "kiddos/ui/radio_group.hpp"
+#include "kiddos/ui/select.hpp"
 #include "kiddos/ui/slider.hpp"
 #include "kiddos/ui/list_view.hpp"
 
@@ -18,6 +19,8 @@ bool ControllerInteraction::handle(UIAction action) {
         case UIAction::Left:
             if (auto* radio = dynamic_cast<RadioGroup*>(focused))
                 return radio->select_previous();
+            if (auto* select = dynamic_cast<Select*>(focused))
+                return select->select_previous();
             if (auto* slider = dynamic_cast<Slider*>(focused))
                 return slider->adjust(-1);
             return focus_.move(Direction::Left);
@@ -25,6 +28,8 @@ bool ControllerInteraction::handle(UIAction action) {
         case UIAction::Right:
             if (auto* radio = dynamic_cast<RadioGroup*>(focused))
                 return radio->select_next();
+            if (auto* select = dynamic_cast<Select*>(focused))
+                return select->select_next();
             if (auto* slider = dynamic_cast<Slider*>(focused))
                 return slider->adjust(1);
             return focus_.move(Direction::Right);

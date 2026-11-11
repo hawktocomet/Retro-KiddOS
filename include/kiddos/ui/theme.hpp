@@ -8,6 +8,7 @@
 #include "kiddos/ui/list_view.hpp"
 #include "kiddos/ui/checkbox.hpp"
 #include "kiddos/ui/radio_group.hpp"
+#include "kiddos/ui/select.hpp"
 
 namespace kiddos::ui {
 
@@ -42,6 +43,7 @@ public:
     ListViewStyle list_view_style() const noexcept;
     CheckboxStyle checkbox_style() const noexcept;
     RadioGroupStyle radio_group_style() const noexcept;
+    SelectStyle select_style() const noexcept;
 
 private:
     ThemeColors colors_{};
