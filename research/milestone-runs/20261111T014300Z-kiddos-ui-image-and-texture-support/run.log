@@ -1,0 +1,4 @@
+/tmp/tmp.rWip7mRhbE: line 1: Implement: command not found
+/tmp/tmp.rWip7mRhbE: line 3: Requirements:: command not found
+/tmp/tmp.rWip7mRhbE: line 4: syntax error near unexpected token `('
+/tmp/tmp.rWip7mRhbE: line 4: `1. Add SDL2_image as a required dependency using pkg-config (SDL2_image).'
