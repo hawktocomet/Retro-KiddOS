@@ -1,0 +1,76 @@
+=== Debug full translator test ===
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ffff797911d in ?? () from /usr/lib/libc.so.6
+#0  0x00007ffff797911d in ?? () from /usr/lib/libc.so.6
+#1  0x00007ffff78afd43 in strlcpy () from /usr/lib/libc.so.6
+#2  0x00007ffff7f4a584 in ?? () from /usr/lib/libSDL2-2.0.so.0
+#3  0x00007ffff7f4aa0f in ?? () from /usr/lib/libSDL2-2.0.so.0
+#4  0x00005555555568bf in main () at /home/hawk/KiddOS/tests/platform_sdl_text_input_translator_test.cpp:70
+=== Create isolated enqueue/retrieval probe ===
+=== Retrieve using SDL_PeepEvents ===
+enqueue
+add=1
+peep retrieval
+/tmp/tmp.YlrIboxFx7: line 45: 325862 Segmentation fault         (core dumped) /tmp/kiddos_sdl_retrieve_probe peep
+Peep exit: 139
+=== Retrieve using SDL_PollEvent ===
+enqueue
+add=1
+poll retrieval
+/tmp/tmp.YlrIboxFx7: line 48: 325867 Segmentation fault         (core dumped) /tmp/kiddos_sdl_retrieve_probe poll
+Poll exit: 139
+=== Current test retrieval lines ===
+    41	    event.type = SDL_KEYDOWN;
+    42	    event.key.keysym.sym = SDLK_BACKSPACE;
+    43	    event.key.repeat = 1;
+    44	    assert(SDLTextInputTranslator::translate(event, true));
+    45	
+    46	    event.key.keysym.sym = SDLK_UP;
+    47	    assert(!SDLTextInputTranslator::translate(event, true));
+    48	
+    49	    event.type = SDL_KEYUP;
+    50	    event.key.keysym.sym = SDLK_LEFT;
+    51	    assert(!SDLTextInputTranslator::translate(event, true));
+    52	
+    53	    assert(SDL_Init(SDL_INIT_EVENTS) == 0);
+    54	    SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
+    55	    SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
+    56	
+    57	    SDL_Event queued{};
+    58	    queued.type = SDL_TEXTINPUT;
+    59	    std::strcpy(queued.text.text, "queue");
+    60	    assert(SDL_PeepEvents(&queued, 1, SDL_ADDEVENT,
+    61	                           SDL_FIRSTEVENT, SDL_LASTEVENT) == 1);
+    62	
+    63	    queued = {};
+    64	    queued.type = SDL_KEYDOWN;
+    65	    queued.key.keysym.sym = SDLK_BACKSPACE;
+    66	    assert(SDL_PeepEvents(&queued, 1, SDL_ADDEVENT,
+    67	                           SDL_FIRSTEVENT, SDL_LASTEVENT) == 1);
+    68	
+    69	    SDL_Event received{};
+    70	    assert(SDL_PollEvent(&received) == 1);
+    71	    translated = SDLTextInputTranslator::translate(received, true);
+    72	    assert(translated);
+    73	    assert(translated->type == TextInputEventType::Text);
+    74	    assert(translated->text == "queue");
+    75	
+    76	    assert(SDL_PollEvent(&received) == 1);
+    77	    translated = SDLTextInputTranslator::translate(received, true);
+    78	    assert(translated);
+    79	    assert(translated->type == TextInputEventType::Backspace);
+    80	
+    81	    assert(SDL_PollEvent(&received) == 0);
+    82	    SDL_Quit();
+    83	
+    84	    return 0;
+    85	}
