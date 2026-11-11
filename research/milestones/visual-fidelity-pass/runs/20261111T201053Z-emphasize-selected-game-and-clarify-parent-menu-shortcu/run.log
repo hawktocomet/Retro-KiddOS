@@ -1,0 +1,14 @@
+=== ARTWORK GENERATION COMMANDS ===
+
+=== ARTWORK AND CAROUSEL TEST EXPECTATIONS ===
+src/app/home_carousel_screen.cpp:40:    "assets/artwork/generated/navigation-hints.png";
+tests/app_home_carousel_screen_test.cpp:51:    for (std::size_t i = 0; i < screen.root().child_count(); ++i) {
+tests/app_home_carousel_screen_test.cpp:68:    assert(screen.root().child_count() == 8);
+
+=== WORKTREE ===
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
