@@ -1,0 +1,704 @@
+[0m
+> build · glm-5.3-flash-free
+[0m✱ [0mGlob "**/*" [90m200 matches[0m
+[0m$ [0mgit log --oneline -5 && git status --short | head -30
+823122d chore: record milestone run - polish-home-carousel-presentation-and-add-missing-ui-el
+0d803f5 feat(ui): refine home carousel borders, titles, wordmark, and hints
+d863416 chore: record milestone run - implement-home-carousel-screen-with-sdl-ui-library
+0284b5a feat: render home carousel through the KiddOS UI library
+13d5373 chore: record milestone run - inspect-opencode-model-availability
+> build · glm-5.3-flash-free
+[0m✱ [0mGlob "src/**" [90m27 matches[0m
+[0m✱ [0mGlob "assets/**" [90m31 matches[0m
+[0m✱ [0mGlob "tools/**" [90m1 match[0m
+[0m✱ [0mGlob "docs/**" [90m24 matches[0m
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/platform/sdl_platform.cpp 
+> build · glm-5.3-flash-free
+Now let me look at the home carousel screen, the navigation hints SVG, and the input controls doc.
+[0m→ [0mRead docs/INPUT_CONTROLS.md 
+[0m→ [0mRead src/app/home_carousel_screen.cpp 
+[0m→ [0mRead assets/artwork/source/branding/navigation-hints.svg 
+> build · glm-5.3-flash-free
+The browse hint bug is clear: both arrows sit to the right of the text. Let me find how the PNGs are generated, and look at the tests and docs.
+[0m✱ [0mGrep "navigation-hints|rsvg|inkscape|ImageMagick|convert|\.svg" [90min . · 0 matches[0m
+[0m$ [0mls /home/hawk/KiddOS/scripts 2>/dev/null; ls /home/hawk/KiddOS; grep -rn "svg" /home/hawk/KiddOS --include="*.sh" --include="*.py" -l 2>/dev/null | grep -v research
+assets
+build
+CMakeLists.txt
+config
+CONTRIBUTING.md
+docs
+include
+logs
+platform
+README.md
+research
+src
+tasks
+tests
+tools
+> build · glm-5.3-flash-free
+[0m✱ [0mGrep "navigation-hints" [90min . · 1 match[0m
+[0m$ [0mls /home/hawk/KiddOS/tasks /home/hawk/KiddOS/config /home/hawk/KiddOS/platform 2>/dev/null; which rsvg-convert inkscape convert magick 2>/dev/null; ls /home/hawk/KiddOS/build
+/home/hawk/KiddOS/config:
+
+/home/hawk/KiddOS/platform:
+desktop
+emuelec
+
+/home/hawk/KiddOS/tasks:
+active
+completed
+/usr/bin/rsvg-convert
+/usr/bin/convert
+/usr/bin/magick
+build.ninja
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+CTestTestfile.cmake
+DartConfiguration.tcl
+install_manifest.txt
+kiddos
+kiddos_app_home_carousel_screen_test
+kiddos_app_ui_action_mapping_test
+kiddos_platform_sdl_keyboard_policy_test
+kiddos_platform_sdl_text_input_translator_test
+kiddos_platform_text_input_event_test
+kiddos_platform_text_input_interface_test
+kiddos_ui_button_test
+kiddos_ui_checkbox_test
+kiddos_ui_controller_test
+kiddos_ui_focus_test
+kiddos_ui_geometry_test
+kiddos_ui_image_test
+kiddos_ui_label_test
+kiddos_ui_layout_test
+kiddos_ui_list_view_test
+kiddos_ui_panel_test
+kiddos_ui_progress_bar_test
+kiddos_ui_radio_group_test
+kiddos_ui_renderer_test
+kiddos_ui_screen_manager_test
+kiddos_ui_select_test
+kiddos_ui_slider_test
+kiddos_ui_text_input_interaction_test
+kiddos_ui_text_input_test
+kiddos_ui_theme_test
+kiddos_ui_toggle_test
+libkiddos_ui.a
+Testing
+> build · glm-5.3-flash-free
+[0m✱ [0mGrep "rsvg-convert" [90min . · 0 matches[0m
+[0m$ [0mls /home/hawk/KiddOS/tasks/active /home/hawk/KiddOS/tasks/completed | head; file /home/hawk/KiddOS/assets/artwork/generated/navigation-hints.png; identify /home/hawk/KiddOS/assets/artwork/generated/navigation-hints.png
+/home/hawk/KiddOS/tasks/active:
+
+/home/hawk/KiddOS/tasks/completed:
+/home/hawk/KiddOS/assets/artwork/generated/navigation-hints.png: PNG image data, 720 x 34, 8-bit/color RGBA, non-interlaced
+/home/hawk/KiddOS/assets/artwork/generated/navigation-hints.png PNG 720x34 720x34+0+0 8-bit sRGB 6804B 0.000u 0:00.000
+> build · glm-5.3-flash-free
+[0m→ [0mRead tests/app_home_carousel_screen_test.cpp 
+[0m→ [0mRead assets/artwork/generated/navigation-hints.png 
+> build · glm-5.3-flash-free
+The current render shows `► ◄ BROWSE` — both arrows crammed to the left of the text. Now let me inspect the Panel style and rendering, plus relevant docs.
+[0m→ [0mRead docs/GAME_ACTION_SCREEN.md 
+[0m→ [0mRead src/ui/panel.cpp 
+[0m→ [0mRead include/kiddos/ui/panel.hpp 
+> build · glm-5.3-flash-free
+The Panel already supports thicker borders cleanly. Now let me verify how the SVG→PNG export works and measure the BROWSE text width so I can center the new `<- BROWSE ->` group precisely.
+[0m→ [0mRead include/kiddos/app/home_carousel_screen.hpp 
+[0m$ [0mcd /tmp/opencode && cat > measure.svg <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="34" viewBox="0 0 720 34">
+  <text x="100" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">BROWSE</text>
+</svg>
+EOF
+rsvg-convert -w 720 -h 34 measure.svg -o measure.png && convert measure.png -channel A -threshold 50% -format "%@" info:
+WARNING: The convert command is deprecated in IMv7, use "magick" instead of "convert" or "magick convert"
+
+67x10+101+13
+> build · glm-5.3-flash-free
+The BROWSE text at DejaVu Sans Bold 13px/letter-spacing 1 renders 67px of ink (x+1 through x+68). Now I'll rewrite the SVG so the group reads `<- BROWSE ->`, centered around x≈150 in the free left region (SELECT starts at ~316).
+[0m← [0mEdit assets/artwork/source/branding/navigation-hints.svg
+Index: assets/artwork/source/branding/navigation-hints.svg
+===================================================================
+--- assets/artwork/source/branding/navigation-hints.svg
++++ assets/artwork/source/branding/navigation-hints.svg
+@@ -1,10 +1,13 @@
+ <svg xmlns="http://www.w3.org/2000/svg" width="720" height="34" viewBox="0 0 720 34">
++  <!-- "<- BROWSE ->": a left-pointing arrow before the word and a
++       right-pointing arrow after it, with equal gaps on both sides, the
++       whole group centered around x=150. -->
+   <g fill="#8FA8CC">
+-    <path d="M62 12 L62 24 L71 18 Z"/>
+-    <path d="M90 12 L90 24 L81 18 Z"/>
++    <path d="M105 12 L105 24 L96 18 Z"/>
++    <path d="M196 12 L196 24 L205 18 Z"/>
+   </g>
+-  <text x="100" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">BROWSE</text>
++  <text x="116" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">BROWSE</text>
+ 
+   <circle cx="316" cy="18" r="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+   <text x="316" y="22.5" text-anchor="middle" font-family="DejaVu Sans" font-size="11" font-weight="bold" fill="#8FA8CC">A</text>
+   <text x="332" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">SELECT</text>
+
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS/assets/artwork/source/branding && rsvg-convert -w 720 -h 34 navigation-hints.svg -o ../../generated/navigation-hints.png && identify ../../generated/navigation-hints.png && magick ../../generated/navigation-hints.png -channel A -threshold 50% -format "%@" info:
+../../generated/navigation-hints.png PNG 720x34 720x34+0+0 8-bit sRGB 6816B 0.000u 0:00.000
+583x20+97+8
+> build · glm-5.3-flash-free
+[0m→ [0mRead assets/artwork/generated/navigation-hints.png 
+> build · glm-5.3-flash-free
+The hint now reads `◄ BROWSE ►`. Let me verify the group's exact geometry and centering:
+[0m$ [0mcd /home/hawk/KiddOS && magick assets/artwork/generated/navigation-hints.png -crop 240x34+0+0 +repage -channel A -threshold 50% -format "%@" info:
+107x12+97+12
+> build · glm-5.3-flash-free
+Group ink spans x=97–203, centered at x=150 with matching gaps on both sides. Now the carousel card borders — thicken the home carousel panels and the card drawn on the game action screen (`draw_card` in SDLPlatform), keeping the navy/blue palette:
+[0m← [0mEdit src/app/home_carousel_screen.cpp
+Index: src/app/home_carousel_screen.cpp
+===================================================================
+--- src/app/home_carousel_screen.cpp
++++ src/app/home_carousel_screen.cpp
+@@ -166,11 +166,13 @@
+     }
+     wordmark_texture_.load(renderer, wordmark_path, false);
+     hints_texture_.load(renderer, hints_path, false);
+ 
+-    // Smaller neighboring cards first, drawn behind the main card.
++    // Smaller neighboring cards first, drawn behind the main card. Cards
++    // carry a substantial border so the frames read clearly on the dark
++    // navy background; the center card is the heaviest.
+     auto& side_left = root().add<ui::Panel>(
+-        ui::PanelStyle{side_fill, side_border, 1, 24});
++        ui::PanelStyle{side_fill, side_border, 3, 24});
+     side_left.set_bounds(side_left_card);
+ 
+     side_left_art_ = &root().add<ui::Image>();
+     side_left_art_->set_bounds(side_left_art);
+
+[0m← [0mEdit src/app/home_carousel_screen.cpp
+Index: src/app/home_carousel_screen.cpp
+===================================================================
+--- src/app/home_carousel_screen.cpp
++++ src/app/home_carousel_screen.cpp
+@@ -179,9 +179,9 @@
+     side_left_art_->set_fit(ui::ImageFit::stretch);
+     side_left_art_->set_opacity(180);
+ 
+     auto& side_right = root().add<ui::Panel>(
+-        ui::PanelStyle{side_fill, side_border, 1, 24});
++        ui::PanelStyle{side_fill, side_border, 3, 24});
+     side_right.set_bounds(side_right_card);
+ 
+     side_right_art_ = &root().add<ui::Image>();
+     side_right_art_->set_bounds(side_right_art);
+
+[0m← [0mEdit src/app/home_carousel_screen.cpp
+Index: src/app/home_carousel_screen.cpp
+===================================================================
+--- src/app/home_carousel_screen.cpp
++++ src/app/home_carousel_screen.cpp
+@@ -189,14 +189,14 @@
+     side_right_art_->set_opacity(180);
+ 
+     // Main card is drawn after the neighbors so it overlaps both of them.
+     auto& center = root().add<ui::Panel>(
+-        ui::PanelStyle{center_fill, center_border, 1, 30});
++        ui::PanelStyle{center_fill, center_border, 4, 30});
+     center.set_bounds(center_card);
+ 
+     // Outer glow outline, matching the platform's second border pass.
+     auto& glow = root().add<ui::Panel>(
+-        ui::PanelStyle{ui::colors::transparent, center_glow, 1, 32});
++        ui::PanelStyle{ui::colors::transparent, center_glow, 2, 32});
+     glow.set_bounds(center_glow_rect);
+ 
+     center_art_ = &root().add<ui::Image>();
+     center_art_->set_bounds(center_art_rect);
+
+> build · glm-5.3-flash-free
+Now thicken the card border in `draw_card` (used for the game card on the action screen) with three concentric outlines instead of one:
+[0m← [0mEdit src/platform/sdl_platform.cpp
+Index: src/platform/sdl_platform.cpp
+===================================================================
+--- src/platform/sdl_platform.cpp
++++ src/platform/sdl_platform.cpp
+@@ -313,12 +313,19 @@
+     draw_art(r, index, art, alpha);
+     SDL_RenderSetClipRect(r, nullptr);
+     mask_artwork_corners(r, art, 18, {20, 34, 65, alpha});
+ 
+-    rounded_outline(r, rect, 25,
+-            selected
+-                ? Color{69, 151, 255, 255}
+-                : Color{80, 117, 170, 110});
++    // A three-pass concentric outline gives the card a substantial,
++    // uniform border consistent with the home carousel's heavier frames.
++    for (int inset = 0; inset < 3; ++inset) {
++        rounded_outline(r,
++                        {rect.x + inset, rect.y + inset,
++                         rect.w - inset * 2, rect.h - inset * 2},
++                        25 - inset,
++                        selected
++                            ? Color{69, 151, 255, 255}
++                            : Color{80, 117, 170, 110});
++    }
+ 
+     if (selected) {
+         rounded_outline(r,
+                         {rect.x - 2, rect.y - 2, rect.w + 4, rect.h + 4},
+
+> build · glm-5.3-flash-free
+Now the Resume and Start Over icons on the game action screen. The current ones (`draw_resume_symbol`, `draw_restart_symbol`) are filled circles punched out with a background-color circle plus awkward triangles — they look weird. I'll replace them with conventional symbols: a clean play triangle for Resume, and a thick circular restart arrow (ring open at the top, clockwise arrowhead) for Start Over, all centered on the same anchor:
+[0m← [0mEdit src/platform/sdl_platform.cpp
+Index: src/platform/sdl_platform.cpp
+===================================================================
+--- src/platform/sdl_platform.cpp
++++ src/platform/sdl_platform.cpp
+@@ -684,29 +684,62 @@
+     SDL_Rect destination{x, y, 350, 72};
+     SDL_RenderCopy(r, texture, nullptr, &destination);
+ }
+ 
++// Conventional play/resume symbol: a solid right-pointing triangle
++// centered on (x, y). Play and Resume share this geometry on purpose:
++// a filled play triangle is the conventional symbol for both actions,
++// and the text label next to it names the action.
+ void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+-    triangle(r, x, y - 34, x, y + 34,
+-             x + 58, y, {220, 237, 255, 255});
++    triangle(r, x - 18, y - 32, x - 18, y + 32, x + 30, y,
++             {220, 237, 255, 255});
+ }
+ 
+ void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+-    circle(r, x, y, 30, {220, 237, 255, 255});
+-    circle(r, x, y, 19, {15, 29, 62, 255});
+-    triangle(r, x + 10, y - 36,
+-             x + 42, y - 12,
+-             x + 7, y - 8,
+-             {220, 237, 255, 255});
++    draw_play_symbol(r, x, y);
+ }
+ 
++// Draws a circular arc as short connected line segments, used for the
++// restart arrow's ring.
++void draw_arc(SDL_Renderer* r, int cx, int cy, int radius,
++              double start_degrees, double end_degrees, Color c) {
++    constexpr double kPi = 3.14159265358979323846;
++
++    const int steps = std::max(2, radius * 2);
++    const double delta = (end_degrees - start_degrees) / steps;
++
++    int previous_x = cx + radius;
++    int previous_y = cy;
++    for (int step = 1; step <= steps; ++step) {
++        const double radians =
++            (start_degrees + delta * step) * kPi / 180.0;
++        const int point_x = cx + static_cast<int>(
++            std::lround(radius * std::cos(radians)));
++        const int point_y = cy + static_cast<int>(
++            std::lround(radius * std::sin(radians)));
++        SDL_RenderDrawLine(r, previous_x, previous_y, point_x, point_y);
++        previous_x = point_x;
++        previous_y = point_y;
++    }
++}
++
++// Conventional circular restart arrow: a thick ring open across the top
++// with a solid arrowhead continuing the ring clockwise. Centered on
++// (x, y) and sized to match the play/resume symbol beside the labels.
+ void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+-    circle(r, x, y, 29, {220, 237, 255, 255});
+-    circle(r, x, y, 18, {15, 29, 62, 255});
+-    triangle(r, x - 27, y - 30,
+-             x + 10, y - 31,
+-             x - 14, y + 2,
+-             {220, 237, 255, 255});
++    const Color icon{220, 237, 255, 255};
++
++    // The ring is drawn as concentric arc passes (stroke weight 7) and
++    // stays open across the top between 250 and 290 degrees.
++    for (int radius = 21; radius <= 27; ++radius) {
++        draw_arc(r, x, y, radius, 290.0, 610.0, icon);
++    }
++
++    // Arrowhead at the ring's upper-right end, pointing clockwise.
++    triangle(r, x + 27, y - 16,
++             x + 4, y - 10,
++             x + 13, y - 35,
++             icon);
+ }
+ 
+ } // namespace
+ 
+
+> build · glm-5.3-flash-free
+[0m← [0mEdit src/platform/sdl_platform.cpp
+Index: src/platform/sdl_platform.cpp
+===================================================================
+--- src/platform/sdl_platform.cpp
++++ src/platform/sdl_platform.cpp
+@@ -784,9 +784,9 @@
+             if (has_checkpoint) {
+                 draw_resume_symbol(renderer_, symbol_x, symbol_y);
+                 draw_action_label(renderer_, 1, 230, y + 20);
+             } else {
+-                draw_play_symbol(renderer_, symbol_x - 20, symbol_y);
++                draw_play_symbol(renderer_, symbol_x, symbol_y);
+                 draw_action_label(renderer_, 0, 230, y + 20);
+             }
+         } else {
+             draw_restart_symbol(renderer_, symbol_x, symbol_y);
+
+> build · glm-5.3-flash-free
+Now update the focused test to lock in the thicker borders and the new hint rendering expectations. First check the existing test's border assertions still hold, then add thickness assertions:
+[0m← [0mEdit tests/app_home_carousel_screen_test.cpp
+Index: tests/app_home_carousel_screen_test.cpp
+===================================================================
+--- tests/app_home_carousel_screen_test.cpp
++++ tests/app_home_carousel_screen_test.cpp
+@@ -194,8 +194,16 @@
+         assert(same_color(pixel(surface, 360, 135), {36, 164, 255, 255}));
+         const Color side_edge = pixel(surface, 120, 250);
+         assert(side_edge.b > 110 && side_edge.r > 30);
+ 
++        // The borders are thick enough to read as intentional frames:
++        // the center card's border spans four pixels before its fill
++        // starts, and the side cards' border spans three.
++        assert(same_color(pixel(surface, 360, 138), {36, 164, 255, 255}));
++        assert(same_color(pixel(surface, 360, 141), {18, 63, 117, 255}));
++        assert(!same_color(pixel(surface, 120, 252), {16, 41, 75, 255}));
++        assert(same_color(pixel(surface, 120, 255), {16, 41, 75, 255}));
++
+         // The outer glow outline is continuous around the corner arcs.
+         const Color glow_over_background{24, 102, 164, 255};
+         assert(any_pixel_near(surface, 152, 141, 2, glow_over_background));
+         assert(any_pixel_near(surface, 568, 141, 2, glow_over_background));
+
+> build · glm-5.3-flash-free
+Now build and run the full test suite. Let me also check how the milestone/smoke-test tooling works first:
+[0m$ [0mcd /home/hawk/KiddOS && head -60 tools/kiddos-milestone; grep -rn "smoke" docs README.md CMakeLists.txt 2>/dev/null | head
+#!/bin/bash
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [ -z "$ROOT" ]; then
+    echo "ERROR: Not inside a Git repository."
+    exit 1
+fi
+
+cd "$ROOT" || exit 1
+
+MILESTONE="$1"
+TITLE="$2"
+
+if [ -z "$MILESTONE" ] || [ -z "$TITLE" ]; then
+    echo "Usage: ./tools/kiddos-milestone <milestone-slug> 'Run title' <<'TASK'"
+    exit 1
+fi
+
+if ! [[ "$MILESTONE" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+    echo "ERROR: Milestone slug must contain lowercase letters, numbers, and hyphens only."
+    exit 1
+fi
+
+MILESTONE_DIR="research/milestones/$MILESTONE"
+
+if [ ! -d "$MILESTONE_DIR" ]; then
+    echo "ERROR: Milestone does not exist: $MILESTONE_DIR"
+    exit 1
+fi
+
+BRANCH="$(git branch --show-current)"
+if [ -z "$BRANCH" ]; then
+    echo "ERROR: No current Git branch."
+    exit 1
+fi
+
+if ! git remote get-url origin >/dev/null 2>&1; then
+    echo "ERROR: GitHub origin remote unavailable."
+    exit 1
+fi
+
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+SLUG="$(printf '%s' "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//' | cut -c1-55)"
+
+if [ -z "$SLUG" ]; then
+    echo "ERROR: Title must contain letters or numbers."
+    exit 1
+fi
+
+RUN="$MILESTONE_DIR/runs/${STAMP}-${SLUG}"
+LOG="$RUN/run.log"
+REPORT="$RUN/REPORT.md"
+LATEST="$MILESTONE_DIR/LATEST.txt"
+TASKFILE="$(mktemp)"
+
+if [ -t 0 ]; then
+    echo "ERROR: Supply commands through a TASK heredoc."
+    rm -f "$TASKFILE"
+    exit 1
+fi
+docs/DEVELOPMENT_LOG.md:30:  a headless SDL runtime smoke test with the dummy video driver.
+docs/DEVELOPMENT_LOG.md:165:- Ran a headless SDL runtime smoke test using SDL's dummy video driver.
+docs/DEVELOPMENT_LOG.md:217:- Built the SDL2 application and ran a headless runtime smoke test.
+docs/DEVELOPMENT_STATUS.md:70:and perform a desktop runtime smoke test when application behavior changes.
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && sed -n 150-175p docs/DEVELOPMENT_LOG.md 2>/dev/null; grep -n "dummy" docs/DEVELOPMENT_LOG.md | head; sed -n '60,80p' docs/DEVELOPMENT_STATUS.md
+30:  a headless SDL runtime smoke test with the dummy video driver.
+165:- Ran a headless SDL runtime smoke test using SDL's dummy video driver.
+
+Integrate the reusable UI library into the application and use it to build
+the Kid Mode home/carousel screen. Keep game catalog and application policy
+outside the generic widget library. Preserve the existing prototype as a
+behavioral reference while replacing its hard-coded UI with reusable screens
+and widgets.
+
+## Verification expectations
+
+For code changes, configure and build with CMake, run the complete CTest suite,
+and perform a desktop runtime smoke test when application behavior changes.
+Hardware-specific claims require testing on the actual Retro Pixel Pocket.
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && sed -n '25,35p' docs/DEVELOPMENT_LOG.md && sed -n '160,170p' docs/DEVELOPMENT_LOG.md
+action rendering path.
+- Updated the carousel screen tests: element structure, per-selection
+  title textures, wordmark and hint presence, border and glow continuity,
+  and absence of magenta fringes.
+- Built the project, ran the complete CTest suite (26/26 passed), and ran
+  a headless SDL runtime smoke test with the dummy video driver.
+- Visual approval is left to the reviewer; no device firmware, storage, or
+  boot configuration was changed.
+
+## 2026-11-09 — Project foundation
+
+## 2026-11-10 — Application foundation restored
+
+- Restored the application lifecycle and SDL platform implementation.
+- Corrected malformed project include directives.
+- Configured and compiled the C++20 SDL2 application.
+- Ran a headless SDL runtime smoke test using SDL's dummy video driver.
+- No device firmware, storage, or boot configuration was changed.
+
+## 2026-11-10 — First visible Kid Mode carousel
+
+- Added the first three-game Kid Mode carousel to the SDL2 desktop harness.
+> build · glm-5.3-flash-free
+Now build and run the full CTest suite:
+[0m$ [0mcd /home/hawk/KiddOS && cmake --build build 2>&1 | tail -15
+|                                                         ~~~~~~^
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp: At global scope:
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:252:6: warning: ‘void kiddos::{anonymous}::draw_ocean_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  252 | void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:220:6: warning: ‘void kiddos::{anonymous}::draw_forest_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  220 | void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:190:6: warning: ‘void kiddos::{anonymous}::draw_space_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  190 | void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+[3/6] Building CXX object CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o
+[4/6] Building CXX object CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o
+[5/6] Linking CXX executable kiddos_app_home_carousel_screen_test
+[6/6] Linking CXX executable kiddos
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS/build && ctest --output-on-failure 2>&1 | tail -8
+Start 25: kiddos_ui_text_input_interaction
+25/26 Test #25: kiddos_ui_text_input_interaction ............   Passed    0.00 sec
+      Start 26: kiddos_ui_screen_manager
+26/26 Test #26: kiddos_ui_screen_manager ....................   Passed    0.00 sec
+
+100% tests passed out of 26
+
+Total Test time (real) =   0.13 sec
+> build · glm-5.3-flash-free
+All 26 tests pass. Now the headless smoke test — let me check how the app loop terminates under the dummy driver:
+[0m→ [0mRead src/main.cpp 
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && grep -n "run\|Quit\|while\|frames" src/app/application.cpp | head -20
+17:int Application::run() {
+34:    running_ = true;
+36:    while (running_) {
+39:        while (platform_.poll_action(action)) {
+42:            if (!running_) {
+47:        if (running_) {
+57:    IMG_Quit();
+65:        case Action::Quit:
+66:            running_ = false;
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && timeout 5 env SDL_VIDEODRIVER=dummy SDL_RENDER_DRIVER=software ./build/kiddos < /dev/null; echo "exit: $?"
+exit: 124
+> build · glm-5.3-flash-free
+The app ran the full 5 seconds under the dummy driver without errors (it loops until quit; the timeout kill is expected), so all assets load and frames render. Before committing, let me visually verify the new icon geometry with a throwaway render in /tmp (not part of the repo):
+[0m$ [0mcd /tmp/opencode && cat > icons_preview.c <<'EOF'
+#include <SDL.h>
+#include <math.h>
+#include <stdio.h>
+
+typedef struct { Uint8 r,g,b,a; } Color;
+
+void color(SDL_Renderer* r, Color c){ SDL_SetRenderDrawColor(r,c.r,c.g,c.b,c.a); }
+void triangle(SDL_Renderer* r,int x1,int y1,int x2,int y2,int x3,int y3,Color c){
+    color(r,c);
+    int min_y=SDL_min(SDL_min(y1,y2),y3), max_y=SDL_max(SDL_max(y1,y2),y3);
+    for(int y=min_y;y<=max_y;++y){
+        int xs[3]={x1,x2,x3}, ys[3]={y1,y2,y3};
+        int lo=1<<30, hi=-(1<<30), count=0;
+        for(int i=0;i<3;++i){int j=(i+1)%3;
+            if((ys[i]<=y&&ys[j]>y)||(ys[j]<=y&&ys[i]>y)){
+                int x=xs[i]+(y-ys[i])*(xs[j]-xs[i])/(ys[j]-ys[i]);
+                lo=SDL_min(lo,x); hi=SDL_max(hi,x); count++;}}
+        if(count==2) SDL_RenderDrawLine(r,lo,y,hi,y);
+    }
+}
+void draw_arc(SDL_Renderer* r,int cx,int cy,int radius,double s,double e,Color c){
+    color(r,c);
+    int steps=SDL_max(2,radius*2); double d=(e-s)/steps;
+    int px=cx+radius, py=cy;
+    for(int i=1;i<=steps;++i){
+        double rad=(s+d*i)*M_PI/180.0;
+        int x=cx+(int)lround(radius*cos(rad)), y=cy+(int)lround(radius*sin(rad));
+        SDL_RenderDrawLine(r,px,py,x,y); px=x; py=y;}
+}
+void draw_play(SDL_Renderer* r,int x,int y){
+    triangle(r,x-18,y-32,x-18,y+32,x+30,y,(Color){220,237,255,255});
+}
+void draw_restart(SDL_Renderer* r,int x,int y){
+    Color icon={220,237,255,255};
+    for(int rad=21;rad<=27;++rad) draw_arc(r,x,y,rad,290.0,610.0,icon);
+    triangle(r,x+27,y-16,x+4,y-10,x+13,y-35,icon);
+}
+
+int main(){
+    SDL_Init(0);
+    SDL_Surface* surf=SDL_CreateRGBSurfaceWithFormat(0,720,300,32,SDL_PIXELFORMAT_RGBA32);
+    SDL_Renderer* r=SDL_CreateSoftwareRenderer(surf);
+    SDL_SetRenderDrawBlendMode(r,SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(r,16,30,65,255);
+    SDL_RenderFillRect(r,NULL);
+    draw_play(r,145,90);
+    draw_restart(r,145,220);
+    SDL_RenderPresent(r);
+    SDL_SaveBMP(surf,"icons_preview.bmp");
+    return 0;
+}
+EOF
+gcc icons_preview.c -o icons_preview $(sdl2-config --cflags --libs) -lSDL2_image -lm && ./icons_preview && magick icons_preview.bmp -resize 300% icons_preview.png && echo OK
+OK
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/icons_preview.png 
+> build · glm-5.3-flash-free
+The play/resume triangle looks clean, but the restart ring renders thin and speckled. Let me debug the arc drawing empirically:
+[0m$ [0mcd /tmp/opencode && cat > arc_test.c <<'EOF'
+#include <SDL.h>
+#include <math.h>
+typedef struct { Uint8 r,g,b,a; } Color;
+void draw_arc(SDL_Renderer* r,int cx,int cy,int radius,double s,double e,Color c){
+    SDL_SetRenderDrawColor(r,c.r,c.g,c.b,c.a);
+    int steps=SDL_max(2,radius*2); double d=(e-s)/steps;
+    int px=cx+radius, py=cy;
+    for(int i=1;i<=steps;++i){
+        double rad=(s+d*i)*M_PI/180.0;
+        int x=cx+(int)lround(radius*cos(rad)), y=cy+(int)lround(radius*sin(rad));
+        SDL_RenderDrawLine(r,px,py,x,y); px=x; py=y;}
+}
+int main(){
+    SDL_Init(0);
+    SDL_Surface* surf=SDL_CreateRGBSurfaceWithFormat(0,200,200,32,SDL_PIXELFORMAT_RGBA32);
+    SDL_Renderer* r=SDL_CreateSoftwareRenderer(surf);
+    SDL_SetRenderDrawBlendMode(r,SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(r,16,30,65,255); SDL_RenderFillRect(r,NULL);
+    Color icon={220,237,255,255};
+    for(int rad=21;rad<=27;++rad) draw_arc(r,100,100,rad,0.0,360.0,icon);
+    SDL_RenderPresent(r);
+    SDL_SaveBMP(surf,"arc_full.bmp"); return 0;
+}
+EOF
+gcc arc_test.c -o arc_test $(sdl2-config --cflags --libs) -lm && ./arc_test && magick arc_full.bmp -crop 80x80+60+60 +repage -resize 400% arc_full.png && echo done
+done
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/arc_full.png 
+> build · glm-5.3-flash-free
+Confirmed — concentric 1px arcs can't produce a solid band (dithered ring). I'll switch the ring to tightly overlapping filled-disk stamps along the arc, which renders solid with the existing `circle()` helper. Let me fix the implementation:
+[0m← [0mEdit src/platform/sdl_platform.cpp
+Index: src/platform/sdl_platform.cpp
+===================================================================
+--- src/platform/sdl_platform.cpp
++++ src/platform/sdl_platform.cpp
+@@ -722,17 +722,26 @@
+     }
+ }
+ 
+ // Conventional circular restart arrow: a thick ring open across the top
+-// with a solid arrowhead continuing the ring clockwise. Centered on
+-// (x, y) and sized to match the play/resume symbol beside the labels.
++// with a solid arrowhead continuing the ring clockwise. The ring band is
++// stamped as tightly overlapping filled disks along the arc so it renders
++// as one solid, evenly weighted band. Centered on (x, y).
+ void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+     const Color icon{220, 237, 255, 255};
++    constexpr double kPi = 3.14159265358979323846;
+ 
+-    // The ring is drawn as concentric arc passes (stroke weight 7) and
+-    // stays open across the top between 250 and 290 degrees.
+-    for (int radius = 21; radius <= 27; ++radius) {
+-        draw_arc(r, x, y, radius, 290.0, 610.0, icon);
++    // The band spans radii 21..27 (7 px thick, matching the solid
++    // arrowhead's stroke weight) and stays open across the top between
++    // 250 and 290 degrees. Stamps are spaced ~1.7 px along the arc so
++    // neighboring disks always overlap.
++    for (int step = 0; step <= 80; ++step) {
++        const double radians =
++            (290.0 + step * (320.0 / 80.0)) * kPi / 180.0;
++        circle(r,
++               x + static_cast<int>(std::lround(24.0 * std::cos(radians))),
++               y + static_cast<int>(std::lround(24.0 * std::sin(radians))),
++               3, icon);
+     }
+ 
+     // Arrowhead at the ring's upper-right end, pointing clockwise.
+     triangle(r, x + 27, y - 16,
+
+> build · glm-5.3-flash-free
+Now remove the now-unused `draw_arc` helper I added:
+[0m← [0mEdit src/platform/sdl_platform.cpp
+Index: src/platform/sdl_platform.cpp
+===================================================================
+--- src/platform/sdl_platform.cpp
++++ src/platform/sdl_platform.cpp
+@@ -697,32 +697,8 @@
+ void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+     draw_play_symbol(r, x, y);
+ }
+ 
+-// Draws a circular arc as short connected line segments, used for the
+-// restart arrow's ring.
+-void draw_arc(SDL_Renderer* r, int cx, int cy, int radius,
+-              double start_degrees, double end_degrees, Color c) {
+-    constexpr double kPi = 3.14159265358979323846;
+-
+-    const int steps = std::max(2, radius * 2);
+-    const double delta = (end_degrees - start_degrees) / steps;
+-
+-    int previous_x = cx + radius;
+-    int previous_y = cy;
+-    for (int step = 1; step <= steps; ++step) {
+-        const double radians =
+-            (start_degrees + delta * step) * kPi / 180.0;
+-        const int point_x = cx + static_cast<int>(
+-            std::lround(radius * std::cos(radians)));
+-        const int point_y = cy + static_cast<int>(
+-            std::lround(radius * std::sin(radians)));
+-        SDL_RenderDrawLine(r, previous_x, previous_y, point_x, point_y);
+-        previous_x = point_x;
+-        previous_y = point_y;
+-    }
+-}
+-
+ // Conventional circular restart arrow: a thick ring open across the top
+ // with a solid arrowhead continuing the ring clockwise. The ring band is
+ // stamped as tightly overlapping filled disks along the arc so it renders
+ // as one solid, evenly weighted band. Centered on (x, y).
+
+> build · glm-5.3-flash-free
+[91m[1mError: [0mFree usage limit reached. Connect a provider or subscribe to OpenCode Go to keep going, or switch models.
