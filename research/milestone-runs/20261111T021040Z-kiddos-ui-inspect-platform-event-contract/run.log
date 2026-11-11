@@ -1,0 +1,358 @@
+=== Platform abstraction ===
+#pragma once
+
+#include "kiddos/core/action.hpp"
+
+namespace kiddos {
+
+class Platform {
+public:
+    virtual ~Platform() = default;
+
+    virtual bool initialize() = 0;
+    virtual bool poll_action(Action& action) = 0;
+    virtual void begin_frame() = 0;
+    virtual void draw_carousel(int selected_index) = 0;
+    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+    virtual void present() = 0;
+    virtual void shutdown() = 0;
+};
+
+} // namespace kiddos
+=== SDL event polling implementation ===
+489-        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+490-            return Action::NavigateRight;
+491-        case SDL_CONTROLLER_BUTTON_DPAD_UP:
+492-            return Action::NavigateUp;
+493-        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+494-            return Action::NavigateDown;
+495-        case SDL_CONTROLLER_BUTTON_A:
+496-            return Action::Confirm;
+497-        case SDL_CONTROLLER_BUTTON_B:
+498-            return Action::Back;
+499-        default:
+500-            return Action::None;
+501-    }
+502-}
+503-
+504:bool SDLPlatform::poll_action(Action& action) {
+505-    SDL_Event event;
+506-
+507-    while (SDL_PollEvent(&event)) {
+508-        action = Action::None;
+509-
+510-        switch (event.type) {
+511-            case SDL_QUIT:
+512-                action = Action::Quit;
+513-                return true;
+514-
+515-            case SDL_KEYDOWN:
+516-                if (event.key.repeat == 0) {
+517-                    action = map_key(event.key.keysym.sym);
+518-                }
+519-                break;
+520-
+521-            case SDL_CONTROLLERBUTTONDOWN:
+522-                if (event.cbutton.which == controller_instance_) {
+523-                    action = map_controller_button(event.cbutton.button);
+524-                }
+525-                break;
+526-
+527-            case SDL_CONTROLLERDEVICEADDED:
+528-                open_controller(event.cdevice.which);
+529-                break;
+530-
+531-            case SDL_CONTROLLERDEVICEREMOVED:
+532-                if (event.cdevice.which == controller_instance_) {
+533-                    close_controller();
+534-                }
+535-                break;
+536-
+537-            case SDL_WINDOWEVENT:
+538-                if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
+539-                    action = Action::Quit;
+540-                    return true;
+541-                }
+542-                break;
+543-
+544-            default:
+545-                break;
+546-        }
+547-
+548-        if (action != Action::None) return true;
+549-    }
+550-
+551-    return false;
+552-}
+553-
+554-void SDLPlatform::begin_frame() {
+555-    if (!renderer_) return;
+556-
+557-    color(renderer_, {8, 15, 35, 255});
+558-    SDL_RenderClear(renderer_);
+559-}
+560-
+561-
+562-void SDLPlatform::draw_carousel(int selected_index) {
+563-    if (!renderer_) return;
+564-
+565-    const int left = (selected_index + 2) % 3;
+566-    const int right = (selected_index + 1) % 3;
+567-
+568-    const Color side_fill{16, 41, 75, 255};
+569-    const Color center_fill{18, 63, 117, 255};
+570-    const Color center_border{36, 164, 255, 255};
+571-
+572-    // Draw the smaller neighboring cards first, behind the main card.
+573-    const SDL_Rect side_left{25, 250, 190, 175};
+574-    const SDL_Rect side_right{505, 250, 190, 175};
+575-
+576-    rounded_fill(renderer_, side_left, 24, side_fill);
+577-    rounded_outline(renderer_, side_left, 24,
+578-                    {55, 105, 165, 190});
+579-    draw_art(renderer_, left,
+580-             {side_left.x + 55, side_left.y + 42, 80, 90}, 180);
+581-
+582-    rounded_fill(renderer_, side_right, 24, side_fill);
+583-    rounded_outline(renderer_, side_right, 24,
+584-                    {55, 105, 165, 190});
+585-    draw_art(renderer_, right,
+586-             {side_right.x + 55, side_right.y + 42, 80, 90}, 180);
+587-
+588-    // Main card is larger and drawn last so it overlaps both neighbors.
+589-    const SDL_Rect center{145, 135, 430, 370};
+590-    rounded_fill(renderer_, center, 30, center_fill);
+591-    rounded_outline(renderer_, center, 30, center_border);
+592-    rounded_outline(renderer_,
+593-                    {center.x - 3, center.y - 3,
+594-                     center.w + 6, center.h + 6},
+595-                    32, {36, 164, 255, 150});
+596-
+597-    // Artwork always follows the actual selected game.
+598-    draw_art(renderer_, selected_index,
+599-             {center.x + 115, center.y + 70, 200, 205}, 255);
+600-
+601-    // Game title belongs below the main card; no SELECTED badge.
+602-    if (carousel_title_texture && selected_index == 1) {
+603-        SDL_Rect title{220, 525, 280, 42};
+604-        SDL_RenderCopy(renderer_, carousel_title_texture,
+605-                       nullptr, &title);
+606-    }
+607-
+608-    draw_status(renderer_);
+609-}
+610-
+611-
+612-namespace {
+613-
+614-void draw_action_label(SDL_Renderer* r, int index,
+615-                       int x, int y) {
+616-    if (index < 0 || index >= static_cast<int>(action_label_textures.size())) return;
+617-    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+618-    if (!texture) return;
+619-
+620-    SDL_Rect destination{x, y, 350, 72};
+621-    SDL_RenderCopy(r, texture, nullptr, &destination);
+622-}
+623-
+624-void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+625-    triangle(r, x, y - 34, x, y + 34,
+626-             x + 58, y, {220, 237, 255, 255});
+627-}
+628-
+629-void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+630-    circle(r, x, y, 30, {220, 237, 255, 255});
+631-    circle(r, x, y, 19, {15, 29, 62, 255});
+632-    triangle(r, x + 10, y - 36,
+633-             x + 42, y - 12,
+634-             x + 7, y - 8,
+635-             {220, 237, 255, 255});
+636-}
+637-
+638-void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+639-    circle(r, x, y, 29, {220, 237, 255, 255});
+640-    circle(r, x, y, 18, {15, 29, 62, 255});
+641-    triangle(r, x - 27, y - 30,
+642-             x + 10, y - 31,
+643-             x - 14, y + 2,
+644-             {220, 237, 255, 255});
+645-}
+646-
+647-} // namespace
+648-
+649-void SDLPlatform::draw_game_actions(
+650-    int selected_index, bool has_checkpoint, int selected_action) {
+651-
+652-    if (!renderer_) return;
+653-
+654-    draw_status(renderer_);
+=== Existing action definitions ===
+#pragma once
+
+namespace kiddos {
+
+enum class Action {
+    None,
+    NavigateLeft,
+    NavigateRight,
+    NavigateUp,
+    NavigateDown,
+    Confirm,
+    Back,
+    Quit
+};
+
+} // namespace kiddos
+=== Application run loop ===
+#include "kiddos/app/application.hpp"
+
+#include <chrono>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+            if (!running_) {
+                break;
+            }
+        }
+
+        if (running_) {
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::NavigateLeft:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + game_count_ - 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateRight:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateUp:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::NavigateDown:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::Confirm:
+            if (!action_screen_) {
+                action_screen_ = true;
+                selected_action_ = 0;
+            }
+            // Game launching is intentionally not implemented yet.
+            break;
+
+        case Action::Back:
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
+            break;
+
+        case Action::None:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    if (action_screen_) {
+        // Game 1 is a temporary checkpoint demonstration fixture.
+        platform_.draw_game_actions(
+            selected_game_, selected_game_ == 1, selected_action_);
+    } else {
+        platform_.draw_carousel(selected_game_);
+    }
+    platform_.present();
+}
+
+} // namespace kiddos
+=== UI public headers ===
+include/kiddos/ui/button.hpp
+include/kiddos/ui/checkbox.hpp
+include/kiddos/ui/color.hpp
+include/kiddos/ui/container.hpp
+include/kiddos/ui/controller.hpp
+include/kiddos/ui/element.hpp
+include/kiddos/ui/focus.hpp
+include/kiddos/ui/font.hpp
+include/kiddos/ui/geometry.hpp
+include/kiddos/ui/image.hpp
+include/kiddos/ui/label.hpp
+include/kiddos/ui/layout.hpp
+include/kiddos/ui/list_view.hpp
+include/kiddos/ui/panel.hpp
+include/kiddos/ui/progress_bar.hpp
+include/kiddos/ui/radio_group.hpp
+include/kiddos/ui/renderer.hpp
+include/kiddos/ui/select.hpp
+include/kiddos/ui/slider.hpp
+include/kiddos/ui/text.hpp
+include/kiddos/ui/text_input.hpp
+include/kiddos/ui/text_input_interaction.hpp
+include/kiddos/ui/texture.hpp
+include/kiddos/ui/theme.hpp
+include/kiddos/ui/toggle.hpp
+=== Existing platform tests ===
+tests/ui_button_test.cpp
+tests/ui_checkbox_test.cpp
+tests/ui_controller_test.cpp
+tests/ui_focus_test.cpp
+tests/ui_geometry_test.cpp
+tests/ui_image_test.cpp
+tests/ui_label_test.cpp
+tests/ui_layout_test.cpp
+tests/ui_list_view_test.cpp
+tests/ui_panel_test.cpp
+tests/ui_progress_bar_test.cpp
+tests/ui_radio_group_test.cpp
+tests/ui_select_test.cpp
+tests/ui_slider_test.cpp
+tests/ui_text_input_interaction_test.cpp
+tests/ui_text_input_test.cpp
+tests/ui_theme_test.cpp
+tests/ui_toggle_test.cpp

@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T020949Z-kiddos-ui-inspect-sdl-lifecycle-integration
+research/milestone-runs/20261111T021040Z-kiddos-ui-inspect-platform-event-contract
