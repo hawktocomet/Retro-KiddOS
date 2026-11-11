@@ -1,4 +1,5 @@
 #include "kiddos/platform/sdl_platform.hpp"
+#include "kiddos/platform/sdl_keyboard_policy.hpp"
 
 #include <algorithm>
 #include <array>
@@ -514,7 +515,9 @@ bool SDLPlatform::pump_events() {
                 break;
 
             case SDL_KEYDOWN:
-                if (event.key.repeat != 0) break;
+                if (!should_process_keydown(
+                        event.key.keysym.sym, event.key.repeat,
+                        text_input_active_)) break;
 
                 switch (event.key.keysym.sym) {
                     case SDLK_BACKSPACE:
@@ -565,8 +568,10 @@ bool SDLPlatform::pump_events() {
                 break;
 
             case SDL_TEXTINPUT:
-                pending_text_events_.push_back(
-                    {TextInputEventType::Text, event.text.text});
+                if (text_input_active_) {
+                    pending_text_events_.push_back(
+                        {TextInputEventType::Text, event.text.text});
+                }
                 break;
 
             case SDL_CONTROLLERBUTTONDOWN:
