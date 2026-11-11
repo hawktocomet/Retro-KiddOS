@@ -1,0 +1,12 @@
+Could not locate controller_read insertion point
+[ 10%] Built target lvgl_thorvg
+[100%] Built target lvgl
+[100%] Built target kiddos_lvgl_prototype
+=== Final prototype build ===
+Build exit: 0
+=== Runtime smoke test ===
+Smoke test exit: 0
+=== Prototype files ===
+research/lvgl/prototype/CMakeLists.txt
+research/lvgl/prototype/lv_conf.h
+research/lvgl/prototype/main.c
