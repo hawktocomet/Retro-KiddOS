@@ -1,4 +1,5 @@
 #include "kiddos/ui/controller.hpp"
+#include "kiddos/ui/toggle.hpp"
 
 namespace kiddos::ui {
 
@@ -17,8 +18,14 @@ bool ControllerInteraction::handle(UIAction action) {
         case UIAction::Down:
             return focus_.move(Direction::Down);
         case UIAction::Confirm: {
-            auto* button = dynamic_cast<Button*>(focus_.focused());
-            return button && button->activate();
+            Element* focused = focus_.focused();
+            if (auto* button = dynamic_cast<Button*>(focused)) {
+                return button->activate();
+            }
+            if (auto* toggle = dynamic_cast<Toggle*>(focused)) {
+                return toggle->toggle();
+            }
+            return false;
         }
         case UIAction::Back:
             return cancel();

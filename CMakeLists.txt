@@ -28,6 +28,7 @@ add_library(kiddos_ui STATIC
     src/ui/label.cpp
     src/ui/panel.cpp
     src/ui/progress_bar.cpp
+    src/ui/toggle.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
@@ -136,4 +137,9 @@ if(BUILD_TESTING)
     target_include_directories(kiddos_ui_progress_bar_test PRIVATE include)
     target_link_libraries(kiddos_ui_progress_bar_test PRIVATE kiddos_ui)
     add_test(NAME kiddos_ui_progress_bar COMMAND kiddos_ui_progress_bar_test)
+
+    add_executable(kiddos_ui_toggle_test tests/ui_toggle_test.cpp)
+    target_include_directories(kiddos_ui_toggle_test PRIVATE include)
+    target_link_libraries(kiddos_ui_toggle_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_toggle COMMAND kiddos_ui_toggle_test)
 endif()
