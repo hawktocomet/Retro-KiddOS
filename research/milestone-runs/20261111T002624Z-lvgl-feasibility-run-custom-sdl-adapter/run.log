@@ -1,0 +1,12 @@
+=== Check display test tools ===
+/usr/bin/import
+=== Run adapter under virtual display ===
+NO_VIRTUAL_DISPLAY_AVAILABLE
+=== Capture results ===
+SCREEN_CAPTURE=UNAVAILABLE
+=== Adapter source status ===
+27:        SDL_UpdateTexture(texture, &rect, pixels, rect.w * 2);
+30:        SDL_RenderPresent(renderer);
+111:    SDL_RenderPresent(renderer);
+115:    lv_display_t *display = lv_display_create(SCREEN_W, SCREEN_H);
+117:    lv_display_set_flush_cb(display, flush_to_sdl);
