@@ -13,7 +13,7 @@ public:
 private:
     Platform& platform_;
     bool running_ = true;
-    int selected_game_ = 0;
+    int selected_game_ = 1;
     bool action_screen_ = false;
     int selected_action_ = 0;
     static constexpr int game_count_ = 3;
