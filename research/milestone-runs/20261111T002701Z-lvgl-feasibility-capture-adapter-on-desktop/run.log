@@ -1,0 +1,12 @@
+=== Desktop display availability ===
+DISPLAY=:0
+WAYLAND_DISPLAY=wayland-0
+XDG_SESSION_TYPE=wayland
+=== Launch adapter ===
+=== Capture desktop ===
+CAPTURE_EXIT=1
+APP_EXIT=139
+=== Results ===
+timeout: the monitored command dumped core
+import: missing an image filename `/tmp/kiddos-lvgl-adapter-desktop/screen.png' @ error/import.c/ImportImageCommand/1291.
+SCREEN_CAPTURE=FAIL
