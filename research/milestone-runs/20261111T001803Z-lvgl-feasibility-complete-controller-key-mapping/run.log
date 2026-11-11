@@ -1,0 +1,10 @@
+Confirm and back mappings verified.
+=== Build ===
+[ 10%] Built target lvgl_thorvg
+[100%] Built target lvgl
+[100%] Building C object CMakeFiles/kiddos_lvgl_prototype.dir/main.c.o
+[100%] Linking C executable kiddos_lvgl_prototype
+[100%] Built target kiddos_lvgl_prototype
+=== Runtime smoke test ===
+Build exit: 0
+Smoke test exit: 0
