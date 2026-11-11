@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T221420Z-inspect-cartridge-toggle-action-definitions
+research/milestones/visual-fidelity-pass/runs/20261111T221851Z-replace-cartridge-carousel-with-four-game-covers
