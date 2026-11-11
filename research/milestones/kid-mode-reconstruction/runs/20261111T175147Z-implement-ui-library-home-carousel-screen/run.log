@@ -1,0 +1,20 @@
+/tmp/tmp.b5aKgFapVs: line 1: Implement: command not found
+/tmp/tmp.b5aKgFapVs: line 3: Scope:: command not found
+/tmp/tmp.b5aKgFapVs: line 4: -: command not found
+/tmp/tmp.b5aKgFapVs: line 5: -: command not found
+/tmp/tmp.b5aKgFapVs: line 6: -: command not found
+/tmp/tmp.b5aKgFapVs: line 7: -: command not found
+/tmp/tmp.b5aKgFapVs: line 8: -: command not found
+/tmp/tmp.b5aKgFapVs: line 9: -: command not found
+/tmp/tmp.b5aKgFapVs: line 10: -: command not found
+/tmp/tmp.b5aKgFapVs: line 11: -: command not found
+/tmp/tmp.b5aKgFapVs: line 12: -: command not found
+/tmp/tmp.b5aKgFapVs: line 13: -: command not found
+/tmp/tmp.b5aKgFapVs: line 14: -: command not found
+/tmp/tmp.b5aKgFapVs: line 16: Important:: command not found
+/tmp/tmp.b5aKgFapVs: line 17: -: command not found
+/tmp/tmp.b5aKgFapVs: line 17: use: command not found
+/tmp/tmp.b5aKgFapVs: line 18: -: command not found
+/tmp/tmp.b5aKgFapVs: line 19: -: command not found
+/tmp/tmp.b5aKgFapVs: line 20: syntax error near unexpected token `do'
+/tmp/tmp.b5aKgFapVs: line 20: `- Run the application in a suitable headless/dummy SDL mode only if the existing project supports it; do not claim visual approval.'
