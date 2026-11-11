@@ -30,6 +30,7 @@ add_library(kiddos_ui STATIC
     src/ui/progress_bar.cpp
     src/ui/toggle.cpp
     src/ui/slider.cpp
+    src/ui/theme.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
@@ -148,4 +149,9 @@ if(BUILD_TESTING)
     target_include_directories(kiddos_ui_slider_test PRIVATE include)
     target_link_libraries(kiddos_ui_slider_test PRIVATE kiddos_ui)
     add_test(NAME kiddos_ui_slider COMMAND kiddos_ui_slider_test)
+
+    add_executable(kiddos_ui_theme_test tests/ui_theme_test.cpp)
+    target_include_directories(kiddos_ui_theme_test PRIVATE include)
+    target_link_libraries(kiddos_ui_theme_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_theme COMMAND kiddos_ui_theme_test)
 endif()
