@@ -66,6 +66,12 @@ target_compile_options(kiddos PRIVATE
 include(CTest)
 
 if(BUILD_TESTING)
+    add_executable(kiddos_platform_text_input_interface_test
+        tests/platform_text_input_interface_test.cpp)
+    target_include_directories(kiddos_platform_text_input_interface_test PRIVATE include)
+    add_test(NAME kiddos_platform_text_input_interface
+        COMMAND kiddos_platform_text_input_interface_test)
+
     add_executable(kiddos_platform_sdl_keyboard_policy_test
         tests/platform_sdl_keyboard_policy_test.cpp)
     target_include_directories(kiddos_platform_sdl_keyboard_policy_test PRIVATE include)
