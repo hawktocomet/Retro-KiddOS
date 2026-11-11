@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T021040Z-kiddos-ui-inspect-platform-event-contract
+research/milestone-runs/20261111T021059Z-kiddos-ui-define-platform-text-events
