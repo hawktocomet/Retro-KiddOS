@@ -1,0 +1,33 @@
+--- Existing style assertions ---
+63-
+64-void test_structure_and_selection() {
+65-    kiddos::app::HomeCarouselScreen screen(nullptr);
+66-
+67-    // Three cartridge slots, wordmark, hints, status, and highlight.
+68-    assert(screen.root().child_count() == 7);
+69-    assert(screen.selected_game() == 1);
+70-
+71:    assert(screen.cartridge_style() == 0);
+72:    screen.toggle_cartridge_style();
+73:    assert(screen.cartridge_style() == 1);
+74-    assert(screen.selected_game() == 1);
+75:    screen.toggle_cartridge_style();
+76:    assert(screen.cartridge_style() == 0);
+77-
+78-    const auto* wordmark = find_by_bounds(screen, {275, 18, 170, 32});
+79-    assert(wordmark);
+80-    assert(wordmark->visible());
+81-
+82-    const auto* hints = find_by_bounds(screen, {0, 662, 720, 42});
+83-    assert(hints);
+84-    assert(hints->visible());
+85-
+86-    screen.set_selected_game(0);
+87-    assert(screen.selected_game() == 0);
+88-    assert(screen.selected_game() == 0);
+89-
+90-    screen.set_selected_game(8);
+91-    assert(screen.selected_game() == 8);
+92-
+93-    screen.set_selected_game(0);
+94-    assert(screen.selected_game() == 0);
