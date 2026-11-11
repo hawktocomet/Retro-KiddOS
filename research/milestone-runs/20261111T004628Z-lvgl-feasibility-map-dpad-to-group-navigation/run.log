@@ -1,0 +1,10 @@
+Mapped D-pad left/right to LV_KEY_PREV/NEXT and removed poll tracing.
+[ 10%] Built target lvgl_thorvg
+[100%] Built target lvgl
+[100%] Building C object CMakeFiles/kiddos_lvgl_sdl_adapter.dir/main.c.o
+[100%] Linking C executable kiddos_lvgl_sdl_adapter
+[100%] Built target kiddos_lvgl_sdl_adapter
+BUILD_EXIT=0
+No SDL game controller detected; keyboard arrows remain available.\nAdapter running: LVGL -> custom flush callback -> existing SDL_Renderer
+Press Escape or close the window to exit.
+SYNTHETIC_NEXT_NAV=PASS\nLVGL_GROUP_NAVIGATION=PASS
