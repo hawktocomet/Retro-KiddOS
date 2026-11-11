@@ -1,0 +1,57 @@
+--- Existing selection assertions ---
+    kiddos::app::HomeCarouselScreen screen(nullptr);
+
+    // Three cartridge slots, wordmark, hints, status, and highlight.
+    assert(screen.root().child_count() == 7);
+    assert(screen.selected_game() == 1);
+
+    assert(screen.cartridge_style() == 1);
+    screen.toggle_cartridge_style();
+    assert(screen.cartridge_style() == 0);
+    assert(screen.selected_game() == 1);
+    screen.toggle_cartridge_style();
+    assert(screen.cartridge_style() == 1);
+
+    const auto* wordmark = find_by_bounds(screen, {275, 18, 170, 32});
+    assert(wordmark);
+    assert(wordmark->visible());
+
+    const auto* hints = find_by_bounds(screen, {0, 662, 720, 42});
+    assert(hints);
+    assert(hints->visible());
+
+    screen.set_selected_game(0);
+    assert(screen.selected_game() == 0);
+    assert(screen.selected_game() == 0);
+
+    screen.set_selected_game(8);
+    assert(screen.selected_game() == 8);
+
+    screen.set_selected_game(0);
+    assert(screen.selected_game() == 0);
+
+    screen.set_selected_game(9);
+    assert(screen.selected_game() == 0);
+
+    // The transition can be advanced to completion without an SDL renderer.
+    screen.update(1.0f);
+}
+
+void test_renders_minimal_carousel() {
+    assert(SDL_Init(0) == 0);
+    IMG_Init(IMG_INIT_PNG);
+    assert(chdir(KIDDOS_SOURCE_DIR) == 0);
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+        0, 720, 720, 32, SDL_PIXELFORMAT_RGBA32);
+    assert(surface);
+
+    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+    assert(native);
+    SDL_SetRenderDrawBlendMode(native, SDL_BLENDMODE_BLEND);
+
+
+--- Other old carousel index assumptions ---
+90:    screen.set_selected_game(8);
+91:    assert(screen.selected_game() == 8);
+96:    screen.set_selected_game(9);
