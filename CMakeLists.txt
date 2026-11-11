@@ -25,6 +25,7 @@ add_library(kiddos_ui STATIC
     src/ui/text.cpp
     src/ui/texture.cpp
     src/ui/image.cpp
+    src/ui/label.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
@@ -118,4 +119,9 @@ if(BUILD_TESTING)
     target_include_directories(kiddos_ui_image_test PRIVATE include)
     target_link_libraries(kiddos_ui_image_test PRIVATE kiddos_ui)
     add_test(NAME kiddos_ui_image COMMAND kiddos_ui_image_test)
+
+    add_executable(kiddos_ui_label_test tests/ui_label_test.cpp)
+    target_include_directories(kiddos_ui_label_test PRIVATE include)
+    target_link_libraries(kiddos_ui_label_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_label COMMAND kiddos_ui_label_test)
 endif()
