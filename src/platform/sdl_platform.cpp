@@ -518,26 +518,40 @@ bool SDLPlatform::pump_events() {
 
                 switch (event.key.keysym.sym) {
                     case SDLK_BACKSPACE:
-                        pending_text_events_.push_back(
-                            {TextInputEventType::Backspace, {}});
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::Backspace, {}});
+                        }
                         break;
                     case SDLK_DELETE:
-                        pending_text_events_.push_back(
-                            {TextInputEventType::Delete, {}});
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::Delete, {}});
+                        }
                         break;
                     case SDLK_HOME:
-                        pending_text_events_.push_back(
-                            {TextInputEventType::Home, {}});
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::Home, {}});
+                        }
                         break;
                     case SDLK_END:
-                        pending_text_events_.push_back(
-                            {TextInputEventType::End, {}});
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::End, {}});
+                        }
                         break;
                     case SDLK_LEFT:
                     case SDLK_RIGHT:
-                        // Preserve existing navigation behavior.
-                        pending_actions_.push_back(
-                            map_key(event.key.keysym.sym));
+                        if (text_input_active_) {
+                            pending_text_events_.push_back({
+                                event.key.keysym.sym == SDLK_LEFT
+                                    ? TextInputEventType::Left
+                                    : TextInputEventType::Right, {}});
+                        } else {
+                            pending_actions_.push_back(
+                                map_key(event.key.keysym.sym));
+                        }
                         break;
                     default: {
                         const Action action =
@@ -613,6 +627,9 @@ bool SDLPlatform::poll_text_input_event(TextInputEvent& text_event) {
 }
 
 void SDLPlatform::set_text_input_active(bool active) {
+    if (text_input_active_ == active) return;
+
+    text_input_active_ = active;
     if (active) {
         SDL_StartTextInput();
     } else {

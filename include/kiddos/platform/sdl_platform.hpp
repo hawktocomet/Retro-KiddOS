@@ -30,6 +30,7 @@ private:
     SDL_GameController* controller_ = nullptr;
     SDL_JoystickID controller_instance_ = -1;
     bool initialized_ = false;
+    bool text_input_active_ = false;
     std::deque<Action> pending_actions_;
     std::deque<TextInputEvent> pending_text_events_;
     bool pump_events();
