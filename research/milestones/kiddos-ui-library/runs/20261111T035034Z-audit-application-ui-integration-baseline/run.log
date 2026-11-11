@@ -1,0 +1,162 @@
+=== Repository state ===
+cd6f94c feat: add game carousel artwork
+
+=== Application/UI integration references ===
+src/ui/screen_manager.cpp:2:namespace kiddos::ui {
+src/ui/screen_manager.cpp:3:ScreenManager::~ScreenManager() { clear(); }
+src/ui/screen_manager.cpp:4:bool ScreenManager::push(std::unique_ptr<Screen> screen) {
+src/ui/screen_manager.cpp:13:bool ScreenManager::pop() {
+src/ui/screen_manager.cpp:20:bool ScreenManager::replace(std::unique_ptr<Screen> screen) {
+src/ui/screen_manager.cpp:29:void ScreenManager::clear() noexcept {
+src/ui/screen_manager.cpp:32:Screen* ScreenManager::current() noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+src/ui/screen_manager.cpp:33:const Screen* ScreenManager::current() const noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+src/ui/screen_manager.cpp:34:std::size_t ScreenManager::depth() const noexcept { return stack_.size(); }
+src/ui/screen_manager.cpp:35:void ScreenManager::update(float dt) { if (auto* s=current()) s->update(dt); }
+src/ui/screen_manager.cpp:36:void ScreenManager::render(Renderer& r) { if (auto* s=current()) s->render(r); }
+src/ui/screen_manager.cpp:37:bool ScreenManager::handle_action(UIAction a) {
+src/ui/screen_manager.cpp:41:bool ScreenManager::handle_text_input(const ::kiddos::TextInputEvent& e) {
+include/kiddos/ui/screen_manager.hpp:5:namespace kiddos::ui {
+include/kiddos/ui/screen_manager.hpp:6:class ScreenManager final {
+include/kiddos/ui/screen_manager.hpp:8:    ~ScreenManager();
+include/kiddos/ui/screen_manager.hpp:9:    ScreenManager() = default;
+include/kiddos/ui/screen_manager.hpp:10:    ScreenManager(const ScreenManager&) = delete;
+include/kiddos/ui/screen_manager.hpp:11:    ScreenManager& operator=(const ScreenManager&) = delete;
+src/ui/screen.cpp:2:namespace kiddos::ui {
+include/kiddos/ui/screen.hpp:7:namespace kiddos::ui {
+src/ui/text_input_interaction.cpp:4:namespace kiddos::ui {
+src/ui/text_input_interaction.cpp:44:} // namespace kiddos::ui
+include/kiddos/ui/text_input_interaction.hpp:7:namespace kiddos::ui {
+include/kiddos/ui/text_input_interaction.hpp:29:} // namespace kiddos::ui
+src/ui/text_input.cpp:7:namespace kiddos::ui {
+include/kiddos/ui/text_input.hpp:10:namespace kiddos::ui {
+src/ui/select.cpp:7:namespace kiddos::ui {
+include/kiddos/ui/select.hpp:10:namespace kiddos::ui {
+src/ui/radio_group.cpp:7:namespace kiddos::ui {
+include/kiddos/ui/radio_group.hpp:11:namespace kiddos::ui {
+src/ui/checkbox.cpp:8:namespace kiddos::ui {
+include/kiddos/ui/checkbox.hpp:9:namespace kiddos::ui {
+src/ui/list_view.cpp:7:namespace kiddos::ui {
+include/kiddos/ui/list_view.hpp:10:namespace kiddos::ui {
+src/ui/theme.cpp:3:namespace kiddos::ui {
+src/ui/theme.cpp:130:} // namespace kiddos::ui
+include/kiddos/ui/theme.hpp:14:namespace kiddos::ui {
+src/ui/slider.cpp:6:namespace kiddos::ui {
+include/kiddos/ui/slider.hpp:7:namespace kiddos::ui {
+src/ui/toggle.cpp:6:namespace kiddos::ui {
+include/kiddos/ui/toggle.hpp:7:namespace kiddos::ui {
+src/ui/progress_bar.cpp:5:namespace kiddos::ui {
+include/kiddos/ui/progress_bar.hpp:5:namespace kiddos::ui {
+src/ui/panel.cpp:6:namespace kiddos::ui {
+include/kiddos/ui/panel.hpp:5:namespace kiddos::ui {
+src/ui/label.cpp:7:namespace kiddos::ui {
+include/kiddos/ui/label.hpp:8:namespace kiddos::ui {
+src/ui/image.cpp:6:namespace kiddos::ui {
+include/kiddos/ui/image.hpp:6:namespace kiddos::ui {
+src/ui/texture.cpp:6:namespace kiddos::ui {
+include/kiddos/ui/texture.hpp:6:namespace kiddos::ui {
+src/ui/text.cpp:3:namespace kiddos::ui {
+include/kiddos/ui/text.hpp:8:namespace kiddos::ui {
+src/ui/font.cpp:4:namespace kiddos::ui {
+include/kiddos/ui/font.hpp:5:namespace kiddos::ui {
+src/ui/controller.cpp:9:namespace kiddos::ui {
+src/ui/controller.cpp:73:} // namespace kiddos::ui
+include/kiddos/ui/controller.hpp:6:namespace kiddos::ui {
+include/kiddos/ui/controller.hpp:28:} // namespace kiddos::ui
+src/ui/button.cpp:6:namespace kiddos::ui {
+src/ui/button.cpp:92:} // namespace kiddos::ui
+include/kiddos/ui/button.hpp:9:namespace kiddos::ui {
+include/kiddos/ui/button.hpp:51:} // namespace kiddos::ui
+src/ui/focus.cpp:8:namespace kiddos::ui {
+src/ui/focus.cpp:147:} // namespace kiddos::ui
+include/kiddos/ui/focus.hpp:5:namespace kiddos::ui {
+include/kiddos/ui/focus.hpp:30:} // namespace kiddos::ui
+src/ui/layout.cpp:6:namespace kiddos::ui {
+src/ui/layout.cpp:73:} // namespace kiddos::ui
+include/kiddos/ui/layout.hpp:5:namespace kiddos::ui {
+include/kiddos/ui/layout.hpp:32:} // namespace kiddos::ui
+src/ui/renderer.cpp:3:namespace kiddos::ui {
+src/ui/renderer.cpp:95:} // namespace kiddos::ui
+include/kiddos/ui/container.hpp:10:namespace kiddos::ui {
+include/kiddos/ui/container.hpp:53:} // namespace kiddos::ui
+include/kiddos/ui/element.hpp:6:namespace kiddos::ui {
+include/kiddos/ui/element.hpp:45:} // namespace kiddos::ui
+include/kiddos/ui/renderer.hpp:8:namespace kiddos::ui {
+include/kiddos/ui/renderer.hpp:39:} // namespace kiddos::ui
+include/kiddos/ui/color.hpp:5:namespace kiddos::ui {
+include/kiddos/ui/color.hpp:21:} // namespace kiddos::ui
+include/kiddos/ui/geometry.hpp:3:namespace kiddos::ui {
+include/kiddos/ui/geometry.hpp:27:} // namespace kiddos::ui
+src/app/application.cpp:99:        platform_.draw_game_actions(
+src/app/application.cpp:102:        platform_.draw_carousel(selected_game_);
+src/platform/sdl_platform.cpp:619:void SDLPlatform::draw_carousel(int selected_index) {
+src/platform/sdl_platform.cpp:706:void SDLPlatform::draw_game_actions(
+include/kiddos/platform/sdl_platform.hpp:22:    void draw_carousel(int selected_index) override;
+include/kiddos/platform/sdl_platform.hpp:23:    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+include/kiddos/platform/platform.hpp:17:    virtual void draw_carousel(int selected_index) = 0;
+include/kiddos/platform/platform.hpp:18:    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+
+=== Application source files ===
+include/kiddos/app/application.hpp
+include/kiddos/platform/platform.hpp
+include/kiddos/platform/sdl_keyboard_policy.hpp
+include/kiddos/platform/sdl_platform.hpp
+include/kiddos/platform/sdl_text_input_translator.hpp
+include/kiddos/platform/text_input_event.hpp
+src/app/application.cpp
+src/platform/sdl_platform.cpp
+
+=== Build ===
+ninja: no work to do.
+
+=== Complete test suite ===
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_platform_sdl_text_input_translator
+ 1/23 Test  #1: kiddos_platform_sdl_text_input_translator ...   Passed    0.00 sec
+      Start  2: kiddos_platform_text_input_interface
+ 2/23 Test  #2: kiddos_platform_text_input_interface ........   Passed    0.00 sec
+      Start  3: kiddos_platform_sdl_keyboard_policy
+ 3/23 Test  #3: kiddos_platform_sdl_keyboard_policy .........   Passed    0.00 sec
+      Start  4: kiddos_platform_text_input_event
+ 4/23 Test  #4: kiddos_platform_text_input_event ............   Passed    0.00 sec
+      Start  5: kiddos_ui_layout
+ 5/23 Test  #5: kiddos_ui_layout ............................   Passed    0.01 sec
+      Start  6: kiddos_ui_geometry
+ 6/23 Test  #6: kiddos_ui_geometry ..........................   Passed    0.00 sec
+      Start  7: kiddos_ui_focus
+ 7/23 Test  #7: kiddos_ui_focus .............................   Passed    0.00 sec
+      Start  8: kiddos_ui_button
+ 8/23 Test  #8: kiddos_ui_button ............................   Passed    0.00 sec
+      Start  9: kiddos_ui_controller
+ 9/23 Test  #9: kiddos_ui_controller ........................   Passed    0.00 sec
+      Start 10: kiddos_ui_image
+10/23 Test #10: kiddos_ui_image .............................   Passed    0.00 sec
+      Start 11: kiddos_ui_label
+11/23 Test #11: kiddos_ui_label .............................   Passed    0.00 sec
+      Start 12: kiddos_ui_panel
+12/23 Test #12: kiddos_ui_panel .............................   Passed    0.00 sec
+      Start 13: kiddos_ui_progress_bar
+13/23 Test #13: kiddos_ui_progress_bar ......................   Passed    0.00 sec
+      Start 14: kiddos_ui_toggle
+14/23 Test #14: kiddos_ui_toggle ............................   Passed    0.00 sec
+      Start 15: kiddos_ui_slider
+15/23 Test #15: kiddos_ui_slider ............................   Passed    0.00 sec
+      Start 16: kiddos_ui_theme
+16/23 Test #16: kiddos_ui_theme .............................   Passed    0.00 sec
+      Start 17: kiddos_ui_list_view
+17/23 Test #17: kiddos_ui_list_view .........................   Passed    0.00 sec
+      Start 18: kiddos_ui_checkbox
+18/23 Test #18: kiddos_ui_checkbox ..........................   Passed    0.00 sec
+      Start 19: kiddos_ui_radio_group
+19/23 Test #19: kiddos_ui_radio_group .......................   Passed    0.00 sec
+      Start 20: kiddos_ui_select
+20/23 Test #20: kiddos_ui_select ............................   Passed    0.00 sec
+      Start 21: kiddos_ui_text_input
+21/23 Test #21: kiddos_ui_text_input ........................   Passed    0.00 sec
+      Start 22: kiddos_ui_text_input_interaction
+22/23 Test #22: kiddos_ui_text_input_interaction ............   Passed    0.00 sec
+      Start 23: kiddos_ui_screen_manager
+23/23 Test #23: kiddos_ui_screen_manager ....................   Passed    0.00 sec
+
+100% tests passed out of 23
+
+Total Test time (real) =   0.09 sec
