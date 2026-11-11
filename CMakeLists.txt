@@ -66,6 +66,12 @@ target_compile_options(kiddos PRIVATE
 include(CTest)
 
 if(BUILD_TESTING)
+    add_executable(kiddos_platform_text_input_event_test
+        tests/platform_text_input_event_test.cpp)
+    target_include_directories(kiddos_platform_text_input_event_test PRIVATE include)
+    add_test(NAME kiddos_platform_text_input_event
+        COMMAND kiddos_platform_text_input_event_test)
+
     add_executable(kiddos_ui_geometry_test
         tests/ui_geometry_test.cpp
     )
