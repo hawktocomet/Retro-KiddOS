@@ -1,0 +1,241 @@
+=== SCREEN BASE AND ELEMENT API ===
+#pragma once
+
+#include "kiddos/ui/geometry.hpp"
+#include "kiddos/ui/renderer.hpp"
+
+namespace kiddos::ui {
+
+class Element {
+public:
+    virtual ~Element() = default;
+
+    void set_bounds(Rect bounds) noexcept { bounds_ = bounds; }
+    Rect bounds() const noexcept { return bounds_; }
+
+    void set_visible(bool visible) noexcept { visible_ = visible; }
+    bool visible() const noexcept { return visible_; }
+
+    void set_enabled(bool enabled) noexcept { enabled_ = enabled; }
+    bool enabled() const noexcept { return enabled_; }
+
+    void set_focusable(bool focusable) noexcept {
+        focusable_ = focusable;
+    }
+
+    bool focusable() const noexcept { return focusable_; }
+
+    void set_focused(bool focused) noexcept { focused_ = focused; }
+    bool focused() const noexcept { return focused_; }
+
+    void render(Renderer& renderer) {
+        if (visible_) draw(renderer);
+    }
+
+protected:
+    virtual void draw(Renderer& renderer) = 0;
+
+private:
+    Rect bounds_{};
+    bool visible_ = true;
+    bool enabled_ = true;
+    bool focusable_ = false;
+    bool focused_ = false;
+};
+
+} // namespace kiddos::ui
+#include "kiddos/ui/screen.hpp"
+namespace kiddos::ui {
+Screen::Screen() noexcept : focus_(root_), controller_(focus_), text_input_(focus_) {}
+Container& Screen::root() noexcept { return root_; }
+FocusManager& Screen::focus() noexcept { return focus_; }
+void Screen::render(Renderer& renderer) { root_.render(renderer); }
+bool Screen::handle_action(UIAction action) {
+    if (!focus_.focused()) focus_.focus_first();
+    return controller_.handle(action);
+}
+bool Screen::handle_text_input(const ::kiddos::TextInputEvent& event) {
+    switch (event.type) {
+    case ::kiddos::TextInputEventType::Text: return text_input_.insert_text(event.text);
+    case ::kiddos::TextInputEventType::Backspace: return text_input_.handle(TextInputKey::Backspace);
+    case ::kiddos::TextInputEventType::Delete: return text_input_.handle(TextInputKey::Delete);
+    case ::kiddos::TextInputEventType::Left: return text_input_.handle(TextInputKey::Left);
+    case ::kiddos::TextInputEventType::Right: return text_input_.handle(TextInputKey::Right);
+    case ::kiddos::TextInputEventType::Home: return text_input_.handle(TextInputKey::Home);
+    case ::kiddos::TextInputEventType::End: return text_input_.handle(TextInputKey::End);
+    }
+    return false;
+}
+}
+=== FONT API ===
+#pragma once
+#include <SDL_ttf.h>
+#include <string>
+
+namespace kiddos::ui {
+class Font final {
+public:
+    Font() = default;
+    ~Font();
+    Font(const Font&) = delete;
+    Font& operator=(const Font&) = delete;
+    Font(Font&& other) noexcept;
+    Font& operator=(Font&& other) noexcept;
+    bool load(const std::string& path, int point_size);
+    void reset() noexcept;
+    bool valid() const noexcept;
+    TTF_Font* native() const noexcept;
+private:
+    TTF_Font* font_ = nullptr;
+};
+}
+=== UI ACTION ENUM ===
+include/kiddos/ui/controller.hpp:8:enum class UIAction {
+=== APPLICATION AND PLATFORM HEADERS ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+
+namespace kiddos {
+
+class Application {
+public:
+    explicit Application(Platform& platform);
+
+    int run();
+
+private:
+    Platform& platform_;
+    bool running_ = true;
+    int selected_game_ = 1;
+    bool action_screen_ = false;
+    int selected_action_ = 0;
+    static constexpr int game_count_ = 3;
+
+    void handle_action(Action action);
+    void render();
+};
+
+} // namespace kiddos
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+#include <SDL.h>
+
+#include <deque>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    bool poll_text_input_event(TextInputEvent& event) override;
+    void set_text_input_active(bool active) override;
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+    bool text_input_active_ = false;
+    std::deque<Action> pending_actions_;
+    std::deque<TextInputEvent> pending_text_events_;
+    bool pump_events();
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+=== CURRENT BUILD SOURCE LIST ===
+cmake_minimum_required(VERSION 3.20)
+
+project(KiddOS
+    VERSION 0.2.0
+    DESCRIPTION "A child-friendly gaming environment for the Retro Pixel Pocket"
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
+pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
+
+add_library(kiddos_ui STATIC
+    src/ui/renderer.cpp
+    src/ui/layout.cpp
+    src/ui/focus.cpp
+    src/ui/button.cpp
+    src/ui/controller.cpp
+    src/ui/font.cpp
+    src/ui/text.cpp
+    src/ui/texture.cpp
+    src/ui/image.cpp
+    src/ui/label.cpp
+    src/ui/panel.cpp
+    src/ui/progress_bar.cpp
+    src/ui/toggle.cpp
+    src/ui/slider.cpp
+    src/ui/theme.cpp
+    src/ui/list_view.cpp
+    src/ui/checkbox.cpp
+    src/ui/radio_group.cpp
+    src/ui/select.cpp
+    src/ui/text_input.cpp
+    src/ui/text_input_interaction.cpp
+    src/ui/screen.cpp
+    src/ui/screen_manager.cpp
+)
+
+add_library(KiddOS::UI ALIAS kiddos_ui)
+target_include_directories(kiddos_ui PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
+
+target_compile_options(kiddos_ui PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+add_executable(kiddos
+    src/main.cpp
+    src/app/application.cpp
+    src/platform/sdl_platform.cpp
+)
+
+target_include_directories(kiddos PRIVATE include)
+target_link_libraries(kiddos PRIVATE kiddos_ui)
+
+target_compile_options(kiddos PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+include(CTest)
+
+if(BUILD_TESTING)
+    add_executable(kiddos_platform_sdl_text_input_translator_test
+=== WORKTREE STATUS ===
+## main...origin/main
