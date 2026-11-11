@@ -1,0 +1,250 @@
+=== SDL initialization and shutdown ===
+353:bool SDLPlatform::initialize() {
+354:    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+362:    window_ = SDL_CreateWindow(
+713:void SDLPlatform::shutdown() {
+743:        SDL_DestroyWindow(window_);
+748:        SDL_Quit();
+=== SDL initialization implementation ===
+343-    rectangle(r, {661, 31, 22, 11},
+344-              {67, 157, 255, 240});
+345-}
+346-
+347-} // namespace
+348-
+349-SDLPlatform::~SDLPlatform() {
+350-    shutdown();
+351-}
+352-
+353:bool SDLPlatform::initialize() {
+354-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+355-        std::cerr << "SDL initialization failed: "
+356-                  << SDL_GetError() << '\n';
+357-        return false;
+358-    }
+359-
+360-    initialized_ = true;
+361-
+362-    window_ = SDL_CreateWindow(
+363-        "Retro KiddOS - Kid Mode",
+364-        SDL_WINDOWPOS_CENTERED,
+365-        SDL_WINDOWPOS_CENTERED,
+366-        720,
+367-        720,
+368-        SDL_WINDOW_SHOWN
+369-    );
+370-
+371-    if (!window_) {
+372-        std::cerr << "Window creation failed: "
+373-                  << SDL_GetError() << '\n';
+374-        shutdown();
+375-        return false;
+376-    }
+377-
+378-    renderer_ = SDL_CreateRenderer(
+379-        window_, -1,
+380-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+381-    );
+382-
+383-    if (!renderer_) {
+384-        renderer_ = SDL_CreateRenderer(
+385-            window_, -1, SDL_RENDERER_SOFTWARE
+386-        );
+387-    }
+388-
+389-    if (!renderer_) {
+390-        std::cerr << "Renderer creation failed: "
+391-                  << SDL_GetError() << '\n';
+392-        shutdown();
+393-        return false;
+394-    }
+395-
+396-    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+397-
+398-    const char* artwork_paths[] = {
+399-        "assets/artwork/generated/carousel-star.bmp",
+400-        "assets/artwork/generated/carousel-mushroom.bmp",
+401-        "assets/artwork/generated/carousel-car.bmp"
+402-    };
+403-    const char* label_paths[] = {
+404-        "assets/artwork/generated/label-play.bmp",
+405-        "assets/artwork/generated/label-resume.bmp",
+406-        "assets/artwork/generated/label-start-over.bmp"
+407-    };
+408-
+409-    for (std::size_t i = 0; i < artwork_textures.size(); ++i) {
+410-        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i], true);
+411-        if (!artwork_textures[i]) {
+412-            shutdown();
+413-            return false;
+414-        }
+415-    }
+416-
+417-    for (std::size_t i = 0; i < action_label_textures.size(); ++i) {
+418-        action_label_textures[i] =
+419-            load_bitmap_texture(renderer_, label_paths[i], true);
+420-        if (!action_label_textures[i]) {
+421-            shutdown();
+422-            return false;
+423-        }
+424-    }
+425-
+426-    carousel_title_texture =
+427-        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-title.bmp", true);
+428-    carousel_selected_texture =
+429-        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-selected.bmp", true);
+430-    if (!carousel_title_texture || !carousel_selected_texture) {
+431-        shutdown();
+432-        return false;
+433-    }
+434-    SDL_SetTextureBlendMode(carousel_title_texture, SDL_BLENDMODE_BLEND);
+435-    SDL_SetTextureBlendMode(carousel_selected_texture, SDL_BLENDMODE_BLEND);
+436-
+437-
+438-    for (int index = 0; index < SDL_NumJoysticks(); ++index) {
+439-        if (SDL_IsGameController(index)) {
+440-            open_controller(index);
+441-            if (controller_) {
+442-                break;
+443-            }
+444-        }
+445-    }
+446-
+447-    return true;
+448-}
+449-
+450-void SDLPlatform::open_controller(int device_index) {
+451-    if (controller_) return;
+452-
+453-    controller_ = SDL_GameControllerOpen(device_index);
+=== SDL shutdown implementation ===
+703-                            26, {43, 126, 231, 180});
+704-        }
+705-    }
+706-}
+707-
+708-
+709-void SDLPlatform::present() {
+710-    if (renderer_) SDL_RenderPresent(renderer_);
+711-}
+712-
+713:void SDLPlatform::shutdown() {
+714-    close_controller();
+715-
+716-    for (auto& texture : artwork_textures) {
+717-        if (texture) {
+718-            SDL_DestroyTexture(texture);
+719-            texture = nullptr;
+720-        }
+721-    }
+722-    for (auto& texture : action_label_textures) {
+723-        if (texture) {
+724-            SDL_DestroyTexture(texture);
+725-            texture = nullptr;
+726-        }
+727-    }
+728-    if (carousel_title_texture) {
+729-        SDL_DestroyTexture(carousel_title_texture);
+730-        carousel_title_texture = nullptr;
+731-    }
+732-    if (carousel_selected_texture) {
+733-        SDL_DestroyTexture(carousel_selected_texture);
+734-        carousel_selected_texture = nullptr;
+735-    }
+736-
+737-    if (renderer_) {
+738-        SDL_DestroyRenderer(renderer_);
+739-        renderer_ = nullptr;
+740-    }
+741-
+742-    if (window_) {
+743-        SDL_DestroyWindow(window_);
+744-        window_ = nullptr;
+745-    }
+746-
+747-    if (initialized_) {
+748-        SDL_Quit();
+749-        initialized_ = false;
+750-    }
+751-}
+752-
+753-} // namespace kiddos
+=== Main application construction ===
+#include "kiddos/app/application.hpp"
+#include "kiddos/platform/sdl_platform.hpp"
+
+int main() {
+    kiddos::SDLPlatform platform;
+    kiddos::Application application(platform);
+    return application.run();
+}
+=== Application and platform interfaces ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+
+namespace kiddos {
+
+class Application {
+public:
+    explicit Application(Platform& platform);
+
+    int run();
+
+private:
+    Platform& platform_;
+    bool running_ = true;
+    int selected_game_ = 1;
+    bool action_screen_ = false;
+    int selected_action_ = 0;
+    static constexpr int game_count_ = 3;
+
+    void handle_action(Action action);
+    void render();
+};
+
+} // namespace kiddos
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+
+#include <SDL.h>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+=== Current working tree ===
+ M include/kiddos/app/application.hpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
