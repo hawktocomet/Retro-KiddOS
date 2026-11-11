@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T210201Z-inspect-current-carousel-implementation-before-version-
+research/milestones/visual-fidelity-pass/runs/20261111T210317Z-implement-version-2-default-and-slower-sliding-carousel
