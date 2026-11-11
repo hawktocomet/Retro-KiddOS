@@ -1,6 +1,7 @@
 #pragma once
 
 #include "kiddos/core/action.hpp"
+#include "kiddos/platform/text_input_event.hpp"
 
 namespace kiddos {
 
@@ -10,6 +11,8 @@ public:
 
     virtual bool initialize() = 0;
     virtual bool poll_action(Action& action) = 0;
+    virtual bool poll_text_input_event(TextInputEvent&) { return false; }
+    virtual void set_text_input_active(bool) {}
     virtual void begin_frame() = 0;
     virtual void draw_carousel(int selected_index) = 0;
     virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
