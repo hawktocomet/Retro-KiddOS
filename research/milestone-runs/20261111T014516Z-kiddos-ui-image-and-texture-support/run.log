@@ -1,0 +1,67 @@
+Checking SDL2_image...
+Configuring build...
+-- Checking for module 'SDL2_image'
+--   Found SDL2_image, version 2.8.12
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+Building...
+[1/25] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/renderer.cpp.o
+[2/25] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/layout.cpp.o
+[3/25] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/focus.cpp.o
+[4/25] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/button.cpp.o
+[5/25] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/controller.cpp.o
+[6/25] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/font.cpp.o
+[7/25] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/text.cpp.o
+[8/25] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/texture.cpp.o
+[9/25] Building CXX object CMakeFiles/kiddos.dir/src/main.cpp.o
+[10/25] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/image.cpp.o
+[11/25] Linking CXX static library libkiddos_ui.a
+[12/25] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+[13/25] Building CXX object CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:27:40: warning: multi-character character constant [-Wmultichar]
+   27 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:43:40: warning: multi-character character constant [-Wmultichar]
+   43 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:250:6: warning: ‘void kiddos::{anonymous}::draw_ocean_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  250 | void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:218:6: warning: ‘void kiddos::{anonymous}::draw_forest_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  218 | void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:188:6: warning: ‘void kiddos::{anonymous}::draw_space_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  188 | void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+[14/25] Building CXX object CMakeFiles/kiddos_ui_layout_test.dir/tests/ui_layout_test.cpp.o
+[15/25] Building CXX object CMakeFiles/kiddos_ui_layout_test.dir/src/ui/layout.cpp.o
+[16/25] Building CXX object CMakeFiles/kiddos_ui_focus_test.dir/tests/ui_focus_test.cpp.o
+[17/25] Building CXX object CMakeFiles/kiddos_ui_button_test.dir/tests/ui_button_test.cpp.o
+[18/25] Building CXX object CMakeFiles/kiddos_ui_controller_test.dir/tests/ui_controller_test.cpp.o
+[19/25] Linking CXX executable kiddos
+[20/25] Building CXX object CMakeFiles/kiddos_ui_image_test.dir/tests/ui_image_test.cpp.o
+[21/25] Linking CXX executable kiddos_ui_layout_test
+[22/25] Linking CXX executable kiddos_ui_focus_test
+[23/25] Linking CXX executable kiddos_ui_button_test
+[24/25] Linking CXX executable kiddos_ui_controller_test
+[25/25] Linking CXX executable kiddos_ui_image_test
+Running tests...
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_ui_layout
+1/6 Test #1: kiddos_ui_layout .................   Passed    0.01 sec
+    Start 2: kiddos_ui_geometry
+2/6 Test #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+    Start 3: kiddos_ui_focus
+3/6 Test #3: kiddos_ui_focus ..................   Passed    0.01 sec
+    Start 4: kiddos_ui_button
+4/6 Test #4: kiddos_ui_button .................   Passed    0.01 sec
+    Start 5: kiddos_ui_controller
+5/6 Test #5: kiddos_ui_controller .............   Passed    0.01 sec
+    Start 6: kiddos_ui_image
+6/6 Test #6: kiddos_ui_image ..................   Passed    0.01 sec
+
+100% tests passed out of 6
+
+Total Test time (real) =   0.06 sec
+Image and texture support implementation passed build and tests.
