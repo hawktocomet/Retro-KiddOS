@@ -1,0 +1,4 @@
+/tmp/tmp.wVAEDhQUm1: line 1: Implement: command not found
+/tmp/tmp.wVAEDhQUm1: line 3: Requirements:: command not found
+/tmp/tmp.wVAEDhQUm1: line 4: syntax error near unexpected token `('
+/tmp/tmp.wVAEDhQUm1: line 4: `1. Add SDL2_image as a required dependency using pkg-config (SDL2_image).'
