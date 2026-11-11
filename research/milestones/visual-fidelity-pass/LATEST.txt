@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T220342Z-inspect-game-box-art-replacement-assets
+research/milestones/visual-fidelity-pass/runs/20261111T220408Z-inspect-game-cover-asset-dimensions-and-conventions

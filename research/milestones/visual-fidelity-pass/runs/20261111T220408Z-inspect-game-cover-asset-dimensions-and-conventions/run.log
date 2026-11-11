@@ -1,0 +1,194 @@
+--- Existing carousel artwork sources ---
+
+--- assets/artwork/source/carousel/car.svg ---
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="160" viewBox="0 0 180 160">
+<path d="M34 92 L48 54 Q54 39 70 39 L112 39 Q126 39 135 55 L151 92 L160 101 L160 126 L20 126 L20 101 Z" fill="#F04438" stroke="#FFD6A0" stroke-width="7" stroke-linejoin="round"/>
+<path d="M58 56 L119 56 L133 88 L46 88 Z" fill="#A8E7FF" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round"/>
+<path d="M24 98 L156 98" stroke="#FFE9A8" stroke-width="7"/>
+<circle cx="51" cy="126" r="17" fill="#26364F" stroke="#DDEBFF" stroke-width="7"/>
+<circle cx="129" cy="126" r="17" fill="#26364F" stroke="#DDEBFF" stroke-width="7"/>
+</svg>
+
+--- assets/artwork/source/carousel/mushroom.svg ---
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="160" viewBox="0 0 180 160">
+<path d="M20 83 C22 35 54 9 90 9 C126 9 158 35 160 83 Z" fill="#E83D48" stroke="#FFFFFF" stroke-width="7"/>
+<ellipse cx="59" cy="48" rx="17" ry="21" fill="#FFFFFF"/>
+<ellipse cx="119" cy="48" rx="17" ry="21" fill="#FFFFFF"/>
+<path d="M51 82 L129 82 L122 132 Q90 151 58 132 Z" fill="#FFF1D2" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round"/>
+<ellipse cx="73" cy="105" rx="7" ry="10" fill="#26364F"/>
+<ellipse cx="107" cy="105" rx="7" ry="10" fill="#26364F"/>
+</svg>
+
+--- assets/artwork/source/carousel/selected.svg ---
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="34" viewBox="0 0 150 34">
+<rect x="1" y="1" width="148" height="32" rx="16" fill="#1C79C9"/>
+<text x="75" y="23" text-anchor="middle" font-family="DejaVu Sans" font-size="16" font-weight="bold" letter-spacing="1" fill="#FFFFFF">SELECTED</text>
+</svg>
+
+--- assets/artwork/source/carousel/star.svg ---
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+<path d="M80 8 L98 57 L151 59 L110 92 L124 145 L80 115 L36 145 L50 92 L9 59 L62 57 Z" fill="#FFD34E" stroke="#FFF0A6" stroke-width="7" stroke-linejoin="round"/>
+<path d="M80 22 L94 63 L135 65 L104 90 L114 130 L80 108 L46 130 L56 90 L25 65 L66 63 Z" fill="#FFE88A"/>
+</svg>
+
+--- assets/artwork/source/carousel/title-car.svg ---
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="52" viewBox="0 0 140 52">
+<text x="70" y="38" text-anchor="middle" font-family="DejaVu Sans" font-size="30" font-weight="bold" letter-spacing="1" fill="#FFFFFF">CAR</text>
+</svg>
+
+--- assets/artwork/source/carousel/title-star.svg ---
+<svg xmlns="http://www.w3.org/2000/svg" width="170" height="52" viewBox="0 0 170 52">
+<text x="85" y="38" text-anchor="middle" font-family="DejaVu Sans" font-size="30" font-weight="bold" letter-spacing="1" fill="#FFFFFF">STAR</text>
+</svg>
+
+--- assets/artwork/source/carousel/title.svg ---
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="52" viewBox="0 0 360 52">
+<text x="180" y="38" text-anchor="middle" font-family="DejaVu Sans" font-size="30" font-weight="bold" letter-spacing="1" fill="#FFFFFF">SUPER MARIO</text>
+</svg>
+
+--- Existing carousel artwork dimensions ---
+assets/artwork/generated/carousel-car.png:        PNG image data, 180 x 160, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/carousel-mushroom.png:   PNG image data, 180 x 160, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/carousel-star.png:       PNG image data, 160 x 160, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/carousel-title-car.png:  PNG image data, 140 x 52, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/carousel-title.png:      PNG image data, 360 x 52, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/carousel-title-star.png: PNG image data, 170 x 52, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/carousel-car.bmp:        PC bitmap, Windows 3.x format, 180 x 160 x 24, image size 86400, cbSize 86454, bits offset 54
+assets/artwork/generated/carousel-mushroom.bmp:   PC bitmap, Windows 3.x format, 180 x 160 x 24, image size 86400, cbSize 86454, bits offset 54
+assets/artwork/generated/carousel-selected.bmp:   PC bitmap, Windows 3.x format, 150 x 34 x 24, image size 15368, cbSize 15422, bits offset 54
+assets/artwork/generated/carousel-star.bmp:       PC bitmap, Windows 3.x format, 160 x 160 x 24, image size 76800, cbSize 76854, bits offset 54
+assets/artwork/generated/carousel-title.bmp:      PC bitmap, Windows 3.x format, 360 x 52 x 24, image size 56160, cbSize 56214, bits offset 54
+
+--- Carousel geometry ---
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/ui/panel.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <string>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr ui::Color background{1, 1, 1, 255};
+
+constexpr ui::Rect left_art{24, 268, 128, 128};
+constexpr ui::Rect center_art{210, 148, 300, 300};
+constexpr ui::Rect right_art{568, 268, 128, 128};
+
+constexpr ui::Rect title_rect{145, 465, 430, 54};
+constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+constexpr ui::Rect hints_rect{0, 662, 720, 42};
+
+
+
+constexpr const char* wordmark_path =
+    "assets/artwork/generated/kiddos-wordmark.png";
+constexpr const char* hints_path =
+    "assets/artwork/generated/navigation-hints.png";
+
+void fill_speaker_cone(
+    ui::Renderer& renderer,
+    int narrow_x,
+    int narrow_top,
+    int narrow_bottom,
+    int wide_x,
+    int wide_top,
+    int wide_bottom,
+    ui::Color color
+) {
+    for (int y = wide_top; y <= wide_bottom; ++y) {
+        int left = narrow_x;
+
+        if (y < narrow_top) {
+            left += (narrow_top - y) * (wide_x - narrow_x) /
+                    (narrow_top - wide_top);
+        } else if (y > narrow_bottom) {
+            left += (y - narrow_bottom) * (wide_x - narrow_x) /
+                    (wide_bottom - narrow_bottom);
+        }
+
+        renderer.draw_line({left, y}, {wide_x, y}, color);
+    }
+}
+
+void draw_arc(
+    ui::Renderer& renderer,
+    ui::Point center,
+    int radius,
+    double start_degrees,
+    double end_degrees,
+    ui::Color color
+) {
+    constexpr double pi = 3.14159265358979323846;
+    const int steps = std::max(2, radius * 2);
+    const double delta = (end_degrees - start_degrees) / steps;
+
+    auto point_at = [&](double degrees) {
+        const double radians = degrees * pi / 180.0;
+        return ui::Point{
+            center.x + static_cast<int>(std::lround(radius * std::cos(radians))),
+            center.y + static_cast<int>(std::lround(radius * std::sin(radians)))
+        };
+    };
+
+    ui::Point previous = point_at(start_degrees);
+    for (int i = 1; i <= steps; ++i) {
+        const ui::Point point = point_at(start_degrees + delta * i);
+        renderer.draw_line(previous, point, color);
+        previous = point;
+    }
+}
+
+class StatusIndicators final : public ui::Element {
+protected:
+    void draw(ui::Renderer& renderer) override {
+        const ui::Color primary{190, 208, 235, 210};
+        const ui::Color accent{105, 160, 225, 210};
+
+        // Compact speaker indicator.
+        renderer.fill_rect({25, 32, 7, 12}, primary);
+        fill_speaker_cone(renderer, 32, 32, 44, 42, 27, 49, primary);
+        draw_arc(renderer, {44, 38}, 7, -48.0, 48.0, accent);
+
+        // Quiet battery indicator.
+        renderer.outline_rect({660, 29, 30, 16}, primary);
+        renderer.fill_rect({691, 34, 3, 6}, primary);
+        renderer.fill_rect({664, 33, 20, 8}, accent);
+    }
+};
+
+int interpolate(int current, int target, float amount) {
+    return static_cast<int>(std::lround(
+        current + (target - current) * amount));
+}
+
+ui::Rect interpolate_rect(
+    ui::Rect current,
+    ui::Rect target,
+    float amount
+) {
+    return {
+        interpolate(current.x, target.x, amount),
+        interpolate(current.y, target.y, amount),
+        interpolate(current.w, target.w, amount),
+        interpolate(current.h, target.h, amount)
+
+--- Asset build and packaging references ---
+src/platform/sdl_platform.cpp:408:        "assets/artwork/generated/carousel-star.bmp",
+src/platform/sdl_platform.cpp:409:        "assets/artwork/generated/carousel-mushroom.bmp",
+src/platform/sdl_platform.cpp:410:        "assets/artwork/generated/carousel-car.bmp"
+src/platform/sdl_platform.cpp:413:        "assets/artwork/generated/label-play.bmp",
+src/platform/sdl_platform.cpp:414:        "assets/artwork/generated/label-resume.bmp",
+src/platform/sdl_platform.cpp:415:        "assets/artwork/generated/label-start-over.bmp"
+src/platform/sdl_platform.cpp:436:        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-title.bmp", true);
+src/platform/sdl_platform.cpp:438:        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-selected.bmp", true);
+src/app/application.cpp:6:#include <SDL_image.h>
+src/app/application.cpp:27:    // SDL_image initialization is left to the application lifecycle; the
+src/app/home_carousel_screen.cpp:26:    "assets/artwork/generated/kiddos-wordmark.png";
+src/app/home_carousel_screen.cpp:28:    "assets/artwork/generated/navigation-hints.png";
+src/app/home_carousel_screen.cpp:131:                "assets/artwork/generated/cartridges/option-" +
+src/ui/texture.cpp:3:#include <SDL_image.h>
+include/kiddos/ui/texture.hpp:19:    // Loads an image file through SDL_image. With magenta_key enabled,
