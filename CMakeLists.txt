@@ -15,6 +15,7 @@ pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
 
 add_library(kiddos_ui STATIC
     src/ui/renderer.cpp
+    src/ui/layout.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
@@ -49,6 +50,19 @@ if(BUILD_TESTING)
     )
 
     target_include_directories(kiddos_ui_geometry_test PRIVATE include)
+
+    add_executable(kiddos_ui_layout_test
+        tests/ui_layout_test.cpp
+        src/ui/layout.cpp
+    )
+
+    target_include_directories(kiddos_ui_layout_test PRIVATE include)
+    target_link_libraries(kiddos_ui_layout_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_layout
+        COMMAND kiddos_ui_layout_test
+    )
 
     add_test(
         NAME kiddos_ui_geometry

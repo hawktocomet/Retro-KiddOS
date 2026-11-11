@@ -1,0 +1,35 @@
+===== BUILD =====
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/6] Building CXX object CMakeFiles/kiddos_ui_layout_test.dir/tests/ui_layout_test.cpp.o
+[2/6] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/layout.cpp.o
+[3/6] Linking CXX static library libkiddos_ui.a
+[4/6] Linking CXX executable kiddos
+[5/6] Building CXX object CMakeFiles/kiddos_ui_layout_test.dir/src/ui/layout.cpp.o
+[6/6] Linking CXX executable kiddos_ui_layout_test
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_ui_layout
+1/2 Test #1: kiddos_ui_layout .................Subprocess aborted***Exception:   0.09 sec
+kiddos_ui_layout_test: /home/hawk/KiddOS/tests/ui_layout_test.cpp:33: int main(): Assertion `second.bounds().w == 226' failed.
+
+    Start 2: kiddos_ui_geometry
+2/2 Test #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+
+50% tests passed, 1 tests failed out of 2
+
+Total Test time (real) =   0.09 sec
+
+The following tests FAILED:
+	  1 - kiddos_ui_layout (Subprocess aborted)
+Errors while running CTest
+
+===== STAGING =====
+ CMakeLists.txt                  | 14 ++++++++
+ docs/KIDDOS_UI_LIBRARY.md       | 17 ++++++++++
+ include/kiddos/ui/container.hpp | 53 ++++++++++++++++++++++++++++++
+ include/kiddos/ui/element.hpp   | 41 +++++++++++++++++++++++
+ include/kiddos/ui/layout.hpp    | 32 ++++++++++++++++++
+ src/ui/layout.cpp               | 73 +++++++++++++++++++++++++++++++++++++++++
+ tests/ui_layout_test.cpp        | 59 +++++++++++++++++++++++++++++++++
+ 7 files changed, 289 insertions(+)

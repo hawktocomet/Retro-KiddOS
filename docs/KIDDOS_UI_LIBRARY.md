@@ -40,3 +40,20 @@ outside the reusable UI library.
 - No application-specific game logic inside the library.
 - Reusable components instead of manually drawing every screen.
 - Keep memory and rendering overhead appropriate for the target device.
+
+## Widget hierarchy and layout
+
+The second implementation milestone adds:
+
+- `Element`: reusable UI element base class.
+- `Container`: owns and renders child elements.
+- `Axis`: horizontal and vertical layout directions.
+- `Insets`: configurable content padding.
+- `StackLayout`: automatic equal-space child positioning.
+
+Containers own their children through `std::unique_ptr`. Hidden children
+are excluded from automatic stack layout. The library does not impose
+application-specific game or screen logic.
+
+Layout tests cover horizontal and vertical distribution, padding, gaps,
+hidden children, and empty containers.
