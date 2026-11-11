@@ -1,0 +1,13 @@
+=== Desktop display availability ===
+DISPLAY=:0
+WAYLAND_DISPLAY=wayland-0
+SDL_VIDEODRIVER=default
+/usr/bin/import
+/usr/bin/timeout
+=== Launch LVGL prototype ===
+=== Capture screenshot if available ===
+import: missing an image filename `/tmp/kiddos-lvgl-prototype.png' @ error/import.c/ImportImageCommand/1291.
+Screenshot: /tmp/kiddos-lvgl-prototype.png
+=== Runtime result ===
+Application exit: 0
+Binary: /tmp/kiddos-lvgl-prototype-build/kiddos_lvgl_prototype
