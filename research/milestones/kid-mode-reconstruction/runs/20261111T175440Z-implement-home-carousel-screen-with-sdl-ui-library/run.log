@@ -1,0 +1,1572 @@
+[0m
+> build · glm-5.3-flash-free
+[0m✱ [0mGlob "**/*.{h,hpp,cpp,cc}" [90m86 matches[0m
+[0m$ [0mfind /home/hawk/KiddOS -maxdepth 2 -type f -name "*.md" -o -maxdepth 2 -type f -name "CMakeLists.txt" | head -20 && echo --- && ls /home/hawk/KiddOS
+/home/hawk/KiddOS/docs/PROJECT_VISION.md
+/home/hawk/KiddOS/docs/HARDWARE.md
+/home/hawk/KiddOS/docs/ARCHITECTURE.md
+/home/hawk/KiddOS/docs/UI_DESIGN.md
+/home/hawk/KiddOS/docs/INPUT_CONTROLS.md
+/home/hawk/KiddOS/docs/GAME_LIBRARY.md
+/home/hawk/KiddOS/docs/MEDIA_MANAGER.md
+/home/hawk/KiddOS/docs/SAVE_STATE_SYSTEM.md
+/home/hawk/KiddOS/docs/LOW_BATTERY_PROTECTION.md
+/home/hawk/KiddOS/docs/DEVELOPMENT_LOG.md
+/home/hawk/KiddOS/docs/PRODUCT_SPECIFICATION.md
+/home/hawk/KiddOS/docs/FIRMWARE_AUDIT.md
+/home/hawk/KiddOS/docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+/home/hawk/KiddOS/docs/GAME_ACTION_SCREEN.md
+/home/hawk/KiddOS/docs/KIDDOS_UI_LIBRARY.md
+/home/hawk/KiddOS/docs/ui-image-support.md
+/home/hawk/KiddOS/docs/ui-label-support.md
+/home/hawk/KiddOS/docs/ui-panel-support.md
+/home/hawk/KiddOS/docs/ui-progress-bar.md
+/home/hawk/KiddOS/docs/ui-toggle.md
+---
+assets
+build
+CMakeLists.txt
+config
+CONTRIBUTING.md
+docs
+include
+logs
+platform
+README.md
+research
+src
+tasks
+tests
+tools
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/platform/sdl_platform.cpp 
+[0m→ [0mRead include/kiddos/platform/sdl_platform.hpp 
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/app/application.cpp 
+[0m→ [0mRead include/kiddos/ui/screen.hpp 
+[0m→ [0mRead include/kiddos/app/application.hpp 
+[0m→ [0mRead include/kiddos/ui/screen_manager.hpp 
+> build · glm-5.3-flash-free
+[0m→ [0mRead include/kiddos/ui/ui.hpp 
+[0m→ [0mRead include/kiddos/ui/renderer.hpp 
+[0m→ [0mRead include/kiddos/ui/image.hpp 
+[0m→ [0mRead include/kiddos/ui/panel.hpp 
+> build · glm-5.3-flash-free
+[0m→ [0mRead include/kiddos/ui/element.hpp 
+[0m→ [0mRead include/kiddos/ui/container.hpp 
+[0m→ [0mRead include/kiddos/ui/controller.hpp 
+[0m→ [0mRead include/kiddos/ui/texture.hpp 
+> build · glm-5.3-flash-free
+[0m→ [0mRead docs/KID_MODE_CAROUSEL_PROTOTYPE.md 
+[0m→ [0mRead docs/KIDDOS_UI_LIBRARY.md 
+> build · glm-5.3-flash-free
+[0m→ [0mRead CMakeLists.txt 
+[0m→ [0mRead docs/ARCHITECTURE.md 
+[0m→ [0mRead src/main.cpp 
+[0m$ [0mls /home/hawk/KiddOS/tasks /home/hawk/KiddOS/logs /home/hawk/KiddOS/tests /home/hawk/KiddOS/src /home/hawk/KiddOS/platform /home/hawk/KiddOS/tools 2>/dev/null; ls /home/hawk/KiddOS/assets/artwork/generated 2>/dev/null
+/home/hawk/KiddOS/logs:
+milestone-2-preflight-20261110-144011.log
+
+/home/hawk/KiddOS/platform:
+desktop
+emuelec
+
+/home/hawk/KiddOS/src:
+app
+main.cpp
+platform
+ui
+
+/home/hawk/KiddOS/tasks:
+active
+completed
+
+/home/hawk/KiddOS/tests:
+platform_sdl_keyboard_policy_test.cpp
+platform_sdl_text_input_translator_test.cpp
+platform_text_input_event_test.cpp
+platform_text_input_interface_test.cpp
+ui_button_test.cpp
+ui_checkbox_test.cpp
+ui_controller_test.cpp
+ui_focus_test.cpp
+ui_geometry_test.cpp
+ui_image_test.cpp
+ui_label_test.cpp
+ui_layout_test.cpp
+ui_list_view_test.cpp
+ui_panel_test.cpp
+ui_progress_bar_test.cpp
+ui_radio_group_test.cpp
+ui_renderer_test.cpp
+ui_screen_manager_test.cpp
+ui_select_test.cpp
+ui_slider_test.cpp
+ui_text_input_interaction_test.cpp
+ui_text_input_test.cpp
+ui_theme_test.cpp
+ui_toggle_test.cpp
+
+/home/hawk/KiddOS/tools:
+kiddos-milestone
+carousel-car.bmp
+carousel-mushroom.bmp
+carousel-selected.bmp
+carousel-star.bmp
+carousel-title.bmp
+forest.bmp
+label-play.bmp
+label-resume.bmp
+label-start-over.bmp
+ocean.bmp
+space.bmp
+> build · glm-5.3-flash-free
+[0m→ [0mRead include/kiddos/platform/platform.hpp 
+[0m→ [0mRead include/kiddos/core/action.hpp 
+[0m$ [0mls /home/hawk/KiddOS/tasks/active /home/hawk/KiddOS/tasks/completed; head -50 /home/hawk/KiddOS/logs/*.log
+/home/hawk/KiddOS/tasks/active:
+
+/home/hawk/KiddOS/tasks/completed:
+==========================================
+RETRO KIDDOS - MILESTONE 2 PREFLIGHT
+==========================================
+
+===== GIT STATUS =====
+## main...origin/main
+
+===== RECENT COMMITS =====
+9046699 chore: record milestone run - document-and-commit-first-kid-mode-carousel
+8de5f34 feat: implement first visible Kid Mode carousel
+673aa69 chore: record milestone run - fix-carousel-build-and-validate-preview
+dbeca15 chore: record milestone run - first-visible-kid-mode
+422b3a0 chore: record milestone run - fix-includes-and-validate-sdl-application
+
+===== PROJECT FILES =====
+./CMakeLists.txt
+./CONTRIBUTING.md
+./docs/ARCHITECTURE.md
+./docs/DEVELOPMENT_LOG.md
+./docs/FIRMWARE_AUDIT.md
+./docs/GAME_LIBRARY.md
+./docs/HARDWARE.md
+./docs/INPUT_CONTROLS.md
+./docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+./docs/LOW_BATTERY_PROTECTION.md
+./docs/MEDIA_MANAGER.md
+./docs/PRODUCT_SPECIFICATION.md
+./docs/PROJECT_VISION.md
+./docs/SAVE_STATE_SYSTEM.md
+./docs/UI_DESIGN.md
+./.gitignore
+./logs/milestone-2-preflight-20261110-144011.log
+./README.md
+./research/milestone-runs/LATEST.txt
+./src/app/application.cpp
+./src/main.cpp
+./src/platform/sdl_platform.cpp
+./tasks/completed/KID-20261110-131847.md
+./tasks/completed/KID-20261110-132322.md
+./tools/kiddos-milestone
+./.workbench/backups/github_sync.py-20261110-132530
+./.workbench/backups/wb-20261110-132530
+./.workbench/inbox/KID-20261110-131847.remote.md
+./.workbench/inbox/KID-20261110-132322.remote.md
+./.workbench/workbench.sqlite3
+
+===== CAROUSEL DESIGN DOCUMENT =====
+# Kid Mode Carousel Prototype
+
+## Purpose
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/ui/texture.cpp 
+[0m→ [0mRead src/ui/image.cpp 
+[0m→ [0mRead src/ui/panel.cpp 
+[0m→ [0mRead src/ui/screen.cpp 
+[0m→ [0mRead src/ui/screen_manager.cpp 
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/ui/controller.cpp 
+[0m→ [0mRead docs/ui-image-support.md 
+[0m→ [0mRead include/kiddos/ui/focus.hpp 
+[0m→ [0mRead include/kiddos/ui/button.hpp 
+[0m$ [0mpython3 - <<'EOF'
+import struct
+for name in ["carousel-star","carousel-mushroom","carousel-car","carousel-title","carousel-selected"]:
+    p=f"assets/artwork/generated/{name}.bmp"
+    with open(p,'rb') as f:
+        data=f.read()
+    off=struct.unpack('<I',data[10:14])[0]
+    w,h=struct.unpack('<ii',data[18:26])
+    bpp=struct.unpack('<H',data[28:30])[0]
+    print(name,w,h,bpp)
+    # check for magenta pixels
+    found=0
+    if bpp==24:
+        row=((w*3+3)//4)*4
+        for y in range(min(abs(h),200)):
+            base=off+y*row
+            for x in range(w):
+                b,g,r=data[base+x*3:base+x*3+3]
+                if (r,g,b)==(255,0,255): found+=1
+    print("  magenta px found:",found)
+EOF
+carousel-star 160 160 24
+  magenta px found: 16383
+carousel-mushroom 180 160 24
+  magenta px found: 14915
+carousel-car 180 160 24
+  magenta px found: 16438
+carousel-title 360 52 24
+  magenta px found: 15655
+carousel-selected 150 34 24
+  magenta px found: 532
+> build · glm-5.3-flash-free
+[0m→ [0mRead tests/ui_renderer_test.cpp 
+[0m→ [0mRead tests/ui_screen_manager_test.cpp 
+[0m→ [0mRead src/ui/renderer.cpp 
+> build · glm-5.3-flash-free
+[0m→ [0mRead tests/platform_text_input_interface_test.cpp 
+[0m→ [0mRead docs/DEVELOPMENT_LOG.md [90m[offset=0, limit=60][0m
+[0m$ [0mcd /home/hawk/KiddOS && git status --short && git log --oneline -5 && git branch --show-current
+13d5373 chore: record milestone run - inspect-opencode-model-availability
+986bd70 chore: record milestone run - inspect-opencode-noninteractive-interface
+5465bfd chore: record milestone run - implement-home-carousel-screen-with-sdl-ui-library
+3362dd0 chore: record milestone run - inspect-codex-noninteractive-interface
+404606a chore: record milestone run - inspect-available-coding-agent-tooling
+main
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && git show --stat 5465bfd && git show 8de5f34 --stat | head -30
+commit 5465bfd864bcd542b815e661aad02ab598055632
+Author: hawk <hawktocomet@gmail.com>
+Date:   Wed Nov 11 12:53:42 2026 -0500
+
+    chore: record milestone run - implement-home-carousel-screen-with-sdl-ui-library
+
+ .../milestones/kid-mode-reconstruction/LATEST.txt  |  2 +-
+ .../REPORT.md                                      | 12 ++++++
+ .../run.log                                        | 48 ++++++++++++++++++++++
+ 3 files changed, 61 insertions(+), 1 deletion(-)
+commit 8de5f342cfb058af5203fe3c74a31621cbf16cfc
+Author: hawk <hawktocomet@gmail.com>
+Date:   Tue Nov 10 14:38:17 2026 -0500
+
+    feat: implement first visible Kid Mode carousel
+
+ docs/DEVELOPMENT_LOG.md                  |  17 ++
+ docs/KID_MODE_CAROUSEL_PROTOTYPE.md      |  40 +++++
+ include/kiddos/app/application.hpp       |   2 +
+ include/kiddos/platform/platform.hpp     |   1 +
+ include/kiddos/platform/sdl_platform.hpp |   1 +
+ src/app/application.cpp                  |  15 +-
+ src/platform/sdl_platform.cpp            | 291 ++++++++++++++++++++++++++++---
+ 7 files changed, 341 insertions(+), 26 deletions(-)
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && git show 5465bfd:research/milestone-runs/milestones/kid-mode-reconstruction/REPORT.md 2>/dev/null || find . -path ./.git -prune -o -name "REPORT.md" -print 2>/dev/null | head
+./research/milestones/first-visible-kid-mode/runs/20261110T192701Z-first-kid-mode-interface/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T192820Z-audit-existing-local-implementation/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T192944Z-restore-and-validate-application-foundation/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T193116Z-fix-includes-and-validate-sdl-application/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T193618Z-first-visible-kid-mode/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T193701Z-fix-carousel-build-and-validate-preview/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T193816Z-document-and-commit-first-kid-mode-carousel/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T231610Z-kid-mode-rounded-corner-restoration/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T232318Z-kid-mode-reference-matched-game-carousel/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T232448Z-kid-mode-sdl-compatible-carousel-artwork/REPORT.md
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && git show 5465bfd --format="" -- research/milestones/kid-mode-reconstruction/REPORT.md | head -30; ls research/milestones/kid-mode-reconstruction/runs 2>/dev/null | tail -3
+20261111T175400Z-inspect-opencode-noninteractive-interface
+20261111T175416Z-inspect-opencode-model-availability
+20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && cat research/milestones/kid-mode-reconstruction/runs/20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library/REPORT.md 2>/dev/null | head -30; echo ====; tail -20 research/milestones/kid-mode-reconstruction/runs/20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library/run.log 2>/dev/null
+====
+ src/platform/sdl_platform.cpp            | 291 ++++++++++++++++++++++++++++---
+ 7 files changed, 341 insertions(+), 26 deletions(-)
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && git show 5465bfd:research/milestone-runs/milestones/kid-mode-reconstruction/REPORT.md 2>/dev/null || find . -path ./.git -prune -o -name "REPORT.md" -print 2>/dev/null | head
+./research/milestones/first-visible-kid-mode/runs/20261110T192701Z-first-kid-mode-interface/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T192820Z-audit-existing-local-implementation/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T192944Z-restore-and-validate-application-foundation/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T193116Z-fix-includes-and-validate-sdl-application/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T193618Z-first-visible-kid-mode/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T193701Z-fix-carousel-build-and-validate-preview/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T193816Z-document-and-commit-first-kid-mode-carousel/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T231610Z-kid-mode-rounded-corner-restoration/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T232318Z-kid-mode-reference-matched-game-carousel/REPORT.md
+./research/milestones/first-visible-kid-mode/runs/20261110T232448Z-kid-mode-sdl-compatible-carousel-artwork/REPORT.md
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && git show 5465bfd --format="" -- research/milestones/kid-mode-reconstruction/REPORT.md | head -30; ls research/milestones/kid-mode-reconstruction/runs 2>/dev/null | tail -3
+20261111T175400Z-inspect-opencode-noninteractive-interface
+20261111T175416Z-inspect-opencode-model-availability
+20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library
+> build · glm-5.3-flash-free
+> build · glm-5.3-flash-free
+Now let me check the geometry types and a couple of remaining details:
+[0m→ [0mRead include/kiddos/ui/color.hpp 
+[0m→ [0mRead include/kiddos/ui/geometry.hpp 
+[0m$ [0mcd /home/hawk/KiddOS && grep -rn "Texture::load\|\.load(" --include=*.cpp --include=*.hpp src include tests | grep -v texture.cpp; grep -rn "IMG_Init\|SDL_image" src include tests | head
+src/ui/texture.cpp:3:#include <SDL_image.h>
+[0m$ [0mcd /home/hawk/KiddOS && python3 - <<'EOF'
+import struct
+def px(name, sx, sy):
+    p=f"assets/artwork/generated/{name}.bmp"
+    data=open(p,'rb').read()
+    off=struct.unpack('<I',data[10:14])[0]
+    w,h=struct.unpack('<ii',data[18:26])
+    bpp=struct.unpack('<H',data[28:30])[0]
+    row=((w*3+3)//4)*4
+    y = sy if h>0 else abs(h)-1-sy
+    base=off+y*row
+    b,g,r=data[base+sx*3:base+sx*3+3]
+    return (r,g,b)
+# find an opaque pixel near center of title texture (360x52)
+for x,y in [(180,26),(100,20),(200,30),(60,26),(300,26)]:
+    print("title",x,y,px("carousel-title",x,y))
+for x,y in [(90,80),(60,60),(120,100)]:
+    print("mushroom",x,y,px("carousel-mushroom",x,y))
+EOF
+title 180 26 (255, 0, 255)
+title 100 20 (255, 255, 255)
+title 200 30 (255, 0, 255)
+title 60 26 (255, 144, 255)
+title 300 26 (255, 203, 255)
+mushroom 90 80 (255, 255, 255)
+mushroom 60 60 (255, 241, 210)
+mushroom 120 100 (255, 255, 255)
+> build · glm-5.3-flash-free
+Rect has no `operator==`; I'll handle comparisons in the test. Let me find a robustly opaque region in the title texture for pixel assertions:
+[0m$ [0mcd /home/hawk/KiddOS && python3 - <<'EOF'
+import struct
+p="assets/artwork/generated/carousel-title.bmp"
+data=open(p,'rb').read()
+off=struct.unpack('<I',data[10:14])[0]
+w,h=struct.unpack('<ii',data[18:26])
+row=((w*3+3)//4)*4
+def get(x,y):
+    yy=y if h>0 else abs(h)-1-y
+    base=off+yy*row
+    b,g,r=data[base+x*3:base+x*3+3]
+    return (r,g,b)
+# find pixel where 7x7 neighborhood uniformly non-magenta
+best=None
+for y in range(3,h-3):
+    for x in range(3,w-3):
+        ok=True
+        c=get(x,y)
+        if c==(255,0,255): continue
+        for dy in range(-3,4):
+            for dx in range(-3,4):
+                if get(x+dx,y+dy)!=c or get(x+dx,y+dy)==(255,0,255):
+                    ok=False; break
+            if not ok: break
+        if ok:
+            best=(x,y,c); break
+    if best: break
+print("solid at",best)
+x,y,c=best
+# map to title rect {220,525,280,42}
+dx = 220 + x*280//w
+dy = 525 + y*42//h
+print("dest",dx,dy,c)
+# also verify a spread of neighbors map solid: check mapped rect corners
+EOF
+solid at None
+Traceback (most recent call last):
+  File "<stdin>", line 28, in <module>
+TypeError: cannot unpack non-iterable NoneType object
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && python3 - <<'EOF'
+import struct
+p="assets/artwork/generated/carousel-title.bmp"
+data=open(p,'rb').read()
+off=struct.unpack('<I',data[10:14])[0]
+w,h=struct.unpack('<ii',data[18:26])
+row=((w*3+3)//4)*4
+def get(x,y):
+    yy=y if h>0 else abs(h)-1-y
+    base=off+yy*row
+    b,g,r=data[base+x*3:base+x*3+3]
+    return (r,g,b)
+from collections import Counter
+cnt=Counter()
+for y in range(0,h,2):
+    for x in range(0,w,2):
+        cnt[get(x,y)]+=1
+print(w,h)
+for c,n in cnt.most_common(8): print(c,n)
+EOF
+360 52
+(255, 0, 255) 3914
+(255, 255, 255) 517
+(255, 167, 255) 12
+(255, 177, 255) 11
+(255, 56, 255) 11
+(255, 171, 255) 11
+(255, 15, 255) 7
+(255, 148, 255) 7
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && python3 - <<'EOF'
+import struct
+p="assets/artwork/generated/carousel-title.bmp"
+data=open(p,'rb').read()
+off=struct.unpack('<I',data[10:14])[0]
+w,h=struct.unpack('<ii',data[18:26])
+row=((w*3+3)//4)*4
+def get(x,y):
+    yy=y if h>0 else abs(h)-1-y
+    base=off+yy*row
+    b,g,r=data[base+x*3:base+x*3+3]
+    return (r,g,b)
+# find longest horizontal run of pure white
+best=(0,0,0)
+for y in range(h):
+    run=0; start=0
+    for x in range(w+1):
+        if x<w and get(x,y)==(255,255,255):
+            if run==0: start=x
+            run+=1
+        else:
+            if run>best[0]: best=(run,start,y)
+            run=0
+print("longest run len,x,y:",best)
+run,x0,y0=best
+cx,cy = x0+run//2, y0
+dx = 220 + cx*280//w
+dy = 525 + cy*42//h
+print("src",cx,cy,"dest",dx,dy)
+# verify mapped neighborhood in dest maps to white: check src neighbors within run ±
+print("src+5:",get(cx+5,cy),"src-5:",get(cx-5,cy))
+EOF
+longest run len,x,y: (18, 219, 18)
+src 228 18 dest 397 539
+src+5: (255, 255, 255) src-5: (255, 255, 255)
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && python3 - <<'EOF'
+import struct
+p="assets/artwork/generated/carousel-title.bmp"
+data=open(p,'rb').read()
+off=struct.unpack('<I',data[10:14])[0]
+w,h=struct.unpack('<ii',data[18:26])
+row=((w*3+3)//4)*4
+def get(x,y):
+    yy=y if h>0 else abs(h)-1-y
+    base=off+yy*row
+    b,g,r=data[base+x*3:base+x*3+3]
+    return (r,g,b)
+for y in range(15,22):
+    print(y, [get(x,y) for x in range(225,231)])
+EOF
+15 [(255, 0, 255), (255, 0, 255), (255, 0, 255), (255, 0, 255), (255, 0, 255), (255, 0, 255)]
+16 [(255, 0, 255), (255, 0, 255), (255, 0, 255), (255, 0, 255), (255, 0, 255), (255, 0, 255)]
+17 [(255, 0, 255), (255, 0, 255), (255, 0, 255), (255, 0, 255), (255, 0, 255), (255, 0, 255)]
+18 [(255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255)]
+19 [(255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255)]
+20 [(255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255)]
+21 [(255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255)]
+> build · glm-5.3-flash-free
+The picture is clear. Let me check the DEVELOPMENT_LOG tail for format, then implement:
+[0m$ [0mcd /home/hawk/KiddOS && tail -60 docs/DEVELOPMENT_LOG.md
+- Audited revision
+  `13e1c48d86c95ae2b8a99d6baf02e4e394629cb3` (2025-12-02).
+- Confirmed the `RPPOCKET` build target selects an RK3326 v6.0 device tree,
+  ARM64/Cortex-A35 settings, Mali G31/libmali, and the inherited RG351MP
+  Linux/U-Boot platform identifiers.
+- Identified configured Linux graphics, input, RK817 battery/charger, and
+  Rockchip thermal support.
+- Inspected inherited battery, ADC key, volume, headphone, joystick LED,
+  and suspend/resume utilities.
+- Confirmed the inspected headphone script only handles D007 Plus and
+  PowKiddy XU10, while the joystick LED script only handles D007 Plus.
+  Neither contains an RPPOCKET-specific implementation.
+- Confirmed the kernel and U-Boot package definitions refer to external
+  source directories not present in the inspected checkout.
+- No firmware was built or flashed. No device storage or boot configuration
+  was changed.
+- Added `docs/FIRMWARE_AUDIT.md` with findings, confidence levels, and the
+  runtime verification plan.
+- Next: continue source audit of boot flow, package startup, frontend/game
+  launching, and external kernel/U-Boot source availability. After the
+  handheld arrives, verify actual hardware interfaces before implementing
+  device-specific adapters.
+
+## 2026-11-10 — Application foundation restored
+
+- Restored the application lifecycle and SDL platform implementation.
+- Corrected malformed project include directives.
+- Configured and compiled the C++20 SDL2 application.
+- Ran a headless SDL runtime smoke test using SDL's dummy video driver.
+- No device firmware, storage, or boot configuration was changed.
+
+## 2026-11-10 — First visible Kid Mode carousel
+
+- Added the first three-game Kid Mode carousel to the SDL2 desktop harness.
+- Implemented a centered selected game with smaller neighboring previews.
+- Added procedural placeholder artwork and the approved navy/blue visual
+  treatment.
+- Added left/right keyboard and controller navigation with wrapping
+  selection.
+- Added visual sound-status and battery-status indicators.
+- Kept rendering behind the platform interface and selection state in the
+  application layer.
+- Replaced an SDL-specific delay call in application logic with a
+  platform-independent C++ thread sleep.
+- Built the application successfully and completed a desktop preview run.
+- Added `docs/KID_MODE_CAROUSEL_PROTOTYPE.md` documenting scope and limits.
+- No device firmware, storage, or boot configuration was changed.
+
+## 2026-11-10 — Game selection and action screen
+
+- Added a separate game action screen to the application state.
+- Added large horizontal Play, Resume, and Start Over selections.
+- Added static selected-game artwork to the action screen.
+- Implemented Confirm to enter and Back to return to the carousel.
+- Implemented Up/Down action selection for the checkpoint demonstration.
+- Preserved the selected game when returning to the carousel.
+- Used a temporary sample checkpoint fixture; no real save-state detection
+  or emulator launch is implemented.
+- Built the SDL2 application and ran a headless runtime smoke test.
+- No device firmware, storage, or boot configuration was changed.
+> build · glm-5.3-flash-free
+Now I have the full picture. Implementing — starting with the UI library texture color-key support and the platform renderer accessor:
+[0m← [0mEdit include/kiddos/ui/texture.hpp
+Index: include/kiddos/ui/texture.hpp
+===================================================================
+--- include/kiddos/ui/texture.hpp
++++ include/kiddos/ui/texture.hpp
+@@ -15,9 +15,12 @@
+ 
+     Texture(Texture&& other) noexcept;
+     Texture& operator=(Texture&& other) noexcept;
+ 
+-    bool load(SDL_Renderer* renderer, const std::string& path);
++    // Loads an image file through SDL_image. With magenta_key enabled,
++    // bright magenta (255, 0, 255) pixels become transparent.
++    bool load(SDL_Renderer* renderer, const std::string& path,
++              bool magenta_key = false);
+     void reset() noexcept;
+     bool valid() const noexcept;
+     int width() const noexcept;
+     int height() const noexcept;
+
+[0m← [0mEdit include/kiddos/platform/sdl_platform.hpp
+Index: include/kiddos/platform/sdl_platform.hpp
+===================================================================
+--- include/kiddos/platform/sdl_platform.hpp
++++ include/kiddos/platform/sdl_platform.hpp
+@@ -23,8 +23,12 @@
+     void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+     void present() override;
+     void shutdown() override;
+ 
++    SDL_Renderer* native_renderer() const noexcept override {
++        return renderer_;
++    }
++
+ private:
+     SDL_Window* window_ = nullptr;
+     SDL_Renderer* renderer_ = nullptr;
+     SDL_GameController* controller_ = nullptr;
+
+[0m← [0mEdit include/kiddos/platform/platform.hpp
+Index: include/kiddos/platform/platform.hpp
+===================================================================
+--- include/kiddos/platform/platform.hpp
++++ include/kiddos/platform/platform.hpp
+@@ -2,14 +2,20 @@
+ 
+ #include "kiddos/core/action.hpp"
+ #include "kiddos/platform/text_input_event.hpp"
+ 
++#include <SDL.h>
++
+ namespace kiddos {
+ 
+ class Platform {
+ public:
+     virtual ~Platform() = default;
+ 
++    // Non-owning access to the platform's native SDL renderer, if one
++    // exists. The platform retains ownership; callers must not destroy it.
++    virtual SDL_Renderer* native_renderer() const noexcept { return nullptr; }
++
+     virtual bool initialize() = 0;
+     virtual bool poll_action(Action& action) = 0;
+     virtual bool poll_text_input_event(TextInputEvent&) { return false; }
+     virtual void set_text_input_active(bool) {}
+
+[0m← [0mEdit src/ui/texture.cpp
+Index: src/ui/texture.cpp
+===================================================================
+--- src/ui/texture.cpp
++++ src/ui/texture.cpp
+@@ -21,22 +21,33 @@
+     }
+     return *this;
+ }
+ 
+-bool Texture::load(SDL_Renderer* renderer, const std::string& path) {
++bool Texture::load(
++    SDL_Renderer* renderer,
++    const std::string& path,
++    bool magenta_key
++) {
+     reset();
+     if (!renderer || path.empty()) return false;
+ 
+     SDL_Surface* surface = IMG_Load(path.c_str());
+     if (!surface) return false;
+ 
++    if (magenta_key) {
++        const Uint32 key = SDL_MapRGB(surface->format, 255, 0, 255);
++        SDL_SetColorKey(surface, SDL_TRUE, key);
++    }
++
+     SDL_Texture* loaded = SDL_CreateTextureFromSurface(renderer, surface);
+     const int w = surface->w;
+     const int h = surface->h;
+     SDL_FreeSurface(surface);
+ 
+     if (!loaded) return false;
+ 
++    SDL_SetTextureBlendMode(loaded, SDL_BLENDMODE_BLEND);
++
+     texture_ = loaded;
+     width_ = w;
+     height_ = h;
+     return true;
+
+> build · glm-5.3-flash-free
+Now the new app-layer files:
+[0m← [0mWrite include/kiddos/app/ui_action_mapping.hpp
+Created file successfully: include/kiddos/app/ui_action_mapping.hpp
+[0m← [0mWrite include/kiddos/app/home_carousel_screen.hpp
+Created file successfully: include/kiddos/app/home_carousel_screen.hpp
+> build · glm-5.3-flash-free
+[0m← [0mWrite src/app/home_carousel_screen.cpp
+Created file successfully: src/app/home_carousel_screen.cpp
+> build · glm-5.3-flash-free
+Now the Application integration:
+[0m← [0mWrite include/kiddos/app/application.hpp
+Wrote file successfully: include/kiddos/app/application.hpp
+[0m← [0mWrite src/app/application.cpp
+Wrote file successfully: src/app/application.cpp
+> build · glm-5.3-flash-free
+Now the tests and build wiring:
+[0m← [0mWrite tests/app_ui_action_mapping_test.cpp
+Created file successfully: tests/app_ui_action_mapping_test.cpp
+[0m← [0mWrite tests/app_home_carousel_screen_test.cpp
+Created file successfully: tests/app_home_carousel_screen_test.cpp
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && python3 - <<'EOF'
+import struct
+def get(name,x,y):
+    p=f"assets/artwork/generated/{name}.bmp"
+    data=open(p,'rb').read()
+    off=struct.unpack('<I',data[10:14])[0]
+    w,h=struct.unpack('<ii',data[18:26])
+    row=((w*3+3)//4)*4
+    yy=y if h>0 else abs(h)-1-y
+    base=off+yy*row
+    b,g,r=data[base+x*3:base+x*3+3]
+    return (r,g,b)
+# dest (360,307) in center art {260,205,200,205}
+# mushroom 180x160: src=(99,79); star 160x160: src=(80,79)
+print("mushroom(99,79)", get("carousel-mushroom",99,79))
+print("star(80,79)", get("carousel-star",80,79))
+EOF
+mushroom(99,79) (255, 255, 255)
+star(80,79) (255, 232, 138)
+> build · glm-5.3-flash-free
+[0m← [0mEdit CMakeLists.txt
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -56,8 +56,9 @@
+ 
+ add_executable(kiddos
+     src/main.cpp
+     src/app/application.cpp
++    src/app/home_carousel_screen.cpp
+     src/platform/sdl_platform.cpp
+ )
+ 
+ target_include_directories(kiddos PRIVATE include)
+
+[0m← [0mEdit CMakeLists.txt
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -72,8 +72,25 @@
+ 
+ include(CTest)
+ 
+ if(BUILD_TESTING)
++    add_executable(kiddos_app_ui_action_mapping_test
++        tests/app_ui_action_mapping_test.cpp)
++    target_include_directories(kiddos_app_ui_action_mapping_test PRIVATE include)
++    target_link_libraries(kiddos_app_ui_action_mapping_test PRIVATE kiddos_ui)
++    add_test(NAME kiddos_app_ui_action_mapping
++        COMMAND kiddos_app_ui_action_mapping_test)
++
++    add_executable(kiddos_app_home_carousel_screen_test
++        tests/app_home_carousel_screen_test.cpp
++        src/app/home_carousel_screen.cpp)
++    target_include_directories(kiddos_app_home_carousel_screen_test PRIVATE include)
++    target_compile_definitions(kiddos_app_home_carousel_screen_test PRIVATE
++        KIDDOS_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
++    target_link_libraries(kiddos_app_home_carousel_screen_test PRIVATE kiddos_ui)
++    add_test(NAME kiddos_app_home_carousel_screen
++        COMMAND kiddos_app_home_carousel_screen_test)
++
+     add_executable(kiddos_platform_sdl_text_input_translator_test
+         tests/platform_sdl_text_input_translator_test.cpp)
+     target_include_directories(kiddos_platform_sdl_text_input_translator_test PRIVATE include)
+     target_link_libraries(kiddos_platform_sdl_text_input_translator_test PRIVATE PkgConfig::SDL2)
+
+> build · glm-5.3-flash-free
+Now build:
+[0m$ [0mcd /home/hawk/KiddOS && cmake -S . -B build 2>&1 | tail -3 && cmake --build build 2>&1 | tail -30
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+        • error: template argument 1 is invalid
+          /home/hawk/KiddOS/src/app/application.cpp:32:45:
+             32 |         std::make_unique<HomeCarouselScreen>(platform_.native_renderer()));
+                |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    • candidate 3: ‘template<class _Tp, class ... _Args> std::__detail::__invalid_make_unique_t<_Tp> std::make_unique(_Args&& ...)’ (deleted)
+      /usr/include/c++/16/bits/unique_ptr.h:1129:5:
+       1129 |     make_unique(_Args&&...) = delete;
+            |     ^~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        • error: template argument 1 is invalid
+          /home/hawk/KiddOS/src/app/application.cpp:32:45:
+             32 |         std::make_unique<HomeCarouselScreen>(platform_.native_renderer()));
+                |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/application.cpp: In member function ‘void kiddos::Application::handle_action(kiddos::Action)’:
+/home/hawk/KiddOS/src/app/application.cpp:96:17: error: ‘to_ui_action’ was not declared in this scope; did you mean ‘kiddos::app::to_ui_action’?
+   96 |                 to_ui_action(action);
+      |                 ^~~~~~~~~~~~
+      |                 kiddos::app::to_ui_action
+In file included from /home/hawk/KiddOS/src/app/application.cpp:4:
+/home/hawk/KiddOS/include/kiddos/app/ui_action_mapping.hpp:12:36: note: ‘kiddos::app::to_ui_action’ declared here
+   12 | inline std::optional<ui::UIAction> to_ui_action(Action action) noexcept {
+      |                                    ^~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/application.cpp: In member function ‘void kiddos::Application::render()’:
+/home/hawk/KiddOS/src/app/application.cpp:137:32: error: ‘HomeCarouselScreen’ does not name a type
+  137 |                    static_cast<HomeCarouselScreen*>(screens_.current())) {
+      |                                ^~~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/application.cpp:137:50: error: expected ‘>’ before ‘*’ token
+  137 |                    static_cast<HomeCarouselScreen*>(screens_.current())) {
+      |                                                  ^
+ninja: build stopped: subcommand failed.
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && cmake --build build 2>&1 | grep -B5 "error" | head -60
+[1/28] Building CXX object CMakeFiles/kiddos_platform_text_input_interface_test.dir/tests/platform_text_input_interface_test.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos_platform_text_input_interface_test.dir/tests/platform_text_input_interface_test.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -g -std=c++20 -MD -MT CMakeFiles/kiddos_platform_text_input_interface_test.dir/tests/platform_text_input_interface_test.cpp.o -MF CMakeFiles/kiddos_platform_text_input_interface_test.dir/tests/platform_text_input_interface_test.cpp.o.d -o CMakeFiles/kiddos_platform_text_input_interface_test.dir/tests/platform_text_input_interface_test.cpp.o -c /home/hawk/KiddOS/tests/platform_text_input_interface_test.cpp
+In file included from /home/hawk/KiddOS/tests/platform_text_input_interface_test.cpp:1:
+/home/hawk/KiddOS/include/kiddos/platform/platform.hpp:6:10: fatal error: SDL.h: No such file or directory
+--
+[3/28] Building CXX object CMakeFiles/kiddos_ui_image_test.dir/tests/ui_image_test.cpp.o
+[4/28] Building CXX object CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o 
+/usr/bin/c++ -DKIDDOS_SOURCE_DIR=\"/home/hawk/KiddOS\" -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o -MF CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o.d -o CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o -c /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp
+/home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp: In function ‘const kiddos::ui::Element* {anonymous}::find_by_bounds(const kiddos::ui::Screen&, const kiddos::ui::Rect&)’:
+/home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:32:44: error: passing ‘const kiddos::ui::Screen’ as ‘this’ argument discards qualifiers [-fpermissive]
+--
+In file included from /home/hawk/KiddOS/include/kiddos/app/home_carousel_screen.hpp:4,
+                 from /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:1:
+/home/hawk/KiddOS/include/kiddos/ui/screen.hpp:14:16: note:   in call to ‘kiddos::ui::Container& kiddos::ui::Screen::root()’
+   14 |     Container& root() noexcept;
+      |                ^~~~
+/home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:33:43: error: passing ‘const kiddos::ui::Screen’ as ‘this’ argument discards qualifiers [-fpermissive]
+--
+      |                ^~~~
+[5/28] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos.dir/src/app/application.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -Wall -Wextra -Wpedantic -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos.dir/src/app/application.cpp.o -MF CMakeFiles/kiddos.dir/src/app/application.cpp.o.d -o CMakeFiles/kiddos.dir/src/app/application.cpp.o -c /home/hawk/KiddOS/src/app/application.cpp
+/home/hawk/KiddOS/src/app/application.cpp: In member function ‘int kiddos::Application::run()’:
+/home/hawk/KiddOS/src/app/application.cpp:32:26: error: ‘HomeCarouselScreen’ was not declared in this scope; did you mean ‘kiddos::app::HomeCarouselScreen’?
+--
+      |                          kiddos::app::HomeCarouselScreen
+In file included from /home/hawk/KiddOS/src/app/application.cpp:3:
+/home/hawk/KiddOS/include/kiddos/app/home_carousel_screen.hpp:16:7: note: ‘kiddos::app::HomeCarouselScreen’ declared here
+   16 | class HomeCarouselScreen final : public ui::Screen {
+      |       ^~~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/application.cpp:32:45: error: no matching function for call to ‘make_unique<<expression error> >(SDL_Renderer*)’
+--
+    • candidate 1: ‘template<class _Tp, class ... _Args> std::__detail::__unique_ptr_t<_Tp> std::make_unique(_Args&& ...)’
+      /usr/include/c++/16/bits/unique_ptr.h:1104:5:
+       1104 |     make_unique(_Args&&... __args)
+            |     ^~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        • error: template argument 1 is invalid
+--
+    • candidate 2: ‘template<class _Tp> std::__detail::__unique_ptr_array_t<_Tp> std::make_unique(size_t)’
+      /usr/include/c++/16/bits/unique_ptr.h:1119:5:
+       1119 |     make_unique(size_t __num)
+            |     ^~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        • error: template argument 1 is invalid
+--
+    • candidate 3: ‘template<class _Tp, class ... _Args> std::__detail::__invalid_make_unique_t<_Tp> std::make_unique(_Args&& ...)’ (deleted)
+      /usr/include/c++/16/bits/unique_ptr.h:1129:5:
+       1129 |     make_unique(_Args&&...) = delete;
+            |     ^~~~~~~~~~~
+      • template argument deduction/substitution failed:
+        • error: template argument 1 is invalid
+          /home/hawk/KiddOS/src/app/application.cpp:32:45:
+             32 |         std::make_unique<HomeCarouselScreen>(platform_.native_renderer()));
+                |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/application.cpp: In member function ‘void kiddos::Application::handle_action(kiddos::Action)’:
+/home/hawk/KiddOS/src/app/application.cpp:96:17: error: ‘to_ui_action’ was not declared in this scope; did you mean ‘kiddos::app::to_ui_action’?
+--
+> build · glm-5.3-flash-free
+[0m← [0mEdit src/app/application.cpp
+Index: src/app/application.cpp
+===================================================================
+--- src/app/application.cpp
++++ src/app/application.cpp
+@@ -27,10 +27,10 @@
+     // SDL_image initialization is left to the application lifecycle; the
+     // carousel artwork is BMP, which needs no extra image format flags.
+     IMG_Init(IMG_INIT_PNG);
+ 
+-    screens_.push(
+-        std::make_unique<HomeCarouselScreen>(platform_.native_renderer()));
++    screens_.push(std::make_unique<app::HomeCarouselScreen>(
++        platform_.native_renderer()));
+ 
+     running_ = true;
+ 
+     while (running_) {
+
+[0m← [0mEdit tests/app_home_carousel_screen_test.cpp
+Index: tests/app_home_carousel_screen_test.cpp
+===================================================================
+--- tests/app_home_carousel_screen_test.cpp
++++ tests/app_home_carousel_screen_test.cpp
+@@ -25,9 +25,9 @@
+     return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
+ }
+ 
+ const Element* find_by_bounds(
+-    const kiddos::ui::Screen& screen,
++    kiddos::ui::Screen& screen,
+     const Rect& bounds
+ ) {
+     for (std::size_t i = 0; i < screen.root().child_count(); ++i) {
+         const Element* child = screen.root().child(i);
+
+[0m← [0mEdit include/kiddos/platform/platform.hpp
+Index: include/kiddos/platform/platform.hpp
+===================================================================
+--- include/kiddos/platform/platform.hpp
++++ include/kiddos/platform/platform.hpp
+@@ -2,9 +2,9 @@
+ 
+ #include "kiddos/core/action.hpp"
+ #include "kiddos/platform/text_input_event.hpp"
+ 
+-#include <SDL.h>
++struct SDL_Renderer;
+ 
+ namespace kiddos {
+ 
+ class Platform {
+
+[0m← [0mEdit src/app/application.cpp
+Index: src/app/application.cpp
+===================================================================
+--- src/app/application.cpp
++++ src/app/application.cpp
+@@ -92,9 +92,9 @@
+             // chance to respond first. The home carousel is currently
+             // display-only, so the application carousel state handles the
+             // remaining behavior.
+             const std::optional<ui::UIAction> ui_action =
+-                to_ui_action(action);
++                app::to_ui_action(action);
+             if (!ui_action || screens_.handle_action(*ui_action)) break;
+ 
+             switch (*ui_action) {
+                 case ui::UIAction::Left:
+
+[0m← [0mEdit src/app/application.cpp
+Index: src/app/application.cpp
+===================================================================
+--- src/app/application.cpp
++++ src/app/application.cpp
+@@ -133,9 +133,9 @@
+         // screen remains on the platform's manual rendering path.
+         platform_.draw_game_actions(
+             selected_game_, selected_game_ == 1, selected_action_);
+     } else if (auto* home =
+-                   static_cast<HomeCarouselScreen*>(screens_.current())) {
++                   static_cast<app::HomeCarouselScreen*>(screens_.current())) {
+         home->set_selected_game(selected_game_);
+         screens_.render(ui_renderer_);
+     }
+ 
+
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && cmake --build build 2>&1 | grep -E "error|warning|FAILED" | head -20; echo "BUILD_EXIT=$?"
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:29:40: warning: multi-character character constant [-Wmultichar]
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:45:40: warning: multi-character character constant [-Wmultichar]
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:252:6: warning: ‘void kiddos::{anonymous}::draw_ocean_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:220:6: warning: ‘void kiddos::{anonymous}::draw_forest_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:190:6: warning: ‘void kiddos::{anonymous}::draw_space_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+BUILD_EXIT=0
+> build · glm-5.3-flash-free
+Build succeeds (the remaining warnings are pre-existing in `sdl_platform.cpp`). Running the full test suite:
+[0m$ [0mcd /home/hawk/KiddOS && ctest --test-dir build --output-on-failure 2>&1 | tail -40
+Start 11: kiddos_ui_controller
+11/26 Test #11: kiddos_ui_controller ........................   Passed    0.00 sec
+      Start 12: kiddos_ui_renderer
+12/26 Test #12: kiddos_ui_renderer ..........................   Passed    0.01 sec
+      Start 13: kiddos_ui_image
+13/26 Test #13: kiddos_ui_image .............................   Passed    0.00 sec
+      Start 14: kiddos_ui_label
+14/26 Test #14: kiddos_ui_label .............................   Passed    0.00 sec
+      Start 15: kiddos_ui_panel
+15/26 Test #15: kiddos_ui_panel .............................   Passed    0.00 sec
+      Start 16: kiddos_ui_progress_bar
+16/26 Test #16: kiddos_ui_progress_bar ......................   Passed    0.00 sec
+      Start 17: kiddos_ui_toggle
+17/26 Test #17: kiddos_ui_toggle ............................   Passed    0.00 sec
+      Start 18: kiddos_ui_slider
+18/26 Test #18: kiddos_ui_slider ............................   Passed    0.00 sec
+      Start 19: kiddos_ui_theme
+19/26 Test #19: kiddos_ui_theme .............................   Passed    0.00 sec
+      Start 20: kiddos_ui_list_view
+20/26 Test #20: kiddos_ui_list_view .........................   Passed    0.00 sec
+      Start 21: kiddos_ui_checkbox
+21/26 Test #21: kiddos_ui_checkbox ..........................   Passed    0.00 sec
+      Start 22: kiddos_ui_radio_group
+22/26 Test #22: kiddos_ui_radio_group .......................   Passed    0.00 sec
+      Start 23: kiddos_ui_select
+23/26 Test #23: kiddos_ui_select ............................   Passed    0.00 sec
+      Start 24: kiddos_ui_text_input
+24/26 Test #24: kiddos_ui_text_input ........................   Passed    0.00 sec
+      Start 25: kiddos_ui_text_input_interaction
+25/26 Test #25: kiddos_ui_text_input_interaction ............   Passed    0.00 sec
+      Start 26: kiddos_ui_screen_manager
+26/26 Test #26: kiddos_ui_screen_manager ....................   Passed    0.00 sec
+
+96% tests passed, 1 tests failed out of 26
+
+Total Test time (real) =   0.20 sec
+
+The following tests FAILED:
+	  2 - kiddos_app_home_carousel_screen (Subprocess aborted)
+Errors while running CTest
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && ./build/kiddos_app_home_carousel_screen_test; echo "exit=$?"
+kiddos_app_home_carousel_screen_test: /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:100: void {anonymous}::test_renders_carousel(): Assertion `same_color(pixel(surface, 500, 160), {18, 63, 117, 255})' failed.
+/usr/bin/bash: line 1: 333741 Aborted                    (core dumped) ./build/kiddos_app_home_carousel_screen_test
+exit=134
+> build · glm-5.3-flash-free
+The test's software renderer needs the same blend mode the platform sets in `SDLPlatform::initialize` (otherwise the transparent glow-panel fill overwrites pixels):
+[0m← [0mEdit tests/app_home_carousel_screen_test.cpp
+Index: tests/app_home_carousel_screen_test.cpp
+===================================================================
+--- tests/app_home_carousel_screen_test.cpp
++++ tests/app_home_carousel_screen_test.cpp
+@@ -81,8 +81,10 @@
+     assert(surface);
+ 
+     SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+     assert(native);
++    // Match SDLPlatform::initialize, which enables renderer blending.
++    SDL_SetRenderDrawBlendMode(native, SDL_BLENDMODE_BLEND);
+ 
+     {
+         kiddos::ui::Renderer renderer(native);
+         kiddos::app::HomeCarouselScreen screen(native);
+
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && cmake --build build 2>&1 | grep -E "error|FAILED" ; ./build/kiddos_app_home_carousel_screen_test && echo SCREEN_TEST_OK
+kiddos_app_home_carousel_screen_test: /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:104: void {anonymous}::test_renders_carousel(): Assertion `same_color(pixel(surface, 540, 300), {16, 41, 75, 255})' failed.
+/usr/bin/bash: line 1: 333805 Aborted                    (core dumped) ./build/kiddos_app_home_carousel_screen_test
+> build · glm-5.3-flash-free
+(540,300) is inside the center-card overlap zone (that's the overlap behavior working); the visible part of the right card is beyond x=574:
+[0m← [0mEdit tests/app_home_carousel_screen_test.cpp
+Index: tests/app_home_carousel_screen_test.cpp
+===================================================================
+--- tests/app_home_carousel_screen_test.cpp
++++ tests/app_home_carousel_screen_test.cpp
+@@ -100,9 +100,9 @@
+ 
+         // Center and side card fills keep their established colors.
+         assert(same_color(pixel(surface, 500, 160), {18, 63, 117, 255}));
+         assert(same_color(pixel(surface, 60, 300), {16, 41, 75, 255}));
+-        assert(same_color(pixel(surface, 540, 300), {16, 41, 75, 255}));
++        assert(same_color(pixel(surface, 650, 300), {16, 41, 75, 255}));
+ 
+         // The middle game shows its title artwork below the main card.
+         const Color titled = pixel(surface, 397, 542);
+         assert(!same_color(titled, background));
+
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && cmake --build build 2>&1 | grep -E "error|FAILED" ; ./build/kiddos_app_home_carousel_screen_test && echo SCREEN_TEST_OK && ctest --test-dir build --output-on-failure 2>&1 | tail -8
+SCREEN_TEST_OK
+      Start 25: kiddos_ui_text_input_interaction
+25/26 Test #25: kiddos_ui_text_input_interaction ............   Passed    0.00 sec
+      Start 26: kiddos_ui_screen_manager
+26/26 Test #26: kiddos_ui_screen_manager ....................   Passed    0.01 sec
+
+100% tests passed out of 26
+
+Total Test time (real) =   0.13 sec
+> build · glm-5.3-flash-free
+All 26 tests pass. Now a headless smoke run of the real application (dummy video driver), plus verifying it quits cleanly on an injected event. Let me run it briefly:
+[0m$ [0mcd /home/hawk/KiddOS && SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy timeout 5 ./build/kiddos; echo "exit=$?"
+exit=124
+> build · glm-5.3-flash-free
+The app runs headless for the full smoke window without crashing. Now updating the docs to match the new architecture:
+[0m← [0mEdit docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+Index: docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+===================================================================
+--- docs/KID_MODE_CAROUSEL_PROTOTYPE.md
++++ docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+@@ -14,9 +14,14 @@
+ - Large centered selected game with smaller neighboring previews.
+ - Left/right keyboard and controller navigation.
+ - Wrapping selection across the three sample games.
+ - Sound-status and battery-status visual indicators.
+-- Platform-owned rendering, with selection state managed by the application.
++- The home carousel is rendered through the KiddOS UI library as a
++  `HomeCarouselScreen` (`ui::Screen`) managed by a `ScreenManager` in the
++  application, reusing the generated artwork and preserving the established
++  geometry and colors.
++- The game action screen remains on the platform-owned manual rendering
++  path, with selection state managed by the application.
+ 
+ ## Desktop controls
+ 
+ - Left / Right: change selected game.
+
+[0m← [0mEdit docs/ui-image-support.md
+Index: docs/ui-image-support.md
+===================================================================
+--- docs/ui-image-support.md
++++ docs/ui-image-support.md
+@@ -7,8 +7,13 @@
+ Call `IMG_Init` for the desired image formats during application startup and
+ `IMG_Quit` during shutdown. SDL_image initialization is intentionally left to
+ the application lifecycle.
+ 
++`Texture::load` accepts an optional `magenta_key` flag that treats bright
++magenta (255, 0, 255) pixels as transparent. This matches the generated
++Kid Mode artwork, which is exported with a magenta background. Loaded
++textures use alpha blending.
++
+ `Image` is a reusable element that holds a non-owning pointer to a `Texture`.
+ The texture must outlive the image element.
+ 
+ Supported sizing modes:
+
+> build · glm-5.3-flash-free
+[0m← [0mEdit docs/DEVELOPMENT_LOG.md
+Index: docs/DEVELOPMENT_LOG.md
+===================================================================
+--- docs/DEVELOPMENT_LOG.md
++++ docs/DEVELOPMENT_LOG.md
+@@ -150,8 +150,30 @@
+ - Built the application successfully and completed a desktop preview run.
+ - Added `docs/KID_MODE_CAROUSEL_PROTOTYPE.md` documenting scope and limits.
+ - No device firmware, storage, or boot configuration was changed.
+ 
++## 2026-11-11 — Home carousel on the UI library
++
++- Added `HomeCarouselScreen`, a `ui::Screen` that rebuilds the Kid Mode
++  home carousel from UI library elements (Panel, Image, renderer
++  primitives) while preserving the existing geometry, colors, artwork,
++  and status indicators.
++- Integrated `ScreenManager` into the application for the home screen and
++  attached the platform-owned SDL renderer to the non-owning `ui::Renderer`
++  adapter; no second SDL renderer is created.
++- Translated platform actions into `UIAction` values and routed them
++  through the screen manager before application-level carousel state.
++- Preserved the existing selected-game navigation, wrapping selection, and
++  Confirm/Back behavior; the game action screen stays on the manual
++  platform rendering path.
++- Added optional magenta color-key support to `ui::Texture::load` for the
++  generated artwork.
++- Screens are released before the platform shuts down its renderer.
++- Added focused tests for the action mapping and the carousel screen.
++- Built the project and ran the complete CTest suite successfully.
++- Visual parity still requires inspection of the running screen.
++- No device firmware, storage, or boot configuration was changed.
++
+ ## 2026-11-10 — Game selection and action screen
+ 
+ - Added a separate game action screen to the application state.
+ - Added large horizontal Play, Resume, and Start Over selections.
+
+> build · glm-5.3-flash-free
+Final rebuild and full suite, then review the diff before committing:
+[0m$ [0mcd /home/hawk/KiddOS && cmake --build build 2>&1 | grep -E "error|FAILED"; ctest --test-dir build 2>&1 | tail -3 && git status --short
+100% tests passed out of 26
+
+Total Test time (real) =   0.12 sec
+ M CMakeLists.txt
+ M docs/DEVELOPMENT_LOG.md
+ M docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+ M docs/ui-image-support.md
+ M include/kiddos/app/application.hpp
+ M include/kiddos/platform/platform.hpp
+ M include/kiddos/platform/sdl_platform.hpp
+ M include/kiddos/ui/texture.hpp
+ M src/app/application.cpp
+ M src/ui/texture.cpp
+?? include/kiddos/app/home_carousel_screen.hpp
+?? include/kiddos/app/ui_action_mapping.hpp
+?? src/app/home_carousel_screen.cpp
+?? tests/app_home_carousel_screen_test.cpp
+?? tests/app_ui_action_mapping_test.cpp
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && git diff && git diff --stat
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4cfa31b..24eb092 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -57,6 +57,7 @@ target_compile_options(kiddos_ui PRIVATE
+ add_executable(kiddos
+     src/main.cpp
+     src/app/application.cpp
++    src/app/home_carousel_screen.cpp
+     src/platform/sdl_platform.cpp
+ )
+ 
+@@ -72,6 +73,23 @@ target_compile_options(kiddos PRIVATE
+ include(CTest)
+ 
+ if(BUILD_TESTING)
++    add_executable(kiddos_app_ui_action_mapping_test
++        tests/app_ui_action_mapping_test.cpp)
++    target_include_directories(kiddos_app_ui_action_mapping_test PRIVATE include)
++    target_link_libraries(kiddos_app_ui_action_mapping_test PRIVATE kiddos_ui)
++    add_test(NAME kiddos_app_ui_action_mapping
++        COMMAND kiddos_app_ui_action_mapping_test)
++
++    add_executable(kiddos_app_home_carousel_screen_test
++        tests/app_home_carousel_screen_test.cpp
++        src/app/home_carousel_screen.cpp)
++    target_include_directories(kiddos_app_home_carousel_screen_test PRIVATE include)
++    target_compile_definitions(kiddos_app_home_carousel_screen_test PRIVATE
++        KIDDOS_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
++    target_link_libraries(kiddos_app_home_carousel_screen_test PRIVATE kiddos_ui)
++    add_test(NAME kiddos_app_home_carousel_screen
++        COMMAND kiddos_app_home_carousel_screen_test)
++
+     add_executable(kiddos_platform_sdl_text_input_translator_test
+         tests/platform_sdl_text_input_translator_test.cpp)
+     target_include_directories(kiddos_platform_sdl_text_input_translator_test PRIVATE include)
+diff --git a/docs/DEVELOPMENT_LOG.md b/docs/DEVELOPMENT_LOG.md
+index f2ea37a..316f6a2 100644
+--- a/docs/DEVELOPMENT_LOG.md
++++ b/docs/DEVELOPMENT_LOG.md
+@@ -151,6 +151,28 @@ integration and the planned product components remain future work.
+ - Added `docs/KID_MODE_CAROUSEL_PROTOTYPE.md` documenting scope and limits.
+ - No device firmware, storage, or boot configuration was changed.
+ 
++## 2026-11-11 — Home carousel on the UI library
++
++- Added `HomeCarouselScreen`, a `ui::Screen` that rebuilds the Kid Mode
++  home carousel from UI library elements (Panel, Image, renderer
++  primitives) while preserving the existing geometry, colors, artwork,
++  and status indicators.
++- Integrated `ScreenManager` into the application for the home screen and
++  attached the platform-owned SDL renderer to the non-owning `ui::Renderer`
++  adapter; no second SDL renderer is created.
++- Translated platform actions into `UIAction` values and routed them
++  through the screen manager before application-level carousel state.
++- Preserved the existing selected-game navigation, wrapping selection, and
++  Confirm/Back behavior; the game action screen stays on the manual
++  platform rendering path.
++- Added optional magenta color-key support to `ui::Texture::load` for the
++  generated artwork.
++- Screens are released before the platform shuts down its renderer.
++- Added focused tests for the action mapping and the carousel screen.
++- Built the project and ran the complete CTest suite successfully.
++- Visual parity still requires inspection of the running screen.
++- No device firmware, storage, or boot configuration was changed.
++
+ ## 2026-11-10 — Game selection and action screen
+ 
+ - Added a separate game action screen to the application state.
+diff --git a/docs/KID_MODE_CAROUSEL_PROTOTYPE.md b/docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+index 1fffefc..db3343c 100644
+--- a/docs/KID_MODE_CAROUSEL_PROTOTYPE.md
++++ b/docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+@@ -15,7 +15,12 @@ harness and is not a device firmware build.
+ - Left/right keyboard and controller navigation.
+ - Wrapping selection across the three sample games.
+ - Sound-status and battery-status visual indicators.
+-- Platform-owned rendering, with selection state managed by the application.
++- The home carousel is rendered through the KiddOS UI library as a
++  `HomeCarouselScreen` (`ui::Screen`) managed by a `ScreenManager` in the
++  application, reusing the generated artwork and preserving the established
++  geometry and colors.
++- The game action screen remains on the platform-owned manual rendering
++  path, with selection state managed by the application.
+ 
+ ## Desktop controls
+ 
+diff --git a/docs/ui-image-support.md b/docs/ui-image-support.md
+index 55dd84a..b71b5b7 100644
+--- a/docs/ui-image-support.md
++++ b/docs/ui-image-support.md
+@@ -8,6 +8,11 @@ Call `IMG_Init` for the desired image formats during application startup and
+ `IMG_Quit` during shutdown. SDL_image initialization is intentionally left to
+ the application lifecycle.
+ 
++`Texture::load` accepts an optional `magenta_key` flag that treats bright
++magenta (255, 0, 255) pixels as transparent. This matches the generated
++Kid Mode artwork, which is exported with a magenta background. Loaded
++textures use alpha blending.
++
+ `Image` is a reusable element that holds a non-owning pointer to a `Texture`.
+ The texture must outlive the image element.
+ 
+diff --git a/include/kiddos/app/application.hpp b/include/kiddos/app/application.hpp
+index 82f1edd..ee20b0e 100644
+--- a/include/kiddos/app/application.hpp
++++ b/include/kiddos/app/application.hpp
+@@ -1,6 +1,8 @@
+ #pragma once
+ 
+ #include "kiddos/platform/platform.hpp"
++#include "kiddos/ui/renderer.hpp"
++#include "kiddos/ui/screen_manager.hpp"
+ 
+ namespace kiddos {
+ 
+@@ -12,6 +14,8 @@ public:
+ 
+ private:
+     Platform& platform_;
++    ui::ScreenManager screens_;
++    ui::Renderer ui_renderer_;
+     bool running_ = true;
+     int selected_game_ = 1;
+     bool action_screen_ = false;
+diff --git a/include/kiddos/platform/platform.hpp b/include/kiddos/platform/platform.hpp
+index 73fcb21..77daece 100644
+--- a/include/kiddos/platform/platform.hpp
++++ b/include/kiddos/platform/platform.hpp
+@@ -3,12 +3,18 @@
+ #include "kiddos/core/action.hpp"
+ #include "kiddos/platform/text_input_event.hpp"
+ 
++struct SDL_Renderer;
++
+ namespace kiddos {
+ 
+ class Platform {
+ public:
+     virtual ~Platform() = default;
+ 
++    // Non-owning access to the platform's native SDL renderer, if one
++    // exists. The platform retains ownership; callers must not destroy it.
++    virtual SDL_Renderer* native_renderer() const noexcept { return nullptr; }
++
+     virtual bool initialize() = 0;
+     virtual bool poll_action(Action& action) = 0;
+     virtual bool poll_text_input_event(TextInputEvent&) { return false; }
+diff --git a/include/kiddos/platform/sdl_platform.hpp b/include/kiddos/platform/sdl_platform.hpp
+index 37a8e18..7944a0b 100644
+--- a/include/kiddos/platform/sdl_platform.hpp
++++ b/include/kiddos/platform/sdl_platform.hpp
+@@ -24,6 +24,10 @@ public:
+     void present() override;
+     void shutdown() override;
+ 
++    SDL_Renderer* native_renderer() const noexcept override {
++        return renderer_;
++    }
++
+ private:
+     SDL_Window* window_ = nullptr;
+     SDL_Renderer* renderer_ = nullptr;
+diff --git a/include/kiddos/ui/texture.hpp b/include/kiddos/ui/texture.hpp
+index 96cbce7..1935b6b 100644
+--- a/include/kiddos/ui/texture.hpp
++++ b/include/kiddos/ui/texture.hpp
+@@ -16,7 +16,10 @@ public:
+     Texture(Texture&& other) noexcept;
+     Texture& operator=(Texture&& other) noexcept;
+ 
+-    bool load(SDL_Renderer* renderer, const std::string& path);
++    // Loads an image file through SDL_image. With magenta_key enabled,
++    // bright magenta (255, 0, 255) pixels become transparent.
++    bool load(SDL_Renderer* renderer, const std::string& path,
++              bool magenta_key = false);
+     void reset() noexcept;
+     bool valid() const noexcept;
+     int width() const noexcept;
+diff --git a/src/app/application.cpp b/src/app/application.cpp
+index 446625f..2a5f98f 100644
+--- a/src/app/application.cpp
++++ b/src/app/application.cpp
+@@ -1,5 +1,10 @@
+ #include "kiddos/app/application.hpp"
+ 
++#include "kiddos/app/home_carousel_screen.hpp"
++#include "kiddos/app/ui_action_mapping.hpp"
++
++#include <SDL_image.h>
++
+ #include <chrono>
+ #include <thread>
+ 
+@@ -15,6 +20,17 @@ int Application::run() {
+         return 1;
+     }
+ 
++    // Attach the platform-owned SDL renderer to the non-owning UI renderer
++    // adapter; the UI layer never creates a second SDL renderer.
++    ui_renderer_.attach(platform_.native_renderer());
++
++    // SDL_image initialization is left to the application lifecycle; the
++    // carousel artwork is BMP, which needs no extra image format flags.
++    IMG_Init(IMG_INIT_PNG);
++
++    screens_.push(std::make_unique<app::HomeCarouselScreen>(
++        platform_.native_renderer()));
++
+     running_ = true;
+ 
+     while (running_) {
+@@ -29,11 +45,17 @@ int Application::run() {
+         }
+ 
+         if (running_) {
++            screens_.update(0.008f);
+             render();
+             std::this_thread::sleep_for(std::chrono::milliseconds(8));
+         }
+     }
+ 
++    // Release screens and their SDL textures before the platform shuts
++    // down and destroys the native renderer they were created from.
++    screens_.clear();
++    IMG_Quit();
++
+     platform_.shutdown();
+     return 0;
+ }
+@@ -44,27 +66,7 @@ void Application::handle_action(Action action) {
+             running_ = false;
+             break;
+ 
+-        case Action::NavigateLeft:
+-            if (!action_screen_) {
+-                selected_game_ =
+-                    (selected_game_ + game_count_ - 1) % game_count_;
+-            }
+-            break;
+-
+-        case Action::NavigateRight:
+-            if (!action_screen_) {
+-                selected_game_ =
+-                    (selected_game_ + 1) % game_count_;
+-            }
+-            break;
+-
+         case Action::NavigateUp:
+-            if (action_screen_ && selected_game_ == 1) {
+-                selected_action_ =
+-                    (selected_action_ + 1) % 2;
+-            }
+-            break;
+-
+         case Action::NavigateDown:
+             if (action_screen_ && selected_game_ == 1) {
+                 selected_action_ =
+@@ -72,21 +74,52 @@ void Application::handle_action(Action action) {
+             }
+             break;
+ 
+-        case Action::Confirm:
+-            if (!action_screen_) {
+-                action_screen_ = true;
+-                selected_action_ = 0;
+-            }
+-            // Game launching is intentionally not implemented yet.
+-            break;
+-
+         case Action::Back:
++            // Back is handled at the application level only; it must not
++            // pop the home screen off the screen manager.
+             if (action_screen_) {
+                 action_screen_ = false;
+                 selected_action_ = 0;
+             }
+             break;
+ 
++        case Action::NavigateLeft:
++        case Action::NavigateRight:
++        case Action::Confirm: {
++            if (action_screen_) break;
++
++            // Translate the platform action and give the active screen a
++            // chance to respond first. The home carousel is currently
++            // display-only, so the application carousel state handles the
++            // remaining behavior.
++            const std::optional<ui::UIAction> ui_action =
++                app::to_ui_action(action);
++            if (!ui_action || screens_.handle_action(*ui_action)) break;
++
++            switch (*ui_action) {
++                case ui::UIAction::Left:
++                    selected_game_ =
++                        (selected_game_ + game_count_ - 1) % game_count_;
++                    break;
++
++                case ui::UIAction::Right:
++                    selected_game_ =
++                        (selected_game_ + 1) % game_count_;
++                    break;
++
++                case ui::UIAction::Confirm:
++                    action_screen_ = true;
++                    selected_action_ = 0;
++                    break;
++
++                case ui::UIAction::Up:
++                case ui::UIAction::Down:
++                case ui::UIAction::Back:
++                    break;
++            }
++            break;
++        }
++
+         case Action::None:
+             break;
+     }
+@@ -94,13 +127,18 @@ void Application::handle_action(Action action) {
+ 
+ void Application::render() {
+     platform_.begin_frame();
++
+     if (action_screen_) {
+-        // Game 1 is a temporary checkpoint demonstration fixture.
++        // Game 1 is a temporary checkpoint demonstration fixture; this
++        // screen remains on the platform's manual rendering path.
+         platform_.draw_game_actions(
+             selected_game_, selected_game_ == 1, selected_action_);
+-    } else {
+-        platform_.draw_carousel(selected_game_);
++    } else if (auto* home =
++                   static_cast<app::HomeCarouselScreen*>(screens_.current())) {
++        home->set_selected_game(selected_game_);
++        screens_.render(ui_renderer_);
+     }
++
+     platform_.present();
+ }
+ 
+diff --git a/src/ui/texture.cpp b/src/ui/texture.cpp
+index 48c7ea8..eeff12f 100644
+--- a/src/ui/texture.cpp
++++ b/src/ui/texture.cpp
+@@ -22,13 +22,22 @@ Texture& Texture::operator=(Texture&& other) noexcept {
+     return *this;
+ }
+ 
+-bool Texture::load(SDL_Renderer* renderer, const std::string& path) {
++bool Texture::load(
++    SDL_Renderer* renderer,
++    const std::string& path,
++    bool magenta_key
++) {
+     reset();
+     if (!renderer || path.empty()) return false;
+ 
+     SDL_Surface* surface = IMG_Load(path.c_str());
+     if (!surface) return false;
+ 
++    if (magenta_key) {
++        const Uint32 key = SDL_MapRGB(surface->format, 255, 0, 255);
++        SDL_SetColorKey(surface, SDL_TRUE, key);
++    }
++
+     SDL_Texture* loaded = SDL_CreateTextureFromSurface(renderer, surface);
+     const int w = surface->w;
+     const int h = surface->h;
+@@ -36,6 +45,8 @@ bool Texture::load(SDL_Renderer* renderer, const std::string& path) {
+ 
+     if (!loaded) return false;
+ 
++    SDL_SetTextureBlendMode(loaded, SDL_BLENDMODE_BLEND);
++
+     texture_ = loaded;
+     width_ = w;
+     height_ = h;
+ CMakeLists.txt                           |  18 ++++++
+ docs/DEVELOPMENT_LOG.md                  |  22 +++++++
+ docs/KID_MODE_CAROUSEL_PROTOTYPE.md      |   7 ++-
+ docs/ui-image-support.md                 |   5 ++
+ include/kiddos/app/application.hpp       |   4 ++
+ include/kiddos/platform/platform.hpp     |   6 ++
+ include/kiddos/platform/sdl_platform.hpp |   4 ++
+ include/kiddos/ui/texture.hpp            |   5 +-
+ src/app/application.cpp                  | 100 +++++++++++++++++++++----------
+ src/ui/texture.cpp                       |  13 +++-
+ 10 files changed, 150 insertions(+), 34 deletions(-)
+> build · glm-5.3-flash-free
+One runtime safety check — `FocusManager::move` with nothing focused (the home screen has no focusable elements and every action routes through it):
+[0m→ [0mRead src/ui/focus.cpp 
+> build · glm-5.3-flash-free
+All safe with no focusable elements. Committing the focused source change:
+[0m$ [0mcd /home/hawk/KiddOS && git add CMakeLists.txt docs/DEVELOPMENT_LOG.md docs/KID_MODE_CAROUSEL_PROTOTYPE.md docs/ui-image-support.md include/kiddos/app/application.hpp include/kiddos/app/home_carousel_screen.hpp include/kiddos/app/ui_action_mapping.hpp include/kiddos/platform/platform.hpp include/kiddos/platform/sdl_platform.hpp include/kiddos/ui/texture.hpp src/app/application.cpp src/app/home_carousel_screen.cpp src/ui/texture.cpp tests/app_home_carousel_screen_test.cpp tests/app_ui_action_mapping_test.cpp && git commit -m "feat: render home carousel through the KiddOS UI library
+
+- Add HomeCarouselScreen (ui::Screen) built from Panel, Image, and
+  renderer primitives, mirroring SDLPlatform::draw_carousel geometry,
+  colors, artwork, and status indicators
+- Integrate ScreenManager into Application for the home screen and
+  attach the platform-owned SDL renderer to the non-owning ui::Renderer
+  adapter (no second SDL renderer is created)
+- Map platform Action values to UIAction values and route them through
+  the screen manager before application-level carousel state
+- Preserve selected-game navigation, wrapping selection, and
+  Confirm/Back behavior; the game action screen stays on the manual
+  platform rendering path
+- Add optional magenta color-key support to ui::Texture::load for the
+  generated artwork; release screens before platform shutdown
+- Add focused tests for the action mapping and carousel screen" && git log --oneline -1 && git status --short
+[main 0284b5a] feat: render home carousel through the KiddOS UI library
+ 15 files changed, 575 insertions(+), 34 deletions(-)
+ create mode 100644 include/kiddos/app/home_carousel_screen.hpp
+ create mode 100644 include/kiddos/app/ui_action_mapping.hpp
+ create mode 100644 src/app/home_carousel_screen.cpp
+ create mode 100644 tests/app_home_carousel_screen_test.cpp
+ create mode 100644 tests/app_ui_action_mapping_test.cpp
+0284b5a feat: render home carousel through the KiddOS UI library
+> build · glm-5.3-flash-free
+Done. Worktree is clean and all validation passed.
+
+## Report
+
+**Implementation commit:** `0284b5a` — `feat: render home carousel through the KiddOS UI library` (single focused source commit; no milestone-runner files or logs included)
+
+**Files changed (15):**
+- New: `include/kiddos/app/home_carousel_screen.hpp`, `src/app/home_carousel_screen.cpp` — `HomeCarouselScreen` derived from `ui::Screen`, built from `Container`/`Panel`/`Image` plus an app-local status-indicator element (uses only `ui::Renderer` primitives). It mirrors `SDLPlatform::draw_carousel` exactly: side cards `{25,250,190,175}` / `{505,250,190,175}`, center card `{145,135,430,370}` with outer glow outline, artwork rects (`80×90` sides at opacity 180, `200×205` center), title rect `{220,525,280,42}` shown only for the middle game, and the speaker/battery status coordinates and colors. Neighbors are added before the center card so the center overlaps them, and the same wrap-around neighbor mapping (`left = (sel+2)%3`, `right = (sel+1)%3`) is used. Reuses the existing generated BMP artwork (magenta-keyed).
+- New: `include/kiddos/app/ui_action_mapping.hpp` — maps platform `Action` → `ui::UIAction` (`NavigateLeft→Left`, …, `None`/`Quit` → `nullopt`).
+- Modified: `src/app/application.cpp`, `include/kiddos/app/application.hpp` — `ScreenManager` + non-owning `ui::Renderer` attached to `platform.native_renderer()` (no second SDL renderer); home screen pushed after init, rendered via `screens_.render()`; screens cleared before `platform_.shutdown()`; `IMG_Init`/`IMG_Quit` per the UI-library docs. Navigation/wrap, Confirm-opens-action-screen, and Back-closes-it behavior preserved (Back deliberately never reaches `ScreenManager`, which would pop the home screen). The game-action screen stays on the manual `draw_game_actions` path.
+- Modified: `kiddos/ui/texture.{hpp,cpp}` — optional `magenta_key` color-key flag on `Texture::load` (required for the existing magenta-background artwork; default parameter keeps existing callers compatible).
+- Modified: `platform/platform.hpp`, `platform/sdl_platform.hpp` — `native_renderer()` accessor (forward-declared `SDL_Renderer` so `Platform` consumers don't need SDL headers).
+- New tests: `tests/app_ui_action_mapping_test.cpp`, `tests/app_home_carousel_screen_test.cpp` (structure/geometry/visibility without a renderer, plus software-renderer pixel checks of card fills, artwork presence, selection changes, and title visibility).
+- CMake and doc updates (`KID_MODE_CAROUSEL_PROTOTYPE.md`, `ui-image-support.md`, `DEVELOPMENT_LOG.md`).
+
+**Build:** success. Remaining compiler warnings are pre-existing (`sdl_platform.cpp` multichar/unused-function warnings, untouched).
+
+**Tests:** 26/26 passed (`ctest --test-dir build`), including the 2 new tests and all pre-existing ones (none weakened). Also ran a 5-second headless smoke run (`SDL_VIDEODRIVER=dummy`) without a crash.
+
+**Limitations / for your review:**
+- **Visual approval is yours to give** — please run `./build/kiddos` from the repo root and inspect. The corner rasterization of the UI library's rounded-fill differs from the platform's helper by at most ~1 px on corner arcs (slightly different inset math); card fills, artwork, title, and status indicators were verified by pixel tests.
+- `SDLPlatform::draw_carousel` and its platform-owned carousel/title textures are now unused for the home screen but intentionally left in place (the artwork textures are still used by the manual action screen); they can be removed in a later cleanup.
+- Textures are loaded by the screen from the same paths relative to the process working directory, matching the existing application convention (the app must still be launched from the repo root).
