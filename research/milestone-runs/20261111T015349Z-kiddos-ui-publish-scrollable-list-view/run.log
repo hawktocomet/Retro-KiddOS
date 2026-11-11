@@ -1,0 +1,57 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/15] Linking CXX static library libkiddos_ui.a
+[2/15] Linking CXX executable kiddos_ui_layout_test
+[3/15] Linking CXX executable kiddos_ui_image_test
+[4/15] Linking CXX executable kiddos_ui_focus_test
+[5/15] Linking CXX executable kiddos_ui_label_test
+[6/15] Linking CXX executable kiddos_ui_panel_test
+[7/15] Linking CXX executable kiddos
+[8/15] Linking CXX executable kiddos_ui_button_test
+[9/15] Linking CXX executable kiddos_ui_progress_bar_test
+[10/15] Linking CXX executable kiddos_ui_controller_test
+[11/15] Linking CXX executable kiddos_ui_toggle_test
+[12/15] Linking CXX executable kiddos_ui_theme_test
+[13/15] Linking CXX executable kiddos_ui_slider_test
+[14/15] Building CXX object CMakeFiles/kiddos_ui_list_view_test.dir/tests/ui_list_view_test.cpp.o
+[15/15] Linking CXX executable kiddos_ui_list_view_test
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_ui_layout
+ 1/13 Test  #1: kiddos_ui_layout .................   Passed    0.01 sec
+      Start  2: kiddos_ui_geometry
+ 2/13 Test  #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+      Start  3: kiddos_ui_focus
+ 3/13 Test  #3: kiddos_ui_focus ..................   Passed    0.01 sec
+      Start  4: kiddos_ui_button
+ 4/13 Test  #4: kiddos_ui_button .................   Passed    0.01 sec
+      Start  5: kiddos_ui_controller
+ 5/13 Test  #5: kiddos_ui_controller .............   Passed    0.01 sec
+      Start  6: kiddos_ui_image
+ 6/13 Test  #6: kiddos_ui_image ..................   Passed    0.01 sec
+      Start  7: kiddos_ui_label
+ 7/13 Test  #7: kiddos_ui_label ..................   Passed    0.01 sec
+      Start  8: kiddos_ui_panel
+ 8/13 Test  #8: kiddos_ui_panel ..................   Passed    0.01 sec
+      Start  9: kiddos_ui_progress_bar
+ 9/13 Test  #9: kiddos_ui_progress_bar ...........   Passed    0.01 sec
+      Start 10: kiddos_ui_toggle
+10/13 Test #10: kiddos_ui_toggle .................   Passed    0.01 sec
+      Start 11: kiddos_ui_slider
+11/13 Test #11: kiddos_ui_slider .................   Passed    0.01 sec
+      Start 12: kiddos_ui_theme
+12/13 Test #12: kiddos_ui_theme ..................   Passed    0.01 sec
+      Start 13: kiddos_ui_list_view
+13/13 Test #13: kiddos_ui_list_view ..............   Passed    0.01 sec
+
+100% tests passed out of 13
+
+Total Test time (real) =   0.12 sec
+[main 15d4df6] feat: add scrollable KiddOS UI list view
+ 6 files changed, 287 insertions(+), 2 deletions(-)
+ create mode 100644 docs/ui-list-view.md
+ create mode 100644 include/kiddos/ui/list_view.hpp
+ create mode 100644 src/ui/list_view.cpp
+ create mode 100644 tests/ui_list_view_test.cpp
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   992c6a9..15d4df6  main -> main
