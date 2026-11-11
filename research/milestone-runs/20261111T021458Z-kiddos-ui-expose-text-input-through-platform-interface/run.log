@@ -1,0 +1,107 @@
+=== Verify platform-neutral text input contract ===
+#pragma once
+
+#include "kiddos/core/action.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+namespace kiddos {
+
+class Platform {
+public:
+    virtual ~Platform() = default;
+
+    virtual bool initialize() = 0;
+    virtual bool poll_action(Action& action) = 0;
+    virtual bool poll_text_input_event(TextInputEvent&) { return false; }
+    virtual void set_text_input_active(bool) {}
+    virtual void begin_frame() = 0;
+    virtual void draw_carousel(int selected_index) = 0;
+    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+    virtual void present() = 0;
+    virtual void shutdown() = 0;
+};
+
+} // namespace kiddos
+16-
+17-    bool initialize() override;
+18-    bool poll_action(Action& action) override;
+19:    bool poll_text_input_event(TextInputEvent& event) override;
+20:    void set_text_input_active(bool active) override;
+21-    void begin_frame() override;
+22-    void draw_carousel(int selected_index) override;
+23-    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+24-    void present() override;
+=== Configure and build ===
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/4] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+[2/4] Building CXX object CMakeFiles/kiddos.dir/src/main.cpp.o
+[3/4] Building CXX object CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:28:40: warning: multi-character character constant [-Wmultichar]
+   28 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:44:40: warning: multi-character character constant [-Wmultichar]
+   44 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:251:6: warning: ‘void kiddos::{anonymous}::draw_ocean_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  251 | void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:219:6: warning: ‘void kiddos::{anonymous}::draw_forest_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  219 | void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:189:6: warning: ‘void kiddos::{anonymous}::draw_space_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  189 | void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+[4/4] Linking CXX executable kiddos
+=== Full test suite ===
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_platform_sdl_keyboard_policy
+ 1/20 Test  #1: kiddos_platform_sdl_keyboard_policy ...   Passed    0.00 sec
+      Start  2: kiddos_platform_text_input_event
+ 2/20 Test  #2: kiddos_platform_text_input_event ......   Passed    0.00 sec
+      Start  3: kiddos_ui_layout
+ 3/20 Test  #3: kiddos_ui_layout ......................   Passed    0.01 sec
+      Start  4: kiddos_ui_geometry
+ 4/20 Test  #4: kiddos_ui_geometry ....................   Passed    0.00 sec
+      Start  5: kiddos_ui_focus
+ 5/20 Test  #5: kiddos_ui_focus .......................   Passed    0.01 sec
+      Start  6: kiddos_ui_button
+ 6/20 Test  #6: kiddos_ui_button ......................   Passed    0.01 sec
+      Start  7: kiddos_ui_controller
+ 7/20 Test  #7: kiddos_ui_controller ..................   Passed    0.01 sec
+      Start  8: kiddos_ui_image
+ 8/20 Test  #8: kiddos_ui_image .......................   Passed    0.01 sec
+      Start  9: kiddos_ui_label
+ 9/20 Test  #9: kiddos_ui_label .......................   Passed    0.01 sec
+      Start 10: kiddos_ui_panel
+10/20 Test #10: kiddos_ui_panel .......................   Passed    0.01 sec
+      Start 11: kiddos_ui_progress_bar
+11/20 Test #11: kiddos_ui_progress_bar ................   Passed    0.01 sec
+      Start 12: kiddos_ui_toggle
+12/20 Test #12: kiddos_ui_toggle ......................   Passed    0.01 sec
+      Start 13: kiddos_ui_slider
+13/20 Test #13: kiddos_ui_slider ......................   Passed    0.01 sec
+      Start 14: kiddos_ui_theme
+14/20 Test #14: kiddos_ui_theme .......................   Passed    0.01 sec
+      Start 15: kiddos_ui_list_view
+15/20 Test #15: kiddos_ui_list_view ...................   Passed    0.01 sec
+      Start 16: kiddos_ui_checkbox
+16/20 Test #16: kiddos_ui_checkbox ....................   Passed    0.01 sec
+      Start 17: kiddos_ui_radio_group
+17/20 Test #17: kiddos_ui_radio_group .................   Passed    0.01 sec
+      Start 18: kiddos_ui_select
+18/20 Test #18: kiddos_ui_select ......................   Passed    0.01 sec
+      Start 19: kiddos_ui_text_input
+19/20 Test #19: kiddos_ui_text_input ..................   Passed    0.01 sec
+      Start 20: kiddos_ui_text_input_interaction
+20/20 Test #20: kiddos_ui_text_input_interaction ......   Passed    0.01 sec
+
+100% tests passed out of 20
+
+Total Test time (real) =   0.11 sec
+=== Commit only platform interface changes ===
+[main 94967f9] feat: expose text input through platform interface
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   e1dc28e..94967f9  main -> main
