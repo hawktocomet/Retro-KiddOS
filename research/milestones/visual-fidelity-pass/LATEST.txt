@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T201121Z-check-svg-artwork-generation-support
+research/milestones/visual-fidelity-pass/runs/20261111T201211Z-enlarge-center-artwork-and-clarify-parent-menu-controls
