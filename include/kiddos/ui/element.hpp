@@ -24,6 +24,9 @@ public:
 
     bool focusable() const noexcept { return focusable_; }
 
+    void set_focused(bool focused) noexcept { focused_ = focused; }
+    bool focused() const noexcept { return focused_; }
+
     void render(Renderer& renderer) {
         if (visible_) draw(renderer);
     }
@@ -36,6 +39,7 @@ private:
     bool visible_ = true;
     bool enabled_ = true;
     bool focusable_ = false;
+    bool focused_ = false;
 };
 
 } // namespace kiddos::ui

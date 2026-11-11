@@ -16,6 +16,7 @@ pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
 add_library(kiddos_ui STATIC
     src/ui/renderer.cpp
     src/ui/layout.cpp
+    src/ui/focus.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
@@ -67,5 +68,17 @@ if(BUILD_TESTING)
     add_test(
         NAME kiddos_ui_geometry
         COMMAND kiddos_ui_geometry_test
+    )
+
+    add_executable(kiddos_ui_focus_test
+        tests/ui_focus_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_focus_test PRIVATE include)
+    target_link_libraries(kiddos_ui_focus_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_focus
+        COMMAND kiddos_ui_focus_test
     )
 endif()

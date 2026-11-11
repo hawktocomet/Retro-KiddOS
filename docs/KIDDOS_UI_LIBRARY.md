@@ -57,3 +57,13 @@ application-specific game or screen logic.
 
 Layout tests cover horizontal and vertical distribution, padding, gaps,
 hidden children, and empty containers.
+
+## Focus and directional navigation
+
+The focus manager tracks one focusable element in a container hierarchy.
+It skips hidden and disabled elements, supports nested containers, and
+moves directionally using element bounds. If no eligible element exists
+in the requested direction, focus remains where it is.
+
+Focus state is exposed by `Element::focused()` so widgets can render
+their own focused appearance without coupling the library to a theme.
