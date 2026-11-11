@@ -1,0 +1,11 @@
+=== AVAILABLE AGENT COMMANDS ===
+codex: /home/hawk/.local/bin/codex
+claude: not found
+aider: not found
+opencode: /usr/bin/opencode
+goose: not found
+=== PROJECT AGENT INSTRUCTIONS ===
+=== TOOL SCRIPTS ===
+tools/kiddos-milestone
+=== WORKTREE ===
+## main...origin/main

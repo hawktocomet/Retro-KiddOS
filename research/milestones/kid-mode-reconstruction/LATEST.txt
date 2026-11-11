@@ -1,1 +1,1 @@
-research/milestones/kid-mode-reconstruction/runs/20261111T175147Z-implement-ui-library-home-carousel-screen
+research/milestones/kid-mode-reconstruction/runs/20261111T175232Z-inspect-available-coding-agent-tooling
