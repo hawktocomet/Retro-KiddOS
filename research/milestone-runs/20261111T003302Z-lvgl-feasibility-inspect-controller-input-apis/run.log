@@ -1,0 +1,210 @@
+=== Adapter source ===
+     1	#include <SDL.h>
+     2	#include <stdint.h>
+     3	#include <stdio.h>
+     4	#include <stdlib.h>
+     5	
+     6	#include "lvgl.h"
+     7	
+     8	#define SCREEN_W 720
+     9	#define SCREEN_H 720
+    10	#define BUFFER_ROWS 40
+    11	
+    12	static SDL_Window *window;
+    13	static SDL_Renderer *renderer;
+    14	static SDL_Texture *texture;
+    15	static uint8_t draw_buffer[SCREEN_W * BUFFER_ROWS * 2];
+    16	
+    17	static void flush_to_sdl(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
+    18	{
+    19	    SDL_Rect rect = {
+    20	        .x = area->x1,
+    21	        .y = area->y1,
+    22	        .w = area->x2 - area->x1 + 1,
+    23	        .h = area->y2 - area->y1 + 1
+    24	    };
+    25	
+    26	    if (rect.w > 0 && rect.h > 0) {
+    27	        SDL_UpdateTexture(texture, &rect, pixels, rect.w * 2);
+    28	        SDL_RenderClear(renderer);
+    29	        SDL_RenderCopy(renderer, texture, NULL, NULL);
+    30	        SDL_RenderPresent(renderer);
+    31	    }
+    32	
+    33	    lv_display_flush_ready(display);
+    34	}
+    35	
+    36	static void make_ui(void)
+    37	{
+    38	    lv_obj_t *screen = lv_screen_active();
+    39	    lv_obj_set_style_bg_color(screen, lv_color_hex(0x071426), 0);
+    40	    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+    41	
+    42	    lv_obj_t *header = lv_obj_create(screen);
+    43	    lv_obj_set_size(header, 680, 76);
+    44	    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 18);
+    45	    lv_obj_set_style_bg_color(header, lv_color_hex(0x102B4A), 0);
+    46	    lv_obj_set_style_border_width(header, 0, 0);
+    47	    lv_obj_set_style_radius(header, 18, 0);
+    48	
+    49	    lv_obj_t *title = lv_label_create(header);
+    50	    lv_label_set_text(title, "KiddOS");
+    51	    lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
+    52	    lv_obj_center(title);
+    53	
+    54	    const char *names[] = {"GAME ONE", "GAME TWO", "GAME THREE"};
+    55	    const int widths[] = {170, 230, 170};
+    56	
+    57	    for (int i = 0; i < 3; i++) {
+    58	        lv_obj_t *card = lv_obj_create(screen);
+    59	        lv_obj_set_size(card, widths[i], i == 1 ? 330 : 270);
+    60	        lv_obj_align(card, LV_ALIGN_CENTER, (i - 1) * 205, 25);
+    61	        lv_obj_set_style_bg_color(card,
+    62	            i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+    63	        lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+    64	        lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+    65	        lv_obj_set_style_radius(card, 22, 0);
+    66	
+    67	        lv_obj_t *label = lv_label_create(card);
+    68	        lv_label_set_text(label, names[i]);
+    69	        lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    70	        lv_obj_center(label);
+    71	    }
+    72	
+    73	    lv_obj_t *footer = lv_label_create(screen);
+    74	    lv_label_set_text(footer, "SDL2 renderer adapter prototype");
+    75	    lv_obj_set_style_text_color(footer, lv_color_hex(0x8FAAC5), 0);
+    76	    lv_obj_align(footer, LV_ALIGN_BOTTOM_MID, 0, -24);
+    77	}
+    78	
+    79	int main(void)
+    80	{
+    81	    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+    82	        fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
+    83	        return 1;
+    84	    }
+    85	
+    86	    window = SDL_CreateWindow("KiddOS LVGL SDL Renderer Adapter",
+    87	        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    88	        SCREEN_W, SCREEN_H, SDL_WINDOW_SHOWN);
+    89	    if (!window) {
+    90	        fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
+    91	        return 1;
+    92	    }
+    93	
+    94	    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    95	    if (!renderer)
+    96	        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+    97	    if (!renderer) {
+    98	        fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
+    99	        return 1;
+   100	    }
+   101	
+   102	    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565,
+   103	        SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
+   104	    if (!texture) {
+   105	        fprintf(stderr, "SDL_CreateTexture: %s\n", SDL_GetError());
+   106	        return 1;
+   107	    }
+   108	
+   109	    SDL_SetRenderDrawColor(renderer, 7, 20, 38, 255);
+   110	    SDL_RenderClear(renderer);
+   111	    SDL_RenderPresent(renderer);
+   112	
+   113	    lv_init();
+   114	
+   115	    lv_display_t *display = lv_display_create(SCREEN_W, SCREEN_H);
+   116	    lv_display_set_color_format(display, LV_COLOR_FORMAT_RGB565);
+   117	    lv_display_set_flush_cb(display, flush_to_sdl);
+   118	    lv_display_set_buffers(display, draw_buffer, NULL, sizeof(draw_buffer),
+   119	        LV_DISPLAY_RENDER_MODE_PARTIAL);
+   120	
+   121	    make_ui();
+   122	
+   123	    printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+   124	    printf("Press Escape or close the window to exit.\n");
+   125	
+   126	    int running = 1;
+   127	    while (running) {
+   128	        SDL_Event event;
+   129	        while (SDL_PollEvent(&event)) {
+   130	            if (event.type == SDL_QUIT)
+   131	                running = 0;
+   132	            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+   133	                running = 0;
+   134	        }
+   135	        lv_timer_handler();
+   136	        SDL_Delay(5);
+   137	    }
+   138	
+   139	    lv_deinit();
+   140	    SDL_DestroyTexture(texture);
+   141	    SDL_DestroyRenderer(renderer);
+   142	    SDL_DestroyWindow(window);
+   143	    SDL_Quit();
+   144	    return 0;
+   145	}
+=== LVGL keypad input APIs ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/indev/lv_indev.h:33:    LV_INDEV_TYPE_KEYPAD,  /**< Keypad or keyboard*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/indev/lv_indev.h:70:    uint32_t key;     /**< For LV_INDEV_TYPE_KEYPAD the currently pressed key*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/indev/lv_indev.h:91:lv_indev_t * lv_indev_create(void);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/indev/lv_indev.h:146:void lv_indev_set_read_cb(lv_indev_t * indev,  lv_indev_read_cb_t read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/indev/lv_indev.h:315:void lv_indev_set_group(lv_indev_t * indev, lv_group_t * group);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/indev/lv_indev.h:340: * Get the last pressed key of an input device (for LV_INDEV_TYPE_KEYPAD)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/indev/lv_indev.h:482: * Set key remapping callback (LV_INDEV_TYPE_KEYPAD)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/drivers/indev/lv_libinput.h:88: * @param indev_type LV_INDEV_TYPE_POINTER or LV_INDEV_TYPE_KEYPAD
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/drivers/indev/lv_evdev.h:44: * @param indev_type LV_INDEV_TYPE_POINTER or LV_INDEV_TYPE_KEYPAD
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/drivers/indev/lv_evdev.h:52: * @param indev_type LV_INDEV_TYPE_POINTER or LV_INDEV_TYPE_KEYPAD
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:24:    LV_KEY_UP        = 17,  /*0x11*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:25:    LV_KEY_DOWN      = 18,  /*0x12*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:26:    LV_KEY_RIGHT     = 19,  /*0x13*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:27:    LV_KEY_LEFT      = 20,  /*0x14*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:28:    LV_KEY_ESC       = 27,  /*0x1B*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:31:    LV_KEY_ENTER     = 10,  /*0x0A, '\n'*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:58:lv_group_t * lv_group_create(void);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:84:void lv_group_add_obj(lv_group_t * group, lv_obj_t * obj);
+=== SDL controller APIs ===
+/usr/include/SDL2/SDL_gamecontroller.h:299: * \sa SDL_GameControllerOpen
+/usr/include/SDL2/SDL_gamecontroller.h:319: * \sa SDL_GameControllerOpen
+/usr/include/SDL2/SDL_gamecontroller.h:392:extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerOpen(int joystick_index);
+/usr/include/SDL2/SDL_gamecontroller.h:429: *                       SDL_GameControllerOpen().
+/usr/include/SDL2/SDL_gamecontroller.h:436: * \sa SDL_GameControllerOpen
+/usr/include/SDL2/SDL_gamecontroller.h:447: *                       SDL_GameControllerOpen().
+/usr/include/SDL2/SDL_gamecontroller.h:572: *                       SDL_GameControllerOpen().
+/usr/include/SDL2/SDL_gamecontroller.h:579: * \sa SDL_GameControllerOpen
+/usr/include/SDL2/SDL_gamecontroller.h:645: * pressed) when reported by SDL_GameControllerGetAxis(). Note that this is
+/usr/include/SDL2/SDL_gamecontroller.h:651:    SDL_CONTROLLER_AXIS_INVALID = -1,
+/usr/include/SDL2/SDL_gamecontroller.h:652:    SDL_CONTROLLER_AXIS_LEFTX,
+/usr/include/SDL2/SDL_gamecontroller.h:653:    SDL_CONTROLLER_AXIS_LEFTY,
+/usr/include/SDL2/SDL_gamecontroller.h:654:    SDL_CONTROLLER_AXIS_RIGHTX,
+/usr/include/SDL2/SDL_gamecontroller.h:655:    SDL_CONTROLLER_AXIS_RIGHTY,
+/usr/include/SDL2/SDL_gamecontroller.h:656:    SDL_CONTROLLER_AXIS_TRIGGERLEFT,
+/usr/include/SDL2/SDL_gamecontroller.h:657:    SDL_CONTROLLER_AXIS_TRIGGERRIGHT,
+/usr/include/SDL2/SDL_gamecontroller.h:658:    SDL_CONTROLLER_AXIS_MAX
+/usr/include/SDL2/SDL_gamecontroller.h:670: * `SDL_CONTROLLER_AXIS_TRIGGERRIGHT` and `SDL_CONTROLLER_AXIS_TRIGGERLEFT`,
+/usr/include/SDL2/SDL_gamecontroller.h:675: *          or `SDL_CONTROLLER_AXIS_INVALID` if no match was found.
+/usr/include/SDL2/SDL_gamecontroller.h:681:extern DECLSPEC SDL_GameControllerAxis SDLCALL SDL_GameControllerGetAxisFromString(const char *str);
+/usr/include/SDL2/SDL_gamecontroller.h:695: * \sa SDL_GameControllerGetAxisFromString
+/usr/include/SDL2/SDL_gamecontroller.h:750: * \sa SDL_GameControllerGetButton
+/usr/include/SDL2/SDL_gamecontroller.h:753:SDL_GameControllerGetAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis);
+/usr/include/SDL2/SDL_gamecontroller.h:761:    SDL_CONTROLLER_BUTTON_A,
+/usr/include/SDL2/SDL_gamecontroller.h:762:    SDL_CONTROLLER_BUTTON_B,
+/usr/include/SDL2/SDL_gamecontroller.h:765:    SDL_CONTROLLER_BUTTON_BACK,
+/usr/include/SDL2/SDL_gamecontroller.h:772:    SDL_CONTROLLER_BUTTON_DPAD_UP,
+/usr/include/SDL2/SDL_gamecontroller.h:773:    SDL_CONTROLLER_BUTTON_DPAD_DOWN,
+/usr/include/SDL2/SDL_gamecontroller.h:774:    SDL_CONTROLLER_BUTTON_DPAD_LEFT,
+/usr/include/SDL2/SDL_gamecontroller.h:775:    SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
+/usr/include/SDL2/SDL_gamecontroller.h:795: *          string, or `SDL_CONTROLLER_AXIS_INVALID` if no match was found.
+/usr/include/SDL2/SDL_gamecontroller.h:799:extern DECLSPEC SDL_GameControllerButton SDLCALL SDL_GameControllerGetButtonFromString(const char *str);
+/usr/include/SDL2/SDL_gamecontroller.h:813: * \sa SDL_GameControllerGetButtonFromString
+/usr/include/SDL2/SDL_gamecontroller.h:859: * \sa SDL_GameControllerGetAxis
+/usr/include/SDL2/SDL_gamecontroller.h:861:extern DECLSPEC Uint8 SDLCALL SDL_GameControllerGetButton(SDL_GameController *gamecontroller,
+/usr/include/SDL2/SDL_gamecontroller.h:1092: * Close a game controller previously opened with SDL_GameControllerOpen().
+/usr/include/SDL2/SDL_gamecontroller.h:1095: *                       SDL_GameControllerOpen().
+/usr/include/SDL2/SDL_gamecontroller.h:1099: * \sa SDL_GameControllerOpen
+=== Existing app controller handling ===
+src/platform/sdl_platform.cpp:453:    controller_ = SDL_GameControllerOpen(device_index);
+src/platform/sdl_platform.cpp:457:            SDL_GameControllerGetJoystick(controller_)
+src/platform/sdl_platform.cpp:464:        SDL_GameControllerClose(controller_);
+src/platform/sdl_platform.cpp:521:            case SDL_CONTROLLERBUTTONDOWN:
+include/kiddos/platform/sdl_platform.hpp:25:    SDL_GameController* controller_ = nullptr;
