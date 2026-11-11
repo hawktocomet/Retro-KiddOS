@@ -1,0 +1,186 @@
+=== Failing test with line numbers ===
+     1	#include "kiddos/ui/radio_group.hpp"
+     2	#include "kiddos/ui/controller.hpp"
+     3	
+     4	#include <cassert>
+     5	#include <string>
+     6	#include <vector>
+     7	
+     8	int main() {
+     9	    using namespace kiddos::ui;
+    10	
+    11	    RadioGroup group({"Play", "Watch", "Settings"}, 1);
+    12	    assert(group.focusable());
+    13	    assert(group.selected() == 1);
+    14	    assert(group.options().size() == 3);
+    15	
+    16	    int callback_count = 0;
+    17	    int callback_value = -1;
+    18	    group.set_on_change([&](int value) {
+    19	        ++callback_count;
+    20	        callback_value = value;
+    21	    });
+    22	
+    23	    assert(group.select_next());
+    24	    assert(group.selected() == 2);
+    25	    assert(callback_count == 1 && callback_value == 2);
+    26	
+    27	    assert(group.select_next());
+    28	    assert(group.selected() == 0);
+    29	
+    30	    assert(group.select_previous());
+    31	    assert(group.selected() == 2);
+    32	
+    33	    assert(group.set_selected(1));
+    34	    assert(callback_value == 1);
+    35	    assert(!group.set_selected(99));
+    36	
+    37	    group.set_enabled(false);
+    38	    assert(!group.select_next());
+    39	    group.set_enabled(true);
+    40	    group.set_visible(false);
+    41	    assert(!group.select_previous());
+    42	    group.set_visible(true);
+    43	
+    44	    group.set_options({"One", "Two"});
+    45	    assert(group.selected() == 0);
+    46	    group.set_options({});
+    47	    assert(group.selected() == -1);
+    48	    assert(!group.select_next());
+    49	
+    50	    Container root;
+    51	    auto& controlled = root.add<RadioGroup>(
+    52	        std::vector<std::string>{"A", "B", "C"}, 0);
+    53	    FocusManager focus(root);
+    54	    ControllerInteraction controller(focus);
+    55	    assert(focus.focus_first());
+    56	    assert(controller.handle(UIAction::Right));
+    57	    assert(controlled.selected() == 1);
+    58	    assert(controller.handle(UIAction::Down));
+    59	    assert(controlled.selected() == 2);
+    60	    assert(controller.handle(UIAction::Left));
+    61	    assert(controlled.selected() == 1);
+    62	
+    63	    return 0;
+    64	}
+
+=== RadioGroup implementation with line numbers ===
+     1	#include "kiddos/ui/radio_group.hpp"
+     2	#include "kiddos/ui/text.hpp"
+     3	
+     4	#include <algorithm>
+     5	#include <utility>
+     6	
+     7	namespace kiddos::ui {
+     8	
+     9	RadioGroup::RadioGroup(std::vector<std::string> options, int selected) {
+    10	    set_focusable(true);
+    11	    set_options(std::move(options));
+    12	    if (!options_.empty()) set_selected(selected);
+    13	}
+    14	
+    15	void RadioGroup::set_options(std::vector<std::string> options) {
+    16	    options_ = std::move(options);
+    17	    if (options_.empty()) {
+    18	        selected_ = -1;
+    19	    } else if (selected_ < 0 || selected_ >= static_cast<int>(options_.size())) {
+    20	        selected_ = 0;
+    21	    }
+    22	}
+    23	
+    24	const std::vector<std::string>& RadioGroup::options() const noexcept {
+    25	    return options_;
+    26	}
+    27	
+    28	bool RadioGroup::set_selected(int index) {
+    29	    if (!visible() || !enabled() || index < 0 ||
+    30	        index >= static_cast<int>(options_.size())) return false;
+    31	    if (selected_ == index) return true;
+    32	    selected_ = index;
+    33	    if (on_change_) on_change_(selected_);
+    34	    return true;
+    35	}
+    36	
+    37	int RadioGroup::selected() const noexcept {
+    38	    return selected_;
+    39	}
+    40	
+    41	bool RadioGroup::select_next() {
+    42	    if (options_.empty() || !visible() || !enabled()) return false;
+    43	    return set_selected((selected_ + 1) % static_cast<int>(options_.size()));
+    44	}
+    45	
+    46	bool RadioGroup::select_previous() {
+    47	    if (options_.empty() || !visible() || !enabled()) return false;
+    48	    const int count = static_cast<int>(options_.size());
+    49	    return set_selected((selected_ - 1 + count) % count);
+    50	}
+    51	
+    52	void RadioGroup::set_font(const Font* font) noexcept {
+    53	    font_ = font;
+    54	}
+    55	
+    56	const Font* RadioGroup::font() const noexcept {
+    57	    return font_;
+    58	}
+    59	
+    60	void RadioGroup::set_style(RadioGroupStyle style) noexcept {
+    61	    style_ = style;
+    62	}
+    63	
+    64	const RadioGroupStyle& RadioGroup::style() const noexcept {
+    65	    return style_;
+    66	}
+    67	
+    68	void RadioGroup::set_on_change(std::function<void(int)> callback) {
+    69	    on_change_ = std::move(callback);
+    70	}
+    71	
+    72	void RadioGroup::draw(Renderer& renderer) {
+    73	    const Rect area = bounds();
+    74	    if (area.empty() || options_.empty()) return;
+    75	
+    76	    const int row_height = std::max(1, area.h / static_cast<int>(options_.size()));
+    77	    const int radius = std::max(2, std::min(10, row_height / 4));
+    78	
+    79	    for (int i = 0; i < static_cast<int>(options_.size()); ++i) {
+    80	        const Rect row{area.x, area.y + i * row_height,
+    81	                       area.w, i == static_cast<int>(options_.size()) - 1
+    82	                                   ? area.h - i * row_height : row_height};
+    83	        if (row.empty()) continue;
+    84	
+    85	        const int cy = row.y + row.h / 2;
+    86	        const int cx = row.x + radius + 5;
+    87	        const Rect indicator{cx - radius, cy - radius, radius * 2, radius * 2};
+    88	        renderer.fill_rect(row, style_.background);
+    89	        renderer.outline_rect(indicator,
+    90	            focused() ? style_.focused_border : style_.border);
+    91	
+    92	        if (i == selected_) {
+    93	            const int inner = std::max(1, radius / 2);
+    94	            renderer.fill_rect(
+    95	                {cx - inner, cy - inner, inner * 2, inner * 2},
+    96	                enabled() ? style_.selected : style_.disabled_text
+    97	            );
+    98	        }
+    99	
+   100	        if (font_ && font_->valid()) {
+   101	            const Rect text_area{cx + radius + 10, row.y,
+   102	                                 row.w - (cx - row.x) - radius - 10, row.h};
+   103	            if (!text_area.empty()) {
+   104	                TextRenderer text(renderer);
+   105	                text.draw_centered(options_[i], *font_, text_area,
+   106	                    enabled() ? style_.text : style_.disabled_text);
+   107	            }
+   108	        }
+   109	    }
+   110	}
+   111	
+   112	}
+
+=== Element visibility and enabled behavior ===
+grep: Unmatched ( or \(
+
+=== Test executable direct output ===
+kiddos_ui_radio_group_test: /home/hawk/KiddOS/tests/ui_radio_group_test.cpp:45: int main(): Assertion `group.selected() == 0' failed.
+/tmp/tmp.73XRY7LfmW: line 11: 320567 Aborted                    (core dumped) ./build/kiddos_ui_radio_group_test 2>&1
