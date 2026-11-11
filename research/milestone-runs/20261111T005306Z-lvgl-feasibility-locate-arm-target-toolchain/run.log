@@ -1,0 +1,142 @@
+=== Installed cross-compilers ===
+/usr/bin/aarch64-linux-gnu-gcc
+
+=== Firmware build toolchain locations ===
+
+=== Existing SDK and toolchain directories ===
+research/firmware/manufacturer/RetroPixel_Pocket/packages/virtual/toolchain
+
+=== SDL2 target package definitions ===
+research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/SDL_GameControllerDB
+research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/gamepads/GO-Super Gamepad_SDL.cfg
+research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/gamepads/OpenSimHardware OSH PB Controller_SDL.cfg
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-audio-sdl
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-input-sdl
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/ports/sdlpop
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/jstest-sdl
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/rs97-commander-sdl2
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/sdljoytest
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/sdljoytest/sdljoytest-increase-delay.patch
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/SDL
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/SDL/SDL_net
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/SDL/SDL_sound
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/SDL2_gfx
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/SDL2_image
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/SDL2_mixer
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/SDL2_net
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/SDL2_ttf
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/SDL2_ttf/patches/SDL2_ttf-001-opengl-only-with-x.patch
+
+=== LVGL configuration path in adapter CMake ===
+cmake_minimum_required(VERSION 3.16)
+project(kiddos_lvgl_sdl_adapter C)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+set(LV_CONF_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lv_conf.h" CACHE STRING "" FORCE)
+set(LV_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(LV_BUILD_DEMOS OFF CACHE BOOL "" FORCE)
+set(LV_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(LVGL_DIR "/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099" CACHE PATH "" FORCE)
+
+find_package(SDL2 REQUIRED)
+add_subdirectory("${LVGL_DIR}" "${CMAKE_BINARY_DIR}/lvgl")
+
+add_executable(kiddos_lvgl_sdl_adapter main.c)
+target_include_directories(kiddos_lvgl_sdl_adapter PRIVATE "${LVGL_DIR}")
+target_link_libraries(kiddos_lvgl_sdl_adapter PRIVATE lvgl SDL2::SDL2)
+/tmp/kiddos-lvgl-minimal-build/CMakeCache.txt:332:// to be used in conjunction with LV_CONF_INCLUDE_SIMPLE
+/tmp/kiddos-lvgl-minimal-build/CMakeCache.txt:333:LV_BUILD_CONF_DIR:PATH=
+/tmp/kiddos-lvgl-minimal-build/CMakeCache.txt:336:LV_BUILD_CONF_PATH:PATH=
+/tmp/kiddos-lvgl-minimal-build/CMakeCache.txt:378:LV_CONF_PATH:STRING=/home/hawk/KiddOS/research/lvgl/adapter/lv_conf.h
+/tmp/kiddos-lvgl-minimal-build/lvgl/CMakeFiles/lvgl.dir/flags.make:7:ASM_DEFINES = -DLV_CONF_INCLUDE_SIMPLE -DLV_KCONFIG_IGNORE -DLV_LVGL_H_INCLUDE_SIMPLE
+/tmp/kiddos-lvgl-minimal-build/lvgl/CMakeFiles/lvgl.dir/flags.make:13:C_DEFINES = -DLV_CONF_INCLUDE_SIMPLE -DLV_KCONFIG_IGNORE -DLV_LVGL_H_INCLUDE_SIMPLE
+/tmp/kiddos-lvgl-minimal-build/lvgl/CMakeFiles/lvgl.dir/flags.make:19:CXX_DEFINES = -DLV_CONF_INCLUDE_SIMPLE -DLV_KCONFIG_IGNORE -DLV_LVGL_H_INCLUDE_SIMPLE
+
+=== LVGL configuration include resolution ===
+1-/**
+2- * GENERATED FILE, DO NOT EDIT IT!
+3- * @file lv_conf_internal.h
+4: * This file ensures all defines of lv_conf.h have a default value.
+5- */
+6-
+7-#ifndef LV_CONF_INTERNAL_H
+8-#define LV_CONF_INTERNAL_H
+9-/* clang-format off */
+10-
+11-#define LV_CONF_PASTE_(a, b) a##b
+12-#define LV_CONF_PASTE(a, b)  LV_CONF_PASTE_(a, b)
+13-
+14-/* Config options */
+15-/* Built-in font selectors for LV_FONT_DEFAULT */
+16-#define LV_FONT_DEFAULT_MONTSERRAT_8                &lv_font_montserrat_8
+--
+126-    #if defined(CONFIG_LV_CONF_SKIP) && !defined(LV_CONF_SKIP)
+127-        #define LV_CONF_SKIP
+128-    #endif
+129-#endif
+130-
+131:/* If "lv_conf.h" is available from here try to use it later. */
+132-#ifdef __has_include
+133:    #if __has_include("lv_conf.h")
+134-        #ifndef LV_CONF_INCLUDE_SIMPLE
+135-            #define LV_CONF_INCLUDE_SIMPLE
+136-        #endif
+137-    #endif
+138-#endif
+139-
+140:/* If lv_conf.h is not skipped, include it. */
+141-#if !defined(LV_CONF_SKIP) || defined(LV_CONF_PATH)
+142:    #ifdef LV_CONF_PATH                           /* If there is a path defined for lv_conf.h, use it */
+143-        #include LV_CONF_PATH                     /* Note: Make sure to define custom CONF_PATH as a string */
+144:    #elif defined(LV_CONF_INCLUDE_SIMPLE)         /* Or simply include lv_conf.h is enabled. */
+145:        #include "lv_conf.h"
+146-    #else
+147:        #include "../../../../lv_conf.h"                /* Else assume lv_conf.h is next to the lvgl folder. */
+148-    #endif
+149-    #if !defined(LV_CONF_H) && !defined(LV_CONF_SUPPRESS_DEFINE_CHECK)
+150-        /* #include will sometimes silently fail when __has_include is used */
+151-        /* https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80753 */
+152:        #pragma message("Possible failure to include lv_conf.h, please read the comment in this file if you get errors")
+153-    #endif
+154-#endif
+155-
+156-#ifdef CONFIG_LV_STDLIB_BUILTIN
+157-    #define LV_KCONFIG_PRESENT
+158-#endif
+159-
+160-/*
+161- * LV_COLOR_DEPTH was replaced by LV_COLOR_FORMAT_DEFAULT.
+162- * Derive LV_COLOR_FORMAT_DEFAULT from it here
+163- * TODO: Remove this for v10.
+164- */
+--
+4992-    #if (LV_USE_FREETYPE || LV_USE_THORVG) && LV_DRAW_THREAD_STACK_SIZE < (32 * 1024)
+4993-        #error "Increase LV_DRAW_THREAD_STACK_SIZE to at least 32KB for FreeType or ThorVG."
+4994-    #endif
+4995-
+4996-    #if defined(LV_DRAW_THREAD_STACKSIZE) && !defined(LV_DRAW_THREAD_STACK_SIZE)
+4997:        #warning "LV_DRAW_THREAD_STACKSIZE was renamed to LV_DRAW_THREAD_STACK_SIZE. Please update lv_conf.h or run menuconfig again."
+4998-        #define LV_DRAW_THREAD_STACK_SIZE LV_DRAW_THREAD_STACKSIZE
+4999-    #endif
+5000-#endif
+5001-
+5002-/*Allow only upper case letters and '/'  ('/' is a special case for backward compatibility)*/
+5003-#define LV_FS_IS_VALID_LETTER(l) ((l) == '/' || ((l) >= 'A' && (l) <= 'Z'))
+5004-
+5005:/* If running without lv_conf.h, add typedefs with default value. */
+5006-#ifdef LV_CONF_SKIP
+5007-    #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)    /*Disable warnings for Visual Studio*/
+5008-        #define _CRT_SECURE_NO_WARNINGS
+5009-    #endif
+5010-#endif  /*defined(LV_CONF_SKIP)*/
+5011-
+5012-#ifndef LV_CHECK_ARG_LOG_MODE
+5013-    #define LV_CHECK_ARG_LOG_MODE   0
+5014-#endif
+
+=== Minimal build output size ===
+   text	   data	    bss	    dec	    hex	filename
+ 421107	   1512	 124000	 546619	  8573b	/tmp/kiddos-lvgl-minimal-build/kiddos_lvgl_sdl_adapter
