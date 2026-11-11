@@ -1,0 +1,140 @@
+=== ACTION ENUM AND PLATFORM INTERFACE ===
+include/kiddos/core/action.hpp:5:enum class Action {
+include/kiddos/platform/platform.hpp:10:class Platform {
+include/kiddos/platform/platform.hpp:19:    virtual bool poll_action(Action& action) = 0;
+
+=== ACTION REFERENCES ===
+include/kiddos/app/ui_action_mapping.hpp:14:        case Action::NavigateLeft:
+include/kiddos/app/ui_action_mapping.hpp:15:            return ui::UIAction::Left;
+include/kiddos/app/ui_action_mapping.hpp:16:        case Action::NavigateRight:
+include/kiddos/app/ui_action_mapping.hpp:17:            return ui::UIAction::Right;
+include/kiddos/app/ui_action_mapping.hpp:18:        case Action::NavigateUp:
+include/kiddos/app/ui_action_mapping.hpp:19:            return ui::UIAction::Up;
+include/kiddos/app/ui_action_mapping.hpp:20:        case Action::NavigateDown:
+include/kiddos/app/ui_action_mapping.hpp:21:            return ui::UIAction::Down;
+include/kiddos/app/ui_action_mapping.hpp:22:        case Action::Confirm:
+include/kiddos/app/ui_action_mapping.hpp:23:            return ui::UIAction::Confirm;
+include/kiddos/app/ui_action_mapping.hpp:24:        case Action::Back:
+include/kiddos/app/ui_action_mapping.hpp:25:            return ui::UIAction::Back;
+include/kiddos/app/ui_action_mapping.hpp:26:        case Action::None:
+include/kiddos/app/ui_action_mapping.hpp:27:        case Action::Quit:
+src/app/application.cpp:37:        Action action = Action::None;
+src/app/application.cpp:65:        case Action::Quit:
+src/app/application.cpp:69:        case Action::NavigateUp:
+src/app/application.cpp:70:        case Action::NavigateDown:
+src/app/application.cpp:77:        case Action::Back:
+src/app/application.cpp:86:        case Action::NavigateLeft:
+src/app/application.cpp:87:        case Action::NavigateRight:
+src/app/application.cpp:88:        case Action::Confirm: {
+src/app/application.cpp:100:                case ui::UIAction::Left:
+src/app/application.cpp:105:                case ui::UIAction::Right:
+src/app/application.cpp:110:                case ui::UIAction::Confirm:
+src/app/application.cpp:115:                case ui::UIAction::Up:
+src/app/application.cpp:116:                case ui::UIAction::Down:
+src/app/application.cpp:117:                case ui::UIAction::Back:
+src/app/application.cpp:123:        case Action::None:
+src/platform/sdl_platform.cpp:482:        case SDLK_LEFT: return Action::NavigateLeft;
+src/platform/sdl_platform.cpp:483:        case SDLK_RIGHT: return Action::NavigateRight;
+src/platform/sdl_platform.cpp:484:        case SDLK_UP: return Action::NavigateUp;
+src/platform/sdl_platform.cpp:485:        case SDLK_DOWN: return Action::NavigateDown;
+src/platform/sdl_platform.cpp:487:        case SDLK_SPACE: return Action::Confirm;
+src/platform/sdl_platform.cpp:488:        case SDLK_ESCAPE: return Action::Back;
+src/platform/sdl_platform.cpp:489:        case SDLK_q: return Action::Quit;
+src/platform/sdl_platform.cpp:490:        default: return Action::None;
+src/platform/sdl_platform.cpp:497:            return Action::NavigateLeft;
+src/platform/sdl_platform.cpp:499:            return Action::NavigateRight;
+src/platform/sdl_platform.cpp:501:            return Action::NavigateUp;
+src/platform/sdl_platform.cpp:503:            return Action::NavigateDown;
+src/platform/sdl_platform.cpp:505:            return Action::Confirm;
+src/platform/sdl_platform.cpp:507:            return Action::Back;
+src/platform/sdl_platform.cpp:509:            return Action::None;
+src/platform/sdl_platform.cpp:522:                pending_actions_.push_back(Action::Quit);
+src/platform/sdl_platform.cpp:536:                    if (action != Action::None) {
+src/platform/sdl_platform.cpp:554:                    if (action != Action::None) {
+src/platform/sdl_platform.cpp:572:                    pending_actions_.push_back(Action::Quit);
+src/platform/sdl_platform.cpp:588:        action = Action::None;
+
+=== SCREEN IMAGE ORDER AND BOUNDS ===
+src/app/home_carousel_screen.cpp:14:constexpr ui::Rect left_art{24, 268, 128, 128};
+src/app/home_carousel_screen.cpp:15:constexpr ui::Rect center_art{210, 148, 300, 300};
+src/app/home_carousel_screen.cpp:16:constexpr ui::Rect right_art{568, 268, 128, 128};
+src/app/home_carousel_screen.cpp:43:    if (game == selected) return center_art;
+src/app/home_carousel_screen.cpp:45:        return left_art;
+src/app/home_carousel_screen.cpp:47:    return right_art;
+src/app/home_carousel_screen.cpp:156:        artworks_[index].load(renderer, artwork_paths[index], false);
+src/app/home_carousel_screen.cpp:159:        auto& image = root().add<ui::Image>(&artworks_[index]);
+src/app/home_carousel_screen.cpp:161:        game_images_[index] = &image;
+src/app/home_carousel_screen.cpp:166:        game_images_[index]->set_bounds(bounds_for_game(i, 1));
+src/app/home_carousel_screen.cpp:167:        game_images_[index]->set_opacity(
+src/app/home_carousel_screen.cpp:187:    set_selected_game(1);
+src/app/home_carousel_screen.cpp:191:    for (auto* image : game_images_) {
+src/app/home_carousel_screen.cpp:200:void HomeCarouselScreen::set_selected_game(int index) {
+src/app/home_carousel_screen.cpp:223:                game_images_[slot]->set_bounds(target);
+src/app/home_carousel_screen.cpp:224:                game_images_[slot]->set_opacity(0);
+src/app/home_carousel_screen.cpp:246:    for (std::size_t i = 0; i < game_images_.size(); ++i) {
+src/app/home_carousel_screen.cpp:247:        ui::Image* image = game_images_[i];
+include/kiddos/app/home_carousel_screen.hpp:21:    void set_selected_game(int index);
+include/kiddos/app/home_carousel_screen.hpp:26:    std::array<ui::Texture, game_count> artworks_{};
+include/kiddos/app/home_carousel_screen.hpp:32:    std::array<ui::Image*, game_count> game_images_{};
+
+=== TEST TARGETS ===
+57:add_executable(kiddos
+60:    src/app/home_carousel_screen.cpp
+76:    add_executable(kiddos_app_ui_action_mapping_test
+80:    add_test(NAME kiddos_app_ui_action_mapping
+83:    add_executable(kiddos_app_home_carousel_screen_test
+84:        tests/app_home_carousel_screen_test.cpp
+85:        src/app/home_carousel_screen.cpp)
+86:    target_include_directories(kiddos_app_home_carousel_screen_test PRIVATE include)
+87:    target_compile_definitions(kiddos_app_home_carousel_screen_test PRIVATE
+89:    target_link_libraries(kiddos_app_home_carousel_screen_test PRIVATE kiddos_ui)
+90:    add_test(NAME kiddos_app_home_carousel_screen
+91:        COMMAND kiddos_app_home_carousel_screen_test)
+93:    add_executable(kiddos_platform_sdl_text_input_translator_test
+97:    add_test(NAME kiddos_platform_sdl_text_input_translator
+100:    add_executable(kiddos_platform_text_input_interface_test
+103:    add_test(NAME kiddos_platform_text_input_interface
+106:    add_executable(kiddos_platform_sdl_keyboard_policy_test
+110:    add_test(NAME kiddos_platform_sdl_keyboard_policy
+113:    add_executable(kiddos_platform_text_input_event_test
+116:    add_test(NAME kiddos_platform_text_input_event
+119:    add_executable(kiddos_ui_geometry_test
+125:    add_executable(kiddos_ui_layout_test
+133:    add_test(
+138:    add_test(
+143:    add_executable(kiddos_ui_focus_test
+150:    add_test(
+155:    add_executable(kiddos_ui_button_test
+162:    add_test(
+167:    add_executable(kiddos_ui_controller_test
+174:    add_test(
+179:    add_executable(kiddos_ui_renderer_test tests/ui_renderer_test.cpp)
+182:    add_test(NAME kiddos_ui_renderer COMMAND kiddos_ui_renderer_test)
+184:    add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
+187:    add_test(NAME kiddos_ui_image COMMAND kiddos_ui_image_test)
+189:    add_executable(kiddos_ui_label_test tests/ui_label_test.cpp)
+192:    add_test(NAME kiddos_ui_label COMMAND kiddos_ui_label_test)
+194:    add_executable(kiddos_ui_panel_test tests/ui_panel_test.cpp)
+197:    add_test(NAME kiddos_ui_panel COMMAND kiddos_ui_panel_test)
+199:    add_executable(kiddos_ui_progress_bar_test tests/ui_progress_bar_test.cpp)
+202:    add_test(NAME kiddos_ui_progress_bar COMMAND kiddos_ui_progress_bar_test)
+204:    add_executable(kiddos_ui_toggle_test tests/ui_toggle_test.cpp)
+207:    add_test(NAME kiddos_ui_toggle COMMAND kiddos_ui_toggle_test)
+209:    add_executable(kiddos_ui_slider_test tests/ui_slider_test.cpp)
+212:    add_test(NAME kiddos_ui_slider COMMAND kiddos_ui_slider_test)
+214:    add_executable(kiddos_ui_theme_test tests/ui_theme_test.cpp)
+217:    add_test(NAME kiddos_ui_theme COMMAND kiddos_ui_theme_test)
+218:    add_executable(kiddos_ui_list_view_test tests/ui_list_view_test.cpp)
+221:    add_test(NAME kiddos_ui_list_view COMMAND kiddos_ui_list_view_test)
+223:    add_executable(kiddos_ui_checkbox_test tests/ui_checkbox_test.cpp)
+226:    add_test(NAME kiddos_ui_checkbox COMMAND kiddos_ui_checkbox_test)
+228:    add_executable(kiddos_ui_radio_group_test tests/ui_radio_group_test.cpp)
+231:    add_test(NAME kiddos_ui_radio_group COMMAND kiddos_ui_radio_group_test)
+233:    add_executable(kiddos_ui_select_test tests/ui_select_test.cpp)
+236:    add_test(NAME kiddos_ui_select COMMAND kiddos_ui_select_test)
+238:    add_executable(kiddos_ui_text_input_test tests/ui_text_input_test.cpp)
+241:    add_test(NAME kiddos_ui_text_input COMMAND kiddos_ui_text_input_test)
+243:    add_executable(kiddos_ui_text_input_interaction_test
+247:    add_test(NAME kiddos_ui_text_input_interaction
+260:    add_executable(kiddos_ui_screen_manager_test
+264:    add_test(NAME kiddos_ui_screen_manager
