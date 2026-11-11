@@ -1,0 +1,580 @@
+=== APPLICATION RENDER LOOP ===
+#include "kiddos/app/application.hpp"
+
+#include <chrono>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+            if (!running_) {
+                break;
+            }
+        }
+
+        if (running_) {
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::NavigateLeft:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + game_count_ - 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateRight:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateUp:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::NavigateDown:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::Confirm:
+            if (!action_screen_) {
+                action_screen_ = true;
+                selected_action_ = 0;
+            }
+            // Game launching is intentionally not implemented yet.
+            break;
+
+        case Action::Back:
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
+            break;
+
+        case Action::None:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    if (action_screen_) {
+        // Game 1 is a temporary checkpoint demonstration fixture.
+        platform_.draw_game_actions(
+            selected_game_, selected_game_ == 1, selected_action_);
+    } else {
+        platform_.draw_carousel(selected_game_);
+    }
+    platform_.present();
+}
+
+} // namespace kiddos
+
+=== CURRENT CAROUSEL DRAWING ===
+void SDLPlatform::draw_carousel(int selected_index) {
+    if (!renderer_) return;
+
+    const int left = (selected_index + 2) % 3;
+    const int right = (selected_index + 1) % 3;
+
+    const Color side_fill{16, 41, 75, 255};
+    const Color center_fill{18, 63, 117, 255};
+    const Color center_border{36, 164, 255, 255};
+
+    // Draw the smaller neighboring cards first, behind the main card.
+    const SDL_Rect side_left{25, 250, 190, 175};
+    const SDL_Rect side_right{505, 250, 190, 175};
+
+    rounded_fill(renderer_, side_left, 24, side_fill);
+    rounded_outline(renderer_, side_left, 24,
+                    {55, 105, 165, 190});
+    draw_art(renderer_, left,
+             {side_left.x + 55, side_left.y + 42, 80, 90}, 180);
+
+    rounded_fill(renderer_, side_right, 24, side_fill);
+    rounded_outline(renderer_, side_right, 24,
+                    {55, 105, 165, 190});
+    draw_art(renderer_, right,
+             {side_right.x + 55, side_right.y + 42, 80, 90}, 180);
+
+    // Main card is larger and drawn last so it overlaps both neighbors.
+    const SDL_Rect center{145, 135, 430, 370};
+    rounded_fill(renderer_, center, 30, center_fill);
+    rounded_outline(renderer_, center, 30, center_border);
+    rounded_outline(renderer_,
+                    {center.x - 3, center.y - 3,
+                     center.w + 6, center.h + 6},
+                    32, {36, 164, 255, 150});
+
+    // Artwork always follows the actual selected game.
+    draw_art(renderer_, selected_index,
+             {center.x + 115, center.y + 70, 200, 205}, 255);
+
+    // Game title belongs below the main card; no SELECTED badge.
+    if (carousel_title_texture && selected_index == 1) {
+        SDL_Rect title{220, 525, 280, 42};
+        SDL_RenderCopy(renderer_, carousel_title_texture,
+                       nullptr, &title);
+    }
+
+    draw_status(renderer_);
+}
+
+
+namespace {
+
+void draw_action_label(SDL_Renderer* r, int index,
+                       int x, int y) {
+    if (index < 0 || index >= static_cast<int>(action_label_textures.size())) return;
+    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+    if (!texture) return;
+
+    SDL_Rect destination{x, y, 350, 72};
+    SDL_RenderCopy(r, texture, nullptr, &destination);
+}
+
+void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+    triangle(r, x, y - 34, x, y + 34,
+             x + 58, y, {220, 237, 255, 255});
+}
+
+void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+    circle(r, x, y, 30, {220, 237, 255, 255});
+    circle(r, x, y, 19, {15, 29, 62, 255});
+    triangle(r, x + 10, y - 36,
+             x + 42, y - 12,
+             x + 7, y - 8,
+             {220, 237, 255, 255});
+}
+
+void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+    circle(r, x, y, 29, {220, 237, 255, 255});
+    circle(r, x, y, 18, {15, 29, 62, 255});
+    triangle(r, x - 27, y - 30,
+             x + 10, y - 31,
+             x - 14, y + 2,
+             {220, 237, 255, 255});
+}
+
+} // namespace
+
+
+=== SCREEN AND SCREEN MANAGER ===
+#pragma once
+#include "kiddos/ui/container.hpp"
+#include "kiddos/ui/controller.hpp"
+#include "kiddos/ui/text_input_interaction.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+namespace kiddos::ui {
+class Screen {
+public:
+    Screen() noexcept;
+    virtual ~Screen() = default;
+    Screen(const Screen&) = delete;
+    Screen& operator=(const Screen&) = delete;
+    Container& root() noexcept;
+    FocusManager& focus() noexcept;
+    virtual void on_enter() {}
+    virtual void on_exit() {}
+    virtual void on_suspend() {}
+    virtual void on_resume() {}
+    virtual void update(float) {}
+    virtual void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    Container root_;
+    FocusManager focus_;
+    ControllerInteraction controller_;
+    TextInputInteraction text_input_;
+};
+}
+#pragma once
+#include "kiddos/ui/screen.hpp"
+#include <memory>
+#include <vector>
+namespace kiddos::ui {
+class ScreenManager final {
+public:
+    ~ScreenManager();
+    ScreenManager() = default;
+    ScreenManager(const ScreenManager&) = delete;
+    ScreenManager& operator=(const ScreenManager&) = delete;
+    bool push(std::unique_ptr<Screen> screen);
+    bool pop();
+    bool replace(std::unique_ptr<Screen> screen);
+    void clear() noexcept;
+    Screen* current() noexcept;
+    const Screen* current() const noexcept;
+    std::size_t depth() const noexcept;
+    void update(float delta_seconds);
+    void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    std::vector<std::unique_ptr<Screen>> stack_;
+};
+}
+#include "kiddos/ui/screen.hpp"
+namespace kiddos::ui {
+Screen::Screen() noexcept : focus_(root_), controller_(focus_), text_input_(focus_) {}
+Container& Screen::root() noexcept { return root_; }
+FocusManager& Screen::focus() noexcept { return focus_; }
+void Screen::render(Renderer& renderer) { root_.render(renderer); }
+bool Screen::handle_action(UIAction action) {
+    if (!focus_.focused()) focus_.focus_first();
+    return controller_.handle(action);
+}
+bool Screen::handle_text_input(const ::kiddos::TextInputEvent& event) {
+    switch (event.type) {
+    case ::kiddos::TextInputEventType::Text: return text_input_.insert_text(event.text);
+    case ::kiddos::TextInputEventType::Backspace: return text_input_.handle(TextInputKey::Backspace);
+    case ::kiddos::TextInputEventType::Delete: return text_input_.handle(TextInputKey::Delete);
+    case ::kiddos::TextInputEventType::Left: return text_input_.handle(TextInputKey::Left);
+    case ::kiddos::TextInputEventType::Right: return text_input_.handle(TextInputKey::Right);
+    case ::kiddos::TextInputEventType::Home: return text_input_.handle(TextInputKey::Home);
+    case ::kiddos::TextInputEventType::End: return text_input_.handle(TextInputKey::End);
+    }
+    return false;
+}
+}
+#include "kiddos/ui/screen_manager.hpp"
+namespace kiddos::ui {
+ScreenManager::~ScreenManager() { clear(); }
+bool ScreenManager::push(std::unique_ptr<Screen> screen) {
+    if (!screen) return false;
+    if (auto* active = current()) active->on_suspend();
+    auto* next = screen.get();
+    stack_.push_back(std::move(screen));
+    next->on_enter();
+    next->focus().focus_first();
+    return true;
+}
+bool ScreenManager::pop() {
+    if (stack_.empty()) return false;
+    stack_.back()->on_exit();
+    stack_.pop_back();
+    if (auto* active = current()) { active->on_resume(); active->focus().focus_first(); }
+    return true;
+}
+bool ScreenManager::replace(std::unique_ptr<Screen> screen) {
+    if (!screen) return false;
+    if (auto* active = current()) { active->on_exit(); stack_.pop_back(); }
+    auto* next = screen.get();
+    stack_.push_back(std::move(screen));
+    next->on_enter();
+    next->focus().focus_first();
+    return true;
+}
+void ScreenManager::clear() noexcept {
+    while (!stack_.empty()) { stack_.back()->on_exit(); stack_.pop_back(); }
+}
+Screen* ScreenManager::current() noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+const Screen* ScreenManager::current() const noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+std::size_t ScreenManager::depth() const noexcept { return stack_.size(); }
+void ScreenManager::update(float dt) { if (auto* s=current()) s->update(dt); }
+void ScreenManager::render(Renderer& r) { if (auto* s=current()) s->render(r); }
+bool ScreenManager::handle_action(UIAction a) {
+    if (a == UIAction::Back) return pop();
+    auto* s=current(); return s ? s->handle_action(a) : false;
+}
+bool ScreenManager::handle_text_input(const ::kiddos::TextInputEvent& e) {
+    auto* s=current(); return s ? s->handle_text_input(e) : false;
+}
+}
+
+=== IMAGE AND LABEL API ===
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/texture.hpp"
+
+namespace kiddos::ui {
+
+enum class ImageFit {
+    contain,
+    cover,
+    stretch
+};
+
+struct ImageGeometry {
+    Rect source{};
+    Rect destination{};
+    bool valid = false;
+};
+
+ImageGeometry calculate_image_geometry(
+    int texture_width,
+    int texture_height,
+    Rect bounds,
+    ImageFit fit
+) noexcept;
+
+class Image final : public Element {
+public:
+    explicit Image(Texture* texture = nullptr) noexcept;
+
+    void set_texture(Texture* texture) noexcept;
+    Texture* texture() const noexcept;
+
+    void set_fit(ImageFit fit) noexcept;
+    ImageFit fit() const noexcept;
+
+    ImageGeometry geometry() const noexcept;
+
+private:
+    Texture* texture_ = nullptr;
+    ImageFit fit_ = ImageFit::contain;
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/font.hpp"
+
+#include <string>
+
+namespace kiddos::ui {
+
+enum class LabelAlignment {
+    left,
+    center,
+    right
+};
+
+class Label final : public Element {
+public:
+    explicit Label(std::string text = {});
+
+    void set_text(std::string text);
+    const std::string& text() const noexcept;
+
+    void set_font(const Font* font) noexcept;
+    const Font* font() const noexcept;
+
+    void set_color(Color color) noexcept;
+    Color color() const noexcept;
+
+    void set_alignment(LabelAlignment alignment) noexcept;
+    LabelAlignment alignment() const noexcept;
+
+private:
+    std::string text_;
+    const Font* font_ = nullptr;
+    Color color_{255, 255, 255, 255};
+    LabelAlignment alignment_ = LabelAlignment::left;
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+
+=== LAYOUT AND CONTAINER API ===
+#pragma once
+
+#include "kiddos/ui/container.hpp"
+
+namespace kiddos::ui {
+
+enum class Axis {
+    Horizontal,
+    Vertical
+};
+
+struct Insets {
+    int left = 0;
+    int top = 0;
+    int right = 0;
+    int bottom = 0;
+};
+
+class StackLayout final {
+public:
+    // Distributes available space equally between visible children.
+    // Remaining pixels are distributed one at a time.
+    static void apply(
+        Container& container,
+        Rect area,
+        Axis axis,
+        int gap = 0,
+        Insets padding = {}
+    ) noexcept;
+};
+
+} // namespace kiddos::ui
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+
+#include <memory>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+namespace kiddos::ui {
+
+class Container : public Element {
+public:
+    template<typename T, typename... Args>
+    T& add(Args&&... args) {
+        static_assert(std::is_base_of_v<Element, T>,
+                      "Container children must derive from Element");
+
+        auto child = std::make_unique<T>(
+            std::forward<Args>(args)...
+        );
+
+        T& reference = *child;
+        children_.push_back(std::move(child));
+        return reference;
+    }
+
+    std::size_t child_count() const noexcept {
+        return children_.size();
+    }
+
+    Element* child(std::size_t index) noexcept {
+        if (index >= children_.size()) return nullptr;
+        return children_[index].get();
+    }
+
+    const Element* child(std::size_t index) const noexcept {
+        if (index >= children_.size()) return nullptr;
+        return children_[index].get();
+    }
+
+protected:
+    void draw(Renderer& renderer) override {
+        for (auto& element : children_) {
+            element->render(renderer);
+        }
+    }
+
+private:
+    std::vector<std::unique_ptr<Element>> children_;
+};
+
+} // namespace kiddos::ui
+
+=== RENDERER AND CONTROLLER API ===
+#pragma once
+
+#include "kiddos/ui/color.hpp"
+#include "kiddos/ui/geometry.hpp"
+
+#include <SDL.h>
+
+namespace kiddos::ui {
+
+// Non-owning SDL2 renderer adapter.
+// The SDLPlatform remains responsible for creating and destroying SDL_Renderer.
+class Renderer final {
+public:
+    explicit Renderer(SDL_Renderer* renderer = nullptr) noexcept;
+
+    void attach(SDL_Renderer* renderer) noexcept;
+    bool valid() const noexcept;
+
+    bool clear(Color color) const;
+    bool fill_rect(Rect rect, Color color) const;
+    bool outline_rect(Rect rect, Color color) const;
+    bool draw_line(Point from, Point to, Color color) const;
+    bool draw_point(Point point, Color color) const;
+    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination) const;
+
+    bool set_clip(Rect rect) const;
+    bool clear_clip() const;
+
+    void present() const;
+
+    SDL_Renderer* native() const noexcept;
+
+private:
+    SDL_Renderer* renderer_ = nullptr;
+
+    bool set_color(Color color) const;
+};
+
+} // namespace kiddos::ui
+#pragma once
+
+#include "kiddos/ui/button.hpp"
+#include "kiddos/ui/focus.hpp"
+
+namespace kiddos::ui {
+
+enum class UIAction {
+    Left,
+    Right,
+    Up,
+    Down,
+    Confirm,
+    Back
+};
+
+class ControllerInteraction final {
+public:
+    explicit ControllerInteraction(FocusManager& focus) noexcept;
+
+    bool handle(UIAction action);
+    bool cancel() noexcept;
+
+private:
+    FocusManager& focus_;
+};
+
+} // namespace kiddos::ui
+
+=== ARTWORK DIMENSIONS ===
+assets/artwork/generated/carousel-car.bmp:      PC bitmap, Windows 3.x format, 180 x 160 x 24, image size 86400, cbSize 86454, bits offset 54
+assets/artwork/generated/carousel-mushroom.bmp: PC bitmap, Windows 3.x format, 180 x 160 x 24, image size 86400, cbSize 86454, bits offset 54
+assets/artwork/generated/carousel-selected.bmp: PC bitmap, Windows 3.x format, 150 x 34 x 24, image size 15368, cbSize 15422, bits offset 54
+assets/artwork/generated/carousel-star.bmp:     PC bitmap, Windows 3.x format, 160 x 160 x 24, image size 76800, cbSize 76854, bits offset 54
+assets/artwork/generated/carousel-title.bmp:    PC bitmap, Windows 3.x format, 360 x 52 x 24, image size 56160, cbSize 56214, bits offset 54
+assets/artwork/generated/forest.bmp:            PC bitmap, Windows 98/2000 and newer format, 640 x 840 x 24, cbSize 1612938, bits offset 138
+assets/artwork/generated/label-play.bmp:        PC bitmap, Windows 98/2000 and newer format, 840 x 200 x 24, cbSize 504138, bits offset 138
+assets/artwork/generated/label-resume.bmp:      PC bitmap, Windows 98/2000 and newer format, 840 x 200 x 24, cbSize 504138, bits offset 138
+assets/artwork/generated/label-start-over.bmp:  PC bitmap, Windows 98/2000 and newer format, 840 x 200 x 24, cbSize 504138, bits offset 138
+assets/artwork/generated/ocean.bmp:             PC bitmap, Windows 98/2000 and newer format, 640 x 840 x 24, cbSize 1612938, bits offset 138
+assets/artwork/generated/space.bmp:             PC bitmap, Windows 98/2000 and newer format, 640 x 840 x 24, cbSize 1612938, bits offset 138
