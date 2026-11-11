@@ -75,3 +75,11 @@ focused, pressed, and disabled visual states. It exposes a label for the
 future font/text subsystem and an activation callback. Activation is
 rejected while hidden or disabled, or when no callback is assigned.
 Button rendering is handled internally through the shared Renderer.
+
+## Controller interaction
+
+`ControllerInteraction` translates abstract UI actions into focus movement
+and button activation. It supports four directional actions and Confirm.
+Back is reserved for application-level navigation and currently performs
+no action. SDL-specific controller event mapping remains the platform
+adapter's responsibility.

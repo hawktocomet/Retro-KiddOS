@@ -1,0 +1,36 @@
+===== CONFIGURE =====
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+===== BUILD =====
+[1/8] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/controller.cpp.o
+[2/8] Linking CXX static library libkiddos_ui.a
+[3/8] Linking CXX executable kiddos
+[4/8] Building CXX object CMakeFiles/kiddos_ui_controller_test.dir/tests/ui_controller_test.cpp.o
+[5/8] Linking CXX executable kiddos_ui_layout_test
+[6/8] Linking CXX executable kiddos_ui_focus_test
+[7/8] Linking CXX executable kiddos_ui_button_test
+[8/8] Linking CXX executable kiddos_ui_controller_test
+===== TESTS =====
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_ui_layout
+1/5 Test #1: kiddos_ui_layout .................   Passed    0.00 sec
+    Start 2: kiddos_ui_geometry
+2/5 Test #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+    Start 3: kiddos_ui_focus
+3/5 Test #3: kiddos_ui_focus ..................   Passed    0.00 sec
+    Start 4: kiddos_ui_button
+4/5 Test #4: kiddos_ui_button .................   Passed    0.00 sec
+    Start 5: kiddos_ui_controller
+5/5 Test #5: kiddos_ui_controller .............   Passed    0.00 sec
+
+100% tests passed out of 5
+
+Total Test time (real) =   0.01 sec
+===== STAGED CHANGES =====
+ CMakeLists.txt                   | 13 ++++++++++
+ docs/KIDDOS_UI_LIBRARY.md        |  8 ++++++
+ include/kiddos/ui/controller.hpp | 28 ++++++++++++++++++++
+ src/ui/controller.cpp            | 34 ++++++++++++++++++++++++
+ tests/ui_controller_test.cpp     | 56 ++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 139 insertions(+)
