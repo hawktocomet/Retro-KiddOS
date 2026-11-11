@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T002701Z-lvgl-feasibility-capture-adapter-on-desktop
+research/milestone-runs/20261111T002726Z-lvgl-feasibility-diagnose-adapter-crash

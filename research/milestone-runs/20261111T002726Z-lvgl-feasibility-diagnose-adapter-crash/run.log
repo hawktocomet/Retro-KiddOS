@@ -1,0 +1,264 @@
+=== Debugger availability ===
+/usr/bin/gdb
+/usr/bin/coredumpctl
+=== SDL runtime libraries ===
+	linux-vdso.so.1 (0x00007fec5f8b2000)
+	libSDL2-2.0.so.0 => /usr/lib/libSDL2-2.0.so.0 (0x00007fec5f6e2000)
+	libm.so.6 => /usr/lib/libm.so.6 (0x00007fec5f5ab000)
+	libc.so.6 => /usr/lib/libc.so.6 (0x00007fec5f200000)
+	/lib64/ld-linux-x86-64.so.2 => /usr/lib64/ld-linux-x86-64.so.2 (0x00007fec5f8b4000)
+=== Adapter source with line numbers ===
+     1	#include <SDL.h>
+     2	#include <stdint.h>
+     3	#include <stdio.h>
+     4	#include <stdlib.h>
+     5	
+     6	#include "lvgl.h"
+     7	
+     8	#define SCREEN_W 720
+     9	#define SCREEN_H 720
+    10	#define BUFFER_ROWS 40
+    11	
+    12	static SDL_Window *window;
+    13	static SDL_Renderer *renderer;
+    14	static SDL_Texture *texture;
+    15	static uint8_t draw_buffer[SCREEN_W * BUFFER_ROWS * 2];
+    16	
+    17	static void flush_to_sdl(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
+    18	{
+    19	    SDL_Rect rect = {
+    20	        .x = area->x1,
+    21	        .y = area->y1,
+    22	        .w = area->x2 - area->x1 + 1,
+    23	        .h = area->y2 - area->y1 + 1
+    24	    };
+    25	
+    26	    if (rect.w > 0 && rect.h > 0) {
+    27	        SDL_UpdateTexture(texture, &rect, pixels, rect.w * 2);
+    28	        SDL_RenderClear(renderer);
+    29	        SDL_RenderCopy(renderer, texture, NULL, NULL);
+    30	        SDL_RenderPresent(renderer);
+    31	    }
+    32	
+    33	    lv_display_flush_ready(display);
+    34	}
+    35	
+    36	static void make_ui(void)
+    37	{
+    38	    lv_obj_t *screen = lv_screen_active();
+    39	    lv_obj_set_style_bg_color(screen, lv_color_hex(0x071426), 0);
+    40	    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+    41	
+    42	    lv_obj_t *header = lv_obj_create(screen);
+    43	    lv_obj_set_size(header, 680, 76);
+    44	    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 18);
+    45	    lv_obj_set_style_bg_color(header, lv_color_hex(0x102B4A), 0);
+    46	    lv_obj_set_style_border_width(header, 0, 0);
+    47	    lv_obj_set_style_radius(header, 18, 0);
+    48	
+    49	    lv_obj_t *title = lv_label_create(header);
+    50	    lv_label_set_text(title, "KiddOS");
+    51	    lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
+    52	    lv_obj_center(title);
+    53	
+    54	    const char *names[] = {"GAME ONE", "GAME TWO", "GAME THREE"};
+    55	    const int widths[] = {170, 230, 170};
+    56	
+    57	    for (int i = 0; i < 3; i++) {
+    58	        lv_obj_t *card = lv_obj_create(screen);
+    59	        lv_obj_set_size(card, widths[i], i == 1 ? 330 : 270);
+    60	        lv_obj_align(card, LV_ALIGN_CENTER, (i - 1) * 205, 25);
+    61	        lv_obj_set_style_bg_color(card,
+    62	            i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+    63	        lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+    64	        lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+    65	        lv_obj_set_style_radius(card, 22, 0);
+    66	
+    67	        lv_obj_t *label = lv_label_create(card);
+    68	        lv_label_set_text(label, names[i]);
+    69	        lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    70	        lv_obj_center(label);
+    71	    }
+    72	
+    73	    lv_obj_t *footer = lv_label_create(screen);
+    74	    lv_label_set_text(footer, "SDL2 renderer adapter prototype");
+    75	    lv_obj_set_style_text_color(footer, lv_color_hex(0x8FAAC5), 0);
+    76	    lv_obj_align(footer, LV_ALIGN_BOTTOM_MID, 0, -24);
+    77	}
+    78	
+    79	int main(void)
+    80	{
+    81	    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+    82	        fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
+    83	        return 1;
+    84	    }
+    85	
+    86	    window = SDL_CreateWindow("KiddOS LVGL SDL Renderer Adapter",
+    87	        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    88	        SCREEN_W, SCREEN_H, SDL_WINDOW_SHOWN);
+    89	    if (!window) {
+    90	        fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
+    91	        return 1;
+    92	    }
+    93	
+    94	    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    95	    if (!renderer)
+    96	        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+    97	    if (!renderer) {
+    98	        fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
+    99	        return 1;
+   100	    }
+   101	
+   102	    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565,
+   103	        SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
+   104	    if (!texture) {
+   105	        fprintf(stderr, "SDL_CreateTexture: %s\n", SDL_GetError());
+   106	        return 1;
+   107	    }
+   108	
+   109	    SDL_SetRenderDrawColor(renderer, 7, 20, 38, 255);
+   110	    SDL_RenderClear(renderer);
+   111	    SDL_RenderPresent(renderer);
+   112	
+   113	    lv_init();
+   114	
+   115	    lv_display_t *display = lv_display_create(SCREEN_W, SCREEN_H);
+   116	    lv_display_set_color_format(display, LV_COLOR_FORMAT_RGB565);
+   117	    lv_display_set_flush_cb(display, flush_to_sdl);
+   118	    lv_display_set_buffers(display, draw_buffer, NULL, sizeof(draw_buffer),
+   119	        LV_DISPLAY_RENDER_MODE_PARTIAL);
+   120	
+   121	    make_ui();
+   122	
+   123	    printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+   124	    printf("Press Escape or close the window to exit.\n");
+   125	
+   126	    int running = 1;
+   127	    while (running) {
+   128	        SDL_Event event;
+   129	        while (SDL_PollEvent(&event)) {
+   130	            if (event.type == SDL_QUIT)
+   131	                running = 0;
+   132	            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+   133	                running = 0;
+   134	        }
+   135	        lv_timer_handler();
+   136	        SDL_Delay(5);
+   137	    }
+   138	
+   139	    lv_deinit();
+   140	    SDL_DestroyTexture(texture);
+   141	    SDL_DestroyRenderer(renderer);
+   142	    SDL_DestroyWindow(window);
+   143	    SDL_Quit();
+   144	    return 0;
+   145	}
+=== Run with X11 backend ===
+/tmp/tmp.3GRk5Jt0H8: line 18: 290454 Segmentation fault         SDL_VIDEODRIVER=x11 timeout 5s "$APP" > "$OUT/x11.log" 2>&1
+X11_EXIT=139
+timeout: the monitored command dumped core
+=== Run with Wayland backend ===
+/tmp/tmp.3GRk5Jt0H8: line 23: 290477 Segmentation fault         SDL_VIDEODRIVER=wayland timeout 5s "$APP" > "$OUT/wayland.log" 2>&1
+WAYLAND_EXIT=139
+timeout: the monitored command dumped core
+=== GDB backtrace ===
+#2  0x00007ffff51ccae9 in ?? () from /usr/lib/libusb-1.0.so.0
+#3  0x00007ffff51cdb99 in libusb_handle_events_timeout_completed () from /usr/lib/libusb-1.0.so.0
+#4  0x00007ffff51cdc03 in libusb_handle_events () from /usr/lib/libusb-1.0.so.0
+#5  0x00007ffff766d314 in ?? () from /usr/lib/libSDL3.so.0
+#6  0x00007ffff76701a0 in ?? () from /usr/lib/libSDL3.so.0
+#7  0x00007ffff782ae50 in ?? () from /usr/lib/libSDL3.so.0
+#8  0x00007ffff7a98042 in ?? () from /usr/lib/libc.so.6
+#9  0x00007ffff7b2072c in ?? () from /usr/lib/libc.so.6
+
+Thread 9 (Thread 0x7fffdaffd6c0 (LWP 290618) "libusb_event"):
+#0  0x00007ffff7aa08f2 in ?? () from /usr/lib/libc.so.6
+#1  0x00007ffff7b112e5 in poll () from /usr/lib/libc.so.6
+#2  0x00007ffff51d3c2b in ?? () from /usr/lib/libusb-1.0.so.0
+#3  0x00007ffff7a98042 in ?? () from /usr/lib/libc.so.6
+#4  0x00007ffff7b2072c in ?? () from /usr/lib/libc.so.6
+
+Thread 8 (Thread 0x7fffdb7fe6c0 (LWP 290617) "wl_cursor_surfa"):
+#0  0x00007ffff7aa08f2 in ?? () from /usr/lib/libc.so.6
+#1  0x00007ffff7b119d7 in ppoll () from /usr/lib/libc.so.6
+#2  0x00007ffff77e6b24 in ?? () from /usr/lib/libSDL3.so.0
+#3  0x00007ffff77cfc81 in ?? () from /usr/lib/libSDL3.so.0
+#4  0x00007ffff782ae50 in ?? () from /usr/lib/libSDL3.so.0
+#5  0x00007ffff7a98042 in ?? () from /usr/lib/libc.so.6
+#6  0x00007ffff7b2072c in ?? () from /usr/lib/libc.so.6
+
+Thread 7 (Thread 0x7fffdbfff6c0 (LWP 290616) "dconf worker"):
+#0  0x00007ffff7aa08f2 in ?? () from /usr/lib/libc.so.6
+#1  0x00007ffff7b119d7 in ppoll () from /usr/lib/libc.so.6
+#2  0x00007ffff72cbc9e in ?? () from /usr/lib/libglib-2.0.so.0
+#3  0x00007ffff72cbdb5 in g_main_context_iteration () from /usr/lib/libglib-2.0.so.0
+#4  0x00007ffff5ceccde in ?? () from /usr/lib/gio/modules/libdconfsettings.so
+#5  0x00007ffff72fdb54 in ?? () from /usr/lib/libglib-2.0.so.0
+#6  0x00007ffff7a98042 in ?? () from /usr/lib/libc.so.6
+#7  0x00007ffff7b2072c in ?? () from /usr/lib/libc.so.6
+
+Thread 6 (Thread 0x7ffff0dfb6c0 (LWP 290615) "gdbus"):
+#0  0x00007ffff7aa08f2 in ?? () from /usr/lib/libc.so.6
+#1  0x00007ffff7b119d7 in ppoll () from /usr/lib/libc.so.6
+#2  0x00007ffff72cbc9e in ?? () from /usr/lib/libglib-2.0.so.0
+#3  0x00007ffff72cbf77 in g_main_loop_run () from /usr/lib/libglib-2.0.so.0
+#4  0x00007ffff6fbab64 in ?? () from /usr/lib/libgio-2.0.so.0
+#5  0x00007ffff72fdb54 in ?? () from /usr/lib/libglib-2.0.so.0
+#6  0x00007ffff7a98042 in ?? () from /usr/lib/libc.so.6
+#7  0x00007ffff7b2072c in ?? () from /usr/lib/libc.so.6
+
+Thread 5 (Thread 0x7ffff15fc6c0 (LWP 290614) "pool-0"):
+#0  0x00007ffff7b1e46d in syscall () from /usr/lib/libc.so.6
+#1  0x00007ffff72fac1c in g_cond_wait_until () from /usr/lib/libglib-2.0.so.0
+#2  0x00007ffff7287477 in ?? () from /usr/lib/libglib-2.0.so.0
+#3  0x00007ffff7300e1b in ?? () from /usr/lib/libglib-2.0.so.0
+#4  0x00007ffff72fdb54 in ?? () from /usr/lib/libglib-2.0.so.0
+#5  0x00007ffff7a98042 in ?? () from /usr/lib/libc.so.6
+#6  0x00007ffff7b2072c in ?? () from /usr/lib/libc.so.6
+
+Thread 4 (Thread 0x7ffff1dfd6c0 (LWP 290613) "gmain"):
+#0  0x00007ffff7aa08f2 in ?? () from /usr/lib/libc.so.6
+#1  0x00007ffff7b119d7 in ppoll () from /usr/lib/libc.so.6
+#2  0x00007ffff72cbc9e in ?? () from /usr/lib/libglib-2.0.so.0
+#3  0x00007ffff72cbdb5 in g_main_context_iteration () from /usr/lib/libglib-2.0.so.0
+#4  0x00007ffff72cbe02 in ?? () from /usr/lib/libglib-2.0.so.0
+#5  0x00007ffff72fdb54 in ?? () from /usr/lib/libglib-2.0.so.0
+#6  0x00007ffff7a98042 in ?? () from /usr/lib/libc.so.6
+#7  0x00007ffff7b2072c in ?? () from /usr/lib/libc.so.6
+
+Thread 3 (Thread 0x7ffff25fe6c0 (LWP 290612) "pool-spawner"):
+#0  0x00007ffff7b1e46d in syscall () from /usr/lib/libc.so.6
+#1  0x00007ffff72f9bde in g_cond_wait () from /usr/lib/libglib-2.0.so.0
+#2  0x00007ffff72874ad in ?? () from /usr/lib/libglib-2.0.so.0
+#3  0x00007ffff7300027 in ?? () from /usr/lib/libglib-2.0.so.0
+#4  0x00007ffff72fdb54 in ?? () from /usr/lib/libglib-2.0.so.0
+#5  0x00007ffff7a98042 in ?? () from /usr/lib/libc.so.6
+#6  0x00007ffff7b2072c in ?? () from /usr/lib/libc.so.6
+
+Thread 2 (Thread 0x7ffff2dff6c0 (LWP 290611) "[pango] fontcon"):
+#0  0x00007ffff7b1e46d in syscall () from /usr/lib/libc.so.6
+#1  0x00007ffff72f9bde in g_cond_wait () from /usr/lib/libglib-2.0.so.0
+#2  0x00007ffff72874ad in ?? () from /usr/lib/libglib-2.0.so.0
+#3  0x00007ffff7287526 in g_async_queue_pop () from /usr/lib/libglib-2.0.so.0
+#4  0x00007ffff73d2661 in ?? () from /usr/lib/libpangoft2-1.0.so.0
+#5  0x00007ffff72fdb54 in ?? () from /usr/lib/libglib-2.0.so.0
+#6  0x00007ffff7a98042 in ?? () from /usr/lib/libc.so.6
+#7  0x00007ffff7b2072c in ?? () from /usr/lib/libc.so.6
+
+Thread 1 (Thread 0x7ffff7df3740 (LWP 290608) "kiddos_lvgl_sdl"):
+#0  0x00005555555e87a9 in lv_sdl_backend_get_display_data ()
+#1  0x00005555556485c9 in get_renderer ()
+#2  0x00005555555d250e in dispatch ()
+#3  0x000055555557c779 in lv_draw_dispatch_layer ()
+#4  0x000055555557c9eb in lv_draw_finalize_task_creation ()
+#5  0x00005555555838e2 in lv_draw_rect ()
+#6  0x0000555555559023 in lv_obj_draw ()
+#7  0x0000555555560d26 in lv_obj_send_event ()
+#8  0x000055555557682a in lv_obj_redraw ()
+#9  0x0000555555576ea1 in lv_obj_refr.part ()
+#10 0x0000555555577792 in refr_obj_and_children ()
+#11 0x0000555555577c55 in refr_configured_layer ()
+#12 0x0000555555577f0b in refr_area ()
+#13 0x0000555555578b1b in lv_display_refr_timer.part ()
+#14 0x000055555559b04f in lv_timer_handler.part ()
+#15 0x00005555555587df in main ()
