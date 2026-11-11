@@ -1,0 +1,577 @@
+=== UI ACTION MAPPING ===
+#pragma once
+
+#include "kiddos/core/action.hpp"
+#include "kiddos/ui/controller.hpp"
+
+#include <optional>
+
+namespace kiddos::app {
+
+// Translates a platform action into the matching abstract UI action.
+// Returns std::nullopt for actions without a UI counterpart (None, Quit).
+inline std::optional<ui::UIAction> to_ui_action(Action action) noexcept {
+    switch (action) {
+        case Action::NavigateLeft:
+            return ui::UIAction::Left;
+        case Action::NavigateRight:
+            return ui::UIAction::Right;
+        case Action::NavigateUp:
+            return ui::UIAction::Up;
+        case Action::NavigateDown:
+            return ui::UIAction::Down;
+        case Action::Confirm:
+            return ui::UIAction::Confirm;
+        case Action::Back:
+            return ui::UIAction::Back;
+        case Action::None:
+        case Action::Quit:
+            return std::nullopt;
+    }
+    return std::nullopt;
+}
+
+} // namespace kiddos::app
+
+=== ACTION MAPPING TEST ===
+#include "kiddos/app/ui_action_mapping.hpp"
+
+#include <cassert>
+#include <optional>
+
+int main() {
+    using kiddos::Action;
+    using kiddos::app::to_ui_action;
+    using kiddos::ui::UIAction;
+
+    assert(to_ui_action(Action::NavigateLeft) == UIAction::Left);
+    assert(to_ui_action(Action::NavigateRight) == UIAction::Right);
+    assert(to_ui_action(Action::NavigateUp) == UIAction::Up);
+    assert(to_ui_action(Action::NavigateDown) == UIAction::Down);
+    assert(to_ui_action(Action::Confirm) == UIAction::Confirm);
+    assert(to_ui_action(Action::Back) == UIAction::Back);
+
+    assert(to_ui_action(Action::None) == std::nullopt);
+    assert(to_ui_action(Action::Quit) == std::nullopt);
+
+    return 0;
+}
+
+=== CAROUSEL IMPLEMENTATION ===
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/ui/panel.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr ui::Color background{1, 1, 1, 255};
+
+constexpr ui::Rect left_art{24, 268, 128, 128};
+constexpr ui::Rect center_art{210, 148, 300, 300};
+constexpr ui::Rect right_art{568, 268, 128, 128};
+
+constexpr ui::Rect title_rect{145, 465, 430, 54};
+constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+constexpr ui::Rect hints_rect{0, 662, 720, 42};
+
+constexpr std::array<const char*, HomeCarouselScreen::game_count>
+artwork_paths{
+    "assets/artwork/generated/carousel-star.png",
+    "assets/artwork/generated/carousel-mushroom.png",
+    "assets/artwork/generated/carousel-car.png"
+};
+
+constexpr std::array<const char*, HomeCarouselScreen::game_count>
+title_paths{
+    "assets/artwork/generated/carousel-title-star.png",
+    "assets/artwork/generated/carousel-title.png",
+    "assets/artwork/generated/carousel-title-car.png"
+};
+
+constexpr const char* wordmark_path =
+    "assets/artwork/generated/kiddos-wordmark.png";
+
+constexpr const char* hints_path =
+    "assets/artwork/generated/navigation-hints.png";
+
+ui::Rect bounds_for_game(int game, int selected) {
+    if (game == selected) return center_art;
+    if ((game + 1) % HomeCarouselScreen::game_count == selected) {
+        return left_art;
+    }
+    return right_art;
+}
+
+int opacity_for_game(int game, int selected) {
+    return game == selected ? 255 : 118;
+}
+
+void fill_speaker_cone(
+    ui::Renderer& renderer,
+    int narrow_x,
+    int narrow_top,
+    int narrow_bottom,
+    int wide_x,
+    int wide_top,
+    int wide_bottom,
+    ui::Color color
+) {
+    for (int y = wide_top; y <= wide_bottom; ++y) {
+        int left = narrow_x;
+
+        if (y < narrow_top) {
+            left += (narrow_top - y) * (wide_x - narrow_x) /
+                    (narrow_top - wide_top);
+        } else if (y > narrow_bottom) {
+            left += (y - narrow_bottom) * (wide_x - narrow_x) /
+                    (wide_bottom - narrow_bottom);
+        }
+
+        renderer.draw_line({left, y}, {wide_x, y}, color);
+    }
+}
+
+void draw_arc(
+    ui::Renderer& renderer,
+    ui::Point center,
+    int radius,
+    double start_degrees,
+    double end_degrees,
+    ui::Color color
+) {
+    constexpr double pi = 3.14159265358979323846;
+    const int steps = std::max(2, radius * 2);
+    const double delta = (end_degrees - start_degrees) / steps;
+
+    auto point_at = [&](double degrees) {
+        const double radians = degrees * pi / 180.0;
+        return ui::Point{
+            center.x + static_cast<int>(std::lround(radius * std::cos(radians))),
+            center.y + static_cast<int>(std::lround(radius * std::sin(radians)))
+        };
+    };
+
+    ui::Point previous = point_at(start_degrees);
+    for (int i = 1; i <= steps; ++i) {
+        const ui::Point point = point_at(start_degrees + delta * i);
+        renderer.draw_line(previous, point, color);
+        previous = point;
+    }
+}
+
+class StatusIndicators final : public ui::Element {
+protected:
+    void draw(ui::Renderer& renderer) override {
+        const ui::Color primary{190, 208, 235, 210};
+        const ui::Color accent{105, 160, 225, 210};
+
+        // Compact speaker indicator.
+        renderer.fill_rect({25, 32, 7, 12}, primary);
+        fill_speaker_cone(renderer, 32, 32, 44, 42, 27, 49, primary);
+        draw_arc(renderer, {44, 38}, 7, -48.0, 48.0, accent);
+
+        // Quiet battery indicator.
+        renderer.outline_rect({660, 29, 30, 16}, primary);
+        renderer.fill_rect({691, 34, 3, 6}, primary);
+        renderer.fill_rect({664, 33, 20, 8}, accent);
+    }
+};
+
+int interpolate(int current, int target, float amount) {
+    return static_cast<int>(std::lround(
+        current + (target - current) * amount));
+}
+
+ui::Rect interpolate_rect(
+    ui::Rect current,
+    ui::Rect target,
+    float amount
+) {
+    return {
+        interpolate(current.x, target.x, amount),
+        interpolate(current.y, target.y, amount),
+        interpolate(current.w, target.w, amount),
+        interpolate(current.h, target.h, amount)
+    };
+}
+
+} // namespace
+
+HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+    // A soft electric-blue backlight sits behind the selected artwork.
+    // It is deliberately borderless and low-contrast.
+    highlight_ = &root().add<ui::Panel>(ui::PanelStyle{
+        {24, 82, 190, 38}, {0, 0, 0, 0}, 0, 28
+    });
+    highlight_->set_bounds({216, 154, 288, 288});
+
+    cartridge_textures_[0].load(
+        renderer, "assets/artwork/source/cartridges/cart-option-1.png", false);
+    cartridge_textures_[1].load(
+        renderer, "assets/artwork/source/cartridges/cart-option-2.png", false);
+
+    for (int i = 0; i < game_count; ++i) {
+        const auto index = static_cast<std::size_t>(i);
+
+        artworks_[index].load(renderer, artwork_paths[index], false);
+        title_textures_[index].load(renderer, title_paths[index], false);
+
+        auto& image = root().add<ui::Image>(&artworks_[index]);
+        image.set_fit(ui::ImageFit::contain);
+        game_images_[index] = &image;
+    }
+
+    for (int i = 0; i < game_count; ++i) {
+        const auto index = static_cast<std::size_t>(i);
+        game_images_[index]->set_bounds(bounds_for_game(i, 1));
+        game_images_[index]->set_opacity(
+            static_cast<std::uint8_t>(opacity_for_game(i, 1)));
+    }
+
+    title_ = &root().add<ui::Image>();
+    title_->set_bounds(title_rect);
+    title_->set_fit(ui::ImageFit::contain);
+
+    wordmark_texture_.load(renderer, wordmark_path, false);
+    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+    wordmark_->set_bounds(wordmark_rect);
+    wordmark_->set_fit(ui::ImageFit::contain);
+
+    hints_texture_.load(renderer, hints_path, false);
+    hints_ = &root().add<ui::Image>(&hints_texture_);
+    hints_->set_bounds(hints_rect);
+    hints_->set_fit(ui::ImageFit::contain);
+
+    root().add<StatusIndicators>();
+
+    set_selected_game(1);
+}
+
+void HomeCarouselScreen::toggle_cartridge_style() {
+    cartridge_style_ = (cartridge_style_ + 1) % 2;
+    if (selected_game_ >= 0 && selected_game_ < game_count) {
+        game_images_[static_cast<std::size_t>(selected_game_)]->set_texture(
+            &cartridge_textures_[static_cast<std::size_t>(cartridge_style_)]);
+    }
+}
+
+HomeCarouselScreen::~HomeCarouselScreen() {
+    for (auto* image : game_images_) {
+        if (image) image->set_texture(nullptr);
+    }
+
+    if (title_) title_->set_texture(nullptr);
+    if (wordmark_) wordmark_->set_texture(nullptr);
+    if (hints_) hints_->set_texture(nullptr);
+}
+
+void HomeCarouselScreen::set_selected_game(int index) {
+    if (index < 0 || index >= game_count) return;
+
+    if (selected_game_ == index) return;
+
+    const int previous = selected_game_;
+    selected_game_ = index;
+
+    if (previous >= 0) {
+        game_images_[static_cast<std::size_t>(previous)]->set_texture(
+            &artworks_[static_cast<std::size_t>(previous)]);
+    }
+    game_images_[static_cast<std::size_t>(index)]->set_texture(
+        &cartridge_textures_[static_cast<std::size_t>(cartridge_style_)]);
+
+    for (int game = 0; game < game_count; ++game) {
+        const auto slot = static_cast<std::size_t>(game);
+        const ui::Rect target = bounds_for_game(game, index);
+
+        // The preview moving from one side to the other is the far-side
+        // item. Fade it out and reposition it rather than sliding it
+        // through the selected artwork.
+        if (previous >= 0) {
+            const int old_offset =
+                (game - previous + game_count) % game_count;
+            const int new_offset =
+                (game - index + game_count) % game_count;
+
+            if (old_offset != 0 && new_offset != 0 &&
+                old_offset != new_offset) {
+                game_images_[slot]->set_bounds(target);
+                game_images_[slot]->set_opacity(0);
+            }
+        }
+
+        target_bounds_[slot] = target;
+        target_opacity_[slot] = opacity_for_game(game, index);
+    }
+
+    if (title_) {
+        title_->set_texture(
+            &title_textures_[static_cast<std::size_t>(index)]);
+    }
+}
+
+void HomeCarouselScreen::update(float delta_seconds) {
+    if (delta_seconds <= 0.0f) return;
+
+    // A critically damped-feeling ease that settles quickly while allowing
+    // another direction input to retarget the carousel mid-motion.
+    const float amount = std::clamp(
+        1.0f - std::exp(-delta_seconds * 20.0f), 0.0f, 1.0f);
+
+    for (std::size_t i = 0; i < game_images_.size(); ++i) {
+        ui::Image* image = game_images_[i];
+        if (!image) continue;
+
+        const ui::Rect current = image->bounds();
+        const ui::Rect target = target_bounds_[i];
+        const ui::Rect next = interpolate_rect(current, target, amount);
+
+        const int opacity = interpolate(
+            image->opacity(), target_opacity_[i], amount);
+
+        image->set_bounds(next);
+        image->set_opacity(static_cast<std::uint8_t>(
+            std::clamp(opacity, 0, 255)));
+
+        if (std::abs(next.x - target.x) <= 1 &&
+            std::abs(next.y - target.y) <= 1 &&
+            std::abs(next.w - target.w) <= 1 &&
+            std::abs(next.h - target.h) <= 1) {
+            image->set_bounds(target);
+        }
+
+        if (std::abs(opacity - target_opacity_[i]) <= 1) {
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[i]));
+        }
+    }
+}
+
+} // namespace kiddos::app
+
+=== CAROUSEL TEST ===
+#include "kiddos/app/home_carousel_screen.hpp"
+
+#include "kiddos/ui/image.hpp"
+#include "kiddos/ui/renderer.hpp"
+
+#include <SDL.h>
+#include <SDL_image.h>
+
+#include <cassert>
+#include <cstdint>
+#include <unistd.h>
+
+namespace {
+
+using kiddos::ui::Color;
+using kiddos::ui::Rect;
+
+Color pixel(SDL_Surface* surface, int x, int y) {
+    assert(SDL_LockSurface(surface) == 0);
+    const auto* row = static_cast<const std::uint8_t*>(surface->pixels)
+        + y * surface->pitch;
+    const auto* value = reinterpret_cast<const std::uint32_t*>(row) + x;
+    std::uint8_t r = 0, g = 0, b = 0, a = 0;
+    SDL_GetRGBA(*value, surface->format, &r, &g, &b, &a);
+    SDL_UnlockSurface(surface);
+    return {r, g, b, a};
+}
+
+bool same_color(const Color& a, const Color& b) {
+    return a.r == b.r && a.g == b.g &&
+           a.b == b.b && a.a == b.a;
+}
+
+bool any_pixel_different(
+    SDL_Surface* surface,
+    const Rect& rect,
+    const Color& color
+) {
+    for (int y = rect.y; y < rect.y + rect.h; ++y) {
+        for (int x = rect.x; x < rect.x + rect.w; ++x) {
+            if (!same_color(pixel(surface, x, y), color)) return true;
+        }
+    }
+    return false;
+}
+
+const kiddos::ui::Element* find_by_bounds(
+    kiddos::ui::Screen& screen,
+    const Rect& bounds
+) {
+    for (std::size_t i = 0; i < screen.root().child_count(); ++i) {
+        const auto* child = screen.root().child(i);
+        if (!child) continue;
+
+        const Rect actual = child->bounds();
+        if (actual.x == bounds.x && actual.y == bounds.y &&
+            actual.w == bounds.w && actual.h == bounds.h) {
+            return child;
+        }
+    }
+    return nullptr;
+}
+
+void test_structure_and_selection() {
+    kiddos::app::HomeCarouselScreen screen(nullptr);
+
+    // Three artwork images, title, wordmark, hints, and status indicators.
+    assert(screen.root().child_count() == 8);
+    assert(screen.selected_game() == 1);
+
+    const auto* title = find_by_bounds(screen, {145, 465, 430, 54});
+    assert(title);
+    assert(title->visible());
+
+    const auto* wordmark = find_by_bounds(screen, {275, 18, 170, 32});
+    assert(wordmark);
+    assert(wordmark->visible());
+
+    const auto* hints = find_by_bounds(screen, {0, 662, 720, 42});
+    assert(hints);
+    assert(hints->visible());
+
+    const auto* title_image =
+        static_cast<const kiddos::ui::Image*>(title);
+    const auto* middle_title = title_image->texture();
+    assert(middle_title);
+
+    screen.set_selected_game(0);
+    assert(screen.selected_game() == 0);
+    assert(title_image->texture() != middle_title);
+
+    screen.set_selected_game(2);
+    assert(screen.selected_game() == 2);
+
+    screen.set_selected_game(1);
+    assert(title_image->texture() == middle_title);
+
+    screen.set_selected_game(7);
+    assert(screen.selected_game() == 1);
+    assert(title_image->texture() == middle_title);
+
+    // The transition can be advanced to completion without an SDL renderer.
+    screen.update(1.0f);
+}
+
+void test_renders_minimal_carousel() {
+    assert(SDL_Init(0) == 0);
+    IMG_Init(IMG_INIT_PNG);
+    assert(chdir(KIDDOS_SOURCE_DIR) == 0);
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+        0, 720, 720, 32, SDL_PIXELFORMAT_RGBA32);
+    assert(surface);
+
+    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+    assert(native);
+    SDL_SetRenderDrawBlendMode(native, SDL_BLENDMODE_BLEND);
+
+    {
+        kiddos::ui::Renderer renderer(native);
+        kiddos::app::HomeCarouselScreen screen(native);
+
+        const Color background{8, 15, 35, 255};
+        renderer.clear(background);
+        screen.render(renderer);
+
+        // The screen is no longer composed of large framed panels.
+        assert(same_color(pixel(surface, 500, 160), background));
+
+        // Artwork, title, wordmark, and hints are all visible.
+        assert(any_pixel_different(surface, {220, 158, 280, 280}, background));
+        assert(any_pixel_different(surface, {145, 465, 430, 54}, background));
+        assert(any_pixel_different(surface, {275, 18, 170, 32}, background));
+        assert(any_pixel_different(surface, {0, 662, 720, 42}, background));
+
+        // Selecting a different game updates the title and animates the
+        // image bounds; a long update settles the transition.
+        screen.set_selected_game(0);
+        screen.update(0.05f);
+        screen.render(renderer);
+
+        screen.update(1.0f);
+        screen.render(renderer);
+
+        assert(any_pixel_different(surface, {220, 158, 280, 280}, background));
+    }
+
+    SDL_DestroyRenderer(native);
+    SDL_FreeSurface(surface);
+    IMG_Quit();
+    SDL_Quit();
+}
+
+} // namespace
+
+int main() {
+    test_structure_and_selection();
+    test_renders_minimal_carousel();
+    return 0;
+}
+
+=== ACTION HANDLING ===
+65-        case Action::Quit:
+66-            running_ = false;
+67-            break;
+68-
+69-        case Action::NavigateUp:
+70-        case Action::NavigateDown:
+71-            if (action_screen_ && selected_game_ == 1) {
+72-                selected_action_ =
+73-                    (selected_action_ + 1) % 2;
+74-            }
+75-            break;
+76-
+77:        case Action::ToggleCartridgeStyle:
+78-            if (!action_screen_) {
+79-                if (auto* home = static_cast<app::HomeCarouselScreen*>(screens_.current())) {
+80-                    home->toggle_cartridge_style();
+81-                }
+82-            }
+83-            break;
+84-
+85-        case Action::Back:
+86-            // Back is handled at the application level only; it must not
+87-            // pop the home screen off the screen manager.
+88-            if (action_screen_) {
+89-                action_screen_ = false;
+90-                selected_action_ = 0;
+91-            }
+92-            break;
+93-
+94-        case Action::NavigateLeft:
+95-        case Action::NavigateRight:
+96-        case Action::Confirm: {
+97-            if (action_screen_) break;
+98-
+99-            // Translate the platform action and give the active screen a
+100-            // chance to respond first. The home carousel is currently
+101-            // display-only, so the application carousel state handles the
+102-            // remaining behavior.
+103-            const std::optional<ui::UIAction> ui_action =
+104-                app::to_ui_action(action);
+105-            if (!ui_action || screens_.handle_action(*ui_action)) break;
+106-
+107-            switch (*ui_action) {
+108-                case ui::UIAction::Left:
+109-                    selected_game_ =
+110-                        (selected_game_ + game_count_ - 1) % game_count_;
+111-                    break;
+112-
+113-                case ui::UIAction::Right:
+114-                    selected_game_ =
+115-                        (selected_game_ + 1) % game_count_;
+116-                    break;
+117-
+118-                case ui::UIAction::Confirm:
+119-                    action_screen_ = true;
+120-                    selected_action_ = 0;
+121-                    break;
+122-
