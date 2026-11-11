@@ -1,0 +1,50 @@
+=== CARTRIDGE ASSETS ===
+assets/artwork/source/cartridges/cart-option-1.png: PNG image data, 1024 x 1024, 8-bit/color RGBA, non-interlaced
+assets/artwork/source/cartridges/cart-option-2.png: PNG image data, 1254 x 1254, 8-bit/color RGBA, non-interlaced
+assets/artwork/source/cartridges/cart-option-1.png: size=(1024, 1024), mode=RGBA, transparency=True
+assets/artwork/source/cartridges/cart-option-2.png: size=(1254, 1254), mode=RGBA, transparency=True
+
+=== CAROUSEL ARTWORK LOADING ===
+
+=== ARTWORK FILES ===
+assets/artwork/generated/carousel-car.bmp
+assets/artwork/generated/carousel-car.png
+assets/artwork/generated/carousel-mushroom.bmp
+assets/artwork/generated/carousel-mushroom.png
+assets/artwork/generated/carousel-selected.bmp
+assets/artwork/generated/carousel-star.bmp
+assets/artwork/generated/carousel-star.png
+assets/artwork/generated/carousel-title.bmp
+assets/artwork/generated/carousel-title-car.png
+assets/artwork/generated/carousel-title.png
+assets/artwork/generated/carousel-title-star.png
+assets/artwork/generated/forest.bmp
+assets/artwork/generated/kiddos-wordmark.png
+assets/artwork/generated/label-play.bmp
+assets/artwork/generated/label-resume.bmp
+assets/artwork/generated/label-start-over.bmp
+assets/artwork/generated/navigation-hints.png
+assets/artwork/generated/ocean.bmp
+assets/artwork/generated/space.bmp
+assets/artwork/source/branding/kiddos-wordmark.svg
+assets/artwork/source/branding/navigation-hints.svg
+assets/artwork/source/carousel/car.svg
+assets/artwork/source/carousel/mushroom.svg
+assets/artwork/source/carousel/selected.svg
+assets/artwork/source/carousel/star.svg
+assets/artwork/source/carousel/title-car.svg
+assets/artwork/source/carousel/title-star.svg
+assets/artwork/source/carousel/title.svg
+assets/artwork/source/cartridges/cart-option-1.png
+assets/artwork/source/cartridges/cart-option-2.png
+assets/artwork/source/forest.svg
+assets/artwork/source/ocean.svg
+assets/artwork/source/space.svg
+
+=== CURRENT SOURCE CHANGES ===
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
