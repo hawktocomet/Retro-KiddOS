@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T202047Z-inspect-carousel-image-loading-and-asset-build-rules
+research/milestones/visual-fidelity-pass/runs/20261111T202120Z-inspect-physical-controls-for-cartridge-style-preview

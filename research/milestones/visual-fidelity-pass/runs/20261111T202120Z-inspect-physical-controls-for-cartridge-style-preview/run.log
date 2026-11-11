@@ -1,0 +1,174 @@
+=== INPUT MAPPINGS ===
+src/platform/sdl_platform.cpp:482:        case SDLK_LEFT: return Action::NavigateLeft;
+src/platform/sdl_platform.cpp:483:        case SDLK_RIGHT: return Action::NavigateRight;
+src/platform/sdl_platform.cpp:484:        case SDLK_UP: return Action::NavigateUp;
+src/platform/sdl_platform.cpp:485:        case SDLK_DOWN: return Action::NavigateDown;
+src/platform/sdl_platform.cpp:486:        case SDLK_RETURN:
+src/platform/sdl_platform.cpp:487:        case SDLK_SPACE: return Action::Confirm;
+src/platform/sdl_platform.cpp:488:        case SDLK_ESCAPE: return Action::Back;
+src/platform/sdl_platform.cpp:489:        case SDLK_q: return Action::Quit;
+src/ui/button.cpp:8:Button::Button(std::string label)
+src/ui/button.cpp:13:void Button::set_label(std::string label) {
+src/ui/button.cpp:17:const std::string& Button::label() const noexcept {
+src/ui/button.cpp:21:void Button::set_style(ButtonStyle style) noexcept {
+src/ui/button.cpp:25:const ButtonStyle& Button::style() const noexcept {
+src/ui/button.cpp:29:void Button::set_font(const Font* font) noexcept {
+src/ui/button.cpp:33:const Font* Button::font() const noexcept {
+src/ui/button.cpp:37:void Button::set_pressed(bool pressed) noexcept {
+src/ui/button.cpp:41:bool Button::pressed() const noexcept {
+src/ui/button.cpp:45:void Button::set_on_activate(std::function<void()> callback) {
+src/ui/button.cpp:49:bool Button::activate() {
+src/ui/button.cpp:55:void Button::draw(Renderer& renderer) {
+src/ui/theme.cpp:21:ButtonStyle Theme::button_style() const noexcept {
+include/kiddos/platform/sdl_keyboard_policy.hpp:13:        case SDLK_BACKSPACE:
+include/kiddos/platform/sdl_keyboard_policy.hpp:14:        case SDLK_DELETE:
+include/kiddos/platform/sdl_keyboard_policy.hpp:15:        case SDLK_HOME:
+include/kiddos/platform/sdl_keyboard_policy.hpp:16:        case SDLK_END:
+include/kiddos/platform/sdl_keyboard_policy.hpp:17:        case SDLK_LEFT:
+include/kiddos/platform/sdl_keyboard_policy.hpp:18:        case SDLK_RIGHT:
+include/kiddos/platform/sdl_text_input_translator.hpp:29:            case SDLK_BACKSPACE: return TextInputEvent{TextInputEventType::Backspace, {}};
+include/kiddos/platform/sdl_text_input_translator.hpp:30:            case SDLK_DELETE: return TextInputEvent{TextInputEventType::Delete, {}};
+include/kiddos/platform/sdl_text_input_translator.hpp:31:            case SDLK_LEFT: return TextInputEvent{TextInputEventType::Left, {}};
+include/kiddos/platform/sdl_text_input_translator.hpp:32:            case SDLK_RIGHT: return TextInputEvent{TextInputEventType::Right, {}};
+include/kiddos/platform/sdl_text_input_translator.hpp:33:            case SDLK_HOME: return TextInputEvent{TextInputEventType::Home, {}};
+include/kiddos/platform/sdl_text_input_translator.hpp:34:            case SDLK_END: return TextInputEvent{TextInputEventType::End, {}};
+include/kiddos/ui/theme.hpp:39:    ButtonStyle button_style() const noexcept;
+tests/ui_theme_test.cpp:20:    const ButtonStyle button = theme.button_style();
+tests/ui_theme_test.cpp:46:    assert(theme.button_style().focused.r == colors.primary_dark.r);
+tests/platform_sdl_keyboard_policy_test.cpp:8:    assert(should_process_keydown(SDLK_a, 0, false));
+tests/platform_sdl_keyboard_policy_test.cpp:9:    assert(!should_process_keydown(SDLK_a, 1, false));
+tests/platform_sdl_keyboard_policy_test.cpp:10:    assert(!should_process_keydown(SDLK_a, 1, true));
+tests/platform_sdl_keyboard_policy_test.cpp:12:    assert(should_process_keydown(SDLK_BACKSPACE, 0, true));
+tests/platform_sdl_keyboard_policy_test.cpp:13:    assert(should_process_keydown(SDLK_BACKSPACE, 1, true));
+tests/platform_sdl_keyboard_policy_test.cpp:14:    assert(!should_process_keydown(SDLK_BACKSPACE, 1, false));
+tests/platform_sdl_keyboard_policy_test.cpp:16:    assert(should_process_keydown(SDLK_DELETE, 1, true));
+tests/platform_sdl_keyboard_policy_test.cpp:17:    assert(should_process_keydown(SDLK_HOME, 1, true));
+tests/platform_sdl_keyboard_policy_test.cpp:18:    assert(should_process_keydown(SDLK_END, 1, true));
+tests/platform_sdl_keyboard_policy_test.cpp:19:    assert(should_process_keydown(SDLK_LEFT, 1, true));
+tests/platform_sdl_keyboard_policy_test.cpp:20:    assert(should_process_keydown(SDLK_RIGHT, 1, true));
+tests/platform_sdl_keyboard_policy_test.cpp:22:    assert(!should_process_keydown(SDLK_UP, 1, true));
+tests/platform_sdl_keyboard_policy_test.cpp:23:    assert(!should_process_keydown(SDLK_DOWN, 1, true));
+tests/platform_sdl_text_input_translator_test.cpp:21:        SDLK_BACKSPACE, SDLK_DELETE, SDLK_LEFT,
+tests/platform_sdl_text_input_translator_test.cpp:22:        SDLK_RIGHT, SDLK_HOME, SDLK_END
+tests/platform_sdl_text_input_translator_test.cpp:42:    event.key.keysym.sym = SDLK_BACKSPACE;
+tests/platform_sdl_text_input_translator_test.cpp:46:    event.key.keysym.sym = SDLK_UP;
+tests/platform_sdl_text_input_translator_test.cpp:50:    event.key.keysym.sym = SDLK_LEFT;
+
+=== APPLICATION INPUT FLOW ===
+src/platform/sdl_platform.cpp:517:    while (SDL_PollEvent(&event)) {
+src/platform/sdl_platform.cpp:525:            case SDL_KEYDOWN: {
+src/platform/sdl_platform.cpp:550:            case SDL_CONTROLLERBUTTONDOWN:
+src/app/application.cpp:138:        home->set_selected_game(selected_game_);
+src/app/home_carousel_screen.cpp:187:    set_selected_game(1);
+src/app/home_carousel_screen.cpp:200:void HomeCarouselScreen::set_selected_game(int index) {
+include/kiddos/platform/sdl_text_input_translator.hpp:22:        if (event.type != SDL_KEYDOWN ||
+include/kiddos/app/home_carousel_screen.hpp:21:    void set_selected_game(int index);
+
+=== TEXTURE LOADER ===
+#include "kiddos/ui/texture.hpp"
+
+#include <SDL_image.h>
+#include <utility>
+
+namespace kiddos::ui {
+
+Texture::~Texture() { reset(); }
+
+Texture::Texture(Texture&& other) noexcept
+    : texture_(std::exchange(other.texture_, nullptr)),
+      width_(std::exchange(other.width_, 0)),
+      height_(std::exchange(other.height_, 0)) {}
+
+Texture& Texture::operator=(Texture&& other) noexcept {
+    if (this != &other) {
+        reset();
+        texture_ = std::exchange(other.texture_, nullptr);
+        width_ = std::exchange(other.width_, 0);
+        height_ = std::exchange(other.height_, 0);
+    }
+    return *this;
+}
+
+bool Texture::load(
+    SDL_Renderer* renderer,
+    const std::string& path,
+    bool magenta_key
+) {
+    reset();
+    if (!renderer || path.empty()) return false;
+
+    SDL_Surface* surface = IMG_Load(path.c_str());
+    if (!surface) return false;
+
+    if (magenta_key) {
+        const Uint32 key = SDL_MapRGB(surface->format, 255, 0, 255);
+        SDL_SetColorKey(surface, SDL_TRUE, key);
+    }
+
+    SDL_Texture* loaded = SDL_CreateTextureFromSurface(renderer, surface);
+    const int w = surface->w;
+    const int h = surface->h;
+    SDL_FreeSurface(surface);
+
+    if (!loaded) return false;
+
+    SDL_SetTextureBlendMode(loaded, SDL_BLENDMODE_BLEND);
+
+    texture_ = loaded;
+    width_ = w;
+    height_ = h;
+    return true;
+}
+
+void Texture::reset() noexcept {
+    if (texture_) SDL_DestroyTexture(texture_);
+    texture_ = nullptr;
+    width_ = 0;
+    height_ = 0;
+}
+
+bool Texture::valid() const noexcept { return texture_ != nullptr; }
+int Texture::width() const noexcept { return width_; }
+int Texture::height() const noexcept { return height_; }
+SDL_Texture* Texture::native() const noexcept { return texture_; }
+
+}
+#pragma once
+
+#include <SDL.h>
+#include <string>
+
+namespace kiddos::ui {
+
+class Texture final {
+public:
+    Texture() = default;
+    ~Texture();
+
+    Texture(const Texture&) = delete;
+    Texture& operator=(const Texture&) = delete;
+
+    Texture(Texture&& other) noexcept;
+    Texture& operator=(Texture&& other) noexcept;
+
+    // Loads an image file through SDL_image. With magenta_key enabled,
+    // bright magenta (255, 0, 255) pixels become transparent.
+    bool load(SDL_Renderer* renderer, const std::string& path,
+              bool magenta_key = false);
+    void reset() noexcept;
+    bool valid() const noexcept;
+    int width() const noexcept;
+    int height() const noexcept;
+    SDL_Texture* native() const noexcept;
+
+private:
+    SDL_Texture* texture_ = nullptr;
+    int width_ = 0;
+    int height_ = 0;
+};
+
+}
+
+=== IMAGE ASSET DIMENSIONS ===
+cart-option-1.png (1024, 1024) alpha bounds: (69, 81, 961, 905)
+cart-option-2.png (1254, 1254) alpha bounds: (0, 3, 1241, 1254)
