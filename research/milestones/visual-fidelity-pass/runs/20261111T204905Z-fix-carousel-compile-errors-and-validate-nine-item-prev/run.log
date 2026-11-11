@@ -1,0 +1,71 @@
+Removed duplicate geometry and restored wordmark/hints asset paths.
+
+=== BUILD AND TEST ===
+[1/4] Building CXX object CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o 
+/usr/bin/c++ -DKIDDOS_SOURCE_DIR=\"/home/hawk/KiddOS\" -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o -MF CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o.d -o CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o -c /home/hawk/KiddOS/src/app/home_carousel_screen.cpp
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:23:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::left_art’
+   23 | constexpr ui::Rect left_art{24, 268, 128, 128};
+      |                    ^~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:15:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::left_art’ previously defined here
+   15 | constexpr ui::Rect left_art{24, 268, 128, 128};
+      |                    ^~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:24:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::center_art’
+   24 | constexpr ui::Rect center_art{210, 148, 300, 300};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:16:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::center_art’ previously defined here
+   16 | constexpr ui::Rect center_art{210, 148, 300, 300};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:25:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::right_art’
+   25 | constexpr ui::Rect right_art{568, 268, 128, 128};
+      |                    ^~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:17:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::right_art’ previously defined here
+   17 | constexpr ui::Rect right_art{568, 268, 128, 128};
+      |                    ^~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:27:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::wordmark_rect’
+   27 | constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+      |                    ^~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:20:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::wordmark_rect’ previously defined here
+   20 | constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+      |                    ^~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:28:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::hints_rect’
+   28 | constexpr ui::Rect hints_rect{0, 662, 720, 42};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:21:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::hints_rect’ previously defined here
+   21 | constexpr ui::Rect hints_rect{0, 662, 720, 42};
+      |                    ^~~~~~~~~~
+[2/4] Building CXX object CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -Wall -Wextra -Wpedantic -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o -MF CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o.d -o CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o -c /home/hawk/KiddOS/src/app/home_carousel_screen.cpp
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:23:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::left_art’
+   23 | constexpr ui::Rect left_art{24, 268, 128, 128};
+      |                    ^~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:15:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::left_art’ previously defined here
+   15 | constexpr ui::Rect left_art{24, 268, 128, 128};
+      |                    ^~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:24:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::center_art’
+   24 | constexpr ui::Rect center_art{210, 148, 300, 300};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:16:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::center_art’ previously defined here
+   16 | constexpr ui::Rect center_art{210, 148, 300, 300};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:25:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::right_art’
+   25 | constexpr ui::Rect right_art{568, 268, 128, 128};
+      |                    ^~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:17:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::right_art’ previously defined here
+   17 | constexpr ui::Rect right_art{568, 268, 128, 128};
+      |                    ^~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:27:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::wordmark_rect’
+   27 | constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+      |                    ^~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:20:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::wordmark_rect’ previously defined here
+   20 | constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+      |                    ^~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:28:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::hints_rect’
+   28 | constexpr ui::Rect hints_rect{0, 662, 720, 42};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:21:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::hints_rect’ previously defined here
+   21 | constexpr ui::Rect hints_rect{0, 662, 720, 42};
+      |                    ^~~~~~~~~~
+ninja: build stopped: subcommand failed.
+BUILD FAILED: tests not run against stale binaries.
