@@ -1,0 +1,80 @@
+=== Build ===
+[1/2] Building CXX object CMakeFiles/kiddos_platform_sdl_text_input_translator_test.dir/tests/platform_sdl_text_input_translator_test.cpp.o
+[2/2] Linking CXX executable kiddos_platform_sdl_text_input_translator_test
+=== Translator tests ===
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_platform_sdl_text_input_translator
+1/1 Test #1: kiddos_platform_sdl_text_input_translator ...   Passed    0.00 sec
+
+100% tests passed out of 1
+
+Total Test time (real) =   0.00 sec
+=== Full test suite ===
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_platform_sdl_text_input_translator
+ 1/22 Test  #1: kiddos_platform_sdl_text_input_translator ...   Passed    0.00 sec
+      Start  2: kiddos_platform_text_input_interface
+ 2/22 Test  #2: kiddos_platform_text_input_interface ........   Passed    0.00 sec
+      Start  3: kiddos_platform_sdl_keyboard_policy
+ 3/22 Test  #3: kiddos_platform_sdl_keyboard_policy .........   Passed    0.00 sec
+      Start  4: kiddos_platform_text_input_event
+ 4/22 Test  #4: kiddos_platform_text_input_event ............   Passed    0.00 sec
+      Start  5: kiddos_ui_layout
+ 5/22 Test  #5: kiddos_ui_layout ............................   Passed    0.01 sec
+      Start  6: kiddos_ui_geometry
+ 6/22 Test  #6: kiddos_ui_geometry ..........................   Passed    0.00 sec
+      Start  7: kiddos_ui_focus
+ 7/22 Test  #7: kiddos_ui_focus .............................   Passed    0.00 sec
+      Start  8: kiddos_ui_button
+ 8/22 Test  #8: kiddos_ui_button ............................   Passed    0.00 sec
+      Start  9: kiddos_ui_controller
+ 9/22 Test  #9: kiddos_ui_controller ........................   Passed    0.01 sec
+      Start 10: kiddos_ui_image
+10/22 Test #10: kiddos_ui_image .............................   Passed    0.00 sec
+      Start 11: kiddos_ui_label
+11/22 Test #11: kiddos_ui_label .............................   Passed    0.00 sec
+      Start 12: kiddos_ui_panel
+12/22 Test #12: kiddos_ui_panel .............................   Passed    0.00 sec
+      Start 13: kiddos_ui_progress_bar
+13/22 Test #13: kiddos_ui_progress_bar ......................   Passed    0.00 sec
+      Start 14: kiddos_ui_toggle
+14/22 Test #14: kiddos_ui_toggle ............................   Passed    0.00 sec
+      Start 15: kiddos_ui_slider
+15/22 Test #15: kiddos_ui_slider ............................   Passed    0.00 sec
+      Start 16: kiddos_ui_theme
+16/22 Test #16: kiddos_ui_theme .............................   Passed    0.01 sec
+      Start 17: kiddos_ui_list_view
+17/22 Test #17: kiddos_ui_list_view .........................   Passed    0.00 sec
+      Start 18: kiddos_ui_checkbox
+18/22 Test #18: kiddos_ui_checkbox ..........................   Passed    0.00 sec
+      Start 19: kiddos_ui_radio_group
+19/22 Test #19: kiddos_ui_radio_group .......................   Passed    0.01 sec
+      Start 20: kiddos_ui_select
+20/22 Test #20: kiddos_ui_select ............................   Passed    0.00 sec
+      Start 21: kiddos_ui_text_input
+21/22 Test #21: kiddos_ui_text_input ........................   Passed    0.00 sec
+      Start 22: kiddos_ui_text_input_interaction
+22/22 Test #22: kiddos_ui_text_input_interaction ............   Passed    0.00 sec
+
+100% tests passed out of 22
+
+Total Test time (real) =   0.09 sec
+=== Commit stable translator tests ===
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   include/kiddos/app/application.hpp
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	assets/artwork/generated/carousel-car.bmp
+	assets/artwork/generated/carousel-mushroom.bmp
+	assets/artwork/generated/carousel-selected.bmp
+	assets/artwork/generated/carousel-star.bmp
+	assets/artwork/generated/carousel-title.bmp
+	assets/artwork/source/carousel/
+
+no changes added to commit (use "git add" and/or "git commit -a")
