@@ -36,6 +36,7 @@ add_library(kiddos_ui STATIC
     src/ui/radio_group.cpp
     src/ui/select.cpp
     src/ui/text_input.cpp
+    src/ui/text_input_interaction.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
@@ -183,6 +184,13 @@ if(BUILD_TESTING)
     target_include_directories(kiddos_ui_text_input_test PRIVATE include)
     target_link_libraries(kiddos_ui_text_input_test PRIVATE kiddos_ui)
     add_test(NAME kiddos_ui_text_input COMMAND kiddos_ui_text_input_test)
+
+    add_executable(kiddos_ui_text_input_interaction_test
+        tests/ui_text_input_interaction_test.cpp)
+    target_include_directories(kiddos_ui_text_input_interaction_test PRIVATE include)
+    target_link_libraries(kiddos_ui_text_input_interaction_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_text_input_interaction
+        COMMAND kiddos_ui_text_input_interaction_test)
 endif()
 
 
