@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T215151Z-inspect-carousel-selection-boundary-behavior
+research/milestones/visual-fidelity-pass/runs/20261111T215358Z-correct-invalid-carousel-selection-test
