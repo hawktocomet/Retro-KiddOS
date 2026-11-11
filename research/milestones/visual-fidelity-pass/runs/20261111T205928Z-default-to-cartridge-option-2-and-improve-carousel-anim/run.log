@@ -1,0 +1,6 @@
+/tmp/tmp.l0sXkwA4rP: line 1: Implement: command not found
+/tmp/tmp.l0sXkwA4rP: line 3: 1.: command not found
+/tmp/tmp.l0sXkwA4rP: line 4: 2.: command not found
+/tmp/tmp.l0sXkwA4rP: line 5: 3.: command not found
+/tmp/tmp.l0sXkwA4rP: line 6: syntax error near unexpected token `('
+/tmp/tmp.l0sXkwA4rP: line 6: `   - Currently set_selected_game snaps images to their target bounds, preventing update() from animating them.'

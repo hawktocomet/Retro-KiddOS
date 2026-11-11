@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T205848Z-inspect-keyboard-event-handling-and-carousel-navigation
+research/milestones/visual-fidelity-pass/runs/20261111T205928Z-default-to-cartridge-option-2-and-improve-carousel-anim
