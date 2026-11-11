@@ -17,6 +17,7 @@ add_library(kiddos_ui STATIC
     src/ui/renderer.cpp
     src/ui/layout.cpp
     src/ui/focus.cpp
+    src/ui/button.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
@@ -80,5 +81,17 @@ if(BUILD_TESTING)
     add_test(
         NAME kiddos_ui_focus
         COMMAND kiddos_ui_focus_test
+    )
+
+    add_executable(kiddos_ui_button_test
+        tests/ui_button_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_button_test PRIVATE include)
+    target_link_libraries(kiddos_ui_button_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_button
+        COMMAND kiddos_ui_button_test
     )
 endif()

@@ -67,3 +67,11 @@ in the requested direction, focus remains where it is.
 
 Focus state is exposed by `Element::focused()` so widgets can render
 their own focused appearance without coupling the library to a theme.
+
+## Button widget
+
+The Button widget encapsulates a reusable interactive surface with normal,
+focused, pressed, and disabled visual states. It exposes a label for the
+future font/text subsystem and an activation callback. Activation is
+rejected while hidden or disabled, or when no callback is assigned.
+Button rendering is handled internally through the shared Renderer.
