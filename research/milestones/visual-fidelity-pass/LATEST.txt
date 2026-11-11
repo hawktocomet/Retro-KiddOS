@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T212221Z-update-cartridge-style-test-for-option-2-default
+research/milestones/visual-fidelity-pass/runs/20261111T212257Z-align-cartridge-style-tests-with-option-2-default
