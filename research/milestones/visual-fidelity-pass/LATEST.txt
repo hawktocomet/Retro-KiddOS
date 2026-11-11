@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T193618Z-commit-artwork-and-hardware-palette-references
+research/milestones/visual-fidelity-pass/runs/20261111T193703Z-inspect-pending-home-screen-redesign-changes
