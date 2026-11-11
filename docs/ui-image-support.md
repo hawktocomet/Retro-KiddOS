@@ -8,6 +8,11 @@ Call `IMG_Init` for the desired image formats during application startup and
 `IMG_Quit` during shutdown. SDL_image initialization is intentionally left to
 the application lifecycle.
 
+`Texture::load` accepts an optional `magenta_key` flag that treats bright
+magenta (255, 0, 255) pixels as transparent. This matches the generated
+Kid Mode artwork, which is exported with a magenta background. Loaded
+textures use alpha blending.
+
 `Image` is a reusable element that holds a non-owning pointer to a `Texture`.
 The texture must outlive the image element.
 

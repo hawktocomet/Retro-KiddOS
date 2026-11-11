@@ -1,6 +1,8 @@
 #pragma once
 
 #include "kiddos/platform/platform.hpp"
+#include "kiddos/ui/renderer.hpp"
+#include "kiddos/ui/screen_manager.hpp"
 
 namespace kiddos {
 
@@ -12,6 +14,8 @@ public:
 
 private:
     Platform& platform_;
+    ui::ScreenManager screens_;
+    ui::Renderer ui_renderer_;
     bool running_ = true;
     int selected_game_ = 1;
     bool action_screen_ = false;

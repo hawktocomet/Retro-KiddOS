@@ -3,11 +3,17 @@
 #include "kiddos/core/action.hpp"
 #include "kiddos/platform/text_input_event.hpp"
 
+struct SDL_Renderer;
+
 namespace kiddos {
 
 class Platform {
 public:
     virtual ~Platform() = default;
+
+    // Non-owning access to the platform's native SDL renderer, if one
+    // exists. The platform retains ownership; callers must not destroy it.
+    virtual SDL_Renderer* native_renderer() const noexcept { return nullptr; }
 
     virtual bool initialize() = 0;
     virtual bool poll_action(Action& action) = 0;

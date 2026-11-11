@@ -16,7 +16,10 @@ public:
     Texture(Texture&& other) noexcept;
     Texture& operator=(Texture&& other) noexcept;
 
-    bool load(SDL_Renderer* renderer, const std::string& path);
+    // Loads an image file through SDL_image. With magenta_key enabled,
+    // bright magenta (255, 0, 255) pixels become transparent.
+    bool load(SDL_Renderer* renderer, const std::string& path,
+              bool magenta_key = false);
     void reset() noexcept;
     bool valid() const noexcept;
     int width() const noexcept;

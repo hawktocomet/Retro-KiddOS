@@ -24,6 +24,10 @@ public:
     void present() override;
     void shutdown() override;
 
+    SDL_Renderer* native_renderer() const noexcept override {
+        return renderer_;
+    }
+
 private:
     SDL_Window* window_ = nullptr;
     SDL_Renderer* renderer_ = nullptr;

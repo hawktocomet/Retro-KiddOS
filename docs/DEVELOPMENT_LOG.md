@@ -151,6 +151,28 @@ integration and the planned product components remain future work.
 - Added `docs/KID_MODE_CAROUSEL_PROTOTYPE.md` documenting scope and limits.
 - No device firmware, storage, or boot configuration was changed.
 
+## 2026-11-11 — Home carousel on the UI library
+
+- Added `HomeCarouselScreen`, a `ui::Screen` that rebuilds the Kid Mode
+  home carousel from UI library elements (Panel, Image, renderer
+  primitives) while preserving the existing geometry, colors, artwork,
+  and status indicators.
+- Integrated `ScreenManager` into the application for the home screen and
+  attached the platform-owned SDL renderer to the non-owning `ui::Renderer`
+  adapter; no second SDL renderer is created.
+- Translated platform actions into `UIAction` values and routed them
+  through the screen manager before application-level carousel state.
+- Preserved the existing selected-game navigation, wrapping selection, and
+  Confirm/Back behavior; the game action screen stays on the manual
+  platform rendering path.
+- Added optional magenta color-key support to `ui::Texture::load` for the
+  generated artwork.
+- Screens are released before the platform shuts down its renderer.
+- Added focused tests for the action mapping and the carousel screen.
+- Built the project and ran the complete CTest suite successfully.
+- Visual parity still requires inspection of the running screen.
+- No device firmware, storage, or boot configuration was changed.
+
 ## 2026-11-10 — Game selection and action screen
 
 - Added a separate game action screen to the application state.

@@ -57,6 +57,7 @@ target_compile_options(kiddos_ui PRIVATE
 add_executable(kiddos
     src/main.cpp
     src/app/application.cpp
+    src/app/home_carousel_screen.cpp
     src/platform/sdl_platform.cpp
 )
 
@@ -72,6 +73,23 @@ target_compile_options(kiddos PRIVATE
 include(CTest)
 
 if(BUILD_TESTING)
+    add_executable(kiddos_app_ui_action_mapping_test
+        tests/app_ui_action_mapping_test.cpp)
+    target_include_directories(kiddos_app_ui_action_mapping_test PRIVATE include)
+    target_link_libraries(kiddos_app_ui_action_mapping_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_app_ui_action_mapping
+        COMMAND kiddos_app_ui_action_mapping_test)
+
+    add_executable(kiddos_app_home_carousel_screen_test
+        tests/app_home_carousel_screen_test.cpp
+        src/app/home_carousel_screen.cpp)
+    target_include_directories(kiddos_app_home_carousel_screen_test PRIVATE include)
+    target_compile_definitions(kiddos_app_home_carousel_screen_test PRIVATE
+        KIDDOS_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(kiddos_app_home_carousel_screen_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_app_home_carousel_screen
+        COMMAND kiddos_app_home_carousel_screen_test)
+
     add_executable(kiddos_platform_sdl_text_input_translator_test
         tests/platform_sdl_text_input_translator_test.cpp)
     target_include_directories(kiddos_platform_sdl_text_input_translator_test PRIVATE include)

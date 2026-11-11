@@ -15,7 +15,12 @@ harness and is not a device firmware build.
 - Left/right keyboard and controller navigation.
 - Wrapping selection across the three sample games.
 - Sound-status and battery-status visual indicators.
-- Platform-owned rendering, with selection state managed by the application.
+- The home carousel is rendered through the KiddOS UI library as a
+  `HomeCarouselScreen` (`ui::Screen`) managed by a `ScreenManager` in the
+  application, reusing the generated artwork and preserving the established
+  geometry and colors.
+- The game action screen remains on the platform-owned manual rendering
+  path, with selection state managed by the application.
 
 ## Desktop controls
 
