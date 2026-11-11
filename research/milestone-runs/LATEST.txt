@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T001617Z-lvgl-feasibility-x11-visual-capture
+research/milestone-runs/20261111T001649Z-lvgl-feasibility-controller-interaction-test

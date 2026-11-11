@@ -1,0 +1,18 @@
+=== Connected input devices ===
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 003: ID 5986:2130 Bison Electronics Inc. Integrated Camera
+Bus 001 Device 004: ID 06cb:00bd Synaptics, Inc. Prometheus MIS Touch Fingerprint Reader
+Bus 001 Device 005: ID 8087:0026 Intel Corp. AX201 Bluetooth
+Bus 001 Device 103: ID 046d:c52b Logitech, Inc. Unifying Receiver
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+=== SDL controller environment ===
+DISPLAY=:0
+WAYLAND_DISPLAY=wayland-0
+=== Launch prototype for physical controller test ===
+Use the controller D-pad to move between carousel items.
+Use A to activate the focused item and B to test back handling.
+The prototype will close automatically after 30 seconds.
+=== Runtime output ===
+Application exit: 0
