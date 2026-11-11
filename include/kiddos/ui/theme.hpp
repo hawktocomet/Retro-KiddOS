@@ -7,6 +7,7 @@
 #include "kiddos/ui/toggle.hpp"
 #include "kiddos/ui/list_view.hpp"
 #include "kiddos/ui/checkbox.hpp"
+#include "kiddos/ui/radio_group.hpp"
 
 namespace kiddos::ui {
 
@@ -40,6 +41,7 @@ public:
     ProgressBarStyle progress_bar_style() const noexcept;
     ListViewStyle list_view_style() const noexcept;
     CheckboxStyle checkbox_style() const noexcept;
+    RadioGroupStyle radio_group_style() const noexcept;
 
 private:
     ThemeColors colors_{};

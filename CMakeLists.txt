@@ -33,6 +33,7 @@ add_library(kiddos_ui STATIC
     src/ui/theme.cpp
     src/ui/list_view.cpp
     src/ui/checkbox.cpp
+    src/ui/radio_group.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
@@ -165,6 +166,11 @@ if(BUILD_TESTING)
     target_include_directories(kiddos_ui_checkbox_test PRIVATE include)
     target_link_libraries(kiddos_ui_checkbox_test PRIVATE kiddos_ui)
     add_test(NAME kiddos_ui_checkbox COMMAND kiddos_ui_checkbox_test)
+
+    add_executable(kiddos_ui_radio_group_test tests/ui_radio_group_test.cpp)
+    target_include_directories(kiddos_ui_radio_group_test PRIVATE include)
+    target_link_libraries(kiddos_ui_radio_group_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_radio_group COMMAND kiddos_ui_radio_group_test)
 endif()
 
 

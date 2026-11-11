@@ -88,4 +88,18 @@ CheckboxStyle Theme::checkbox_style() const noexcept {
     return style;
 }
 
+
+RadioGroupStyle Theme::radio_group_style() const noexcept {
+    RadioGroupStyle style;
+    style.background = colors_.surface;
+    style.selected = colors_.primary;
+    style.indicator = colors_.text;
+    style.border = colors_.border;
+    style.focused_border = colors_.primary_bright;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    return style;
 }
+
+
+} // namespace kiddos::ui
