@@ -1,0 +1,196 @@
+=== PROJECT PLATFORM REFERENCES ===
+include/kiddos/ui/panel.hpp:10:    int border_thickness = 2;
+include/kiddos/ui/panel.hpp:24:    void set_border_thickness(int thickness) noexcept;
+include/kiddos/ui/progress_bar.hpp:16:    int border_thickness = 1;
+src/ui/renderer.cpp:169:    // straight edge lines are skipped: the lines already cover them, and
+src/ui/focus.cpp:22:        if (auto* nested = dynamic_cast<Container*>(element)) {
+src/ui/focus.cpp:23:            collect_focusable(*nested, result);
+src/ui/panel.cpp:10:    style_.border_thickness = std::max(0, style_.border_thickness);
+src/ui/panel.cpp:15:    style.border_thickness = std::max(0, style.border_thickness);
+src/ui/panel.cpp:32:void Panel::set_border_thickness(int thickness) noexcept {
+src/ui/panel.cpp:33:    style_.border_thickness = std::max(0, thickness);
+src/ui/panel.cpp:45:    const int thickness = std::min(
+src/ui/panel.cpp:46:        style_.border_thickness, std::min(rect.w, rect.h) / 2
+src/ui/panel.cpp:51:    // avoids stacking nested outlines, which look crude at small radii.
+src/ui/panel.cpp:52:    if (thickness > 0 && style_.background.a == 255) {
+src/ui/panel.cpp:56:            rect.x + thickness,
+src/ui/panel.cpp:57:            rect.y + thickness,
+src/ui/panel.cpp:58:            rect.w - thickness * 2,
+src/ui/panel.cpp:59:            rect.h - thickness * 2
+src/ui/panel.cpp:64:                inner, std::max(0, radius - thickness), style_.background
+src/ui/panel.cpp:72:    // Transparent backgrounds (for example glow outlines) draw the border
+src/ui/panel.cpp:73:    // as clean rounded outlines instead of covering the content beneath.
+src/ui/panel.cpp:74:    for (int inset = 0; inset < thickness; ++inset) {
+src/ui/progress_bar.cpp:28:    style.border_thickness = std::max(0, style.border_thickness);
+src/ui/progress_bar.cpp:43:        style_.border_thickness,
+src/ui/theme.cpp:38:    style.border_thickness = 2;
+src/ui/theme.cpp:65:    style.border_thickness = 1;
+docs/ARCHITECTURE.md:54:## Development harness
+docs/ARCHITECTURE.md:63:The harness is not a general desktop frontend. Desktop success does not
+docs/DEVELOPMENT_LOG.md:7:  instead of stacking nested outlines. Transparent-background panels (the
+docs/DEVELOPMENT_LOG.md:8:  selected-card glow) keep drawing as rounded outlines.
+docs/DEVELOPMENT_LOG.md:10:  pixel centers and outlines trace the true circle with dense, deduplicated
+docs/DEVELOPMENT_LOG.md:105:  harness, not a supported desktop edition.
+docs/DEVELOPMENT_LOG.md:130:The existing SDL2 prototype remains a basic development harness. Hardware
+docs/DEVELOPMENT_LOG.md:170:- Added the first three-game Kid Mode carousel to the SDL2 desktop harness.
+docs/PRODUCT_SPECIFICATION.md:324:The temporary Arch Linux development harness is used to build and test
+docs/PRODUCT_SPECIFICATION.md:386:- The Arch Linux desktop build is only a temporary development harness.
+docs/FIRMWARE_AUDIT.md:12:This audit examines the publicly available manufacturer firmware source to
+docs/FIRMWARE_AUDIT.md:223:### Volume and brightness controls
+docs/FIRMWARE_AUDIT.md:237:The script saves and restores brightness and ALSA state, unloads and
+docs/FIRMWARE_AUDIT.md:313:The desktop SDL2 build remains a development harness. The target firmware
+docs/FIRMWARE_AUDIT.md:329:9. Thermal zones and cooling devices
+docs/KID_MODE_CAROUSEL_PROTOTYPE.md:7:harness and is not a device firmware build.
+docs/KID_MODE_CAROUSEL_PROTOTYPE.md:45:The desktop harness is a development aid only. Visual and input behavior
+docs/GAME_ACTION_SCREEN.md:23:The desktop harness does not establish handheld compatibility.
+docs/ui-panel-support.md:5:Its style includes a background color, border color, and border thickness.
+docs/ui-panel-support.md:6:A zero border thickness disables the border. Negative thickness values are
+docs/ui-panel-support.md:16:border thickness is filled with the background color. This avoids stacked
+docs/ui-panel-support.md:17:nested outlines, which look crude at small corner radii.
+docs/ui-panel-support.md:20:card) the border is drawn as rounded outlines instead, so the content
+docs/ui-panel-support.md:24:the corner arc at pixel centers, and outlines trace the true circle with
+docs/ui-progress-bar.md:6:fill, and border colors, and adjustable border thickness. Values are clamped
+
+=== ARTWORK FILES ===
+assets/artwork/generated/carousel-car.bmp
+assets/artwork/generated/carousel-car.png
+assets/artwork/generated/carousel-mushroom.bmp
+assets/artwork/generated/carousel-mushroom.png
+assets/artwork/generated/carousel-selected.bmp
+assets/artwork/generated/carousel-star.bmp
+assets/artwork/generated/carousel-star.png
+assets/artwork/generated/carousel-title.bmp
+assets/artwork/generated/carousel-title-car.png
+assets/artwork/generated/carousel-title.png
+assets/artwork/generated/carousel-title-star.png
+assets/artwork/generated/forest.bmp
+assets/artwork/generated/kiddos-wordmark.png
+assets/artwork/generated/label-play.bmp
+assets/artwork/generated/label-resume.bmp
+assets/artwork/generated/label-start-over.bmp
+assets/artwork/generated/navigation-hints.png
+assets/artwork/generated/ocean.bmp
+assets/artwork/generated/space.bmp
+assets/artwork/source/branding/kiddos-wordmark.svg
+assets/artwork/source/branding/navigation-hints.svg
+assets/artwork/source/carousel/car.svg
+assets/artwork/source/carousel/mushroom.svg
+assets/artwork/source/carousel/selected.svg
+assets/artwork/source/carousel/star.svg
+assets/artwork/source/carousel/title-car.svg
+assets/artwork/source/carousel/title-star.svg
+assets/artwork/source/carousel/title.svg
+assets/artwork/source/forest.svg
+assets/artwork/source/ocean.svg
+assets/artwork/source/space.svg
+
+=== ARTWORK DIRECTORIES ===
+assets
+assets/artwork
+assets/artwork/generated
+assets/artwork/source
+assets/artwork/source/branding
+assets/artwork/source/carousel
+assets/fonts
+assets/sounds
+
+=== CURRENT HOME SCREEN ARTWORK REFERENCES ===
+include/kiddos/app/home_carousel_screen.hpp:5:#include "kiddos/ui/texture.hpp"
+include/kiddos/app/home_carousel_screen.hpp:25:    std::array<ui::Texture, game_count> artworks_{};
+include/kiddos/app/home_carousel_screen.hpp:26:    std::array<ui::Texture, game_count> title_textures_{};
+include/kiddos/app/home_carousel_screen.hpp:28:    ui::Texture wordmark_texture_{};
+include/kiddos/app/home_carousel_screen.hpp:29:    ui::Texture hints_texture_{};
+src/app/application.cpp:28:    // carousel artwork is BMP, which needs no extra image format flags.
+src/app/application.cpp:54:    // Release screens and their SDL textures before the platform shuts
+src/app/home_carousel_screen.cpp:22:artwork_paths{
+src/app/home_carousel_screen.cpp:23:    "assets/artwork/generated/carousel-star.png",
+src/app/home_carousel_screen.cpp:24:    "assets/artwork/generated/carousel-mushroom.png",
+src/app/home_carousel_screen.cpp:25:    "assets/artwork/generated/carousel-car.png"
+src/app/home_carousel_screen.cpp:30:    "assets/artwork/generated/carousel-title-star.png",
+src/app/home_carousel_screen.cpp:31:    "assets/artwork/generated/carousel-title.png",
+src/app/home_carousel_screen.cpp:32:    "assets/artwork/generated/carousel-title-car.png"
+src/app/home_carousel_screen.cpp:36:    "assets/artwork/generated/kiddos-wordmark.png";
+src/app/home_carousel_screen.cpp:39:    "assets/artwork/generated/navigation-hints.png";
+src/app/home_carousel_screen.cpp:148:        artworks_[index].load(renderer, artwork_paths[index], false);
+src/app/home_carousel_screen.cpp:149:        title_textures_[index].load(renderer, title_paths[index], false);
+src/app/home_carousel_screen.cpp:151:        auto& image = root().add<ui::Image>(&artworks_[index]);
+src/app/home_carousel_screen.cpp:167:    wordmark_texture_.load(renderer, wordmark_path, false);
+src/app/home_carousel_screen.cpp:168:    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+src/app/home_carousel_screen.cpp:172:    hints_texture_.load(renderer, hints_path, false);
+src/app/home_carousel_screen.cpp:173:    hints_ = &root().add<ui::Image>(&hints_texture_);
+src/app/home_carousel_screen.cpp:184:        if (image) image->set_texture(nullptr);
+src/app/home_carousel_screen.cpp:187:    if (title_) title_->set_texture(nullptr);
+src/app/home_carousel_screen.cpp:188:    if (wordmark_) wordmark_->set_texture(nullptr);
+src/app/home_carousel_screen.cpp:189:    if (hints_) hints_->set_texture(nullptr);
+src/app/home_carousel_screen.cpp:206:        // through the selected artwork.
+src/app/home_carousel_screen.cpp:225:        title_->set_texture(
+src/app/home_carousel_screen.cpp:226:            &title_textures_[static_cast<std::size_t>(index)]);
+src/platform/sdl_platform.cpp:18:std::array<SDL_Texture*, 3> artwork_textures{};
+src/platform/sdl_platform.cpp:19:std::array<SDL_Texture*, 3> action_label_textures{};
+src/platform/sdl_platform.cpp:20:SDL_Texture* carousel_title_texture{};
+src/platform/sdl_platform.cpp:21:SDL_Texture* carousel_selected_texture{};
+src/platform/sdl_platform.cpp:23:SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+src/platform/sdl_platform.cpp:38:    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+src/platform/sdl_platform.cpp:41:    if (texture) {
+src/platform/sdl_platform.cpp:42:        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+src/platform/sdl_platform.cpp:44:        std::cerr << "Could not create texture for " << path << ": "
+src/platform/sdl_platform.cpp:47:    return texture;
+src/platform/sdl_platform.cpp:116:void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+src/platform/sdl_platform.cpp:286:    if (index < 0 || index >= static_cast<int>(artwork_textures.size())) return;
+src/platform/sdl_platform.cpp:287:    SDL_Texture* texture = artwork_textures[static_cast<std::size_t>(index)];
+src/platform/sdl_platform.cpp:288:    if (!texture) return;
+src/platform/sdl_platform.cpp:290:    SDL_SetTextureAlphaMod(texture, alpha);
+src/platform/sdl_platform.cpp:291:    SDL_RenderCopy(r, texture, nullptr, &area);
+src/platform/sdl_platform.cpp:292:    SDL_SetTextureAlphaMod(texture, 255);
+src/platform/sdl_platform.cpp:315:    mask_artwork_corners(r, art, 18, {20, 34, 65, alpha});
+src/platform/sdl_platform.cpp:407:    const char* artwork_paths[] = {
+src/platform/sdl_platform.cpp:408:        "assets/artwork/generated/carousel-star.bmp",
+src/platform/sdl_platform.cpp:409:        "assets/artwork/generated/carousel-mushroom.bmp",
+src/platform/sdl_platform.cpp:410:        "assets/artwork/generated/carousel-car.bmp"
+src/platform/sdl_platform.cpp:413:        "assets/artwork/generated/label-play.bmp",
+src/platform/sdl_platform.cpp:414:        "assets/artwork/generated/label-resume.bmp",
+src/platform/sdl_platform.cpp:415:        "assets/artwork/generated/label-start-over.bmp"
+src/platform/sdl_platform.cpp:418:    for (std::size_t i = 0; i < artwork_textures.size(); ++i) {
+src/platform/sdl_platform.cpp:419:        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i], true);
+src/platform/sdl_platform.cpp:420:        if (!artwork_textures[i]) {
+src/platform/sdl_platform.cpp:426:    for (std::size_t i = 0; i < action_label_textures.size(); ++i) {
+src/platform/sdl_platform.cpp:427:        action_label_textures[i] =
+src/platform/sdl_platform.cpp:428:            load_bitmap_texture(renderer_, label_paths[i], true);
+src/platform/sdl_platform.cpp:429:        if (!action_label_textures[i]) {
+src/platform/sdl_platform.cpp:435:    carousel_title_texture =
+src/platform/sdl_platform.cpp:436:        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-title.bmp", true);
+src/platform/sdl_platform.cpp:437:    carousel_selected_texture =
+src/platform/sdl_platform.cpp:438:        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-selected.bmp", true);
+src/platform/sdl_platform.cpp:439:    if (!carousel_title_texture || !carousel_selected_texture) {
+src/platform/sdl_platform.cpp:443:    SDL_SetTextureBlendMode(carousel_title_texture, SDL_BLENDMODE_BLEND);
+src/platform/sdl_platform.cpp:444:    SDL_SetTextureBlendMode(carousel_selected_texture, SDL_BLENDMODE_BLEND);
+src/platform/sdl_platform.cpp:661:    // Artwork always follows the actual selected game.
+src/platform/sdl_platform.cpp:666:    if (carousel_title_texture && selected_index == 1) {
+src/platform/sdl_platform.cpp:668:        SDL_RenderCopy(renderer_, carousel_title_texture,
+src/platform/sdl_platform.cpp:680:    if (index < 0 || index >= static_cast<int>(action_label_textures.size())) return;
+src/platform/sdl_platform.cpp:681:    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+src/platform/sdl_platform.cpp:682:    if (!texture) return;
+src/platform/sdl_platform.cpp:685:    SDL_RenderCopy(r, texture, nullptr, &destination);
+src/platform/sdl_platform.cpp:748:    // Keep the selected game's artwork prominent.
+src/platform/sdl_platform.cpp:808:    for (auto& texture : artwork_textures) {
+src/platform/sdl_platform.cpp:809:        if (texture) {
+src/platform/sdl_platform.cpp:810:            SDL_DestroyTexture(texture);
+src/platform/sdl_platform.cpp:811:            texture = nullptr;
+src/platform/sdl_platform.cpp:814:    for (auto& texture : action_label_textures) {
+src/platform/sdl_platform.cpp:815:        if (texture) {
+src/platform/sdl_platform.cpp:816:            SDL_DestroyTexture(texture);
+src/platform/sdl_platform.cpp:817:            texture = nullptr;
+src/platform/sdl_platform.cpp:820:    if (carousel_title_texture) {
+src/platform/sdl_platform.cpp:821:        SDL_DestroyTexture(carousel_title_texture);
+src/platform/sdl_platform.cpp:822:        carousel_title_texture = nullptr;
+src/platform/sdl_platform.cpp:824:    if (carousel_selected_texture) {
+src/platform/sdl_platform.cpp:825:        SDL_DestroyTexture(carousel_selected_texture);
+src/platform/sdl_platform.cpp:826:        carousel_selected_texture = nullptr;
+
+=== WORKTREE STATUS ===
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
