@@ -1,0 +1,196 @@
+=== Firmware virtual toolchain package ===
+research/firmware/manufacturer/RetroPixel_Pocket/packages/virtual/toolchain/package.mk
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG351MP/linux/linux.aarch64.conf:46:CONFIG_CROSS_COMPILE=""
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG351MP/packages/enable-oga-sleep/package.mk:10:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG351MP/packages/odroidgoa-utils/package.mk:14:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG351P/linux/linux.aarch64.conf:46:CONFIG_CROSS_COMPILE=""
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG351P/packages/enable-oga-sleep/package.mk:10:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG351P/packages/odroidgoa-utils/package.mk:13:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG351V/linux/linux.aarch64.conf:46:CONFIG_CROSS_COMPILE=""
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG351V/packages/enable-oga-sleep/package.mk:10:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG351V/packages/odroidgoa-utils/package.mk:14:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG552/linux/linux.aarch64.conf:45:CONFIG_CROSS_COMPILE=""
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG552/packages/enable-oga-sleep/package.mk:10:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RG552/packages/odroidgoa-utils/package.mk:14:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RPPOCKET/linux/linux.aarch64.conf:46:CONFIG_CROSS_COMPILE=""
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RPPOCKET/packages/enable-oga-sleep/package.mk:10:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/devices/RPPOCKET/packages/odroidgoa-utils/package.mk:14:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/RTL815x/package.mk:18:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/RTL8188FU/package.mk:22:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/RTL8812AU/package.mk:24:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/RTL8814AU/package.mk:22:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/RTL8821AU/package.mk:24:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/RTL8821CU/package.mk:24:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/RTL8852BU/package.mk:22:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/RTL88x2BU/package.mk:24:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/libmali/package.mk:23:	  ARCHDIR="lib/arm-linux-gnueabihf"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:31:if [ -n "${KERNEL_TOOLCHAIN}" ]; then
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:32:  PKG_DEPENDS_HOST="${PKG_DEPENDS_HOST} gcc-${KERNEL_TOOLCHAIN}:host"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:33:  PKG_DEPENDS_TARGET="${PKG_DEPENDS_TARGET} gcc-${KERNEL_TOOLCHAIN}:host"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:34:  HEADERS_ARCH=${TARGET_ARCH}
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:42:if [ "${TARGET_ARCH}" = "x86_64" ]; then
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:97:    HOSTCC="${TOOLCHAIN}/bin/host-gcc" \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:98:    HOSTCXX="${TOOLCHAIN}/bin/host-g++" \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:108:    HOSTCC="${TOOLCHAIN}/bin/host-gcc" \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:109:    HOSTCXX="${TOOLCHAIN}/bin/host-g++" \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:120:  if [ "${TARGET_ARCH}" = "x86_64" ]; then
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:165:      case "${TARGET_ARCH}" in
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:173:          PERF_BUILD_ARGS="ARCH=${TARGET_ARCH}"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:186:      CROSS_COMPILE="${TARGET_PREFIX}" \
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:254:        ${TOOLCHAIN}/bin/rename -- '-timing_fix' '' ${INSTALL}/usr/share/timing_fix/*.dtb 2>/dev/null || :
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/rkbin/package.mk:24:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:46:    echo "DEBUG=${PKG_DEBUG} CROSS_COMPILE=\"${TARGET_KERNEL_PREFIX}\" LDFLAGS=\"\" ARCH=arm make mrproper"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:48:    	DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make mrproper
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:49:    	DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make $(${ROOT}/${SCRIPTS}/uboot_helper ${PROJECT} RG351MP ${UBOOT_SYSTEM} config)
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:50:    	DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm _python_sysroot="${TOOLCHAIN}" _python_prefix=/ _python_exec_prefix=/ make HOSTCC="${HOST_CC}" HOSTLDFLAGS="-L${TOOLCHAIN}/lib" HOSTSTRIP="true" CONFIG_MKIMAGE_DTC_PATH="scripts/dtc/dtc"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:52:    echo "DEBUG=${PKG_DEBUG} CROSS_COMPILE=\"${TARGET_KERNEL_PREFIX}\" LDFLAGS=\"\" ARCH=arm make \$(${ROOT}/${SCRIPTS}/uboot_helper ${PROJECT} ${DEVICE} ${UBOOT_SYSTEM} config)"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:53:		echo "DEBUG=${PKG_DEBUG} CROSS_COMPILE=\"${TARGET_KERNEL_PREFIX}\" LDFLAGS=\"\" ARCH=arm _python_sysroot=\"${TOOLCHAIN}\" _python_prefix=/ _python_exec_prefix=/ make HOSTCC=\"${HOST_CC}\" HOSTLDFLAGS=\"-L${TOOLCHAIN}/lib\" HOSTSTRIP=\"true\" CONFIG_MKIMAGE_DTC_PATH=\"scripts/dtc/dtc\""
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/patches/1/package.mk:94:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make mrproper
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/patches/1/package.mk:95:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make $(${ROOT}/${SCRIPTS}/uboot_helper ${PROJECT} ${DEVICE} ${UBOOT_SYSTEM} config)
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/patches/1/package.mk:98:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm _python_sysroot="${TOOLCHAIN}" _python_prefix=/ _python_exec_prefix=/ make HOSTCC="${HOST_CC}" HOSTLDFLAGS="-L${TOOLCHAIN}/lib" HOSTSTRIP="true" CONFIG_MKIMAGE_DTC_PATH="scripts/dtc/dtc"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/1package.mk:91:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make mrproper
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/1package.mk:92:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make $(${ROOT}/${SCRIPTS}/uboot_helper ${PROJECT} ${DEVICE} ${UBOOT_SYSTEM} config)
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/1package.mk:95:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm _python_sysroot="${TOOLCHAIN}" _python_prefix=/ _python_exec_prefix=/ make HOSTCC="${HOST_CC}" HOSTLDFLAGS="-L${TOOLCHAIN}/lib" HOSTSTRIP="true" CONFIG_MKIMAGE_DTC_PATH="scripts/dtc/dtc"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/package.mk:53:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make mrproper
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/package.mk:54:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make $(${ROOT}/${SCRIPTS}/uboot_helper ${PROJECT} ${DEVICE} ${UBOOT_SYSTEM} config)
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/package.mk:55:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm _python_sysroot="${TOOLCHAIN}" _python_prefix=/ _python_exec_prefix=/ make HOSTCC="${HOST_CC}" HOSTLDFLAGS="-L${TOOLCHAIN}/lib" HOSTSTRIP="true" CONFIG_MKIMAGE_DTC_PATH="scripts/dtc/dtc"
+
+=== Firmware package toolchain setup ===
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/arm-mem/package.mk:26:  export CROSS_COMPILE=${TARGET_PREFIX}
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-audio-sdl/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-core/package.mk:25:  export CROSS_COMPILE="${TARGET_PREFIX}"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-input-sdl/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-rsp-hle/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-ui-console/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-video-glide64mk2/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-video-rice/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8188EU/package.mk:25:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8192CU/package.mk:25:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8192DU/package.mk:24:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8192EU/package.mk:24:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8812AU/package.mk:25:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8814AU/package.mk:28:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8821CU/package.mk:36:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8152-aml/package.mk:21:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8188EU-aml/package.mk:27:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8189ES-aml/package.mk:31:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8189FS-aml/package.mk:32:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8723BS-aml/package.mk:31:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8723DS-aml/package.mk:31:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8822BS-aml/package.mk:32:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8822BU-aml/package.mk:32:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8822CS-aml/package.mk:32:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/ap6xxx-aml/package.mk:29:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/ap6xxx-aml/package.mk:40:         CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/mt7601u-aml/package.mk:24:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX}
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/mt7603u-aml/package.mk:24:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/mt7610u-aml/package.mk:25:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/mt7668-aml/package.mk:25:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/qca9377-aml/package.mk:33:    CROSS_COMPILE=${TARGET_KERNEL_PREFIX}
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/openvfd-driver/package.mk:22:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux/package.mk:168:      CROSS_COMPILE="${TARGET_PREFIX}" \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:86:  CROSS_CC=${TARGET_PREFIX}gcc-${GCC_VERSION}
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:88:  rm -f ${TARGET_PREFIX}gcc
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:90:cat > ${TARGET_PREFIX}gcc <<EOF
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:95:  chmod +x ${TARGET_PREFIX}gcc
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:115:    ${TARGET_PREFIX}strip ${TARGET_NAME}/libgcc/libgcc_s.so*
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:116:    ${TARGET_PREFIX}strip ${TARGET_NAME}/libgomp/.libs/libgomp.so*
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:117:    ${TARGET_PREFIX}strip ${TARGET_NAME}/libstdc++-v3/src/.libs/libstdc++.so*
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:126:  CROSS_CC=${TARGET_PREFIX}gcc-${GCC_VERSION}
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:127:  CROSS_CXX=${TARGET_PREFIX}g++-${GCC_VERSION}
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:129:  rm -f ${TARGET_PREFIX}gcc
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:131:cat > ${TARGET_PREFIX}gcc <<EOF
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:136:  chmod +x ${TARGET_PREFIX}gcc
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:141:  [ ! -f "${CROSS_CXX}" ] && mv ${TARGET_PREFIX}g++ ${CROSS_CXX}
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:143:cat > ${TARGET_PREFIX}g++ <<EOF
+research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/gcc/package.mk:148:  chmod +x ${TARGET_PREFIX}g++
+research/firmware/manufacturer/RetroPixel_Pocket/packages/multimedia/ffmpeg/package.mk:117:              --cross-prefix="${TARGET_PREFIX}" \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/multimedia/libhdhomerun/package.mk:14:PKG_MAKE_OPTS_TARGET="CROSS_COMPILE=${TARGET_PREFIX}"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/multimedia/x264/package.mk:30:    --cross-prefix="${TARGET_PREFIX}" \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/sysutils/busybox/package.mk:33:                        CROSS_COMPILE=${TARGET_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/sysutils/busybox/package.mk:44:                      CROSS_COMPILE=${TARGET_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/sysutils/pciutils/package.mk:19:       CROSS_COMPILE=${TARGET_PREFIX} \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/atf/package.mk:23:  export M0_CROSS_COMPILE="${TOOLCHAIN}/bin/arm-none-eabi-"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/atf/package.mk:27:  CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" CFLAGS="" make PLAT=${ATF_PLATFORM} bl31
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/bl301/package.mk:21:  DEBUG=${PKG_DEBUG} CROSS_COMPILE=aarch64-elf- ARCH=arm CFLAGS="" LDFLAGS="" make mrproper
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/bl301/package.mk:27:    DEBUG=${PKG_DEBUG} CROSS_COMPILE=aarch64-elf- ARCH=arm CFLAGS="" LDFLAGS="" make ${PKG_UBOOT_CONFIG}
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/bl301/package.mk:28:    DEBUG=${PKG_DEBUG} CROSS_COMPILE=aarch64-elf- ARCH=arm CFLAGS="" LDFLAGS="" make HOSTCC="${HOST_CC}" HOSTSTRIP="true" bl301.bin
+
+=== SDL2 firmware package build recipe ===
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/package.mk
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0001-kmsdrm-Workaround-missing-gbm_bo_get_offset-and-SDL_.patch
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0002-disable-mouse.patch
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0006-KMSDRM-Also-rotate-the-cursor.patch
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/package.mk:5:PKG_VERSION="2.30.3"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/package.mk:8:PKG_URL="https://www.libsdl.org/release/SDL2-${PKG_VERSION}.tar.gz"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/package.mk:23:pre_configure_target(){
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/package.mk:24:  PKG_CMAKE_OPTS_TARGET="-DSDL_STATIC=OFF \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/package.mk:59:                         -DSDL_RENDER_D3D=OFF \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0001-kmsdrm-Workaround-missing-gbm_bo_get_offset-and-SDL_.patch:5:@@ -1044,7 +1044,7 @@ SDL_GLContext SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0001-kmsdrm-Workaround-missing-gbm_bo_get_offset-and-SDL_.patch:12:     if (SDL_EGL_MakeCurrent(_this, egl_surface, egl_context) < 0) {
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0001-kmsdrm-Workaround-missing-gbm_bo_get_offset-and-SDL_.patch:14:diff --git a/src/video/kmsdrm/SDL_kmsdrmopengles.c b/src/video/kmsdrm/SDL_kmsdrmopengles.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0001-kmsdrm-Workaround-missing-gbm_bo_get_offset-and-SDL_.patch:16:--- a/src/video/kmsdrm/SDL_kmsdrmopengles.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0001-kmsdrm-Workaround-missing-gbm_bo_get_offset-and-SDL_.patch:17:+++ b/src/video/kmsdrm/SDL_kmsdrmopengles.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0001-kmsdrm-Workaround-missing-gbm_bo_get_offset-and-SDL_.patch:22:-#ifdef SDL_VIDEO_DRIVER_RPI
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0001-kmsdrm-Workaround-missing-gbm_bo_get_offset-and-SDL_.patch:29:+#ifndef SDL_VIDEO_DRIVER_RPI
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0001-kmsdrm-Workaround-missing-gbm_bo_get_offset-and-SDL_.patch:40:@@ -72,7 +78,7 @@ SDL_EGL_CreateContext_impl(KMSDRM)
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/0001-kmsdrm-Workaround-missing-gbm_bo_get_offset-and-SDL_.patch:47:         return SDL_SetError("EGL not initialized");
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:7:     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:27:diff --git a/src/video/kmsdrm/SDL_kmsdrmopengles.c b/src/video/kmsdrm/SDL_kmsdrmopengles.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:29:--- a/src/video/kmsdrm/SDL_kmsdrmopengles.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:30:+++ b/src/video/kmsdrm/SDL_kmsdrmopengles.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:32: #include "SDL_kmsdrmopengles.h"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:33: #include "SDL_kmsdrmdyn.h"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:37: #ifndef EGL_PLATFORM_GBM_MESA
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:38: #define EGL_PLATFORM_GBM_MESA 0x31D7
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:44: /* EGL implementation of SDL OpenGL support */
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:83:diff --git a/src/video/kmsdrm/SDL_kmsdrmsym.h b/src/video/kmsdrm/SDL_kmsdrmsym.h
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:85:--- a/src/video/kmsdrm/SDL_kmsdrmsym.h
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:86:+++ b/src/video/kmsdrm/SDL_kmsdrmsym.h
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:95:diff --git a/src/video/kmsdrm/SDL_kmsdrmvideo.c b/src/video/kmsdrm/SDL_kmsdrmvideo.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:97:--- a/src/video/kmsdrm/SDL_kmsdrmvideo.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:98:+++ b/src/video/kmsdrm/SDL_kmsdrmvideo.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:100: #include "SDL_kmsdrmopengles.h"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:101: #include "SDL_kmsdrmmouse.h"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:102: #include "SDL_kmsdrmdyn.h"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:104: #include "SDL_kmsdrmvulkan.h"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:115:@@ -68,6 +70,9 @@ static char kmsdrm_dri_cardpath[32];
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:116: #define EGL_PLATFORM_GBM_MESA 0x31D7
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:210:     ret = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:261:diff --git a/src/video/kmsdrm/SDL_kmsdrmvideo.h b/src/video/kmsdrm/SDL_kmsdrmvideo.h
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:263:--- a/src/video/kmsdrm/SDL_kmsdrmvideo.h
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:264:+++ b/src/video/kmsdrm/SDL_kmsdrmvideo.h
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0005-SDL-2.30.0.odroidgoa-support.patch:268: #include <EGL/egl.h>
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0006-KMSDRM-Also-rotate-the-cursor.patch:1:diff --git a/src/video/kmsdrm/SDL_kmsdrmmouse.c b/src/video/kmsdrm/SDL_kmsdrmmouse.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0006-KMSDRM-Also-rotate-the-cursor.patch:3:--- a/src/video/kmsdrm/SDL_kmsdrmmouse.c
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/SDL2/patches/rotation/0006-KMSDRM-Also-rotate-the-cursor.patch:4:+++ b/src/video/kmsdrm/SDL_kmsdrmmouse.c
+
+=== Local cross toolchains outside PATH ===
+
+=== Device architecture default and override references ===
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/flycast2021/package.mk:27:  PKG_MAKE_OPTS_TARGET+=" ARCH=arm platform=arm64"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux/package.mk:152:          PERF_BUILD_ARGS="ARCH=arm64"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/bl301/package.mk:21:  DEBUG=${PKG_DEBUG} CROSS_COMPILE=aarch64-elf- ARCH=arm CFLAGS="" LDFLAGS="" make mrproper
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/bl301/package.mk:27:    DEBUG=${PKG_DEBUG} CROSS_COMPILE=aarch64-elf- ARCH=arm CFLAGS="" LDFLAGS="" make ${PKG_UBOOT_CONFIG}
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/bl301/package.mk:28:    DEBUG=${PKG_DEBUG} CROSS_COMPILE=aarch64-elf- ARCH=arm CFLAGS="" LDFLAGS="" make HOSTCC="${HOST_CC}" HOSTSTRIP="true" bl301.bin
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/scrapers/scraper/package.mk:25:      export GOARCH=arm
+research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/scrapers/scraper/package.mk:37:      export GOARCH=arm64
+research/firmware/manufacturer/RetroPixel_Pocket/packages/ui/emulationstation/package.mk:38:#      && DOCKER_WORK_DIR=/work DEVICE=RG351V ARCH=aarch64 PACKAGE=emulationstation make docker-package-clean docker-package
+research/firmware/manufacturer/RetroPixel_Pocket/packages/ui/webui/package.mk:27:#   rm -rf ./sources/webui/ && DOCKER_WORK_DIR=/work DEVICE=RG552 ARCH=aarch64 PACKAGE=webui make docker-package-clean docker-package
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/linux/package.mk:170:          PERF_BUILD_ARGS="ARCH=arm64"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:46:    echo "DEBUG=${PKG_DEBUG} CROSS_COMPILE=\"${TARGET_KERNEL_PREFIX}\" LDFLAGS=\"\" ARCH=arm make mrproper"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:48:    	DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make mrproper
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:49:    	DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make $(${ROOT}/${SCRIPTS}/uboot_helper ${PROJECT} RG351MP ${UBOOT_SYSTEM} config)
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:50:    	DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm _python_sysroot="${TOOLCHAIN}" _python_prefix=/ _python_exec_prefix=/ make HOSTCC="${HOST_CC}" HOSTLDFLAGS="-L${TOOLCHAIN}/lib" HOSTSTRIP="true" CONFIG_MKIMAGE_DTC_PATH="scripts/dtc/dtc"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:52:    echo "DEBUG=${PKG_DEBUG} CROSS_COMPILE=\"${TARGET_KERNEL_PREFIX}\" LDFLAGS=\"\" ARCH=arm make \$(${ROOT}/${SCRIPTS}/uboot_helper ${PROJECT} ${DEVICE} ${UBOOT_SYSTEM} config)"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/package.mk:53:		echo "DEBUG=${PKG_DEBUG} CROSS_COMPILE=\"${TARGET_KERNEL_PREFIX}\" LDFLAGS=\"\" ARCH=arm _python_sysroot=\"${TOOLCHAIN}\" _python_prefix=/ _python_exec_prefix=/ make HOSTCC=\"${HOST_CC}\" HOSTLDFLAGS=\"-L${TOOLCHAIN}/lib\" HOSTSTRIP=\"true\" CONFIG_MKIMAGE_DTC_PATH=\"scripts/dtc/dtc\""
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/patches/1/package.mk:94:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make mrproper
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/patches/1/package.mk:95:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make $(${ROOT}/${SCRIPTS}/uboot_helper ${PROJECT} ${DEVICE} ${UBOOT_SYSTEM} config)
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/patches/1/package.mk:98:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm _python_sysroot="${TOOLCHAIN}" _python_prefix=/ _python_exec_prefix=/ make HOSTCC="${HOST_CC}" HOSTLDFLAGS="-L${TOOLCHAIN}/lib" HOSTSTRIP="true" CONFIG_MKIMAGE_DTC_PATH="scripts/dtc/dtc"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/1package.mk:91:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make mrproper
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/1package.mk:92:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make $(${ROOT}/${SCRIPTS}/uboot_helper ${PROJECT} ${DEVICE} ${UBOOT_SYSTEM} config)
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/1package.mk:95:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm _python_sysroot="${TOOLCHAIN}" _python_prefix=/ _python_exec_prefix=/ make HOSTCC="${HOST_CC}" HOSTLDFLAGS="-L${TOOLCHAIN}/lib" HOSTSTRIP="true" CONFIG_MKIMAGE_DTC_PATH="scripts/dtc/dtc"
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/package.mk:53:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make mrproper
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/package.mk:54:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm make $(${ROOT}/${SCRIPTS}/uboot_helper ${PROJECT} ${DEVICE} ${UBOOT_SYSTEM} config)
+research/firmware/manufacturer/RetroPixel_Pocket/projects/Rockchip/packages/u-boot/备份/package.mk:55:    DEBUG=${PKG_DEBUG} CROSS_COMPILE="${TARGET_KERNEL_PREFIX}" LDFLAGS="" ARCH=arm _python_sysroot="${TOOLCHAIN}" _python_prefix=/ _python_exec_prefix=/ make HOSTCC="${HOST_CC}" HOSTLDFLAGS="-L${TOOLCHAIN}/lib" HOSTSTRIP="true" CONFIG_MKIMAGE_DTC_PATH="scripts/dtc/dtc"
