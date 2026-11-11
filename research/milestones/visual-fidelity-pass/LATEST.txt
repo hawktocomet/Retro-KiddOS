@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T220408Z-inspect-game-cover-asset-dimensions-and-conventions
+research/milestones/visual-fidelity-pass/runs/20261111T221318Z-download-four-prototype-game-box-covers
