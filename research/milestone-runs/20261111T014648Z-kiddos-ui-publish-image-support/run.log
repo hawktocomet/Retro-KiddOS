@@ -1,0 +1,20 @@
+Checking implementation files...
+[main 04d7b90] feat: add KiddOS UI image and texture support
+ 9 files changed, 303 insertions(+), 1 deletion(-)
+ create mode 100644 docs/ui-image-support.md
+ create mode 100644 include/kiddos/ui/image.hpp
+ create mode 100644 include/kiddos/ui/texture.hpp
+ create mode 100644 src/ui/image.cpp
+ create mode 100644 src/ui/texture.cpp
+ create mode 100644 tests/ui_image_test.cpp
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   00f4339..04d7b90  main -> main
+Image support source files pushed.
+ M include/kiddos/app/application.hpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
