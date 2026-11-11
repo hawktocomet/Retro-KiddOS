@@ -1,0 +1,21 @@
+=== VERIFY COPIED IMAGES ===
+assets/artwork/source/cartridges/cart-option-1.png: PNG image data, 1024 x 1024, 8-bit/color RGBA, non-interlaced
+assets/artwork/source/cartridges/cart-option-2.png: PNG image data, 1254 x 1254, 8-bit/color RGBA, non-interlaced
+313519e79a9ba1f3a81ade0fef1847941b165ac019627bb6b15794fc01d0c120  assets/artwork/source/cartridges/cart-option-1.png
+a4aeef3e0d0fa49e24bff7f40d1c5442bf8a68e606735cdf76c331369409e1fd  assets/artwork/source/cartridges/cart-option-2.png
+
+=== CHECK STAGING AREA ===
+[main 9bdcd21] Add both cartridge artwork design options
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 assets/artwork/source/cartridges/cart-option-1.png
+ create mode 100644 assets/artwork/source/cartridges/cart-option-2.png
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   6583a8f..9bdcd21  main -> main
+
+=== FINAL STATUS ===
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
