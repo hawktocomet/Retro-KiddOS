@@ -1,0 +1,77 @@
+assets/artwork/generated/cartridges/option-1/cartridge-01.png: 212x215
+assets/artwork/generated/cartridges/option-1/cartridge-02.png: 275x179
+assets/artwork/generated/cartridges/option-1/cartridge-03.png: 261x159
+assets/artwork/generated/cartridges/option-1/cartridge-04.png: 210x214
+assets/artwork/generated/cartridges/option-1/cartridge-05.png: 197x177
+assets/artwork/generated/cartridges/option-1/cartridge-06.png: 265x129
+assets/artwork/generated/cartridges/option-1/cartridge-07.png: 246x129
+assets/artwork/generated/cartridges/option-1/cartridge-08.png: 253x144
+assets/artwork/generated/cartridges/option-1/cartridge-09.png: 204x191
+assets/artwork/generated/cartridges/option-2/cartridge-01.png: 399x415
+assets/artwork/generated/cartridges/option-2/cartridge-02.png: 439x429
+assets/artwork/generated/cartridges/option-2/cartridge-03.png: 398x435
+assets/artwork/generated/cartridges/option-2/cartridge-04.png: 398x359
+assets/artwork/generated/cartridges/option-2/cartridge-05.png: 439x373
+assets/artwork/generated/cartridges/option-2/cartridge-06.png: 397x373
+assets/artwork/generated/cartridges/option-2/cartridge-07.png: 399x443
+assets/artwork/generated/cartridges/option-2/cartridge-08.png: 439x443
+assets/artwork/generated/cartridges/option-2/cartridge-09.png: 387x443
+
+Extracted 18 individual cartridge images.
+
+=== APPLICATION CAROUSEL CAPACITY ===
+include/kiddos/app/application.hpp:20:    int selected_game_ = 1;
+include/kiddos/app/application.hpp:23:    static constexpr int game_count_ = 3;
+include/kiddos/app/home_carousel_screen.hpp:16:    static constexpr int game_count = 3;
+include/kiddos/app/home_carousel_screen.hpp:24:    int selected_game() const noexcept { return selected_game_; }
+include/kiddos/app/home_carousel_screen.hpp:28:    std::array<ui::Texture, game_count> artworks_{};
+include/kiddos/app/home_carousel_screen.hpp:29:    std::array<ui::Texture, game_count> title_textures_{};
+include/kiddos/app/home_carousel_screen.hpp:36:    std::array<ui::Image*, game_count> game_images_{};
+include/kiddos/app/home_carousel_screen.hpp:37:    std::array<ui::Rect, game_count> target_bounds_{};
+include/kiddos/app/home_carousel_screen.hpp:38:    std::array<int, game_count> target_opacity_{};
+include/kiddos/app/home_carousel_screen.hpp:45:    int selected_game_ = -1;
+src/app/application.cpp:71:            if (action_screen_ && selected_game_ == 1) {
+src/app/application.cpp:109:                    selected_game_ =
+src/app/application.cpp:110:                        (selected_game_ + game_count_ - 1) % game_count_;
+src/app/application.cpp:114:                    selected_game_ =
+src/app/application.cpp:115:                        (selected_game_ + 1) % game_count_;
+src/app/application.cpp:143:            selected_game_, selected_game_ == 1, selected_action_);
+src/app/application.cpp:146:        home->set_selected_game(selected_game_);
+src/app/home_carousel_screen.cpp:22:constexpr std::array<const char*, HomeCarouselScreen::game_count>
+src/app/home_carousel_screen.cpp:23:artwork_paths{
+src/app/home_carousel_screen.cpp:29:constexpr std::array<const char*, HomeCarouselScreen::game_count>
+src/app/home_carousel_screen.cpp:30:title_paths{
+src/app/home_carousel_screen.cpp:44:    if ((game + 1) % HomeCarouselScreen::game_count == selected) {
+src/app/home_carousel_screen.cpp:158:    for (int i = 0; i < game_count; ++i) {
+src/app/home_carousel_screen.cpp:161:        artworks_[index].load(renderer, artwork_paths[index], false);
+src/app/home_carousel_screen.cpp:162:        title_textures_[index].load(renderer, title_paths[index], false);
+src/app/home_carousel_screen.cpp:169:    for (int i = 0; i < game_count; ++i) {
+src/app/home_carousel_screen.cpp:197:    if (selected_game_ >= 0 && selected_game_ < game_count) {
+src/app/home_carousel_screen.cpp:198:        game_images_[static_cast<std::size_t>(selected_game_)]->set_texture(
+src/app/home_carousel_screen.cpp:214:    if (index < 0 || index >= game_count) return;
+src/app/home_carousel_screen.cpp:216:    if (selected_game_ == index) return;
+src/app/home_carousel_screen.cpp:218:    const int previous = selected_game_;
+src/app/home_carousel_screen.cpp:219:    selected_game_ = index;
+src/app/home_carousel_screen.cpp:228:    for (int game = 0; game < game_count; ++game) {
+src/app/home_carousel_screen.cpp:237:                (game - previous + game_count) % game_count;
+src/app/home_carousel_screen.cpp:239:                (game - index + game_count) % game_count;
+
+=== GENERATED ARTWORK ===
+assets/artwork/generated/cartridges/option-1/cartridge-01.png
+assets/artwork/generated/cartridges/option-1/cartridge-02.png
+assets/artwork/generated/cartridges/option-1/cartridge-03.png
+assets/artwork/generated/cartridges/option-1/cartridge-04.png
+assets/artwork/generated/cartridges/option-1/cartridge-05.png
+assets/artwork/generated/cartridges/option-1/cartridge-06.png
+assets/artwork/generated/cartridges/option-1/cartridge-07.png
+assets/artwork/generated/cartridges/option-1/cartridge-08.png
+assets/artwork/generated/cartridges/option-1/cartridge-09.png
+assets/artwork/generated/cartridges/option-2/cartridge-01.png
+assets/artwork/generated/cartridges/option-2/cartridge-02.png
+assets/artwork/generated/cartridges/option-2/cartridge-03.png
+assets/artwork/generated/cartridges/option-2/cartridge-04.png
+assets/artwork/generated/cartridges/option-2/cartridge-05.png
+assets/artwork/generated/cartridges/option-2/cartridge-06.png
+assets/artwork/generated/cartridges/option-2/cartridge-07.png
+assets/artwork/generated/cartridges/option-2/cartridge-08.png
+assets/artwork/generated/cartridges/option-2/cartridge-09.png
