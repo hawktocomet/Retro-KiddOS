@@ -1,0 +1,145 @@
+=== Prototype source: input handling ===
+20-};
+21-
+22-static lv_obj_t *cards[GAME_COUNT];
+23-static lv_obj_t *card_titles[GAME_COUNT];
+24-static lv_obj_t *selected_title;
+25:static lv_group_t *game_group;
+26-static int selected_index = 0;
+27-
+28-static bool controller_left;
+29-static bool controller_right;
+30-static bool controller_confirm;
+31-static bool controller_back;
+32-
+33:static int controller_event_watch(void *userdata, SDL_Event *event)
+34-{
+35-    (void)userdata;
+36-
+37:    if(event->type == SDL_CONTROLLERBUTTONDOWN ||
+38:       event->type == SDL_CONTROLLERBUTTONUP) {
+39:        bool down = event->type == SDL_CONTROLLERBUTTONDOWN;
+40-        switch(event->cbutton.button) {
+41:            case SDL_CONTROLLER_BUTTON_DPAD_LEFT:  controller_left = down; break;
+42:            case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: controller_right = down; break;
+43:            case SDL_CONTROLLER_BUTTON_A:          controller_confirm = down; break;
+44:            case SDL_CONTROLLER_BUTTON_B:          controller_back = down; break;
+45-            default: break;
+46-        }
+47-    }
+48-
+49:    if(event->type == SDL_CONTROLLERAXISMOTION &&
+50:       event->caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
+51-        controller_left = event->caxis.value < -12000;
+52-        controller_right = event->caxis.value > 12000;
+53-    }
+54-
+55-    return 1;
+56-}
+57-
+58:static void controller_read(lv_indev_t *indev, lv_indev_data_t *data)
+59-{
+60-    (void)indev;
+61-    static bool left_sent;
+62-    static bool right_sent;
+63-
+64-    data->state = LV_INDEV_STATE_RELEASED;
+65-    data->key = 0;
+66-
+67-    if(controller_left && !left_sent) {
+68-        data->key = LV_KEY_LEFT;
+69-        data->state = LV_INDEV_STATE_PRESSED;
+70-        left_sent = true;
+71-    } else if(!controller_left) {
+72-        left_sent = false;
+73-    }
+74-
+75-    if(controller_right && !right_sent) {
+76-        data->key = LV_KEY_RIGHT;
+--
+148-    selected_title = lv_label_create(screen);
+149-    lv_obj_set_style_text_font(selected_title, LV_FONT_DEFAULT, 0);
+150-    lv_obj_set_style_text_color(selected_title, lv_color_hex(0xFFFFFF), 0);
+151-    lv_obj_align(selected_title, LV_ALIGN_BOTTOM_MID, 0, -65);
+152-
+153:    game_group = lv_group_create();
+154:    lv_group_set_wrap(game_group, true);
+155-
+156-    for(int i = 0; i < GAME_COUNT; i++) {
+157-        cards[i] = lv_button_create(screen);
+158-        lv_obj_set_style_radius(cards[i], 20, 0);
+159-        lv_obj_set_style_bg_opa(cards[i], LV_OPA_COVER, 0);
+160-        lv_obj_set_style_shadow_width(cards[i], 18, 0);
+161-        lv_obj_set_style_shadow_opa(cards[i], LV_OPA_30, 0);
+162-        lv_obj_set_style_pad_all(cards[i], 12, 0);
+163-
+164-        card_titles[i] = lv_label_create(cards[i]);
+165-        lv_label_set_text(card_titles[i], game_names[i]);
+166-        lv_obj_set_width(card_titles[i], LV_PCT(100));
+167-        lv_label_set_long_mode(card_titles[i], LV_LABEL_LONG_WRAP);
+168-        lv_obj_center(card_titles[i]);
+169-
+170-        lv_obj_add_event_cb(cards[i], card_focused, LV_EVENT_FOCUSED,
+171-                            (void *)(intptr_t)i);
+172:        lv_group_add_obj(game_group, cards[i]);
+173-    }
+174-
+175-    refresh_carousel();
+176:    lv_group_focus_obj(cards[selected_index]);
+177-}
+178-
+179-int main(int argc, char **argv)
+180-{
+181-    bool smoke_test = argc > 1 && strcmp(argv[1], "--smoke-test") == 0;
+182-
+183-    lv_init();
+184-
+185-    lv_display_t *display = lv_sdl_window_create(SCREEN_W, SCREEN_H);
+186-    if(!display) {
+187-        fprintf(stderr, "Could not create LVGL SDL display\n");
+188-        return 1;
+189-    }
+190-
+191-    lv_sdl_window_set_title(display, "Kiddos - LVGL Prototype");
+192-    lv_sdl_window_set_resizeable(display, false);
+193-
+194-
+195-    SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);
+196:    SDL_GameControllerEventState(SDL_ENABLE);
+197:    SDL_AddEventWatch(controller_event_watch, NULL);
+198-
+199-    for(int i = 0; i < SDL_NumJoysticks(); i++) {
+200-        if(SDL_IsGameController(i)) {
+201:            SDL_GameControllerOpen(i);
+202-        }
+203-    }
+204-
+205-    build_ui();
+206-
+207-    lv_indev_t *keypad = lv_indev_create();
+208:    lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+209:    lv_indev_set_read_cb(keypad, controller_read);
+210-    lv_indev_set_group(keypad, game_group);
+211-
+212-    if(smoke_test) {
+213-        uint32_t start = SDL_GetTicks();
+214-        while(SDL_GetTicks() - start < 1200) {
+215-            lv_timer_handler();
+216-            SDL_Delay(5);
+217-        }
+218-    } else {
+219-        while(true) {
+220-            lv_timer_handler();
+221-            SDL_Delay(5);
+222-        }
+223-    }
+224-
+225:    SDL_DelEventWatch(controller_event_watch, NULL);
+226-    lv_sdl_quit();
+227-    return 0;
+228-}
+=== SDL game-controller detection ===
+SDL joystick count: 0
+=== Prototype binary ===
+/tmp/kiddos-lvgl-prototype-build/kiddos_lvgl_prototype: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=74554cbdae861bdeedb99bbc8fe1714ce831a7ba, for GNU/Linux 4.4.0, not stripped
+	libSDL2-2.0.so.0 => /usr/lib/libSDL2-2.0.so.0 (0x00007f3621d87000)
