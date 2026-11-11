@@ -1,0 +1,683 @@
+=== Virtual toolchain package recipe ===
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2009-2016 Stephan Raue (stephan@openelec.tv)
+# Copyright (C) 2019-present Team LibreELEC (https://libreelec.tv)
+
+PKG_NAME="toolchain"
+PKG_VERSION=""
+PKG_LICENSE="GPL"
+PKG_SITE="https://libreelec.tv"
+PKG_URL=""
+PKG_DEPENDS_HOST="autoconf:host autoconf-archive:host automake:host bison:host configtools:host cmake:host flex:host intltool:host libtool:host ninja:host make:host meson:host openssl:host p7zip:host pigz:host sed:host xmlstarlet:host xz:host"
+PKG_DEPENDS_TARGET="toolchain:host gcc:host"
+PKG_SECTION="virtual"
+PKG_LONGDESC="LibreELEC.tv' toolchain to compile all packages"
+
+=== Firmware toolchain variables ===
+research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/audio/alsa-lib/package.mk:13:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/audio/alsa-utils/package.mk:13:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/audio/flac/package.mk:12:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/audio/libvorbis/package.mk:13:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/audio/opus/package.mk:12:PKG_TOOLCHAIN="configure"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/compress/lz4/package.mk:13:PKG_TOOLCHAIN="cmake"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/compress/p7zip/package.mk:13:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/compress/pigz/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/compress/unzip/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/compress/xz/package.mk:15:PKG_TOOLCHAIN="configure"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/compress/zip/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/compress/zlib/package.mk:13:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/compress/zstd/package.mk:15:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/debug/libunwind/package.mk:13:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/debug/libva-utils/package.mk:11:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/debug/memtester/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/android-headers/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/apache-ant/package.mk:13:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/boost/package.mk:16:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/ccache/package.mk:13:PKG_TOOLCHAIN="cmake"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/cmake/package.mk:13:PKG_TOOLCHAIN="configure"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/configtools/package.mk:13:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/crossguid/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/dbus-glib/package.mk:14:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/elfutils/package.mk:14:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/fakeroot/package.mk:14:PKG_TOOLCHAIN="configure"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/flex/package.mk:14:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/fribidi/package.mk:13:PKG_TOOLCHAIN="meson"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/gnulib/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/heimdal/package.mk:13:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/libffi/package.mk:14:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/libplist/package.mk:12:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/librga/package.mk:12:PKG_TOOLCHAIN="auto"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/libsodium/package.mk:14:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/libtool/package.mk:14:PKG_TOOLCHAIN="autotools"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/ncurses/package.mk:16:PKG_TOOLCHAIN="auto"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/pcre/package.mk:14:PKG_TOOLCHAIN="configure"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/spdlog/package.mk:12:PKG_TOOLCHAIN="cmake"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/advancemame/package.mk:14:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/amiberry/libportmidi/package.mk:11:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/amiberry/libserialport/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/amiberry/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/drastic/package.mk:10:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/ecwolf/package.mk:14:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/flycastsa/package.mk:12:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/gzdoom/package.mk:15:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/gzdoom/zmusic/package.mk:14:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/hypseus-singe/package.mk:17:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/lzdoom/package.mk:14:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-audio-sdl/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-core/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-input-sdl/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-rsp-hle/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-ui-console/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-video-glide64mk2/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-video-rice/package.mk:12:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/openbor/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/piemu/package.mk:11:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/ppssppsa/package.mk:13:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/raze/package.mk:15:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/solarus/luajit/package.mk:15:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/solarus/luajit/package.mk:39:		TARGET_CFLAGS="${TARGET_CFLAGS}" \
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/solarus/package.mk:12:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/solarus/physfs/package.mk:14:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/yabasanshiroSA/package.mk:11:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/81/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/a5200/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/arduous/package.mk:11:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/atari800/package.mk:12:PKG_TOOLCHAIN="auto"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-gba/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-lynx/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-ngp/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-pce-fast/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-pce/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-pcfx/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-supafaust/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-supergrafx/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-vb/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-wswan/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle_snes/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/bluemsx/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/bsnes/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/bsnes2014_balanced/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/bsnes2014_performance/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/bsnes_mercury_balanced/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/bsnes_mercury_performance/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/cap32/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/common-shaders/package.mk:16:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/core-info/package.mk:13:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/crocods/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/dosbox-core/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/dosbox-pure/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/doublecherrygb/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/duckstation/package.mk:14:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/easyrpg/liblcf/package.mk:12:PKG_TOOLCHAIN="cmake"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/easyrpg/libxmp-lite/package.mk:12:PKG_TOOLCHAIN="configure"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/easyrpg/opusfile/package.mk:11:PKG_TOOLCHAIN="configure"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/easyrpg/wildmidi/package.mk:10:PKG_TOOLCHAIN="cmake"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/emuscv/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/ep128emu/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/fake08/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/fbalpha2012/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/fbalpha2019/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/fbneo/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/fceumm/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/flycast/package.mk:10:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/flycast2021/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/fmsx/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/freechaf/package.mk:8:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/freeintv/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/freej2me/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/fuse-libretro/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/gambatte/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/gearboy/package.mk:25:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/gearcoleco/package.mk:25:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/gearsystem/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/genesis-plus-gx-wide/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/genesis-plus-gx/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/geolith/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/glsl-shaders/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/gpsp/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/gw-libretro/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/handy/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/hatari/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/jaxe/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/libretro-database/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/lowresnx/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2000/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2003-plus/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2010/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2015/package.mk:17:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2016/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/melonds/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/melondsds/package.mk:12:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/meowpc98/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mesen-s/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mesen/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mgba/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mojozork/package.mk:12:PKG_TOOLCHAIN="cmake"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mupen64plus-nx/package.mk:12:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/neocd_libretro/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/nestopia/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/np2kai/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/o2em/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/opera/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/parallel-n64/package.mk:14:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/pcsx_rearmed/package.mk:13:PKG_TOOLCHAIN="manual"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/picodrive/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/pokemini/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/potator/package.mk:9:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/ppsspp/package.mk:14:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/prboom/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/prosystem/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/puae/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/puae2021/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/px68k/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/quasi88/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/quicknes/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/race/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/same_cdi/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/sameboy/package.mk:15:#PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/sameboy/package.mk:26:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/sameduck/package.mk:14:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/smsplus-gx/package.mk:16:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/snes9x/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/snes9x2002/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/snes9x2005_plus/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/snes9x2010/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/stella-2014/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/stella/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/swanstation/package.mk:14:PKG_TOOLCHAIN="cmake"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/tgbdual/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/theodore/package.mk:11:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/tic-80/package.mk:16:PKG_TOOLCHAIN="cmake-make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/uae4arm/package.mk:13:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/uw8/package.mk:10:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/uzem/package.mk:14:PKG_TOOLCHAIN="make"
+research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/vba-next/package.mk:13:PKG_TOOLCHAIN="make"
+
+=== SDL2 package configuration ===
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2021-present AmberELEC (https://github.com/AmberELEC)
+
+PKG_NAME="SDL2"
+PKG_VERSION="2.30.3"
+PKG_LICENSE="GPL"
+PKG_SITE="https://www.libsdl.org/"
+PKG_URL="https://www.libsdl.org/release/SDL2-${PKG_VERSION}.tar.gz"
+PKG_DEPENDS_TARGET="toolchain alsa-lib systemd dbus ${OPENGLES} pulseaudio libsamplerate"
+PKG_DEPENDS_HOST="toolchain:host distutilscross:host"
+PKG_LONGDESC="Simple DirectMedia Layer is a cross-platform development library designed to provide low level access to audio, keyboard, mouse, joystick, and graphics hardware."
+
+PKG_DEPENDS_TARGET="${PKG_DEPENDS_TARGET} libdrm ${OPENGLES} librga"
+
+if [ "${DEVICE}" = "RG351P" ] || [ "${DEVICE}" = "RG552" ]; then
+  PKG_PATCH_DIRS="rotation"
+fi
+
+pre_make_host() {
+  sed -i "s| -lrga||g" ${PKG_BUILD}/CMakeLists.txt
+}
+
+pre_configure_target(){
+  PKG_CMAKE_OPTS_TARGET="-DSDL_STATIC=OFF \
+                         -DSDL_LIBC=ON \
+                         -DSDL_GCC_ATOMICS=ON \
+                         -DSDL_ALTIVEC=OFF \
+                         -DSDL_OSS=OFF \
+                         -DSDL_ALSA=ON \
+                         -DSDL_ALSA_SHARED=ON \
+                         -DSDL_JACK=OFF \
+                         -DSDL_JACK_SHARED=OFF \
+                         -DSDL_ESD=OFF \
+                         -DSDL_ESD_SHARED=OFF \
+                         -DSDL_ARTS=OFF \
+                         -DSDL_ARTS_SHARED=OFF \
+                         -DSDL_NAS=OFF \
+                         -DSDL_NAS_SHARED=OFF \
+                         -DSDL_LIBSAMPLERATE=ON \
+                         -DSDL_LIBSAMPLERATE_SHARED=OFF \
+                         -DSDL_SNDIO=OFF \
+                         -DSDL_DISKAUDIO=OFF \
+                         -DSDL_DUMMYAUDIO=OFF \
+                         -DSDL_WAYLAND=OFF \
+                         -DSDL_WAYLAND_QT_TOUCH=OFF \
+                         -DSDL_WAYLAND_SHARED=OFF \
+                         -DSDL_COCOA=OFF \
+                         -DSDL_DIRECTFB=OFF \
+                         -DSDL_VIVANTE=OFF \
+                         -DSDL_DIRECTFB_SHARED=OFF \
+                         -DSDL_FUSIONSOUND=OFF \
+                         -DSDL_FUSIONSOUND_SHARED=OFF \
+                         -DSDL_DUMMYVIDEO=OFF \
+                         -DSDL_PTHREADS=ON \
+                         -DSDL_PTHREADS_SEM=ON \
+                         -DSDL_DIRECTX=OFF \
+                         -DSDL_CLOCK_GETTIME=OFF \
+                         -DSDL_RPATH=OFF \
+                         -DSDL_RENDER_D3D=OFF \
+                         -DSDL_X11=OFF \
+                         -DSDL_OPENGLES=ON \
+                         -DSDL_VULKAN=OFF \
+                         -DSDL_KMSDRM=ON \
+                         -DSDL_PULSEAUDIO=ON"
+  export LDFLAGS="${LDFLAGS} -lrga"
+}
+
+post_makeinstall_target() {
+  sed -e "s:\(['=LI]\)/usr:\\1${SYSROOT_PREFIX}/usr:g" -i ${SYSROOT_PREFIX}/usr/bin/sdl2-config
+  rm -rf ${INSTALL}/usr/bin
+}
+
+=== LVGL adapter backend implementation ===
+#include <SDL.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "lvgl.h"
+
+#define SCREEN_W 720
+#define SCREEN_H 720
+#define BUFFER_ROWS 40
+
+static SDL_Window *window;
+static SDL_Renderer *renderer;
+static SDL_Texture *texture;
+static SDL_GameController *controller;
+static uint8_t draw_buffer[SCREEN_W * BUFFER_ROWS * 2];
+static lv_indev_t *keypad;
+static lv_group_t *focus_group;
+static uint32_t keypad_key;
+static bool keypad_pressed;
+
+static void read_controller(lv_indev_t *indev, lv_indev_data_t *data)
+{
+    (void)indev;
+    data->key = keypad_key;
+    data->state = keypad_pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+}
+
+static void flush_to_sdl(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
+{
+    SDL_Rect rect = {
+        .x = area->x1,
+        .y = area->y1,
+        .w = area->x2 - area->x1 + 1,
+        .h = area->y2 - area->y1 + 1
+    };
+
+    if (rect.w > 0 && rect.h > 0) {
+        SDL_UpdateTexture(texture, &rect, pixels, rect.w * 2);
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+        SDL_RenderPresent(renderer);
+    }
+
+    lv_display_flush_ready(display);
+}
+
+static void make_ui(void)
+{
+    lv_obj_t *screen = lv_screen_active();
+    lv_obj_set_style_bg_color(screen, lv_color_hex(0x071426), 0);
+    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+
+    lv_obj_t *header = lv_obj_create(screen);
+    lv_obj_set_size(header, 680, 76);
+    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 18);
+    lv_obj_set_style_bg_color(header, lv_color_hex(0x102B4A), 0);
+    lv_obj_set_style_border_width(header, 0, 0);
+    lv_obj_set_style_radius(header, 18, 0);
+
+    lv_obj_t *title = lv_label_create(header);
+    lv_label_set_text(title, "KiddOS");
+    lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_center(title);
+
+    focus_group = lv_group_create();
+    const char *names[] = {"GAME ONE", "GAME TWO", "GAME THREE"};
+    const int widths[] = {170, 230, 170};
+
+    for (int i = 0; i < 3; i++) {
+        lv_obj_t *card = lv_obj_create(screen);
+        lv_obj_set_size(card, widths[i], i == 1 ? 330 : 270);
+        lv_obj_align(card, LV_ALIGN_CENTER, (i - 1) * 205, 25);
+        lv_obj_set_style_bg_color(card,
+            i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+        lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+        lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+        lv_obj_set_style_radius(card, 22, 0);
+        lv_obj_set_style_border_width(card, 5, LV_STATE_FOCUSED);
+        lv_obj_set_style_border_color(card, lv_color_hex(0xFFFFFF), LV_STATE_FOCUSED);
+        lv_group_add_obj(focus_group, card);
+
+        lv_obj_t *label = lv_label_create(card);
+        lv_label_set_text(label, names[i]);
+        lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+        lv_obj_center(label);
+    }
+
+    lv_obj_t *footer = lv_label_create(screen);
+    lv_label_set_text(footer, "SDL2 renderer adapter prototype");
+    lv_obj_set_style_text_color(footer, lv_color_hex(0x8FAAC5), 0);
+    lv_obj_align(footer, LV_ALIGN_BOTTOM_MID, 0, -24);
+}
+
+int main(void)
+{
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+        fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    window = SDL_CreateWindow("KiddOS LVGL SDL Renderer Adapter",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        SCREEN_W, SCREEN_H, SDL_WINDOW_SHOWN);
+    if (!window) {
+        fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (!renderer)
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+    if (!renderer) {
+        fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565,
+        SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
+    if (!texture) {
+        fprintf(stderr, "SDL_CreateTexture: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    SDL_SetRenderDrawColor(renderer, 7, 20, 38, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderPresent(renderer);
+
+    SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+    if (SDL_NumJoysticks() > 0) {
+        for (int i = 0; i < SDL_NumJoysticks(); i++) {
+            if (SDL_IsGameController(i)) {
+                controller = SDL_GameControllerOpen(i);
+                if (controller) {
+                    printf("Controller opened: %s\\n", SDL_GameControllerName(controller));
+                    break;
+                }
+            }
+        }
+    } else {
+        printf("No SDL game controller detected; keyboard arrows remain available.\\n");
+    }
+
+    lv_init();
+    lv_tick_set_cb(SDL_GetTicks);
+    lv_delay_set_cb(SDL_Delay);
+
+    lv_display_t *display = lv_display_create(SCREEN_W, SCREEN_H);
+    lv_display_set_color_format(display, LV_COLOR_FORMAT_RGB565);
+    lv_display_set_flush_cb(display, flush_to_sdl);
+    lv_display_set_buffers(display, draw_buffer, NULL, sizeof(draw_buffer),
+        LV_DISPLAY_RENDER_MODE_PARTIAL);
+
+    make_ui();
+
+    keypad = lv_indev_create();
+    lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+    lv_indev_set_read_cb(keypad, read_controller);
+    lv_indev_set_group(keypad, focus_group);
+    lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+    lv_obj_t *test_initial_focus = lv_group_get_focused(focus_group);
+    bool test_release_sent = false;
+    bool test_result_reported = false;
+    uint32_t test_started = SDL_GetTicks();
+
+    SDL_Event test_press = {0};
+    test_press.type = SDL_KEYDOWN;
+    test_press.key.keysym.sym = SDLK_RIGHT;
+    SDL_PushEvent(&test_press);
+
+
+
+    printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+    printf("Press Escape or close the window to exit.\n");
+
+    int running = 1;
+    while (running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT)
+                running = 0;
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+                running = 0;
+
+            if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+                switch (event.cbutton.button) {
+                    case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_PREV; keypad_pressed = true; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_NEXT; keypad_pressed = true; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+                    case SDL_CONTROLLER_BUTTON_A: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+                    case SDL_CONTROLLER_BUTTON_B: keypad_key = LV_KEY_ESC; keypad_pressed = true; break;
+                    default: break;
+                }
+            }
+
+            if (event.type == SDL_KEYUP) {
+                switch (event.key.keysym.sym) {
+                    case SDLK_LEFT:
+                    case SDLK_RIGHT:
+                    case SDLK_UP:
+                    case SDLK_DOWN:
+                    case SDLK_RETURN:
+                        keypad_pressed = false;
+                        break;
+                    default: break;
+                }
+            }
+
+            if (event.type == SDL_KEYDOWN) {
+                switch (event.key.keysym.sym) {
+                    case SDLK_LEFT: keypad_key = LV_KEY_PREV; keypad_pressed = true; break;
+                    case SDLK_RIGHT: keypad_key = LV_KEY_NEXT; keypad_pressed = true; break;
+                    case SDLK_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+                    case SDLK_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+                    case SDLK_RETURN: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+                    default: break;
+                }
+            }
+        }
+        lv_timer_handler();
+
+        if (!test_release_sent && SDL_GetTicks() - test_started >= 200) {
+            SDL_Event test_release = {0};
+            test_release.type = SDL_KEYUP;
+            test_release.key.keysym.sym = SDLK_RIGHT;
+            SDL_PushEvent(&test_release);
+            test_release_sent = true;
+        }
+
+        if (!test_result_reported && SDL_GetTicks() - test_started >= 800) {
+            printf("SYNTHETIC_NEXT_NAV=%s\\n",
+                   lv_group_get_focused(focus_group) != test_initial_focus ? "PASS" : "FAIL");
+            fflush(stdout);
+            test_result_reported = true;
+        }
+
+        SDL_Delay(5);
+    }
+
+    lv_deinit();
+    if (controller) SDL_GameControllerClose(controller);
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return 0;
+}
+
+=== Current adapter configuration ===
+37:#define LV_USE_STDLIB_MALLOC LV_STDLIB_BUILTIN
+46:#define LV_USE_STDLIB_STRING LV_STDLIB_BUILTIN
+55:#define LV_USE_STDLIB_SPRINTF LV_STDLIB_BUILTIN
+59:#define LV_MEM_SIZE 65536
+64:#define LV_MEM_ADR 0x0
+104:#define LV_USE_OS LV_OS_NONE
+117:#define LV_USE_FREERTOS_TASK_NOTIFY 0
+142:#define LV_COLOR_FORMAT_DEFAULT LV_COLOR_FORMAT_RGB565
+150:#define LV_COLOR_MIX_ROUND_OFS 0
+159:#define LV_DRAW_BUF_STRIDE_ALIGN 1
+162:#define LV_DRAW_BUF_ALIGN 4
+168:#define LV_USE_MATRIX 0
+172:#define LV_DRAW_TRANSFORM_USE_MATRIX 0
+180:#define LV_DRAW_LAYER_SIMPLE_BUF_SIZE 24576
+186:#define LV_DRAW_LAYER_MAX_MEMORY 0
+190:#define LV_DRAW_THREAD_STACK_SIZE 8192
+203:#define LV_DRAW_THREAD_PRIO 3
+212:#define LV_USE_VECTOR_GRAPHIC 0
+215:#define LV_USE_SNAPSHOT 0
+218:#define LV_USE_THORVG 0
+222:#define LV_USE_THORVG_INTERNAL 0
+227:#define LV_USE_DRAW_SW 0
+231:#define LV_DRAW_SW_SUPPORT_RGB565 1
+234:#define LV_DRAW_SW_SUPPORT_RGB565_SWAPPED 0
+237:#define LV_DRAW_SW_SUPPORT_RGB565A8 0
+240:#define LV_DRAW_SW_SUPPORT_RGB888 0
+243:#define LV_DRAW_SW_SUPPORT_XRGB8888 0
+246:#define LV_DRAW_SW_SUPPORT_ARGB8888 0
+249:#define LV_DRAW_SW_SUPPORT_ARGB8888_PREMULTIPLIED 0
+252:#define LV_DRAW_SW_SUPPORT_L8 0
+255:#define LV_DRAW_SW_SUPPORT_AL88 0
+258:#define LV_DRAW_SW_SUPPORT_A8 0
+261:#define LV_DRAW_SW_SUPPORT_I1 0
+265:#define LV_DRAW_SW_I1_LUM_THRESHOLD 127
+271:#define LV_DRAW_SW_DRAW_UNIT_CNT 1
+276:#define LV_USE_DRAW_ARM2D_SYNC 0
+279:#define LV_USE_NATIVE_HELIUM_ASM 0
+284:#define LV_DRAW_SW_COMPLEX 1
+290:#define LV_USE_DRAW_SW 0
+296:#define LV_DRAW_SW_SHADOW_CACHE_SIZE 0
+301:#define LV_DRAW_SW_CIRCLE_CACHE_SIZE 4
+314:#define LV_USE_DRAW_SW 0
+318:#define LV_DRAW_SW_ASM_CUSTOM_INCLUDE ""
+327:#define LV_USE_DRAW_VG_LITE 0
+367:#define LV_USE_VG_LITE_DRIVER 0
+391:#define LV_USE_VG_LITE_THORVG 0
+416:#define LV_USE_DRAW_DAVE2D 0
+419:#define LV_USE_NEMA_GFX 0
+442:#define LV_USE_NEMA_LIB LV_NEMA_LIB_NONE
+450:#define LV_USE_NEMA_HAL LV_NEMA_HAL_CUSTOM
+478:#define LV_USE_NEMA_VG 0
+498:#define LV_USE_PXP 0
+503:#define LV_USE_DRAW_PXP 0
+507:#define LV_USE_ROTATE_PXP 0
+513:#define LV_USE_PXP_DRAW_THREAD 0
+520:#define LV_USE_PXP_ASSERT 0
+529:#define LV_USE_PPA 0
+535:#define LV_USE_PPA_IMG 0
+542:#define LV_USE_DRAW_DMA2D 0
+546:#define LV_DRAW_DMA2D_HAL_INCLUDE "stm32h7xx_hal.h"
+551:#define LV_USE_DRAW_DMA2D_INTERRUPT 0
+561:#define LV_USE_SIFLI_EPIC 0
+568:#define LV_USE_SIFLI_EPIC_DRAW_THREAD 0
+573:#define LV_USE_SIFLI_EPIC_ASSERT 0
+579:#define LV_USE_DRAW_EVE 0
+585:#define LV_DRAW_EVE_EVE_GENERATION 4
+590:#define LV_DRAW_EVE_WRITE_BUFFER_SIZE 2048
+598:#define LV_USE_G2D 0
+605:#define LV_USE_DRAW_G2D 0
+617:#define LV_USE_G2D_DRAW_THREAD 0
+624:#define LV_USE_G2D_ASSERT 0
+632:#define LV_USE_DRAW_NANOVG 0
+657:#define LV_USE_DRAW_OPENGLES 0
+663:#define LV_DRAW_OPENGLES_TEXTURE_CACHE_COUNT 64
+668:#define LV_USE_DRAW_IPA 0
+675:#define LV_DRAW_IPA_HAL_INCLUDE "gd32h7xx.h"
+682:#define LV_USE_DRAW_IPA_INTERRUPT 0
+691:#define LV_USE_DRAW_SDL 0
+727:#define LV_USE_GRIDNAV 0
+733:#define LV_USE_GESTURE_RECOGNITION 0
+761:#define LV_USE_OBJ_NAME 0
+764:#define LV_USE_OBJ_ID 0
+777:#define LV_USE_OBJ_ID_BUILTIN 0
+782:#define LV_USE_OBJ_PROPERTY 0
+788:#define LV_USE_OBJ_PROPERTY_NAME 0
+796:#define LV_USE_EXT_DATA 0
+799:#define LV_USE_FLOAT 0
+802:#define LV_USE_OBSERVER 0
+805:#define LV_USE_TRANSLATION 0
+808:#define LV_USE_COLOR_FILTER 0
+817:#define LV_USE_LOG 0
+875:#define LV_USE_THEME_DEFAULT 0
+890:#define LV_USE_THEME_SIMPLE 0
+893:#define LV_USE_THEME_MONO 0
+902:#define LV_USE_FLEX 0
+905:#define LV_USE_GRID 0
+924:#define LV_USE_RLE 0
+927:#define LV_USE_LZ4 0
+931:#define LV_USE_LZ4_INTERNAL 0
+939:#define LV_USE_LODEPNG 0
+942:#define LV_USE_LIBPNG 0
+945:#define LV_USE_BMP 0
+948:#define LV_USE_TJPGD 0
+951:#define LV_USE_LIBJPEG_TURBO 0
+954:#define LV_USE_LIBWEBP 0
+960:#define LV_USE_SVG 0
+964:#define LV_USE_SVG_ANIMATION 0
+967:#define LV_USE_SVG_DEBUG 0
+1007:#define LV_USE_BIDI 0
+1023:#define LV_USE_ARABIC_PERSIAN_CHARS 0
+1028:#define LV_FONT_MONTSERRAT_8 0
+1031:#define LV_FONT_MONTSERRAT_10 0
+1034:#define LV_FONT_MONTSERRAT_12 0
+1037:#define LV_FONT_MONTSERRAT_14 1
+1040:#define LV_FONT_MONTSERRAT_16 0
+1043:#define LV_FONT_MONTSERRAT_18 0
+1046:#define LV_FONT_MONTSERRAT_20 0
+1049:#define LV_FONT_MONTSERRAT_22 0
+1052:#define LV_FONT_MONTSERRAT_24 0
+1055:#define LV_FONT_MONTSERRAT_26 0
+1058:#define LV_FONT_MONTSERRAT_28 0
+1061:#define LV_FONT_MONTSERRAT_30 0
+1064:#define LV_FONT_MONTSERRAT_32 0
+1067:#define LV_FONT_MONTSERRAT_34 0
+1070:#define LV_FONT_MONTSERRAT_36 0
+1073:#define LV_FONT_MONTSERRAT_38 0
+1076:#define LV_FONT_MONTSERRAT_40 0
+1079:#define LV_FONT_MONTSERRAT_42 0
+1082:#define LV_FONT_MONTSERRAT_44 0
+1085:#define LV_FONT_MONTSERRAT_46 0
+1088:#define LV_FONT_MONTSERRAT_48 0
+1091:#define LV_FONT_MONTSERRAT_28_COMPRESSED 0
+1094:#define LV_FONT_DEJAVU_16_PERSIAN_HEBREW 0
+1097:#define LV_FONT_SOURCE_HAN_SANS_SC_14_CJK 0
+1100:#define LV_FONT_SOURCE_HAN_SANS_SC_16_CJK 0
+1103:#define LV_FONT_UNSCII_8 0
+1106:#define LV_FONT_UNSCII_16 0
+1111:#define LV_FONT_USE_CUSTOM_INCLUDE 0
+1122:#define LV_FONT_CUSTOM_INCLUDE ""
+1138:#define LV_USE_CUSTOM_FONT_DEFAULT 0
+1171:#define LV_FONT_DEFAULT LV_FONT_DEFAULT_MONTSERRAT_14
+1179:#define LV_FONT_FMT_TXT_LARGE 0
+1182:#define LV_USE_FONT_COMPRESSED 0
+1187:#define LV_USE_FONT_PLACEHOLDER 0
+1192:#define LV_USE_FONT_MANAGER 0
+1196:#define LV_FONT_MANAGER_NAME_MAX_LEN 32
+1201:#define LV_USE_IMGFONT 0
+1204:#define LV_USE_FREETYPE 0
+1223:#define LV_USE_TINY_TTF 0
+1253:#define LV_USE_3DTEXTURE 0
+1256:#define LV_USE_ANIMIMG 0
+1259:#define LV_USE_ARC 0
+1262:#define LV_USE_ARCLABEL 0
+1265:#define LV_USE_BAR 0
+1271:#define LV_USE_BARCODE 0
+1274:#define LV_USE_BUTTON 1
+1277:#define LV_USE_BUTTONMATRIX 0
+1280:#define LV_USE_CALENDAR 0
+1344:#define LV_USE_CALENDAR_HEADER_ARROW 0
+1347:#define LV_USE_CALENDAR_HEADER_DROPDOWN 0
+
+=== ARM cross compiler package availability ===
