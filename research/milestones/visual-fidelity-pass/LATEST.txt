@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T223541Z-inspect-kiddos-wordmark-source-and-rendering-support
+research/milestones/visual-fidelity-pass/runs/20261111T223615Z-capture-wordmark-rendering-and-font-environment

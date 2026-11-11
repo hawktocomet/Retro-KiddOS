@@ -1,0 +1,109 @@
+
+===== WORDMARK SOURCE =====
+<svg xmlns="http://www.w3.org/2000/svg" width="190" height="52" viewBox="0 0 190 52">
+<text x="95" y="39" text-anchor="middle" font-family="DejaVu Sans" font-size="30" font-weight="bold" letter-spacing="2" fill="#FFFFFF">KiddOS</text>
+</svg>
+
+===== WORDMARK IMAGE =====
+assets/artwork/generated/kiddos-wordmark.png: PNG image data, 190 x 52, 8-bit/color RGBA, non-interlaced
+
+===== AVAILABLE RENDERERS =====
+inkscape: unavailable
+rsvg-convert: /usr/bin/rsvg-convert
+magick: /usr/bin/magick
+convert: /usr/bin/convert
+fc-list: /usr/bin/fc-list
+
+===== FONT FAMILIES =====
+Adwaita Mono
+Adwaita Sans
+C059
+D050000L
+DejaVu Math TeX Gyre
+DejaVu Sans
+DejaVu Sans,DejaVu Sans Condensed
+DejaVu Sans,DejaVu Sans Light
+DejaVu Sans Mono
+DejaVu Serif
+DejaVu Serif,DejaVu Serif Condensed
+JetBrainsMono Nerd Font,JetBrainsMono NF
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF ExtraBold
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF ExtraLight
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF Light
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF Medium
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF SemiBold
+JetBrainsMono Nerd Font,JetBrainsMono NF,JetBrainsMono NF Thin
+JetBrainsMono Nerd Font Mono,JetBrainsMono NFM
+JetBrainsMono Nerd Font Mono,JetBrainsMono NFM,JetBrainsMono NFM ExtraBold
+JetBrainsMono Nerd Font Mono,JetBrainsMono NFM,JetBrainsMono NFM ExtraLight
+JetBrainsMono Nerd Font Mono,JetBrainsMono NFM,JetBrainsMono NFM Light
+JetBrainsMono Nerd Font Mono,JetBrainsMono NFM,JetBrainsMono NFM Medium
+JetBrainsMono Nerd Font Mono,JetBrainsMono NFM,JetBrainsMono NFM SemiBold
+JetBrainsMono Nerd Font Mono,JetBrainsMono NFM,JetBrainsMono NFM Thin
+JetBrainsMono Nerd Font Propo,JetBrainsMono NFP
+JetBrainsMono Nerd Font Propo,JetBrainsMono NFP,JetBrainsMono NFP ExtraBold
+JetBrainsMono Nerd Font Propo,JetBrainsMono NFP,JetBrainsMono NFP ExtraLight
+JetBrainsMono Nerd Font Propo,JetBrainsMono NFP,JetBrainsMono NFP Light
+JetBrainsMono Nerd Font Propo,JetBrainsMono NFP,JetBrainsMono NFP Medium
+JetBrainsMono Nerd Font Propo,JetBrainsMono NFP,JetBrainsMono NFP SemiBold
+JetBrainsMono Nerd Font Propo,JetBrainsMono NFP,JetBrainsMono NFP Thin
+JetBrainsMonoNL Nerd Font,JetBrainsMonoNL NF
+JetBrainsMonoNL Nerd Font,JetBrainsMonoNL NF,JetBrainsMonoNL NF ExtraBold
+JetBrainsMonoNL Nerd Font,JetBrainsMonoNL NF,JetBrainsMonoNL NF ExtraLight
+JetBrainsMonoNL Nerd Font,JetBrainsMonoNL NF,JetBrainsMonoNL NF Light
+JetBrainsMonoNL Nerd Font,JetBrainsMonoNL NF,JetBrainsMonoNL NF Medium
+JetBrainsMonoNL Nerd Font,JetBrainsMonoNL NF,JetBrainsMonoNL NF SemiBold
+JetBrainsMonoNL Nerd Font,JetBrainsMonoNL NF,JetBrainsMonoNL NF Thin
+JetBrainsMonoNL Nerd Font Mono,JetBrainsMonoNL NFM
+JetBrainsMonoNL Nerd Font Mono,JetBrainsMonoNL NFM,JetBrainsMonoNL NFM ExtraBold
+JetBrainsMonoNL Nerd Font Mono,JetBrainsMonoNL NFM,JetBrainsMonoNL NFM ExtraLight
+JetBrainsMonoNL Nerd Font Mono,JetBrainsMonoNL NFM,JetBrainsMonoNL NFM Light
+JetBrainsMonoNL Nerd Font Mono,JetBrainsMonoNL NFM,JetBrainsMonoNL NFM Medium
+JetBrainsMonoNL Nerd Font Mono,JetBrainsMonoNL NFM,JetBrainsMonoNL NFM SemiBold
+JetBrainsMonoNL Nerd Font Mono,JetBrainsMonoNL NFM,JetBrainsMonoNL NFM Thin
+JetBrainsMonoNL Nerd Font Propo,JetBrainsMonoNL NFP
+JetBrainsMonoNL Nerd Font Propo,JetBrainsMonoNL NFP,JetBrainsMonoNL NFP ExtraBold
+JetBrainsMonoNL Nerd Font Propo,JetBrainsMonoNL NFP,JetBrainsMonoNL NFP ExtraLight
+JetBrainsMonoNL Nerd Font Propo,JetBrainsMonoNL NFP,JetBrainsMonoNL NFP Light
+JetBrainsMonoNL Nerd Font Propo,JetBrainsMonoNL NFP,JetBrainsMonoNL NFP Medium
+JetBrainsMonoNL Nerd Font Propo,JetBrainsMonoNL NFP,JetBrainsMonoNL NFP SemiBold
+JetBrainsMonoNL Nerd Font Propo,JetBrainsMonoNL NFP,JetBrainsMonoNL NFP Thin
+Nimbus Mono PS
+Nimbus Roman
+Nimbus Sans
+Nimbus Sans Narrow
+Noto Color Emoji
+Noto Fangsong KSS Rotated
+Noto Fangsong KSS Vertical
+
+===== AVAILABLE FONT FILES =====
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/AmberELEC/DREAMS.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/DREAMS.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/BarlowCondensed/BarlowCondensed-Medium.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/FiraSansCondensed/FiraSansCondensed-Bold.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/FiraSansCondensed/FiraSansCondensed-Medium.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/FiraSansCondensed/FiraSansCondensed-Regular.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/Teko/Teko-Bold.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/Teko/Teko-Light.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/Teko/Teko-Medium.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/Teko/Teko-Regular.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/Teko/Teko-SemiBold.ttf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/assets/fonts/Inter/Inter-Bold.otf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/assets/fonts/Inter/Inter-Light.otf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/assets/fonts/Inter/Inter-Regular.otf
+research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/assets/fonts/RobotoCondensed/RobotoCondensed-Regular.ttf
+
+===== PYTHON IMAGE SUPPORT =====
+Pillow available
+
+===== WORKTREE STATUS =====
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+?? assets/artwork/generated/boxart/
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/platform.hpp
