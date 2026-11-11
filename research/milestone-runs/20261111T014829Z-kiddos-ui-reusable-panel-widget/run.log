@@ -1,0 +1,44 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/11] Building CXX object CMakeFiles/kiddos_ui_panel_test.dir/tests/ui_panel_test.cpp.o
+[2/11] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/panel.cpp.o
+[3/11] Linking CXX static library libkiddos_ui.a
+[4/11] Linking CXX executable kiddos
+[5/11] Linking CXX executable kiddos_ui_layout_test
+[6/11] Linking CXX executable kiddos_ui_focus_test
+[7/11] Linking CXX executable kiddos_ui_button_test
+[8/11] Linking CXX executable kiddos_ui_controller_test
+[9/11] Linking CXX executable kiddos_ui_image_test
+[10/11] Linking CXX executable kiddos_ui_panel_test
+[11/11] Linking CXX executable kiddos_ui_label_test
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_ui_layout
+1/8 Test #1: kiddos_ui_layout .................   Passed    0.01 sec
+    Start 2: kiddos_ui_geometry
+2/8 Test #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+    Start 3: kiddos_ui_focus
+3/8 Test #3: kiddos_ui_focus ..................   Passed    0.01 sec
+    Start 4: kiddos_ui_button
+4/8 Test #4: kiddos_ui_button .................   Passed    0.01 sec
+    Start 5: kiddos_ui_controller
+5/8 Test #5: kiddos_ui_controller .............   Passed    0.01 sec
+    Start 6: kiddos_ui_image
+6/8 Test #6: kiddos_ui_image ..................   Passed    0.01 sec
+    Start 7: kiddos_ui_label
+7/8 Test #7: kiddos_ui_label ..................   Passed    0.01 sec
+    Start 8: kiddos_ui_panel
+8/8 Test #8: kiddos_ui_panel ..................   Passed    0.01 sec
+
+100% tests passed out of 8
+
+Total Test time (real) =   0.08 sec
+[main cb679bb] feat: add reusable KiddOS UI panel widget
+ 5 files changed, 152 insertions(+)
+ create mode 100644 docs/ui-panel-support.md
+ create mode 100644 include/kiddos/ui/panel.hpp
+ create mode 100644 src/ui/panel.cpp
+ create mode 100644 tests/ui_panel_test.cpp
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   98c6d15..cb679bb  main -> main
+Panel widget built, tested, committed, and pushed.
