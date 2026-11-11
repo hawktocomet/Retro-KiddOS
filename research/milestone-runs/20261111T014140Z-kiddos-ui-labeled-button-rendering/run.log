@@ -1,0 +1,31 @@
+===== BUILD =====
+[1/10] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/button.cpp.o
+[2/10] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/controller.cpp.o
+[3/10] Linking CXX static library libkiddos_ui.a
+[4/10] Building CXX object CMakeFiles/kiddos_ui_button_test.dir/tests/ui_button_test.cpp.o
+[5/10] Linking CXX executable kiddos
+[6/10] Linking CXX executable kiddos_ui_layout_test
+[7/10] Linking CXX executable kiddos_ui_focus_test
+[8/10] Linking CXX executable kiddos_ui_button_test
+[9/10] Building CXX object CMakeFiles/kiddos_ui_controller_test.dir/tests/ui_controller_test.cpp.o
+[10/10] Linking CXX executable kiddos_ui_controller_test
+===== TESTS =====
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_ui_layout
+1/5 Test #1: kiddos_ui_layout .................   Passed    0.00 sec
+    Start 2: kiddos_ui_geometry
+2/5 Test #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+    Start 3: kiddos_ui_focus
+3/5 Test #3: kiddos_ui_focus ..................   Passed    0.00 sec
+    Start 4: kiddos_ui_button
+4/5 Test #4: kiddos_ui_button .................   Passed    0.00 sec
+    Start 5: kiddos_ui_controller
+5/5 Test #5: kiddos_ui_controller .............   Passed    0.00 sec
+
+100% tests passed out of 5
+
+Total Test time (real) =   0.01 sec
+ include/kiddos/ui/button.hpp |  8 +++++++-
+ src/ui/button.cpp            | 26 ++++++++++++++++++++++++++
+ tests/ui_button_test.cpp     |  6 ++++++
+ 3 files changed, 39 insertions(+), 1 deletion(-)

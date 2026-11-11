@@ -10,6 +10,7 @@ int main() {
     assert(button.label() == "Play");
     assert(button.focusable());
     assert(!button.pressed());
+    assert(button.font() == nullptr);
 
     int activations = 0;
     button.set_on_activate([&activations]() { ++activations; });
@@ -36,6 +37,11 @@ int main() {
     button.set_on_activate({});
     assert(!button.activate());
     assert(activations == 1);
+
+    ButtonStyle style;
+    style.text = {240, 240, 240, 255};
+    button.set_style(style);
+    assert(button.style().text.r == 240);
 
     return 0;
 }

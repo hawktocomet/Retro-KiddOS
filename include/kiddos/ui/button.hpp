@@ -1,10 +1,10 @@
 #pragma once
 
 #include "kiddos/ui/element.hpp"
+#include "kiddos/ui/font.hpp"
 
 #include <functional>
 #include <string>
-#include <utility>
 
 namespace kiddos::ui {
 
@@ -15,6 +15,8 @@ struct ButtonStyle {
     Color disabled{35, 39, 50, 255};
     Color border{69, 151, 255, 255};
     Color focused_border{125, 190, 255, 255};
+    Color text{255, 255, 255, 255};
+    Color disabled_text{150, 155, 165, 255};
 };
 
 class Button final : public Element {
@@ -27,6 +29,9 @@ public:
     void set_style(ButtonStyle style) noexcept;
     const ButtonStyle& style() const noexcept;
 
+    void set_font(const Font* font) noexcept;
+    const Font* font() const noexcept;
+
     void set_pressed(bool pressed) noexcept;
     bool pressed() const noexcept;
 
@@ -36,6 +41,7 @@ public:
 private:
     std::string label_;
     ButtonStyle style_{};
+    const Font* font_ = nullptr;
     std::function<void()> on_activate_;
     bool pressed_ = false;
 
