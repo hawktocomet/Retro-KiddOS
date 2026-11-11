@@ -1,0 +1,730 @@
+=== LOCAL CAROUSEL HEADER ===
+#pragma once
+
+#include "kiddos/ui/image.hpp"
+#include "kiddos/ui/panel.hpp"
+#include "kiddos/ui/screen.hpp"
+#include "kiddos/ui/texture.hpp"
+
+#include <SDL.h>
+
+#include <array>
+
+namespace kiddos::app {
+
+class HomeCarouselScreen final : public ui::Screen {
+public:
+    static constexpr int game_count = 9;
+
+    explicit HomeCarouselScreen(SDL_Renderer* renderer);
+    ~HomeCarouselScreen() override;
+
+    void set_selected_game(int index);
+    void toggle_cartridge_style();
+    int cartridge_style() const noexcept { return cartridge_style_; }
+    int selected_game() const noexcept { return selected_game_; }
+    void update(float delta_seconds) override;
+
+private:
+    std::array<std::array<ui::Texture, game_count>, 2> cartridge_textures_{};
+    int cartridge_style_ = 0;
+
+    ui::Texture wordmark_texture_{};
+    ui::Texture hints_texture_{};
+
+    std::array<ui::Image*, game_count> game_images_{};
+    std::array<ui::Rect, game_count> target_bounds_{};
+    std::array<int, game_count> target_opacity_{};
+    ui::Panel* highlight_ = nullptr;
+
+    ui::Image* wordmark_ = nullptr;
+    ui::Image* hints_ = nullptr;
+
+    int selected_game_ = -1;
+};
+
+} // namespace kiddos::app
+
+=== LOCAL CAROUSEL SOURCE ===
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/ui/panel.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <string>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr ui::Color background{1, 1, 1, 255};
+
+constexpr ui::Rect left_art{24, 268, 128, 128};
+constexpr ui::Rect center_art{210, 148, 300, 300};
+constexpr ui::Rect right_art{568, 268, 128, 128};
+
+constexpr ui::Rect title_rect{145, 465, 430, 54};
+constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+constexpr ui::Rect hints_rect{0, 662, 720, 42};
+
+
+
+constexpr const char* wordmark_path =
+    "assets/artwork/generated/kiddos-wordmark.png";
+constexpr const char* hints_path =
+    "assets/artwork/generated/navigation-hints.png";
+
+void fill_speaker_cone(
+    ui::Renderer& renderer,
+    int narrow_x,
+    int narrow_top,
+    int narrow_bottom,
+    int wide_x,
+    int wide_top,
+    int wide_bottom,
+    ui::Color color
+) {
+    for (int y = wide_top; y <= wide_bottom; ++y) {
+        int left = narrow_x;
+
+        if (y < narrow_top) {
+            left += (narrow_top - y) * (wide_x - narrow_x) /
+                    (narrow_top - wide_top);
+        } else if (y > narrow_bottom) {
+            left += (y - narrow_bottom) * (wide_x - narrow_x) /
+                    (wide_bottom - narrow_bottom);
+        }
+
+        renderer.draw_line({left, y}, {wide_x, y}, color);
+    }
+}
+
+void draw_arc(
+    ui::Renderer& renderer,
+    ui::Point center,
+    int radius,
+    double start_degrees,
+    double end_degrees,
+    ui::Color color
+) {
+    constexpr double pi = 3.14159265358979323846;
+    const int steps = std::max(2, radius * 2);
+    const double delta = (end_degrees - start_degrees) / steps;
+
+    auto point_at = [&](double degrees) {
+        const double radians = degrees * pi / 180.0;
+        return ui::Point{
+            center.x + static_cast<int>(std::lround(radius * std::cos(radians))),
+            center.y + static_cast<int>(std::lround(radius * std::sin(radians)))
+        };
+    };
+
+    ui::Point previous = point_at(start_degrees);
+    for (int i = 1; i <= steps; ++i) {
+        const ui::Point point = point_at(start_degrees + delta * i);
+        renderer.draw_line(previous, point, color);
+        previous = point;
+    }
+}
+
+class StatusIndicators final : public ui::Element {
+protected:
+    void draw(ui::Renderer& renderer) override {
+        const ui::Color primary{190, 208, 235, 210};
+        const ui::Color accent{105, 160, 225, 210};
+
+        // Compact speaker indicator.
+        renderer.fill_rect({25, 32, 7, 12}, primary);
+        fill_speaker_cone(renderer, 32, 32, 44, 42, 27, 49, primary);
+        draw_arc(renderer, {44, 38}, 7, -48.0, 48.0, accent);
+
+        // Quiet battery indicator.
+        renderer.outline_rect({660, 29, 30, 16}, primary);
+        renderer.fill_rect({691, 34, 3, 6}, primary);
+        renderer.fill_rect({664, 33, 20, 8}, accent);
+    }
+};
+
+int interpolate(int current, int target, float amount) {
+    return static_cast<int>(std::lround(
+        current + (target - current) * amount));
+}
+
+ui::Rect interpolate_rect(
+    ui::Rect current,
+    ui::Rect target,
+    float amount
+) {
+    return {
+        interpolate(current.x, target.x, amount),
+        interpolate(current.y, target.y, amount),
+        interpolate(current.w, target.w, amount),
+        interpolate(current.h, target.h, amount)
+    };
+}
+
+} // namespace
+
+HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+    // Keep the selected cartridge subtly emphasized without a visible frame.
+    highlight_ = &root().add<ui::Panel>(ui::PanelStyle{
+        {24, 82, 190, 38}, {0, 0, 0, 0}, 0, 28
+    });
+    highlight_->set_bounds({216, 154, 288, 288});
+
+    for (int style = 0; style < 2; ++style) {
+        for (int cartridge = 0; cartridge < game_count; ++cartridge) {
+            const std::string path =
+                "assets/artwork/generated/cartridges/option-" +
+                std::to_string(style + 1) + "/cartridge-" +
+                (cartridge < 9 ? "0" : "") +
+                std::to_string(cartridge + 1) + ".png";
+
+            cartridge_textures_[static_cast<std::size_t>(style)]
+                               [static_cast<std::size_t>(cartridge)]
+                .load(renderer, path.c_str(), false);
+        }
+    }
+
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto& image = root().add<ui::Image>();
+        image.set_fit(ui::ImageFit::contain);
+        image.set_bounds(slot_bounds[slot]);
+        game_images_[slot] = &image;
+    }
+
+    wordmark_texture_.load(renderer, wordmark_path, false);
+    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+    wordmark_->set_bounds(wordmark_rect);
+    wordmark_->set_fit(ui::ImageFit::contain);
+
+    hints_texture_.load(renderer, hints_path, false);
+    hints_ = &root().add<ui::Image>(&hints_texture_);
+    hints_->set_bounds(hints_rect);
+    hints_->set_fit(ui::ImageFit::contain);
+
+    root().add<StatusIndicators>();
+
+    set_selected_game(1);
+}
+
+void HomeCarouselScreen::toggle_cartridge_style() {
+    cartridge_style_ = (cartridge_style_ + 1) % 2;
+    if (selected_game_ >= 0) {
+        set_selected_game(selected_game_);
+    }
+}
+
+HomeCarouselScreen::~HomeCarouselScreen() {
+    for (auto* image : game_images_) {
+        if (image) image->set_texture(nullptr);
+    }
+
+    if (wordmark_) wordmark_->set_texture(nullptr);
+    if (hints_) hints_->set_texture(nullptr);
+}
+
+void HomeCarouselScreen::set_selected_game(int index) {
+    if (index < 0 || index >= game_count) return;
+
+    selected_game_ = index;
+
+    const std::array<int, 3> visible_games{
+        (index + game_count - 1) % game_count,
+        index,
+        (index + 1) % game_count
+    };
+
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        const int cartridge = visible_games[slot];
+        auto* texture =
+            &cartridge_textures_[static_cast<std::size_t>(cartridge_style_)]
+                                [static_cast<std::size_t>(cartridge)];
+
+        game_images_[slot]->set_texture(texture);
+        game_images_[slot]->set_bounds(slot_bounds[slot]);
+        game_images_[slot]->set_opacity(slot == 1 ? 255 : 118);
+    }
+}
+
+void HomeCarouselScreen::update(float delta_seconds) {
+    if (delta_seconds <= 0.0f) return;
+
+    // A critically damped-feeling ease that settles quickly while allowing
+    // another direction input to retarget the carousel mid-motion.
+    const float amount = std::clamp(
+        1.0f - std::exp(-delta_seconds * 20.0f), 0.0f, 1.0f);
+
+    for (std::size_t i = 0; i < game_images_.size(); ++i) {
+        ui::Image* image = game_images_[i];
+        if (!image) continue;
+
+        const ui::Rect current = image->bounds();
+        const ui::Rect target = target_bounds_[i];
+        const ui::Rect next = interpolate_rect(current, target, amount);
+
+        const int opacity = interpolate(
+            image->opacity(), target_opacity_[i], amount);
+
+        image->set_bounds(next);
+        image->set_opacity(static_cast<std::uint8_t>(
+            std::clamp(opacity, 0, 255)));
+
+        if (std::abs(next.x - target.x) <= 1 &&
+            std::abs(next.y - target.y) <= 1 &&
+            std::abs(next.w - target.w) <= 1 &&
+            std::abs(next.h - target.h) <= 1) {
+            image->set_bounds(target);
+        }
+
+        if (std::abs(opacity - target_opacity_[i]) <= 1) {
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[i]));
+        }
+    }
+}
+
+} // namespace kiddos::app
+
+=== LOCAL APPLICATION HEADER ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/ui/renderer.hpp"
+#include "kiddos/ui/screen_manager.hpp"
+
+namespace kiddos {
+
+class Application {
+public:
+    explicit Application(Platform& platform);
+
+    int run();
+
+private:
+    Platform& platform_;
+    ui::ScreenManager screens_;
+    ui::Renderer ui_renderer_;
+    bool running_ = true;
+    int selected_game_ = 1;
+    bool action_screen_ = false;
+    int selected_action_ = 0;
+    static constexpr int game_count_ = 9;
+
+    void handle_action(Action action);
+    void render();
+};
+
+} // namespace kiddos
+
+=== LOCAL APPLICATION SOURCE ===
+#include "kiddos/app/application.hpp"
+
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/app/ui_action_mapping.hpp"
+
+#include <SDL_image.h>
+
+#include <chrono>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    // Attach the platform-owned SDL renderer to the non-owning UI renderer
+    // adapter; the UI layer never creates a second SDL renderer.
+    ui_renderer_.attach(platform_.native_renderer());
+
+    // SDL_image initialization is left to the application lifecycle; the
+    // carousel artwork is BMP, which needs no extra image format flags.
+    IMG_Init(IMG_INIT_PNG);
+
+    screens_.push(std::make_unique<app::HomeCarouselScreen>(
+        platform_.native_renderer()));
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+            if (!running_) {
+                break;
+            }
+        }
+
+        if (running_) {
+            screens_.update(0.008f);
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    // Release screens and their SDL textures before the platform shuts
+    // down and destroys the native renderer they were created from.
+    screens_.clear();
+    IMG_Quit();
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::NavigateUp:
+        case Action::NavigateDown:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::ToggleCartridgeStyle:
+            if (!action_screen_) {
+                if (auto* home = static_cast<app::HomeCarouselScreen*>(screens_.current())) {
+                    home->toggle_cartridge_style();
+                }
+            }
+            break;
+
+        case Action::Back:
+            // Back is handled at the application level only; it must not
+            // pop the home screen off the screen manager.
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
+            break;
+
+        case Action::NavigateLeft:
+        case Action::NavigateRight:
+        case Action::Confirm: {
+            if (action_screen_) break;
+
+            // Translate the platform action and give the active screen a
+            // chance to respond first. The home carousel is currently
+            // display-only, so the application carousel state handles the
+            // remaining behavior.
+            const std::optional<ui::UIAction> ui_action =
+                app::to_ui_action(action);
+            if (!ui_action || screens_.handle_action(*ui_action)) break;
+
+            switch (*ui_action) {
+                case ui::UIAction::Left:
+                    selected_game_ =
+                        (selected_game_ + game_count_ - 1) % game_count_;
+                    break;
+
+                case ui::UIAction::Right:
+                    selected_game_ =
+                        (selected_game_ + 1) % game_count_;
+                    break;
+
+                case ui::UIAction::Confirm:
+                    action_screen_ = true;
+                    selected_action_ = 0;
+                    break;
+
+                case ui::UIAction::Up:
+                case ui::UIAction::Down:
+                case ui::UIAction::Back:
+                    break;
+            }
+            break;
+        }
+
+        case Action::None:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+
+    if (action_screen_) {
+        // Game 1 is a temporary checkpoint demonstration fixture; this
+        // screen remains on the platform's manual rendering path.
+        platform_.draw_game_actions(
+            selected_game_, selected_game_ == 1, selected_action_);
+    } else if (auto* home =
+                   static_cast<app::HomeCarouselScreen*>(screens_.current())) {
+        home->set_selected_game(selected_game_);
+        screens_.render(ui_renderer_);
+    }
+
+    platform_.present();
+}
+
+} // namespace kiddos
+
+=== LOCAL CAROUSEL TEST ===
+#include "kiddos/app/home_carousel_screen.hpp"
+
+#include "kiddos/ui/image.hpp"
+#include "kiddos/ui/renderer.hpp"
+
+#include <SDL.h>
+#include <SDL_image.h>
+
+#include <cassert>
+#include <cstdint>
+#include <unistd.h>
+
+namespace {
+
+using kiddos::ui::Color;
+using kiddos::ui::Rect;
+
+Color pixel(SDL_Surface* surface, int x, int y) {
+    assert(SDL_LockSurface(surface) == 0);
+    const auto* row = static_cast<const std::uint8_t*>(surface->pixels)
+        + y * surface->pitch;
+    const auto* value = reinterpret_cast<const std::uint32_t*>(row) + x;
+    std::uint8_t r = 0, g = 0, b = 0, a = 0;
+    SDL_GetRGBA(*value, surface->format, &r, &g, &b, &a);
+    SDL_UnlockSurface(surface);
+    return {r, g, b, a};
+}
+
+bool same_color(const Color& a, const Color& b) {
+    return a.r == b.r && a.g == b.g &&
+           a.b == b.b && a.a == b.a;
+}
+
+bool any_pixel_different(
+    SDL_Surface* surface,
+    const Rect& rect,
+    const Color& color
+) {
+    for (int y = rect.y; y < rect.y + rect.h; ++y) {
+        for (int x = rect.x; x < rect.x + rect.w; ++x) {
+            if (!same_color(pixel(surface, x, y), color)) return true;
+        }
+    }
+    return false;
+}
+
+const kiddos::ui::Element* find_by_bounds(
+    kiddos::ui::Screen& screen,
+    const Rect& bounds
+) {
+    for (std::size_t i = 0; i < screen.root().child_count(); ++i) {
+        const auto* child = screen.root().child(i);
+        if (!child) continue;
+
+        const Rect actual = child->bounds();
+        if (actual.x == bounds.x && actual.y == bounds.y &&
+            actual.w == bounds.w && actual.h == bounds.h) {
+            return child;
+        }
+    }
+    return nullptr;
+}
+
+void test_structure_and_selection() {
+    kiddos::app::HomeCarouselScreen screen(nullptr);
+
+    // Three cartridge slots, wordmark, hints, status, and highlight.
+    assert(screen.root().child_count() == 7);
+    assert(screen.selected_game() == 1);
+
+    assert(screen.cartridge_style() == 0);
+    screen.toggle_cartridge_style();
+    assert(screen.cartridge_style() == 1);
+    assert(screen.selected_game() == 1);
+    screen.toggle_cartridge_style();
+    assert(screen.cartridge_style() == 0);
+
+    const auto* wordmark = find_by_bounds(screen, {275, 18, 170, 32});
+    assert(wordmark);
+    assert(wordmark->visible());
+
+    const auto* hints = find_by_bounds(screen, {0, 662, 720, 42});
+    assert(hints);
+    assert(hints->visible());
+
+    screen.set_selected_game(0);
+    assert(screen.selected_game() == 0);
+    assert(screen.selected_game() == 0);
+
+    screen.set_selected_game(8);
+    assert(screen.selected_game() == 8);
+
+    screen.set_selected_game(0);
+    assert(screen.selected_game() == 0);
+
+    screen.set_selected_game(9);
+    assert(screen.selected_game() == 0);
+
+    // The transition can be advanced to completion without an SDL renderer.
+    screen.update(1.0f);
+}
+
+void test_renders_minimal_carousel() {
+    assert(SDL_Init(0) == 0);
+    IMG_Init(IMG_INIT_PNG);
+    assert(chdir(KIDDOS_SOURCE_DIR) == 0);
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+        0, 720, 720, 32, SDL_PIXELFORMAT_RGBA32);
+    assert(surface);
+
+    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+    assert(native);
+    SDL_SetRenderDrawBlendMode(native, SDL_BLENDMODE_BLEND);
+
+    {
+        kiddos::ui::Renderer renderer(native);
+        kiddos::app::HomeCarouselScreen screen(native);
+
+        const Color background{8, 15, 35, 255};
+        renderer.clear(background);
+        screen.render(renderer);
+
+        // The screen is no longer composed of large framed panels.
+        assert(same_color(pixel(surface, 500, 160), background));
+
+        // Three cartridge positions, wordmark, and hints are visible.
+        assert(any_pixel_different(surface, {220, 158, 280, 280}, background));
+        assert(any_pixel_different(surface, {24, 268, 128, 128}, background));
+        assert(any_pixel_different(surface, {568, 268, 128, 128}, background));
+        assert(any_pixel_different(surface, {275, 18, 170, 32}, background));
+        assert(any_pixel_different(surface, {0, 662, 720, 42}, background));
+
+        // Selecting another cartridge updates all three visible slots.
+        screen.set_selected_game(0);
+        screen.update(0.05f);
+        screen.render(renderer);
+
+        screen.update(1.0f);
+        screen.render(renderer);
+
+        assert(any_pixel_different(surface, {220, 158, 280, 280}, background));
+    }
+
+    SDL_DestroyRenderer(native);
+    SDL_FreeSurface(surface);
+    IMG_Quit();
+    SDL_Quit();
+}
+
+} // namespace
+
+int main() {
+    test_structure_and_selection();
+    test_renders_minimal_carousel();
+    return 0;
+}
+
+=== IMAGE API ===
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/texture.hpp"
+
+#include <cstdint>
+
+namespace kiddos::ui {
+
+enum class ImageFit {
+    contain,
+    cover,
+    stretch
+};
+
+struct ImageGeometry {
+    Rect source{};
+    Rect destination{};
+    bool valid = false;
+};
+
+ImageGeometry calculate_image_geometry(
+    int texture_width,
+    int texture_height,
+    Rect bounds,
+    ImageFit fit
+) noexcept;
+
+class Image final : public Element {
+public:
+    explicit Image(Texture* texture = nullptr) noexcept;
+
+    void set_texture(Texture* texture) noexcept;
+    Texture* texture() const noexcept;
+
+    void set_fit(ImageFit fit) noexcept;
+    ImageFit fit() const noexcept;
+
+    void set_opacity(std::uint8_t opacity) noexcept;
+    std::uint8_t opacity() const noexcept;
+
+    ImageGeometry geometry() const noexcept;
+
+private:
+    Texture* texture_ = nullptr;
+    ImageFit fit_ = ImageFit::contain;
+    std::uint8_t opacity_ = 255;
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+#pragma once
+
+#include <SDL.h>
+#include <string>
+
+namespace kiddos::ui {
+
+class Texture final {
+public:
+    Texture() = default;
+    ~Texture();
+
+    Texture(const Texture&) = delete;
+    Texture& operator=(const Texture&) = delete;
+
+    Texture(Texture&& other) noexcept;
+    Texture& operator=(Texture&& other) noexcept;
+
+    // Loads an image file through SDL_image. With magenta_key enabled,
+    // bright magenta (255, 0, 255) pixels become transparent.
+    bool load(SDL_Renderer* renderer, const std::string& path,
+              bool magenta_key = false);
+    void reset() noexcept;
+    bool valid() const noexcept;
+    int width() const noexcept;
+    int height() const noexcept;
+    SDL_Texture* native() const noexcept;
+
+private:
+    SDL_Texture* texture_ = nullptr;
+    int width_ = 0;
+    int height_ = 0;
+};
+
+}
