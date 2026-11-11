@@ -1,0 +1,89 @@
+Could not find expected BROWSE SVG block; no SVG changes made.
+
+=== CHANGE SUMMARY ===
+ assets/artwork/generated/navigation-hints.png      | Bin 6804 -> 6816 bytes
+ .../artwork/source/branding/navigation-hints.svg   |   9 ++-
+ src/app/home_carousel_screen.cpp                   |  12 ++--
+ src/platform/sdl_platform.cpp                      |  63 ++++++++++++++-------
+ tests/app_home_carousel_screen_test.cpp            |   8 +++
+ 5 files changed, 65 insertions(+), 27 deletions(-)
+
+=== BROWSE SVG ===
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="34" viewBox="0 0 720 34">
+  <!-- "<- BROWSE ->": a left-pointing arrow before the word and a
+       right-pointing arrow after it, with equal gaps on both sides, the
+       whole group centered around x=150. -->
+  <g fill="#8FA8CC">
+    <path d="M105 12 L105 24 L96 18 Z"/>
+    <path d="M196 12 L196 24 L205 18 Z"/>
+  </g>
+  <text x="116" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">BROWSE</text>
+
+  <circle cx="316" cy="18" r="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="316" y="22.5" text-anchor="middle" font-family="DejaVu Sans" font-size="11" font-weight="bold" fill="#8FA8CC">A</text>
+  <text x="332" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">SELECT</text>
+
+  <rect x="440" y="9" width="52" height="18" rx="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="466" y="22" text-anchor="middle" font-family="DejaVu Sans" font-size="10" font-weight="bold" letter-spacing="1" fill="#8FA8CC">START</text>
+  <rect x="500" y="9" width="58" height="18" rx="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="529" y="22" text-anchor="middle" font-family="DejaVu Sans" font-size="10" font-weight="bold" letter-spacing="1" fill="#8FA8CC">SELECT</text>
+  <text x="566" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">PARENT MENU</text>
+</svg>
+
+=== ACTION ICONS ===
+697:void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+698-    draw_play_symbol(r, x, y);
+699-}
+700-
+701-// Conventional circular restart arrow: a thick ring open across the top
+702-// with a solid arrowhead continuing the ring clockwise. The ring band is
+703-// stamped as tightly overlapping filled disks along the arc so it renders
+704-// as one solid, evenly weighted band. Centered on (x, y).
+705-void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+706-    const Color icon{220, 237, 255, 255};
+707-    constexpr double kPi = 3.14159265358979323846;
+708-
+709-    // The band spans radii 21..27 (7 px thick, matching the solid
+710-    // arrowhead's stroke weight) and stays open across the top between
+711-    // 250 and 290 degrees. Stamps are spaced ~1.7 px along the arc so
+712-    // neighboring disks always overlap.
+713-    for (int step = 0; step <= 80; ++step) {
+714-        const double radians =
+715-            (290.0 + step * (320.0 / 80.0)) * kPi / 180.0;
+716-        circle(r,
+717-               x + static_cast<int>(std::lround(24.0 * std::cos(radians))),
+718-               y + static_cast<int>(std::lround(24.0 * std::sin(radians))),
+719-               3, icon);
+720-    }
+721-
+722-    // Arrowhead at the ring's upper-right end, pointing clockwise.
+723-    triangle(r, x + 27, y - 16,
+724-             x + 4, y - 10,
+725-             x + 13, y - 35,
+726-             icon);
+727-}
+728-
+729-} // namespace
+730-
+731-void SDLPlatform::draw_game_actions(
+732-    int selected_index, bool has_checkpoint, int selected_action) {
+733-
+734-    if (!renderer_) return;
+735-
+736-    draw_status(renderer_);
+737-
+738-    // Keep the selected game's artwork prominent.
+739-    draw_card(renderer_, selected_index,
+740-              {235, 48, 250, 310}, true);
+741-
+742-    const int action_count = has_checkpoint ? 2 : 1;
+743-    const int box_height = 112;
+744-    const int gap = 17;
+745-    const int total_height =
+746-        action_count * box_height + (action_count - 1) * gap;
+747-    const int start_y = 405 + (210 - total_height) / 2;
+748-
+749-    for (int i = 0; i < action_count; ++i) {
+750-        const int y = start_y + i * (box_height + gap);
+751-        const bool selected = i == selected_action;
+752-
