@@ -1,0 +1,79 @@
+=== Verify namespace and controller integration ===
+ListViewStyle Theme::list_view_style() const noexcept {
+    ListViewStyle style;
+    style.background = colors_.surface;
+    style.selected = colors_.primary_dark;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    style.border = colors_.border;
+    return style;
+}
+
+CheckboxStyle Theme::checkbox_style() const noexcept {
+    CheckboxStyle style;
+    style.background = colors_.surface;
+    style.checked = colors_.primary;
+    style.checkmark = colors_.text;
+    style.border = colors_.border;
+    style.focused_border = colors_.primary_bright;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    return style;
+}
+
+
+RadioGroupStyle Theme::radio_group_style() const noexcept {
+    RadioGroupStyle style;
+    style.background = colors_.surface;
+    style.selected = colors_.primary;
+    style.indicator = colors_.text;
+    style.border = colors_.border;
+    style.focused_border = colors_.primary_bright;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    return style;
+}
+
+17-    switch (action) {
+18-        case UIAction::Left:
+19:            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+20-                return radio->select_previous();
+21-            if (auto* slider = dynamic_cast<Slider*>(focused))
+22-                return slider->adjust(-1);
+23-            return focus_.move(Direction::Left);
+24-
+25-        case UIAction::Right:
+26:            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+27-                return radio->select_next();
+28-            if (auto* slider = dynamic_cast<Slider*>(focused))
+29-                return slider->adjust(1);
+30-            return focus_.move(Direction::Right);
+31-
+32-        case UIAction::Up:
+33:            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+34-                return radio->select_previous();
+35-            if (auto* list = dynamic_cast<ListView*>(focused))
+36-                return list->move_selection(-1);
+37-            return focus_.move(Direction::Up);
+38-
+39-        case UIAction::Down:
+40:            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+41-                return radio->select_next();
+42-            if (auto* list = dynamic_cast<ListView*>(focused))
+43-                return list->move_selection(1);
+44-            return focus_.move(Direction::Down);
+45-
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/18] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -Wall -Wextra -Wpedantic -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o -MF CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o.d -o CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o -c /home/hawk/KiddOS/src/ui/theme.cpp
+/home/hawk/KiddOS/src/ui/theme.cpp:102:2: error: expected ‘}’ at end of input
+  102 | }
+      |  ^
+/home/hawk/KiddOS/src/ui/theme.cpp:3:22: note: to match this ‘{’
+    3 | namespace kiddos::ui {
+      |                      ^
+[2/18] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/controller.cpp.o
+ninja: build stopped: subcommand failed.
