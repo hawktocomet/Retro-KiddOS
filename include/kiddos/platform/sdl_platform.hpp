@@ -5,6 +5,8 @@
 
 #include <SDL.h>
 
+#include <deque>
+
 namespace kiddos {
 
 class SDLPlatform final : public Platform {
@@ -28,6 +30,9 @@ private:
     SDL_GameController* controller_ = nullptr;
     SDL_JoystickID controller_instance_ = -1;
     bool initialized_ = false;
+    std::deque<Action> pending_actions_;
+    std::deque<TextInputEvent> pending_text_events_;
+    bool pump_events();
 
     void open_controller(int device_index);
     void close_controller();

@@ -501,26 +501,67 @@ Action SDLPlatform::map_controller_button(Uint8 button) {
     }
 }
 
-bool SDLPlatform::poll_action(Action& action) {
+bool SDLPlatform::pump_events() {
     SDL_Event event;
+    bool received = false;
 
     while (SDL_PollEvent(&event)) {
-        action = Action::None;
+        received = true;
 
         switch (event.type) {
             case SDL_QUIT:
-                action = Action::Quit;
-                return true;
+                pending_actions_.push_back(Action::Quit);
+                break;
 
             case SDL_KEYDOWN:
-                if (event.key.repeat == 0) {
-                    action = map_key(event.key.keysym.sym);
+                if (event.key.repeat != 0) break;
+
+                switch (event.key.keysym.sym) {
+                    case SDLK_BACKSPACE:
+                        pending_text_events_.push_back(
+                            {TextInputEventType::Backspace, {}});
+                        break;
+                    case SDLK_DELETE:
+                        pending_text_events_.push_back(
+                            {TextInputEventType::Delete, {}});
+                        break;
+                    case SDLK_HOME:
+                        pending_text_events_.push_back(
+                            {TextInputEventType::Home, {}});
+                        break;
+                    case SDLK_END:
+                        pending_text_events_.push_back(
+                            {TextInputEventType::End, {}});
+                        break;
+                    case SDLK_LEFT:
+                    case SDLK_RIGHT:
+                        // Preserve existing navigation behavior.
+                        pending_actions_.push_back(
+                            map_key(event.key.keysym.sym));
+                        break;
+                    default: {
+                        const Action action =
+                            map_key(event.key.keysym.sym);
+                        if (action != Action::None) {
+                            pending_actions_.push_back(action);
+                        }
+                        break;
+                    }
                 }
+                break;
+
+            case SDL_TEXTINPUT:
+                pending_text_events_.push_back(
+                    {TextInputEventType::Text, event.text.text});
                 break;
 
             case SDL_CONTROLLERBUTTONDOWN:
                 if (event.cbutton.which == controller_instance_) {
-                    action = map_controller_button(event.cbutton.button);
+                    const Action action =
+                        map_controller_button(event.cbutton.button);
+                    if (action != Action::None) {
+                        pending_actions_.push_back(action);
+                    }
                 }
                 break;
 
@@ -536,63 +577,39 @@ bool SDLPlatform::poll_action(Action& action) {
 
             case SDL_WINDOWEVENT:
                 if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
-                    action = Action::Quit;
-                    return true;
+                    pending_actions_.push_back(Action::Quit);
                 }
                 break;
 
             default:
                 break;
         }
-
-        if (action != Action::None) return true;
     }
 
-    return false;
+    return received;
 }
 
+bool SDLPlatform::poll_action(Action& action) {
+    if (pending_actions_.empty()) pump_events();
 
-bool SDLPlatform::poll_text_input_event(TextInputEvent& text_event) {
-    SDL_Event event;
-
-    while (SDL_PollEvent(&event)) {
-        switch (event.type) {
-            case SDL_TEXTINPUT:
-                text_event = {TextInputEventType::Text, event.text.text};
-                return true;
-
-            case SDL_KEYDOWN:
-                if (event.key.repeat != 0) continue;
-                switch (event.key.keysym.sym) {
-                    case SDLK_BACKSPACE:
-                        text_event = {TextInputEventType::Backspace, {}};
-                        return true;
-                    case SDLK_DELETE:
-                        text_event = {TextInputEventType::Delete, {}};
-                        return true;
-                    case SDLK_LEFT:
-                        text_event = {TextInputEventType::Left, {}};
-                        return true;
-                    case SDLK_RIGHT:
-                        text_event = {TextInputEventType::Right, {}};
-                        return true;
-                    case SDLK_HOME:
-                        text_event = {TextInputEventType::Home, {}};
-                        return true;
-                    case SDLK_END:
-                        text_event = {TextInputEventType::End, {}};
-                        return true;
-                    default:
-                        break;
-                }
-                break;
-
-            default:
-                break;
-        }
+    if (pending_actions_.empty()) {
+        action = Action::None;
+        return false;
     }
 
-    return false;
+    action = pending_actions_.front();
+    pending_actions_.pop_front();
+    return true;
+}
+
+bool SDLPlatform::poll_text_input_event(TextInputEvent& text_event) {
+    if (pending_text_events_.empty()) pump_events();
+
+    if (pending_text_events_.empty()) return false;
+
+    text_event = std::move(pending_text_events_.front());
+    pending_text_events_.pop_front();
+    return true;
 }
 
 void SDLPlatform::set_text_input_active(bool active) {
