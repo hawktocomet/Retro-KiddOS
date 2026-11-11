@@ -1,0 +1,466 @@
+Cloning into '/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099'...
+From https://github.com/lvgl/lvgl
+ * branch                cff1c632206a267534102ee1065f51ac87be4099 -> FETCH_HEAD
+HEAD is now at cff1c6322 feat(draw): add per-type draw callbacks to the draw units (#10905)
+
+=== PINNED SOURCE ===
+cff1c632206a267534102ee1065f51ac87be4099
+
+=== SDL DRIVER FILES ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.h
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_egl.c
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mouse.c
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mousewheel.c
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_private.h
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/osal/lv_sdl2.c
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/osal/lv_sdl2.h
+
+=== SDL WINDOW / RENDERER API ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:163:        SDL_Renderer * renderer = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:166:        layer->user_data = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:262:                rect_dsc.base.user_data = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:275:                rect_dsc.base.user_data = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:289:                rect_dsc.base.user_data = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:304:                label_dsc.base.user_data = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:311:                arc_dsc.base.user_data = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:318:                line_dsc.base.user_data = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:325:                triangle_dsc.base.user_data = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:332:                image_dsc.base.user_data = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:348:    SDL_Texture * texture = SDL_CreateTexture(lv_sdl_window_get_renderer(disp), SDL_PIXELFORMAT_ARGB8888,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:372:    SDL_Renderer * renderer = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:470:    SDL_Renderer * renderer = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:529:            SDL_Renderer * renderer = lv_sdl_window_get_renderer(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_egl.c:170:    if(SDL_GetWindowWMInfo(lv_sdl_window_get_window(display), &wmInfo) != SDL_TRUE) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:98:    ddata->renderer = SDL_CreateRenderer(lv_sdl_window_get_window(display), -1,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:188:    ddata->texture = SDL_CreateTexture(ddata->renderer, px_format,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:69:    ddata->renderer = SDL_CreateRenderer(lv_sdl_window_get_window(display), -1,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:58:lv_display_t * lv_sdl_window_create(int32_t hor_res, int32_t ver_res)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:175:void * lv_sdl_window_get_renderer(lv_display_t * display)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:181:struct SDL_Window * lv_sdl_window_get_window(lv_display_t * disp)
+
+=== INPUT DEVICE / KEYPAD API ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_group.c:97:            lv_indev_set_group(indev, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_group.c:126:void lv_group_add_obj(lv_group_t * group, lv_obj_t * obj)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1650:            if(c == LV_KEY_RIGHT || c == LV_KEY_UP) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1653:            else if(c == LV_KEY_LEFT || c == LV_KEY_DOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1682:            else if(c == LV_KEY_RIGHT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1689:            else if(c == LV_KEY_LEFT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1714:        if(indev_type == LV_INDEV_TYPE_KEYPAD || indev_type == LV_INDEV_TYPE_ENCODER) state |= LV_STATE_FOCUS_KEY;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj_class.c:124:        lv_group_add_obj(def_group, obj);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/monkey/lv_monkey.c:33:    LV_KEY_RIGHT,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/monkey/lv_monkey.c:34:    LV_KEY_LEFT,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/monkey/lv_monkey.c:78:    monkey->indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/monkey/lv_monkey.c:80:    lv_indev_set_read_cb(monkey->indev, lv_monkey_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/monkey/lv_monkey.c:171:        case LV_INDEV_TYPE_KEYPAD: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_helpers.c:48:    lv_indev_read(lv_test_indev_get_indev(LV_INDEV_TYPE_KEYPAD));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_helpers.c:58:    lv_indev_read(lv_test_indev_get_indev(LV_INDEV_TYPE_KEYPAD));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_indev.c:45:    _state.mouse_indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_indev.c:47:    lv_indev_set_read_cb(_state.mouse_indev,  lv_test_mouse_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_indev.c:49:    _state.keypad_indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_indev.c:50:    lv_indev_set_type(_state.keypad_indev, LV_INDEV_TYPE_KEYPAD);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_indev.c:51:    lv_indev_set_read_cb(_state.keypad_indev,  lv_test_keypad_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_indev.c:53:    _state.encoder_indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_indev.c:55:    lv_indev_set_read_cb(_state.encoder_indev,  lv_test_encoder_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_indev.c:75:        case LV_INDEV_TYPE_KEYPAD:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_indev_gesture.c:52:    _state.gesture_indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_indev_gesture.c:54:    lv_indev_set_read_cb(_state.gesture_indev,  lv_test_gesture_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_gridnav.c:152:        if(key == LV_KEY_RIGHT && !(dsc->ctrl & LV_GRIDNAV_CTRL_VERTICAL_MOVE_ONLY)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_gridnav.c:172:        else if(key == LV_KEY_LEFT && !(dsc->ctrl & LV_GRIDNAV_CTRL_VERTICAL_MOVE_ONLY)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_gridnav.c:290:            if(t == LV_INDEV_TYPE_ENCODER || t == LV_INDEV_TYPE_KEYPAD) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:89:lv_indev_t * lv_indev_create(void)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:179:    else if(indev->type == LV_INDEV_TYPE_KEYPAD || indev->type == LV_INDEV_TYPE_ENCODER) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:251:        else if(indev->type == LV_INDEV_TYPE_KEYPAD) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:299:void lv_indev_set_read_cb(lv_indev_t * indev, lv_indev_read_cb_t read_cb)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:474:void lv_indev_set_group(lv_indev_t * indev, lv_group_t * group)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:478:    if(indev->type == LV_INDEV_TYPE_KEYPAD || indev->type == LV_INDEV_TYPE_ENCODER) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:522:    if(indev->type == LV_INDEV_TYPE_KEYPAD)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:814: * Process a new point from LV_INDEV_TYPE_KEYPAD input device
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1032:        else if(data->key == LV_KEY_LEFT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1036:        else if(data->key == LV_KEY_RIGHT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1101:            else if(data->key == LV_KEY_LEFT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1105:            else if(data->key == LV_KEY_RIGHT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1178:                    lv_group_send_data(g, LV_KEY_LEFT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1184:                    lv_group_send_data(g, LV_KEY_RIGHT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1943:    if(indev->type == LV_INDEV_TYPE_POINTER || indev->type == LV_INDEV_TYPE_KEYPAD) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/arc/lv_arc.c:761:        if(c == LV_KEY_RIGHT || c == LV_KEY_UP) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/arc/lv_arc.c:764:        else if(c == LV_KEY_LEFT || c == LV_KEY_DOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/slider/lv_slider.c:361:        if(indev_type == LV_INDEV_TYPE_ENCODER || indev_type == LV_INDEV_TYPE_KEYPAD) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/slider/lv_slider.c:398:        if(c == LV_KEY_RIGHT || c == LV_KEY_UP) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/slider/lv_slider.c:402:        else if(c == LV_KEY_LEFT || c == LV_KEY_DOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/table/lv_table.c:632:        if(c == LV_KEY_LEFT) col--;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/table/lv_table.c:633:        else if(c == LV_KEY_RIGHT) col++;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/dropdown/lv_dropdown.c:955:        if(c == LV_KEY_RIGHT || c == LV_KEY_DOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/dropdown/lv_dropdown.c:964:        else if(c == LV_KEY_LEFT || c == LV_KEY_UP) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/tabview/lv_tabview.c:108:    if(g) lv_group_add_obj(g, button);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/spinbox/lv_spinbox.c:538:        if(c == LV_KEY_RIGHT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/spinbox/lv_spinbox.c:544:        else if(c == LV_KEY_LEFT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/buttonmatrix/lv_buttonmatrix.c:497:            if(indev_type == LV_INDEV_TYPE_KEYPAD || (indev_type == LV_INDEV_TYPE_ENCODER && editing)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/buttonmatrix/lv_buttonmatrix.c:532:        if(c == LV_KEY_RIGHT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/buttonmatrix/lv_buttonmatrix.c:548:        else if(c == LV_KEY_LEFT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/textarea/lv_textarea.c:897:        if(c == LV_KEY_RIGHT)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/textarea/lv_textarea.c:899:        else if(c == LV_KEY_LEFT)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/textarea/lv_textarea.c:1175:    if(lv_indev_get_type(click_source) == LV_INDEV_TYPE_KEYPAD ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/roller/lv_roller.c:490:        if(c == LV_KEY_RIGHT || c == LV_KEY_DOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/roller/lv_roller.c:497:        else if(c == LV_KEY_LEFT || c == LV_KEY_UP) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/roller/lv_roller.c:813:    if(indev_type == LV_INDEV_TYPE_ENCODER || indev_type == LV_INDEV_TYPE_KEYPAD) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/evdev/lv_evdev.c:94:            return LV_KEY_RIGHT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/evdev/lv_evdev.c:96:            return LV_KEY_LEFT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/evdev/lv_evdev.c:329:        case LV_INDEV_TYPE_KEYPAD:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/evdev/lv_evdev.c:562:                    indev_type = LV_INDEV_TYPE_KEYPAD;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/evdev/lv_evdev.c:602:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/evdev/lv_evdev.c:605:    lv_indev_set_read_cb(indev, _evdev_read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_indev_keyboard.c:104:    indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_indev_keyboard.c:105:    lv_indev_set_type(indev, LV_INDEV_TYPE_KEYPAD);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_indev_keyboard.c:108:    lv_indev_set_read_cb(indev, _simple_text_input_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_indev_keyboard.c:324:            return LV_KEY_LEFT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_indev_keyboard.c:326:            return LV_KEY_RIGHT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_indev_pointer.c:86:    indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_indev_pointer.c:90:    lv_indev_set_read_cb(indev, _simple_pointer_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/libinput/lv_libinput.c:193:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/libinput/lv_libinput.c:199:    lv_indev_set_read_cb(indev, _read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/libinput/lv_libinput.c:628:                    evt->key_val = LV_KEY_LEFT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/libinput/lv_libinput.c:631:                    evt->key_val = LV_KEY_RIGHT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/libinput/lv_libinput.c:661:                   evt->key_val != LV_KEY_LEFT &&
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/libinput/lv_libinput.c:662:                   evt->key_val != LV_KEY_RIGHT &&
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_indev_touch.c:87:    indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_indev_touch.c:91:    lv_indev_set_read_cb(indev, _absolute_pointer_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/libinput/lv_xkb.c:108:            result = LV_KEY_LEFT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/libinput/lv_xkb.c:112:            result = LV_KEY_RIGHT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/lovyan_gfx/lv_lovyan_gfx.cpp:75:        lv_indev_t * lv_input = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/lovyan_gfx/lv_lovyan_gfx.cpp:78:        lv_indev_set_read_cb(lv_input, read_touch);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/draw/eve/lv_draw_eve_display.c:86:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/draw/eve/lv_draw_eve_display.c:90:    lv_indev_set_read_cb(indev, touch_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_mouse.c:148:        lv_indev_set_read_cb(indev, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_mouse.c:187:    indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_mouse.c:196:    lv_indev_set_read_cb(indev, mouse_read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_touchscreen.c:199:        lv_indev_set_read_cb(indev, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_touchscreen.c:223:    touchscreen->indev_drv = indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_touchscreen.c:226:    lv_indev_set_read_cb(indev, touchscreen_read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_keyboard.c:79:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_keyboard.c:83:    lv_indev_set_type(indev, LV_INDEV_TYPE_KEYPAD);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_keyboard.c:84:    lv_indev_set_read_cb(indev, keyboard_read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_keyboard.c:340:            return LV_KEY_LEFT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_keyboard.c:348:            return LV_KEY_RIGHT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_pointer.c:117:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_pointer.c:122:    lv_indev_set_read_cb(indev, pointer_read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_pointer.c:137:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_pointer.c:142:    lv_indev_set_read_cb(indev, pointeraxis_read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_touch.c:70:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_touch.c:72:    lv_indev_set_read_cb(indev, touch_read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:94:        context->pointer.indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:99:            lv_indev_set_read_cb(
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:110:            lv_indev_set_group(
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:140:        context->keypad.indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:144:                LV_INDEV_TYPE_KEYPAD);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:145:            lv_indev_set_read_cb(
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:156:            lv_indev_set_group(
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:183:        context->encoder.indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:188:            lv_indev_set_read_cb(
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:199:            lv_indev_set_group(
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:583:                            translated_key = LV_KEY_LEFT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_input.c:586:                            translated_key = LV_KEY_RIGHT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:129:                                xd->kb_buffer[len] = LV_KEY_LEFT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:137:                                xd->kb_buffer[len] = LV_KEY_RIGHT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:263:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:266:        lv_indev_set_type(indev, LV_INDEV_TYPE_KEYPAD);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:267:        lv_indev_set_read_cb(indev, x11_keyboard_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:275:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:278:        lv_indev_set_read_cb(indev, x11_mouse_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:293:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:296:        lv_indev_set_read_cb(indev, x11_mousewheel_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:315:    lv_indev_set_group(xd->mousepointer, xd->inp_group);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:318:    lv_indev_set_group(xd->mousewheel, xd->inp_group);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_input.c:321:    lv_indev_set_group(xd->keyboard, xd->inp_group);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_glfw.c:238:        lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_glfw.c:246:        lv_indev_set_read_cb(indev, indev_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_glfw.c:320:        lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_glfw.c:329:        lv_indev_set_read_cb(indev, indev_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:167:    dsc->pointer = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:174:    lv_indev_set_read_cb(dsc->pointer, get_pointer);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:195:    dsc->keyboard = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:201:    lv_indev_set_type(dsc->keyboard, LV_INDEV_TYPE_KEYPAD);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:202:    lv_indev_set_read_cb(dsc->keyboard, get_key);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:499:            kbd_dsc->key = LV_KEY_LEFT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:503:            kbd_dsc->key = LV_KEY_RIGHT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c:49:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c:56:    lv_indev_set_type(indev, LV_INDEV_TYPE_KEYPAD);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c:57:    lv_indev_set_read_cb(indev, sdl_keyboard_read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c:101:        lv_indev_set_read_cb(indev, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c:181:            return LV_KEY_RIGHT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c:185:            return LV_KEY_LEFT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mouse.c:51:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mouse.c:59:    lv_indev_set_read_cb(indev, sdl_mouse_read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mouse.c:92:        lv_indev_set_read_cb(indev, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mousewheel.c:43:    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mousewheel.c:50:    lv_indev_set_read_cb(indev, sdl_mousewheel_read);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mousewheel.c:82:    lv_indev_set_read_cb(indev, NULL);
+
+=== SDL BACKEND CONFIGURATION ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/lv_conf_template.h:691:#define LV_USE_DRAW_SDL 0
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/lv_conf_template.h:1807:#define LV_USE_SDL 0
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/lv_conf_template.h:1809:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/lv_conf_template.h:1815: *  - LV_SDL_BACKEND_SW: Software (SDL surface)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/lv_conf_template.h:1816: *  - LV_SDL_BACKEND_TEXTURE: Cached SDL textures (enable: LV_USE_DRAW_SDL)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/lv_conf_template.h:1817: *  - LV_SDL_BACKEND_EGL: EGL (OpenGL ES, hardware-accelerated) (requires LV_USE_DRAW_OPENGLES || LV_USE_DRAW_NANOVG)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/lv_conf_template.h:1819:#define LV_SDL_BACKEND LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/lv_conf_template.h:1848:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:1204:config LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2758:config LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2764:if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2772:	default LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2776:	config LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2781:	config LV_SDL_BACKEND_TEXTURE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2783:		select LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2787:	config LV_SDL_BACKEND_EGL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2796:config LV_SDL_BACKEND
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2798:	default 0 if LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2799:	default 1 if LV_SDL_BACKEND_TEXTURE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2800:	default 2 if LV_SDL_BACKEND_EGL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2864:endif #LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/configs/ci/docs/lv_conf_docs.defaults:69:LV_USE_SDL 1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/configs/defconfigs/linux-3d.defconfig:66:CONFIG_LV_USE_SDL=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/configs/defconfigs/linux-3d.defconfig:67:CONFIG_LV_SDL_BACKEND_EGL=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/configs/defconfigs/linux.defconfig:67:CONFIG_LV_USE_SDL=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/configs/defconfigs/sdl2-3d.defconfig:64:CONFIG_LV_USE_SDL=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/configs/defconfigs/sdl2-3d.defconfig:65:CONFIG_LV_SDL_BACKEND_EGL=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/configs/defconfigs/sdl2.defconfig:65:CONFIG_LV_USE_SDL=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/Doxyfile:2109:                         LV_USE_DRAW_SDL=1               \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/Doxyfile:2212:                         LV_USE_SDL=1                    \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/scripts/generators/config_headers/kconfig_utils.py:323:    e.g. ``LV_USE_SDL``) and the implicit "this choice is active" term are
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies.cmake:27:if(CONFIG_LV_USE_DRAW_SDL)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies.cmake:32:if(CONFIG_LV_USE_SDL)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/scripts/generators/config_headers/parse.py:69:    "LV_SDL_BACKEND",  # LV_SDL_BACKEND_* (SW/TEXTURE/EGL)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:110:#define LV_SDL_BACKEND_SW        0
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:111:#define LV_SDL_BACKEND_TEXTURE   1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:112:#define LV_SDL_BACKEND_EGL       2
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:1234:#ifndef LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:1235:    #ifdef CONFIG_LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:1236:        #define LV_USE_DRAW_SDL CONFIG_LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:1238:        #define LV_USE_DRAW_SDL 0
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3520:#ifndef LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3521:    #ifdef CONFIG_LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3522:        #define LV_USE_SDL CONFIG_LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3524:        #define LV_USE_SDL 0
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3536:#ifndef LV_SDL_BACKEND
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3537:    #ifdef CONFIG_LV_SDL_BACKEND
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3538:        #define LV_SDL_BACKEND CONFIG_LV_SDL_BACKEND
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3540:        #define LV_SDL_BACKEND LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3568:          #define LV_SDL_ACCELERATED LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3588:          #define LV_SDL_DIRECT_EXIT LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:4843:    #if (LV_USE_DRAW_NANOVG || LV_USE_DRAW_OPENGLES || LV_USE_DRAW_SDL)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:4883:    #if ((LV_SDL_BACKEND == LV_SDL_BACKEND_EGL && (LV_USE_DRAW_OPENGLES || LV_USE_DRAW_NANOVG)) && (LV_USE_SDL))
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:4899:    #if ((LV_LINUX_DRM_USE_EGL && LV_USE_LINUX_DRM) || (LV_USE_OPENGLES_PBUFFER && LV_USE_DRAW_NANOVG) || (LV_SDL_USE_EGL && LV_USE_SDL) || (LV_WAYLAND_USE_EGL && LV_USE_WAYLAND))
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:5038:#if (LV_USE_PPA || LV_USE_SIFLI_EPIC || LV_USE_DRAW_G2D || LV_USE_DRAW_SDL) && !LV_USE_DRAW_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:5039:    #error "LV_USE_DRAW_SW must be enabled: Kconfig selects it from LV_USE_PPA || LV_USE_SIFLI_EPIC || LV_USE_DRAW_G2D || LV_USE_DRAW_SDL"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:5146:#if (LV_SDL_BACKEND == LV_SDL_BACKEND_TEXTURE) && !LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:5147:    #error "LV_USE_DRAW_SDL must be enabled: Kconfig selects it from LV_SDL_BACKEND == LV_SDL_BACKEND_TEXTURE"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:5314:#if LV_SDL_FULLSCREEN && !(LV_USE_SDL)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:5315:    #error "LV_SDL_FULLSCREEN requires LV_USE_SDL (Kconfig depends on)"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmsis-pack/LVGL.lvgl.pdsc:1447:#define LV_USE_DRAW_SDL 1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmsis-pack/README.md:65:   - LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmsis-pack/lv_conf_cmsis.h:1662:#define LV_USE_SDL 0
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmsis-pack/lv_conf_cmsis.h:1664:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmsis-pack/lv_conf_cmsis.h:1676: *  - LV_SDL_BACKEND_SW: Software (SDL surface)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmsis-pack/lv_conf_cmsis.h:1677: *  - LV_SDL_BACKEND_TEXTURE: Cached SDL textures (enable: LV_USE_DRAW_SDL)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmsis-pack/lv_conf_cmsis.h:1678: *  - LV_SDL_BACKEND_EGL: EGL (OpenGL ES, hardware-accelerated) (requires LV_USE_DRAW_OPENGLES || LV_USE_DRAW_NANOVG)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmsis-pack/lv_conf_cmsis.h:1680:#define LV_SDL_BACKEND LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmsis-pack/lv_conf_cmsis.h:1709:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/changelog/migration-v10.mdx:231:- **SDL** — select a backend explicitly with `LV_SDL_BACKEND`:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/changelog/migration-v10.mdx:235:  | `LV_SDL_BACKEND_SW` | Software (SDL surface) |
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/changelog/migration-v10.mdx:236:  | `LV_SDL_BACKEND_TEXTURE` | Cached SDL textures (enable: `LV_USE_DRAW_SDL`) |
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/changelog/migration-v10.mdx:237:  | `LV_SDL_BACKEND_EGL` | EGL (OpenGL ES, hardware-accelerated; requires `LV_USE_DRAW_OPENGLES` or `LV_USE_DRAW_NANOVG`) |
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/drivers/sdl/lv_sdl_keyboard.h:17:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/drivers/sdl/lv_sdl_keyboard.h:40:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/drivers/sdl/lv_sdl_mouse.h:17:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/drivers/sdl/lv_sdl_mouse.h:37:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/drivers/sdl/lv_sdl_mousewheel.h:17:#if LV_USE_SDL && LV_SDL_MOUSEWHEEL_MODE == LV_SDL_MOUSEWHEEL_MODE_ENCODER
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/drivers/sdl/lv_sdl_mousewheel.h:37:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/drivers/sdl/lv_sdl_window.h:24:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/lv_init.c:45:#if LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/lv_init.c:243:#if LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/Kconfig:1:config LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:10:#if LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:551:#endif /*LV_USE_DRAW_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.h:18:#if LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.h:65:#endif /*LV_USE_DRAW_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/integration/embedded_linux/draw_units/draw_sdl.mdx:21:Enable <ApiLink name="LV_USE_DRAW_SDL" /> and <ApiLink name="LV_USE_SDL" /> and select `LV_SDL_BACKEND_TEXTURE` 
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/integration/embedded_linux/draw_units/draw_sdl.mdx:22:as your <ApiLink name="LV_SDL_BACKEND" />
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/integration/embedded_linux/drivers/egl.mdx:16:- [SDL](/integration/pc/sdl) with `LV_SDL_BACKEND_EGL`
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/integration/embedded_linux/opengl.mdx:28:| [SDL](/integration/pc/sdl) | `LV_SDL_BACKEND_EGL` |
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/integration/pc/sdl.mdx:33:#define LV_USE_SDL  1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/integration/pc/sdl.mdx:92:No additional configuration needed - this is the default when only <ApiLink name="LV_USE_SDL" /> is enabled.
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/integration/pc/sdl.mdx:102:#define LV_USE_SDL 1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/integration/pc/sdl.mdx:103:#define LV_USE_DRAW_SDL 1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/integration/pc/sdl.mdx:116:#define LV_USE_SDL 1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/docs/src/main-modules/draw/draw_pipeline.mdx:86:<ApiLink name="LV_USE_DRAW_OPENGLES" />, <ApiLink name="LV_USE_DRAW_PXP" />, <ApiLink name="LV_USE_DRAW_SDL" />, or
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/configs/linux_egl.defconfig:6:CONFIG_LV_SDL_BACKEND_EGL=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/configs/linux_sw.defconfig:14:CONFIG_LV_USE_SDL=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/configs/linux_sw.defconfig:15:CONFIG_LV_SDL_BACKEND_SW=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/configs/windows_sw.defconfig:5:CONFIG_LV_USE_SDL=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/configs/windows_sw.defconfig:6:CONFIG_LV_SDL_BACKEND_SW=y
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:1:config LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:7:if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:15:	default LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:19:	config LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:24:	config LV_SDL_BACKEND_TEXTURE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:26:		select LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:30:	config LV_SDL_BACKEND_EGL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:39:config LV_SDL_BACKEND
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:41:	default 0 if LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:42:	default 1 if LV_SDL_BACKEND_TEXTURE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:43:	default 2 if LV_SDL_BACKEND_EGL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:107:endif #LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c:12:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c:224:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mouse.c:12:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mouse.c:203:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mousewheel.c:12:#if LV_USE_SDL && LV_SDL_MOUSEWHEEL_MODE == LV_SDL_MOUSEWHEEL_MODE_ENCODER
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mousewheel.c:143:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_private.h:19:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_private.h:76:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:17:#if LV_USE_SDL && !LV_SDL_USE_EGL && !LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:353:#endif /*LV_USE_SDL && !LV_SDL_USE_EGL && !LV_USE_DRAW_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:12:#if LV_USE_SDL && !LV_SDL_USE_EGL && LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:134:#endif /*LV_USE_SDL && !LV_SDL_USE_EGL && LV_USE_DRAW_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:15:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:357:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/lv_test_perf_conf.h:289:        #define LV_USE_DRAW_SDL 0
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/lv_test_perf_conf.h:1092:        #define LV_USE_SDL              0
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/lv_test_perf_conf.h:1093:        #if LV_USE_SDL
+
+=== CMAKE SDL INTEGRATION ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:2:# SDL2 Configuration
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:4:set(CMAKE_PACKAGE_NAME "SDL2")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:6:set(PKG_LIB_PRIVATE "-lSDL2")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:8:option(LV_USE_FIND_PACKAGE_SDL2 "Resolve SDL2 via find_package"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:10:option(LV_USE_PKG_CONFIG_SDL2 "Resolve SDL2 via pkg-config"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:12:option(LV_FETCH_SDL2 "Fetch SDL2 from source" ${LV_FETCH_DEPENDENCIES})
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:14:if(LV_USE_FIND_PACKAGE_SDL2)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:16:  if(SDL2_FOUND AND TARGET SDL2::SDL2)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:17:    message(STATUS "lvgl: SDL2: found via find_package")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:21:      SDL2::SDL2
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:32:if(LV_USE_PKG_CONFIG_SDL2 AND PkgConfig_FOUND)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:33:  pkg_check_modules(SDL2 IMPORTED_TARGET QUIET ${PKG_CONFIG_NAME})
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:34:  if(SDL2_FOUND)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:35:    message(STATUS "lvgl: SDL2: found via pkg-config")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:39:      PkgConfig::SDL2
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:48:if(NOT LV_FETCH_SDL2)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:51:      "lvgl: SDL2 not found. Enable LV_FETCH_SDL2 or install libsdl2 manually.")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:54:message(STATUS "lvgl: SDL2: fetching from source")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:56:  SDL2
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:107:FetchContent_MakeAvailable(SDL2)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2.cmake:108:lvgl_link_fetched(TARGETS SDL2::SDL2-static PKG_LIB_PRIVATE ${PKG_LIB_PRIVATE})
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:2:# SDL2_image Configuration
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:4:set(CMAKE_PACKAGE_NAME "SDL2_image")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:5:set(PKG_CONFIG_NAME "SDL2_image")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:6:set(PKG_LIB_PRIVATE "-lSDL2_image")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:8:option(LV_USE_FIND_PACKAGE_SDL2_IMAGE "Resolve SDL2_image via find_package"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:10:option(LV_USE_PKG_CONFIG_SDL2_IMAGE "Resolve SDL2_image via pkg-config"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:12:option(LV_FETCH_SDL2_IMAGE "Fetch SDL2_image from source"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:15:if(LV_USE_FIND_PACKAGE_SDL2_IMAGE)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:17:  if(SDL2_image_FOUND AND TARGET SDL2::SDL2_image)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:18:    message(STATUS "lvgl: SDL2_image: found via find_package")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:22:      SDL2::SDL2_image
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:33:if(LV_USE_PKG_CONFIG_SDL2_IMAGE AND PkgConfig_FOUND)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:34:  pkg_check_modules(SDL2_IMAGE IMPORTED_TARGET QUIET ${PKG_CONFIG_NAME})
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:35:  if(SDL2_IMAGE_FOUND)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:36:    message(STATUS "lvgl: SDL2_image: found via pkg-config")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:40:      PkgConfig::SDL2_IMAGE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:49:if(NOT LV_FETCH_SDL2_IMAGE)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:52:      "lvgl: SDL2_image not found. Enable LV_FETCH_SDL2_IMAGE or install libsdl2-image manually."
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:56:message(STATUS "lvgl: SDL2_image: fetching from source")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:58:  SDL2_image
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:62:set(SDL2IMAGE_SAMPLES
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:65:set(SDL2IMAGE_TESTS
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:68:set(SDL2IMAGE_INSTALL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:72:FetchContent_MakeAvailable(SDL2_image)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/dependencies/sdl2_image.cmake:73:lvgl_link_fetched(TARGETS SDL2_image::SDL2_image-static PKG_LIB_PRIVATE ${PKG_LIB_PRIVATE})
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/esp.cmake:17:  if(CONFIG_LV_BUILD_EXAMPLES)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/esp.cmake:22:  if(CONFIG_LV_BUILD_DEMOS)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/esp.cmake:69:target_compile_definitions(${COMPONENT_LIB} PUBLIC "-DLV_CONF_INCLUDE_SIMPLE")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/install.cmake:23:# and define LV_CONF_INCLUDE_SIMPLE so that it can be found
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/install.cmake:24:lvgl_install_definitions(LV_CONF_INCLUDE_SIMPLE)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/install.cmake:25:if(LV_BUILD_USE_KCONFIG)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/install.cmake:114:if(LV_BUILD_THORVG_INTERNAL)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/install.cmake:133:if(CONFIG_LV_BUILD_DEMOS)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/install.cmake:164:if(CONFIG_LV_BUILD_EXAMPLES)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:22:    set(defconfig_list "strict=${LV_BUILD_DEFCONFIG_STRICT}")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:33:if(LV_BUILD_DEFCONFIG_PATH AND LV_BUILD_DOTCONFIG_PATH)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:34:    message(WARNING "Both LV_BUILD_DEFCONFIG_PATH and LV_BUILD_DOTCONFIG_PATH are set, \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:35:ignoring the latter. Pass -DLV_BUILD_DEFCONFIG_PATH= to drop the defconfigs.")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:38:# Check if the user wants to use a defconfig, using the -DLV_BUILD_DEFCONFIG_PATH option
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:39:if(LV_BUILD_DEFCONFIG_PATH)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:44:    foreach(defconfig IN LISTS LV_BUILD_DEFCONFIG_PATH)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:58:    if(EXISTS ${OUTPUT_DOTCONFIG} AND "${DEFCONFIG_HASH}" STREQUAL "${LV_BUILD_DEFCONFIG_HASH}")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:70:        if(LV_BUILD_DEFCONFIG_STRICT)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:85:elseif(LV_BUILD_DOTCONFIG_PATH)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:86:    lv_normalize_config_path(LV_BUILD_DOTCONFIG_PATH ".config" DOTCONFIG)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:115:    ${LV_BUILD_KCONFIG_ROOT}
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:131:    set(LV_BUILD_DEFCONFIG_HASH ${DEFCONFIG_HASH} CACHE INTERNAL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/kconfig.cmake:136:    unset(LV_BUILD_DEFCONFIG_HASH CACHE)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:13:set(LV_BUILD_CONF_PATH "" CACHE PATH
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:16:set(LV_BUILD_CONF_DIR "" CACHE PATH
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:17:    "Can be used to specify the include dir containing lv_conf.h, to be used in conjunction with LV_CONF_INCLUDE_SIMPLE")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:19:option(LV_BUILD_USE_KCONFIG "Use Kconfig" OFF)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:25:set(LV_BUILD_DEFCONFIG_PATH "" CACHE STRING
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:29:option(LV_BUILD_DEFCONFIG_STRICT
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:34:set(LV_BUILD_DOTCONFIG_PATH "" CACHE PATH
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:37:set(LV_BUILD_KCONFIG_ROOT ${LVGL_ROOT_DIR}/Kconfig CACHE PATH "Path to root Kconfig file")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:39:option(LV_BUILD_SET_CONFIG_OPTS
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:42:option(LV_BUILD_LVGL_H_SIMPLE_INCLUDE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:45:option(LV_BUILD_LVGL_H_SYSTEM_INCLUDE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:50:option(LV_BUILD_INSTALL "Enable install rules" ${LVGL_IS_TOP_LEVEL})
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:59:# or generated automatically by enabling LV_BUILD_SET_CONFIG_OPTS, which parses lv_conf_internal.h to derive them.
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:64:option(LV_BUILD_TESTS "Build the unit tests in the tests directory" OFF)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:66:option(CONFIG_LV_BUILD_DEMOS "Build demos" ON)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:67:option(CONFIG_LV_BUILD_EXAMPLES "Build examples" ON)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:74:if (LV_BUILD_CONF_PATH AND LV_BUILD_CONF_DIR)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:75:    message(FATAL_ERROR "can not use LV_BUILD_CONF_DIR and LV_BUILD_CONF_PATH at the same time")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:78:if (LV_CONF_SKIP AND (LV_BUILD_USE_KCONFIG OR LV_BUILD_SET_CONFIG_OPTS OR LV_BUILD_TESTS))
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:79:    message(FATAL_ERROR "can not use kconfig (LV_BUILD_USE_KCONFIG) nor enable LV_BUILD_SET_CONFIG_OPTS with LV_CONF_SKIP enabled")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:82:if (LV_BUILD_TESTS)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:84:        message(FATAL_ERROR "LV_BUILD_TESTS is set but the tests directory is missing")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:89:    set(LV_BUILD_USE_KCONFIG ON)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:90:    set(LV_BUILD_DEFCONFIG_STRICT ON)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:107:if (LV_BUILD_USE_KCONFIG)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:109:    set(LV_BUILD_SET_CONFIG_OPTS ON)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:112:if (LV_BUILD_SET_CONFIG_OPTS)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:113:    # Python is required when LV_BUILD_SET_CONFIG_OPTS is enabled
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:115:    # or CONFIG_LV_BUILD options manually
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:134:if(NOT EXAMPLE_SOURCES AND CONFIG_LV_BUILD_EXAMPLES)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:136:    set(CONFIG_LV_BUILD_EXAMPLES OFF)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:139:if(NOT DEMO_SOURCES AND CONFIG_LV_BUILD_DEMOS)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:141:    set(CONFIG_LV_BUILD_DEMOS OFF)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:155:elseif(LV_BUILD_USE_KCONFIG)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:169:    message(STATUS ${LV_BUILD_CONF_PATH})
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:171:    if (LV_BUILD_CONF_PATH)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:173:        set(CONF_PATH ${LV_BUILD_CONF_PATH})
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:183:        lvgl_build_definitions("LV_CONF_PATH=\"${CONF_PATH}\"")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:185:    elseif(LV_BUILD_CONF_DIR)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:187:        message(STATUS "Using lv_conf.h from the user-supplied configuration directory: ${LV_BUILD_CONF_DIR}")
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:189:        set(CONF_INC_DIR ${LV_BUILD_CONF_DIR})
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:199:        lvgl_build_definitions(LV_CONF_INCLUDE_SIMPLE)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:208:        lvgl_build_definitions(LV_CONF_INCLUDE_SIMPLE)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:219:if (LV_BUILD_LVGL_H_SYSTEM_INCLUDE)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:221:elseif(LV_BUILD_LVGL_H_SIMPLE_INCLUDE)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:226:if (LV_BUILD_SET_CONFIG_OPTS)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:251:        # Also set the CONFIG_LV_USE_* and CONFIG_LV_BUILD_* configuration
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:259:    if(LV_BUILD_USE_KCONFIG)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:279:    # This will set all CONFIG_LV_USE_* or CONFIG_LV_BUILD_* variables in cmake
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:287:    if(NOT CONFIG_LV_USE_PRIVATE_API AND (CONFIG_LV_BUILD_DEMOS OR CONFIG_LV_BUILD_EXAMPLES))
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:312:set(LV_BUILD_THORVG_INTERNAL OFF)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:314:    set(LV_BUILD_THORVG_INTERNAL ON)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:317:if(LV_BUILD_THORVG_INTERNAL)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:346:if(CONFIG_LV_BUILD_EXAMPLES)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:362:if(CONFIG_LV_BUILD_DEMOS)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:379:if(LV_BUILD_INSTALL)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/env_support/cmake/main.cmake:405:if (LV_BUILD_TESTS)
+
+=== LOCAL SDL DEVELOPMENT PACKAGES ===
+2.32.74
+-I/usr/include/SDL2 -D_GNU_SOURCE=1 -D_REENTRANT -lSDL2
