@@ -1,1 +1,1 @@
-research/milestones/kid-mode-reconstruction/runs/20261111T175338Z-implement-home-carousel-screen-with-sdl-ui-library
+research/milestones/kid-mode-reconstruction/runs/20261111T175400Z-inspect-opencode-noninteractive-interface
