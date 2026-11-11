@@ -1,0 +1,136 @@
+=== HIGHLIGHT DECLARATION ===
+27-    std::array<ui::Texture, game_count> title_textures_{};
+28-
+29-    ui::Texture wordmark_texture_{};
+30-    ui::Texture hints_texture_{};
+31-
+32-    std::array<ui::Image*, game_count> game_images_{};
+33-    std::array<ui::Rect, game_count> target_bounds_{};
+34-    std::array<int, game_count> target_opacity_{};
+35:    ui::Panel* highlight_ = nullptr;
+36-
+37-    ui::Image* title_ = nullptr;
+38-    ui::Image* wordmark_ = nullptr;
+39-    ui::Image* hints_ = nullptr;
+40-
+41-    int selected_game_ = -1;
+42-};
+43-
+
+=== HIGHLIGHT CONSTRUCTION AND UPDATES ===
+147-        const auto index = static_cast<std::size_t>(i);
+148-
+149-        artworks_[index].load(renderer, artwork_paths[index], false);
+150-        title_textures_[index].load(renderer, title_paths[index], false);
+151-
+152-        auto& image = root().add<ui::Image>(&artworks_[index]);
+153-        image.set_fit(ui::ImageFit::contain);
+154-        game_images_[index] = &image;
+155-    }
+156-
+157-    for (int i = 0; i < game_count; ++i) {
+158-        const auto index = static_cast<std::size_t>(i);
+159:        game_images_[index]->set_bounds(bounds_for_game(i, 1));
+160-        game_images_[index]->set_opacity(
+161-            static_cast<std::uint8_t>(opacity_for_game(i, 1)));
+162-    }
+163-
+164-    // Restrained cobalt outline around the selected artwork.
+165:    highlight_ = &root().add<ui::Panel>(ui::PanelStyle{
+166-        {0, 0, 0, 0}, {90, 131, 201, 235}, 3, 22
+167-    });
+168:    highlight_->set_bounds({216, 154, 288, 288});
+169-
+170-    title_ = &root().add<ui::Image>();
+171:    title_->set_bounds(title_rect);
+172-    title_->set_fit(ui::ImageFit::contain);
+173-
+174-    wordmark_texture_.load(renderer, wordmark_path, false);
+175-    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+176:    wordmark_->set_bounds(wordmark_rect);
+177-    wordmark_->set_fit(ui::ImageFit::contain);
+178-
+179-    hints_texture_.load(renderer, hints_path, false);
+180-    hints_ = &root().add<ui::Image>(&hints_texture_);
+181:    hints_->set_bounds(hints_rect);
+182-    hints_->set_fit(ui::ImageFit::contain);
+183-
+184-    root().add<StatusIndicators>();
+185-
+186-    set_selected_game(1);
+187-}
+188-
+189-HomeCarouselScreen::~HomeCarouselScreen() {
+190-    for (auto* image : game_images_) {
+191-        if (image) image->set_texture(nullptr);
+192-    }
+193-
+--
+210-
+211-        // The preview moving from one side to the other is the far-side
+212-        // item. Fade it out and reposition it rather than sliding it
+213-        // through the selected artwork.
+214-        if (previous >= 0) {
+215-            const int old_offset =
+216-                (game - previous + game_count) % game_count;
+217-            const int new_offset =
+218-                (game - index + game_count) % game_count;
+219-
+220-            if (old_offset != 0 && new_offset != 0 &&
+221-                old_offset != new_offset) {
+222:                game_images_[slot]->set_bounds(target);
+223-                game_images_[slot]->set_opacity(0);
+224-            }
+225-        }
+226-
+227-        target_bounds_[slot] = target;
+228-        target_opacity_[slot] = opacity_for_game(game, index);
+229-    }
+230-
+231-    if (title_) {
+232-        title_->set_texture(
+233-            &title_textures_[static_cast<std::size_t>(index)]);
+234-    }
+--
+244-
+245-    for (std::size_t i = 0; i < game_images_.size(); ++i) {
+246-        ui::Image* image = game_images_[i];
+247-        if (!image) continue;
+248-
+249-        const ui::Rect current = image->bounds();
+250-        const ui::Rect target = target_bounds_[i];
+251-        const ui::Rect next = interpolate_rect(current, target, amount);
+252-
+253-        const int opacity = interpolate(
+254-            image->opacity(), target_opacity_[i], amount);
+255-
+256:        image->set_bounds(next);
+257-        image->set_opacity(static_cast<std::uint8_t>(
+258-            std::clamp(opacity, 0, 255)));
+259-
+260-        if (std::abs(next.x - target.x) <= 1 &&
+261-            std::abs(next.y - target.y) <= 1 &&
+262-            std::abs(next.w - target.w) <= 1 &&
+263-            std::abs(next.h - target.h) <= 1) {
+264:            image->set_bounds(target);
+265-        }
+266-
+267-        if (std::abs(opacity - target_opacity_[i]) <= 1) {
+268-            image->set_opacity(
+269-                static_cast<std::uint8_t>(target_opacity_[i]));
+270-        }
+271-    }
+272-}
+273-
+274-} // namespace kiddos::app
+
+=== RENDER ORDER ===
+grep: Unmatched ( or \(
+
+=== WORKTREE ===
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
