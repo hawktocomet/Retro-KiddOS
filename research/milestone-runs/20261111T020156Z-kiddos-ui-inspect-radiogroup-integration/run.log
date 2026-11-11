@@ -1,0 +1,421 @@
+=== RadioGroup header ===
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/font.hpp"
+#include "kiddos/ui/renderer.hpp"
+
+#include <functional>
+#include <string>
+#include <vector>
+
+namespace kiddos::ui {
+
+struct RadioGroupStyle {
+    Color background{24, 32, 56, 255};
+    Color selected{50, 130, 240, 255};
+    Color indicator{255, 255, 255, 255};
+    Color border{90, 105, 135, 255};
+    Color focused_border{80, 170, 255, 255};
+    Color text{240, 244, 255, 255};
+    Color disabled_text{130, 140, 160, 255};
+};
+
+class RadioGroup final : public Element {
+public:
+    explicit RadioGroup(std::vector<std::string> options = {}, int selected = 0);
+
+    void set_options(std::vector<std::string> options);
+    const std::vector<std::string>& options() const noexcept;
+
+    bool set_selected(int index);
+    int selected() const noexcept;
+    bool select_next();
+    bool select_previous();
+
+    void set_font(const Font* font) noexcept;
+    const Font* font() const noexcept;
+
+    void set_style(RadioGroupStyle style) noexcept;
+    const RadioGroupStyle& style() const noexcept;
+
+    void set_on_change(std::function<void(int)> callback);
+    void draw(Renderer& renderer) override;
+
+private:
+    std::vector<std::string> options_;
+    int selected_{-1};
+    const Font* font_{nullptr};
+    RadioGroupStyle style_{};
+    std::function<void(int)> on_change_;
+};
+
+}
+
+=== RadioGroup implementation ===
+#include "kiddos/ui/radio_group.hpp"
+#include "kiddos/ui/text.hpp"
+
+#include <algorithm>
+#include <utility>
+
+namespace kiddos::ui {
+
+RadioGroup::RadioGroup(std::vector<std::string> options, int selected) {
+    set_focusable(true);
+    set_options(std::move(options));
+    if (!options_.empty()) set_selected(selected);
+}
+
+void RadioGroup::set_options(std::vector<std::string> options) {
+    options_ = std::move(options);
+    if (options_.empty()) {
+        selected_ = -1;
+    } else if (selected_ < 0 || selected_ >= static_cast<int>(options_.size())) {
+        selected_ = 0;
+    }
+}
+
+const std::vector<std::string>& RadioGroup::options() const noexcept {
+    return options_;
+}
+
+bool RadioGroup::set_selected(int index) {
+    if (!visible() || !enabled() || index < 0 ||
+        index >= static_cast<int>(options_.size())) return false;
+    if (selected_ == index) return true;
+    selected_ = index;
+    if (on_change_) on_change_(selected_);
+    return true;
+}
+
+int RadioGroup::selected() const noexcept {
+    return selected_;
+}
+
+bool RadioGroup::select_next() {
+    if (options_.empty() || !visible() || !enabled()) return false;
+    return set_selected((selected_ + 1) % static_cast<int>(options_.size()));
+}
+
+bool RadioGroup::select_previous() {
+    if (options_.empty() || !visible() || !enabled()) return false;
+    const int count = static_cast<int>(options_.size());
+    return set_selected((selected_ - 1 + count) % count);
+}
+
+void RadioGroup::set_font(const Font* font) noexcept {
+    font_ = font;
+}
+
+const Font* RadioGroup::font() const noexcept {
+    return font_;
+}
+
+void RadioGroup::set_style(RadioGroupStyle style) noexcept {
+    style_ = style;
+}
+
+const RadioGroupStyle& RadioGroup::style() const noexcept {
+    return style_;
+}
+
+void RadioGroup::set_on_change(std::function<void(int)> callback) {
+    on_change_ = std::move(callback);
+}
+
+void RadioGroup::draw(Renderer& renderer) {
+    const Rect area = bounds();
+    if (area.empty() || options_.empty()) return;
+
+    const int row_height = std::max(1, area.h / static_cast<int>(options_.size()));
+    const int radius = std::max(2, std::min(10, row_height / 4));
+
+    for (int i = 0; i < static_cast<int>(options_.size()); ++i) {
+        const Rect row{area.x, area.y + i * row_height,
+                       area.w, i == static_cast<int>(options_.size()) - 1
+                                   ? area.h - i * row_height : row_height};
+        if (row.empty()) continue;
+
+        const int cy = row.y + row.h / 2;
+        const int cx = row.x + radius + 5;
+        const Rect indicator{cx - radius, cy - radius, radius * 2, radius * 2};
+        renderer.fill_rect(row, style_.background);
+        renderer.outline_rect(indicator,
+            focused() ? style_.focused_border : style_.border);
+
+        if (i == selected_) {
+            const int inner = std::max(1, radius / 2);
+            renderer.fill_rect(
+                {cx - inner, cy - inner, inner * 2, inner * 2},
+                enabled() ? style_.selected : style_.disabled_text
+            );
+        }
+
+        if (font_ && font_->valid()) {
+            const Rect text_area{cx + radius + 10, row.y,
+                                 row.w - (cx - row.x) - radius - 10, row.h};
+            if (!text_area.empty()) {
+                TextRenderer text(renderer);
+                text.draw_centered(options_[i], *font_, text_area,
+                    enabled() ? style_.text : style_.disabled_text);
+            }
+        }
+    }
+}
+
+}
+
+=== Theme header ===
+#pragma once
+
+#include "kiddos/ui/button.hpp"
+#include "kiddos/ui/panel.hpp"
+#include "kiddos/ui/progress_bar.hpp"
+#include "kiddos/ui/slider.hpp"
+#include "kiddos/ui/toggle.hpp"
+#include "kiddos/ui/list_view.hpp"
+#include "kiddos/ui/checkbox.hpp"
+#include "kiddos/ui/radio_group.hpp"
+
+namespace kiddos::ui {
+
+struct ThemeColors {
+    Color background{12, 20, 40, 255};
+    Color surface{20, 34, 65, 255};
+    Color surface_alt{27, 43, 76, 255};
+    Color primary{45, 125, 230, 255};
+    Color primary_bright{75, 155, 255, 255};
+    Color primary_dark{25, 75, 145, 255};
+    Color text{245, 248, 255, 255};
+    Color text_muted{160, 175, 200, 255};
+    Color disabled{45, 50, 65, 255};
+    Color border{65, 105, 165, 255};
+};
+
+class Theme final {
+public:
+    Theme() = default;
+    explicit Theme(ThemeColors colors) noexcept;
+
+    static Theme kiddos_default() noexcept;
+
+    const ThemeColors& colors() const noexcept;
+    void set_colors(ThemeColors colors) noexcept;
+
+    ButtonStyle button_style() const noexcept;
+    PanelStyle panel_style() const noexcept;
+    ToggleStyle toggle_style() const noexcept;
+    SliderStyle slider_style() const noexcept;
+    ProgressBarStyle progress_bar_style() const noexcept;
+    ListViewStyle list_view_style() const noexcept;
+    CheckboxStyle checkbox_style() const noexcept;
+    RadioGroupStyle radio_group_style() const noexcept;
+
+private:
+    ThemeColors colors_{};
+};
+
+}
+
+=== Theme implementation tail ===
+PanelStyle Theme::panel_style() const noexcept {
+    PanelStyle style;
+    style.background = colors_.surface;
+    style.border = colors_.border;
+    style.border_thickness = 2;
+    return style;
+}
+
+ToggleStyle Theme::toggle_style() const noexcept {
+    ToggleStyle style;
+    style.off = colors_.disabled;
+    style.on = colors_.primary;
+    style.knob = colors_.text;
+    style.focused_border = colors_.primary_bright;
+    return style;
+}
+
+SliderStyle Theme::slider_style() const noexcept {
+    SliderStyle style;
+    style.track = colors_.disabled;
+    style.fill = colors_.primary;
+    style.knob = colors_.text;
+    style.focused_border = colors_.primary_bright;
+    return style;
+}
+
+ProgressBarStyle Theme::progress_bar_style() const noexcept {
+    ProgressBarStyle style;
+    style.background = colors_.disabled;
+    style.fill = colors_.primary;
+    style.border = colors_.border;
+    style.border_thickness = 1;
+    return style;
+}
+
+ListViewStyle Theme::list_view_style() const noexcept {
+    ListViewStyle style;
+    style.background = colors_.surface;
+    style.selected = colors_.primary_dark;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    style.border = colors_.border;
+    return style;
+}
+
+CheckboxStyle Theme::checkbox_style() const noexcept {
+    CheckboxStyle style;
+    style.background = colors_.surface;
+    style.checked = colors_.primary;
+    style.checkmark = colors_.text;
+    style.border = colors_.border;
+    style.focused_border = colors_.primary_bright;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    return style;
+}
+
+}
+RadioGroupStyle Theme::radio_group_style() const noexcept {
+    RadioGroupStyle style;
+    style.background = colors_.surface;
+    style.selected = colors_.primary;
+    style.indicator = colors_.text;
+    style.border = colors_.border;
+    style.focused_border = colors_.primary_bright;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    return style;
+}
+
+
+=== CMake UI source and test entries ===
+32-    src/ui/slider.cpp
+33-    src/ui/theme.cpp
+34-    src/ui/list_view.cpp
+35:    src/ui/checkbox.cpp
+36:    src/ui/radio_group.cpp
+37-)
+38-
+39-target_include_directories(kiddos_ui PUBLIC include)
+40-target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
+--
+162-    target_link_libraries(kiddos_ui_list_view_test PRIVATE kiddos_ui)
+163-    add_test(NAME kiddos_ui_list_view COMMAND kiddos_ui_list_view_test)
+164-
+165:    add_executable(kiddos_ui_checkbox_test tests/ui_checkbox_test.cpp)
+166:    target_include_directories(kiddos_ui_checkbox_test PRIVATE include)
+167:    target_link_libraries(kiddos_ui_checkbox_test PRIVATE kiddos_ui)
+168:    add_test(NAME kiddos_ui_checkbox COMMAND kiddos_ui_checkbox_test)
+169-
+170:    add_executable(kiddos_ui_radio_group_test tests/ui_radio_group_test.cpp)
+171:    target_include_directories(kiddos_ui_radio_group_test PRIVATE include)
+172:    target_link_libraries(kiddos_ui_radio_group_test PRIVATE kiddos_ui)
+173:    add_test(NAME kiddos_ui_radio_group COMMAND kiddos_ui_radio_group_test)
+174-endif()
+175-
+176-
+177-
+
+=== Controller ===
+#include "kiddos/ui/controller.hpp"
+#include "kiddos/ui/toggle.hpp"
+#include "kiddos/ui/checkbox.hpp"
+#include "kiddos/ui/radio_group.hpp"
+#include "kiddos/ui/slider.hpp"
+#include "kiddos/ui/list_view.hpp"
+
+namespace kiddos::ui {
+
+ControllerInteraction::ControllerInteraction(FocusManager& focus) noexcept
+    : focus_(focus) {
+}
+
+bool ControllerInteraction::handle(UIAction action) {
+    switch (action) {
+        case UIAction::Left: {
+            if (auto* radio = dynamic_cast<RadioGroup*>(focus_.focused()))
+                return radio->select_previous();
+            if (auto* slider = dynamic_cast<Slider*>(focus_.focused())) {
+                return slider->adjust(-1);
+            }
+            return focus_.move(Direction::Left);
+        }
+        case UIAction::Right: {
+            if (auto* radio = dynamic_cast<RadioGroup*>(focus_.focused()))
+                return radio->select_next();
+            if (auto* slider = dynamic_cast<Slider*>(focus_.focused())) {
+                return slider->adjust(1);
+            }
+            return focus_.move(Direction::Right);
+        }
+        case UIAction::Up: {
+            if (auto* radio = dynamic_cast<RadioGroup*>(focus_.focused()))
+                return radio->select_previous();
+            if (auto* list = dynamic_cast<ListView*>(focus_.focused())) {
+                return list->move_selection(-1);
+            }
+            return focus_.move(Direction::Up);
+        }
+        case UIAction::Down: {
+            if (auto* radio = dynamic_cast<RadioGroup*>(focus_.focused()))
+                return radio->select_next();
+            if (auto* list = dynamic_cast<ListView*>(focus_.focused())) {
+                return list->move_selection(1);
+            }
+            return focus_.move(Direction::Down);
+        }
+        case UIAction::Confirm: {
+            Element* focused = focus_.focused();
+            if (auto* button = dynamic_cast<Button*>(focused)) {
+                return button->activate();
+            }
+            if (auto* toggle = dynamic_cast<Toggle*>(focused)) {
+                return toggle->toggle();
+            }
+            if (auto* radio = dynamic_cast<RadioGroup*>(focused)) {
+        if (action == UIAction::Left || action == UIAction::Up)
+            return radio->select_previous();
+        if (action == UIAction::Right || action == UIAction::Down)
+            return radio->select_next();
+        return false;
+    }
+
+    if (auto* checkbox = dynamic_cast<Checkbox*>(focused)) {
+                return checkbox->toggle();
+            }
+            if (auto* list = dynamic_cast<ListView*>(focused)) {
+                return list->activate_selected();
+            }
+            return false;
+        }
+        case UIAction::Back:
+            return cancel();
+    }
+
+    return false;
+}
+
+bool ControllerInteraction::cancel() noexcept {
+    return false;
+}
+
+} // namespace kiddos::ui
+
+=== Working tree ===
+ M CMakeLists.txt
+ M include/kiddos/app/application.hpp
+ M include/kiddos/ui/theme.hpp
+ M src/platform/sdl_platform.cpp
+ M src/ui/controller.cpp
+ M src/ui/theme.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+?? include/kiddos/ui/radio_group.hpp
+?? src/ui/radio_group.cpp
+?? tests/ui_radio_group_test.cpp
