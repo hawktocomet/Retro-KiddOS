@@ -1,0 +1,64 @@
+=== Configure ===
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+=== Build event test ===
+[1/2] Building CXX object CMakeFiles/kiddos_platform_text_input_event_test.dir/tests/platform_text_input_event_test.cpp.o
+[2/2] Linking CXX executable kiddos_platform_text_input_event_test
+=== Run event test ===
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_platform_text_input_event
+1/1 Test #1: kiddos_platform_text_input_event ...   Passed    0.00 sec
+
+100% tests passed out of 1
+
+Total Test time (real) =   0.00 sec
+=== Run full test suite ===
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_platform_text_input_event
+ 1/19 Test  #1: kiddos_platform_text_input_event ...   Passed    0.00 sec
+      Start  2: kiddos_ui_layout
+ 2/19 Test  #2: kiddos_ui_layout ...................   Passed    0.00 sec
+      Start  3: kiddos_ui_geometry
+ 3/19 Test  #3: kiddos_ui_geometry .................   Passed    0.00 sec
+      Start  4: kiddos_ui_focus
+ 4/19 Test  #4: kiddos_ui_focus ....................   Passed    0.00 sec
+      Start  5: kiddos_ui_button
+ 5/19 Test  #5: kiddos_ui_button ...................   Passed    0.00 sec
+      Start  6: kiddos_ui_controller
+ 6/19 Test  #6: kiddos_ui_controller ...............   Passed    0.00 sec
+      Start  7: kiddos_ui_image
+ 7/19 Test  #7: kiddos_ui_image ....................   Passed    0.00 sec
+      Start  8: kiddos_ui_label
+ 8/19 Test  #8: kiddos_ui_label ....................   Passed    0.00 sec
+      Start  9: kiddos_ui_panel
+ 9/19 Test  #9: kiddos_ui_panel ....................   Passed    0.00 sec
+      Start 10: kiddos_ui_progress_bar
+10/19 Test #10: kiddos_ui_progress_bar .............   Passed    0.00 sec
+      Start 11: kiddos_ui_toggle
+11/19 Test #11: kiddos_ui_toggle ...................   Passed    0.00 sec
+      Start 12: kiddos_ui_slider
+12/19 Test #12: kiddos_ui_slider ...................   Passed    0.00 sec
+      Start 13: kiddos_ui_theme
+13/19 Test #13: kiddos_ui_theme ....................   Passed    0.00 sec
+      Start 14: kiddos_ui_list_view
+14/19 Test #14: kiddos_ui_list_view ................   Passed    0.00 sec
+      Start 15: kiddos_ui_checkbox
+15/19 Test #15: kiddos_ui_checkbox .................   Passed    0.00 sec
+      Start 16: kiddos_ui_radio_group
+16/19 Test #16: kiddos_ui_radio_group ..............   Passed    0.00 sec
+      Start 17: kiddos_ui_select
+17/19 Test #17: kiddos_ui_select ...................   Passed    0.00 sec
+      Start 18: kiddos_ui_text_input
+18/19 Test #18: kiddos_ui_text_input ...............   Passed    0.01 sec
+      Start 19: kiddos_ui_text_input_interaction
+19/19 Test #19: kiddos_ui_text_input_interaction ...   Passed    0.01 sec
+
+100% tests passed out of 19
+
+Total Test time (real) =   0.09 sec
+=== Commit registration correction ===
+[main cea6c06] test: register platform text input event test
+ 1 file changed, 6 insertions(+)
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   1114f2e..cea6c06  main -> main
