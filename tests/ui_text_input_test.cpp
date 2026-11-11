@@ -30,11 +30,11 @@ int main() {
 
     input.move_cursor_left();
     assert(input.backspace());
-    assert(input.text() == "Say Hello world");
+    assert(input.text() == "Sa Hello world");
 
     input.move_cursor_home();
     assert(input.delete_forward());
-    assert(input.text() == "ay Hello world");
+    assert(input.text() == "a Hello world");
 
     input.set_cursor_position(999);
     assert(input.cursor_position() == input.text().size());
@@ -42,7 +42,7 @@ int main() {
     assert(!input.delete_forward());
 
     input.set_max_length(5);
-    assert(input.text() == "ay He");
+    assert(input.text() == "a Hel");
     assert(input.max_length() == 5);
 
     input.set_text("123456");
