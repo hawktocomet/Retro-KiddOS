@@ -1,6 +1,7 @@
 #include "kiddos/ui/controller.hpp"
 #include "kiddos/ui/toggle.hpp"
 #include "kiddos/ui/slider.hpp"
+#include "kiddos/ui/list_view.hpp"
 
 namespace kiddos::ui {
 
@@ -22,10 +23,18 @@ bool ControllerInteraction::handle(UIAction action) {
             }
             return focus_.move(Direction::Right);
         }
-        case UIAction::Up:
+        case UIAction::Up: {
+            if (auto* list = dynamic_cast<ListView*>(focus_.focused())) {
+                return list->move_selection(-1);
+            }
             return focus_.move(Direction::Up);
-        case UIAction::Down:
+        }
+        case UIAction::Down: {
+            if (auto* list = dynamic_cast<ListView*>(focus_.focused())) {
+                return list->move_selection(1);
+            }
             return focus_.move(Direction::Down);
+        }
         case UIAction::Confirm: {
             Element* focused = focus_.focused();
             if (auto* button = dynamic_cast<Button*>(focused)) {
@@ -33,6 +42,9 @@ bool ControllerInteraction::handle(UIAction action) {
             }
             if (auto* toggle = dynamic_cast<Toggle*>(focused)) {
                 return toggle->toggle();
+            }
+            if (auto* list = dynamic_cast<ListView*>(focused)) {
+                return list->activate_selected();
             }
             return false;
         }
