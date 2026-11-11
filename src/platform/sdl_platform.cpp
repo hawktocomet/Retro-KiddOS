@@ -15,6 +15,8 @@ struct Color {
 
 std::array<SDL_Texture*, 3> artwork_textures{};
 std::array<SDL_Texture*, 3> action_label_textures{};
+SDL_Texture* carousel_title_texture{};
+SDL_Texture* carousel_selected_texture{};
 
 SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
                                  const char* path,
@@ -394,9 +396,9 @@ bool SDLPlatform::initialize() {
     SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
 
     const char* artwork_paths[] = {
-        "assets/artwork/generated/space.bmp",
-        "assets/artwork/generated/forest.bmp",
-        "assets/artwork/generated/ocean.bmp"
+        "assets/artwork/generated/carousel-star.bmp",
+        "assets/artwork/generated/carousel-mushroom.bmp",
+        "assets/artwork/generated/carousel-car.bmp"
     };
     const char* label_paths[] = {
         "assets/artwork/generated/label-play.bmp",
@@ -405,7 +407,7 @@ bool SDLPlatform::initialize() {
     };
 
     for (std::size_t i = 0; i < artwork_textures.size(); ++i) {
-        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i]);
+        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i], true);
         if (!artwork_textures[i]) {
             shutdown();
             return false;
@@ -420,6 +422,18 @@ bool SDLPlatform::initialize() {
             return false;
         }
     }
+
+    carousel_title_texture =
+        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-title.bmp", true);
+    carousel_selected_texture =
+        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-selected.bmp", true);
+    if (!carousel_title_texture || !carousel_selected_texture) {
+        shutdown();
+        return false;
+    }
+    SDL_SetTextureBlendMode(carousel_title_texture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(carousel_selected_texture, SDL_BLENDMODE_BLEND);
+
 
     for (int index = 0; index < SDL_NumJoysticks(); ++index) {
         if (SDL_IsGameController(index)) {
@@ -537,6 +551,58 @@ bool SDLPlatform::poll_action(Action& action) {
     return false;
 }
 
+
+bool SDLPlatform::poll_text_input_event(TextInputEvent& text_event) {
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+            case SDL_TEXTINPUT:
+                text_event = {TextInputEventType::Text, event.text.text};
+                return true;
+
+            case SDL_KEYDOWN:
+                if (event.key.repeat != 0) continue;
+                switch (event.key.keysym.sym) {
+                    case SDLK_BACKSPACE:
+                        text_event = {TextInputEventType::Backspace, {}};
+                        return true;
+                    case SDLK_DELETE:
+                        text_event = {TextInputEventType::Delete, {}};
+                        return true;
+                    case SDLK_LEFT:
+                        text_event = {TextInputEventType::Left, {}};
+                        return true;
+                    case SDLK_RIGHT:
+                        text_event = {TextInputEventType::Right, {}};
+                        return true;
+                    case SDLK_HOME:
+                        text_event = {TextInputEventType::Home, {}};
+                        return true;
+                    case SDLK_END:
+                        text_event = {TextInputEventType::End, {}};
+                        return true;
+                    default:
+                        break;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return false;
+}
+
+void SDLPlatform::set_text_input_active(bool active) {
+    if (active) {
+        SDL_StartTextInput();
+    } else {
+        SDL_StopTextInput();
+    }
+}
+
 void SDLPlatform::begin_frame() {
     if (!renderer_) return;
 
@@ -544,22 +610,52 @@ void SDLPlatform::begin_frame() {
     SDL_RenderClear(renderer_);
 }
 
+
 void SDLPlatform::draw_carousel(int selected_index) {
     if (!renderer_) return;
 
     const int left = (selected_index + 2) % 3;
     const int right = (selected_index + 1) % 3;
 
-    // Neighboring game previews.
-    draw_card(renderer_, left,
-              {25, 235, 195, 275}, false);
+    const Color side_fill{16, 41, 75, 255};
+    const Color center_fill{18, 63, 117, 255};
+    const Color center_border{36, 164, 255, 255};
 
-    draw_card(renderer_, right,
-              {500, 235, 195, 275}, false);
+    // Draw the smaller neighboring cards first, behind the main card.
+    const SDL_Rect side_left{25, 250, 190, 175};
+    const SDL_Rect side_right{505, 250, 190, 175};
 
-    // Selected game: large, centered artwork.
-    draw_card(renderer_, selected_index,
-              {205, 155, 310, 410}, true);
+    rounded_fill(renderer_, side_left, 24, side_fill);
+    rounded_outline(renderer_, side_left, 24,
+                    {55, 105, 165, 190});
+    draw_art(renderer_, left,
+             {side_left.x + 55, side_left.y + 42, 80, 90}, 180);
+
+    rounded_fill(renderer_, side_right, 24, side_fill);
+    rounded_outline(renderer_, side_right, 24,
+                    {55, 105, 165, 190});
+    draw_art(renderer_, right,
+             {side_right.x + 55, side_right.y + 42, 80, 90}, 180);
+
+    // Main card is larger and drawn last so it overlaps both neighbors.
+    const SDL_Rect center{145, 135, 430, 370};
+    rounded_fill(renderer_, center, 30, center_fill);
+    rounded_outline(renderer_, center, 30, center_border);
+    rounded_outline(renderer_,
+                    {center.x - 3, center.y - 3,
+                     center.w + 6, center.h + 6},
+                    32, {36, 164, 255, 150});
+
+    // Artwork always follows the actual selected game.
+    draw_art(renderer_, selected_index,
+             {center.x + 115, center.y + 70, 200, 205}, 255);
+
+    // Game title belongs below the main card; no SELECTED badge.
+    if (carousel_title_texture && selected_index == 1) {
+        SDL_Rect title{220, 525, 280, 42};
+        SDL_RenderCopy(renderer_, carousel_title_texture,
+                       nullptr, &title);
+    }
 
     draw_status(renderer_);
 }
@@ -680,6 +776,14 @@ void SDLPlatform::shutdown() {
             SDL_DestroyTexture(texture);
             texture = nullptr;
         }
+    }
+    if (carousel_title_texture) {
+        SDL_DestroyTexture(carousel_title_texture);
+        carousel_title_texture = nullptr;
+    }
+    if (carousel_selected_texture) {
+        SDL_DestroyTexture(carousel_selected_texture);
+        carousel_selected_texture = nullptr;
     }
 
     if (renderer_) {

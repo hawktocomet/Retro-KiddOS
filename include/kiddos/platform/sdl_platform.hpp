@@ -1,6 +1,7 @@
 #pragma once
 
 #include "kiddos/platform/platform.hpp"
+#include "kiddos/platform/text_input_event.hpp"
 
 #include <SDL.h>
 
@@ -13,6 +14,8 @@ public:
 
     bool initialize() override;
     bool poll_action(Action& action) override;
+    bool poll_text_input_event(TextInputEvent& event);
+    void set_text_input_active(bool active);
     void begin_frame() override;
     void draw_carousel(int selected_index) override;
     void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
