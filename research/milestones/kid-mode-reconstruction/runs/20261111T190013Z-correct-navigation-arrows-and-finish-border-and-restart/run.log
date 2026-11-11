@@ -1,0 +1,79 @@
+Source changes applied.
+
+=== BORDER WIDTHS ===
+174:        ui::PanelStyle{side_fill, side_border, 3, 24});
+183:        ui::PanelStyle{side_fill, side_border, 3, 24});
+193:        ui::PanelStyle{center_fill, center_border, 4, 30});
+
+=== RESTART ICON ===
+705:void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+706-    // A simple clockwise restart arrow with a consistent line weight.
+707-    constexpr double pi = 3.14159265358979323846;
+708-    constexpr int segments = 32;
+709-    const Color icon{220, 237, 255, 255};
+710-
+711-    color(r, icon);
+712-
+713-    for (int stroke = -1; stroke <= 1; ++stroke) {
+714-        const double radius = 24.0 + stroke;
+715-        int previous_x = x + static_cast<int>(std::lround(
+716-            radius * std::cos(135.0 * pi / 180.0)));
+717-        int previous_y = y + static_cast<int>(std::lround(
+718-            radius * std::sin(135.0 * pi / 180.0)));
+719-
+720-        for (int step = 1; step <= segments; ++step) {
+721-            const double angle = (135.0 + 270.0 * step / segments)
+722-                                 * pi / 180.0;
+723-            const int next_x = x + static_cast<int>(
+724-                std::lround(radius * std::cos(angle)));
+725-            const int next_y = y + static_cast<int>(
+726-                std::lround(radius * std::sin(angle)));
+727-            SDL_RenderDrawLine(r, previous_x, previous_y, next_x, next_y);
+728-            previous_x = next_x;
+729-            previous_y = next_y;
+730-        }
+731-    }
+732-
+733-    // Arrowhead at the upper-right end of the circular stroke.
+734-    triangle(r, x + 31, y - 21,
+735-             x + 8, y - 29,
+736-             x + 22, y - 5, icon);
+737-}
+738-
+739-} // namespace
+740-
+741-void SDLPlatform::draw_game_actions(
+742-    int selected_index, bool has_checkpoint, int selected_action) {
+743-
+744-    if (!renderer_) return;
+745-
+746-    draw_status(renderer_);
+747-
+
+=== BROWSE ARROWS ===
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="34" viewBox="0 0 720 34">
+  <!-- "<- BROWSE ->": a left-pointing arrow before the word and a
+       right-pointing arrow after it, with equal gaps on both sides, the
+       whole group centered around x=150. -->
+  <g fill="none" stroke="#8FA8CC" stroke-width="2.5"
+     stroke-linecap="round" stroke-linejoin="round">
+    <path d="M76 18 H96 M76 18 L84 12 M76 18 L84 24"/>
+    <path d="M205 18 H225 M225 18 L217 12 M225 18 L217 24"/>
+  </g>
+  <text x="116" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">BROWSE</text>
+
+  <circle cx="316" cy="18" r="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="316" y="22.5" text-anchor="middle" font-family="DejaVu Sans" font-size="11" font-weight="bold" fill="#8FA8CC">A</text>
+  <text x="332" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">SELECT</text>
+
+  <rect x="440" y="9" width="52" height="18" rx="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="466" y="22" text-anchor="middle" font-family="DejaVu Sans" font-size="10" font-weight="bold" letter-spacing="1" fill="#8FA8CC">START</text>
+  <rect x="500" y="9" width="58" height="18" rx="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+
+=== CHANGE SUMMARY ===
+ assets/artwork/generated/navigation-hints.png      | Bin 6804 -> 7208 bytes
+ .../artwork/source/branding/navigation-hints.svg   |  12 ++--
+ src/app/home_carousel_screen.cpp                   |  12 ++--
+ src/platform/sdl_platform.cpp                      |  73 +++++++++++++++------
+ tests/app_home_carousel_screen_test.cpp            |   8 +++
+ 5 files changed, 77 insertions(+), 28 deletions(-)
