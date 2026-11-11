@@ -1,0 +1,203 @@
+--- Cartridge texture loading ---
+
+ui::Rect interpolate_rect(
+    ui::Rect current,
+    ui::Rect target,
+    float amount
+) {
+    return {
+        interpolate(current.x, target.x, amount),
+        interpolate(current.y, target.y, amount),
+        interpolate(current.w, target.w, amount),
+        interpolate(current.h, target.h, amount)
+    };
+}
+
+} // namespace
+
+HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+    // Keep the selected cartridge subtly emphasized without a visible frame.
+    highlight_ = &root().add<ui::Panel>(ui::PanelStyle{
+        {24, 82, 190, 38}, {0, 0, 0, 0}, 0, 28
+    });
+    highlight_->set_bounds({216, 154, 288, 288});
+
+    for (int style = 0; style < 2; ++style) {
+        for (int cartridge = 0; cartridge < game_count; ++cartridge) {
+            const std::string path =
+                "assets/artwork/generated/cartridges/option-" +
+                std::to_string(style + 1) + "/cartridge-" +
+                (cartridge < 9 ? "0" : "") +
+                std::to_string(cartridge + 1) + ".png";
+
+            cartridge_textures_[static_cast<std::size_t>(style)]
+                               [static_cast<std::size_t>(cartridge)]
+                .load(renderer, path.c_str(), false);
+        }
+    }
+
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto& image = root().add<ui::Image>();
+        image.set_fit(ui::ImageFit::contain);
+        image.set_bounds(slot_bounds[slot]);
+        game_images_[slot] = &image;
+    }
+
+    wordmark_texture_.load(renderer, wordmark_path, false);
+    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+    wordmark_->set_bounds(wordmark_rect);
+
+--- Cartridge drawing and layout ---
+    wordmark_->set_bounds(wordmark_rect);
+    wordmark_->set_fit(ui::ImageFit::contain);
+
+    hints_texture_.load(renderer, hints_path, false);
+    hints_ = &root().add<ui::Image>(&hints_texture_);
+    hints_->set_bounds(hints_rect);
+    hints_->set_fit(ui::ImageFit::contain);
+
+    root().add<StatusIndicators>();
+
+    set_selected_game(1);
+}
+
+void HomeCarouselScreen::toggle_cartridge_style() {
+    cartridge_style_ = (cartridge_style_ + 1) % 2;
+
+    if (selected_game_ < 0) return;
+
+    const std::array<int, 3> visible_games{
+        (selected_game_ + game_count - 1) % game_count,
+        selected_game_,
+        (selected_game_ + 1) % game_count
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        game_images_[slot]->set_texture(
+            &cartridge_textures_[static_cast<std::size_t>(cartridge_style_)]
+                                [static_cast<std::size_t>(visible_games[slot])]);
+    }
+}
+
+HomeCarouselScreen::~HomeCarouselScreen() {
+    for (auto* image : game_images_) {
+        if (image) image->set_texture(nullptr);
+    }
+
+    if (wordmark_) wordmark_->set_texture(nullptr);
+    if (hints_) hints_->set_texture(nullptr);
+}
+
+void HomeCarouselScreen::set_selected_game(int index) {
+    if (index < 0 || index >= game_count) return;
+    if (index == selected_game_) return;
+
+    const int previous = selected_game_;
+    const bool moving_right =
+        previous >= 0 && index == (previous + 1) % game_count;
+    const bool moving_left =
+        previous >= 0 && index == (previous + game_count - 1) % game_count;
+
+    if (moving_right) {
+        auto* recycled = game_images_[0];
+        game_images_[0] = game_images_[1];
+        game_images_[1] = game_images_[2];
+        game_images_[2] = recycled;
+        recycled->set_bounds({720, right_art.y, right_art.w, right_art.h});
+    } else if (moving_left) {
+        auto* recycled = game_images_[2];
+        game_images_[2] = game_images_[1];
+        game_images_[1] = game_images_[0];
+        game_images_[0] = recycled;
+        recycled->set_bounds({-128, left_art.y, left_art.w, left_art.h});
+    }
+
+    selected_game_ = index;
+
+    const std::array<int, 3> visible_games{
+        (index + game_count - 1) % game_count,
+        index,
+        (index + 1) % game_count
+    };
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto* image = game_images_[slot];
+        image->set_texture(
+            &cartridge_textures_[static_cast<std::size_t>(cartridge_style_)]
+                                [static_cast<std::size_t>(visible_games[slot])]);
+        target_bounds_[slot] = slot_bounds[slot];
+        target_opacity_[slot] = slot == 1 ? 255 : 118;
+
+        if (!moving_right && !moving_left) {
+            image->set_bounds(slot_bounds[slot]);
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[slot]));
+        }
+    }
+}
+
+
+--- Application selection and screen setup ---
+        case Action::Back:
+            // Back is handled at the application level only; it must not
+            // pop the home screen off the screen manager.
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
+            break;
+
+        case Action::NavigateLeft:
+        case Action::NavigateRight:
+        case Action::Confirm: {
+            if (action_screen_) break;
+
+            // Translate the platform action and give the active screen a
+            // chance to respond first. The home carousel is currently
+            // display-only, so the application carousel state handles the
+            // remaining behavior.
+            const std::optional<ui::UIAction> ui_action =
+                app::to_ui_action(action);
+            if (!ui_action || screens_.handle_action(*ui_action)) break;
+
+            switch (*ui_action) {
+                case ui::UIAction::Left:
+                    selected_game_ =
+                        (selected_game_ + game_count_ - 1) % game_count_;
+                    break;
+
+                case ui::UIAction::Right:
+                    selected_game_ =
+                        (selected_game_ + 1) % game_count_;
+                    break;
+
+                case ui::UIAction::Confirm:
+                    action_screen_ = true;
+                    selected_action_ = 0;
+                    break;
+
+                case ui::UIAction::Up:
+                case ui::UIAction::Down:
+                case ui::UIAction::Back:
+                    break;
+            }
+            break;
+        }
+
+
+--- Artwork dimensions and file types ---
+assets/artwork/generated/cartridges/option-1/cartridge-01.png: PNG image data, 212 x 215, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-02.png: PNG image data, 275 x 179, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-03.png: PNG image data, 261 x 159, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-04.png: PNG image data, 210 x 214, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-01.png: PNG image data, 399 x 415, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-02.png: PNG image data, 439 x 429, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-03.png: PNG image data, 398 x 435, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-04.png: PNG image data, 398 x 359, 8-bit/color RGBA, non-interlaced
