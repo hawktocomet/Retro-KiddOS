@@ -1,0 +1,51 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/14] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/toggle.cpp.o
+[2/14] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/controller.cpp.o
+[3/14] Linking CXX static library libkiddos_ui.a
+[4/14] Linking CXX executable kiddos
+[5/14] Linking CXX executable kiddos_ui_layout_test
+[6/14] Linking CXX executable kiddos_ui_focus_test
+[7/14] Linking CXX executable kiddos_ui_button_test
+[8/14] Linking CXX executable kiddos_ui_controller_test
+[9/14] Linking CXX executable kiddos_ui_image_test
+[10/14] Linking CXX executable kiddos_ui_label_test
+[11/14] Linking CXX executable kiddos_ui_panel_test
+[12/14] Linking CXX executable kiddos_ui_progress_bar_test
+[13/14] Building CXX object CMakeFiles/kiddos_ui_toggle_test.dir/tests/ui_toggle_test.cpp.o
+[14/14] Linking CXX executable kiddos_ui_toggle_test
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_ui_layout
+ 1/10 Test  #1: kiddos_ui_layout .................   Passed    0.01 sec
+      Start  2: kiddos_ui_geometry
+ 2/10 Test  #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+      Start  3: kiddos_ui_focus
+ 3/10 Test  #3: kiddos_ui_focus ..................   Passed    0.01 sec
+      Start  4: kiddos_ui_button
+ 4/10 Test  #4: kiddos_ui_button .................   Passed    0.01 sec
+      Start  5: kiddos_ui_controller
+ 5/10 Test  #5: kiddos_ui_controller .............   Passed    0.01 sec
+      Start  6: kiddos_ui_image
+ 6/10 Test  #6: kiddos_ui_image ..................   Passed    0.01 sec
+      Start  7: kiddos_ui_label
+ 7/10 Test  #7: kiddos_ui_label ..................   Passed    0.01 sec
+      Start  8: kiddos_ui_panel
+ 8/10 Test  #8: kiddos_ui_panel ..................   Passed    0.01 sec
+      Start  9: kiddos_ui_progress_bar
+ 9/10 Test  #9: kiddos_ui_progress_bar ...........   Passed    0.01 sec
+      Start 10: kiddos_ui_toggle
+10/10 Test #10: kiddos_ui_toggle .................   Passed    0.01 sec
+
+100% tests passed out of 10
+
+Total Test time (real) =   0.07 sec
+[main ea3f51c] feat: add controller-operated KiddOS UI toggle
+ 6 files changed, 205 insertions(+), 2 deletions(-)
+ create mode 100644 docs/ui-toggle.md
+ create mode 100644 include/kiddos/ui/toggle.hpp
+ create mode 100644 src/ui/toggle.cpp
+ create mode 100644 tests/ui_toggle_test.cpp
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   d12d063..ea3f51c  main -> main
+Toggle widget built, tested, committed, and pushed.
