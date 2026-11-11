@@ -1,0 +1,125 @@
+Traceback (most recent call last):
+  File "<stdin>", line 33, in <module>
+AttributeError: 'str' object has no attribute 'read_text'
+=== Configure ===
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+=== Build ===
+[1/20] Building CXX object CMakeFiles/kiddos_ui_theme_test.dir/tests/ui_theme_test.cpp.o
+[2/20] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o
+[3/20] Linking CXX static library libkiddos_ui.a
+[4/20] Linking CXX executable kiddos
+[5/20] Linking CXX executable kiddos_ui_layout_test
+[6/20] Linking CXX executable kiddos_ui_focus_test
+[7/20] Linking CXX executable kiddos_ui_button_test
+[8/20] Linking CXX executable kiddos_ui_controller_test
+[9/20] Linking CXX executable kiddos_ui_image_test
+[10/20] Linking CXX executable kiddos_ui_label_test
+[11/20] Linking CXX executable kiddos_ui_panel_test
+[12/20] Linking CXX executable kiddos_ui_progress_bar_test
+[13/20] Linking CXX executable kiddos_ui_toggle_test
+[14/20] Linking CXX executable kiddos_ui_slider_test
+[15/20] Linking CXX executable kiddos_ui_theme_test
+[16/20] Linking CXX executable kiddos_ui_list_view_test
+[17/20] Linking CXX executable kiddos_ui_checkbox_test
+[18/20] Linking CXX executable kiddos_ui_radio_group_test
+[19/20] Building CXX object CMakeFiles/kiddos_ui_select_test.dir/tests/ui_select_test.cpp.o
+[20/20] Linking CXX executable kiddos_ui_select_test
+=== Tests ===
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_ui_layout
+ 1/16 Test  #1: kiddos_ui_layout .................   Passed    0.01 sec
+      Start  2: kiddos_ui_geometry
+ 2/16 Test  #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+      Start  3: kiddos_ui_focus
+ 3/16 Test  #3: kiddos_ui_focus ..................   Passed    0.01 sec
+      Start  4: kiddos_ui_button
+ 4/16 Test  #4: kiddos_ui_button .................   Passed    0.01 sec
+      Start  5: kiddos_ui_controller
+ 5/16 Test  #5: kiddos_ui_controller .............   Passed    0.01 sec
+      Start  6: kiddos_ui_image
+ 6/16 Test  #6: kiddos_ui_image ..................   Passed    0.01 sec
+      Start  7: kiddos_ui_label
+ 7/16 Test  #7: kiddos_ui_label ..................   Passed    0.01 sec
+      Start  8: kiddos_ui_panel
+ 8/16 Test  #8: kiddos_ui_panel ..................   Passed    0.01 sec
+      Start  9: kiddos_ui_progress_bar
+ 9/16 Test  #9: kiddos_ui_progress_bar ...........   Passed    0.01 sec
+      Start 10: kiddos_ui_toggle
+10/16 Test #10: kiddos_ui_toggle .................   Passed    0.01 sec
+      Start 11: kiddos_ui_slider
+11/16 Test #11: kiddos_ui_slider .................   Passed    0.01 sec
+      Start 12: kiddos_ui_theme
+12/16 Test #12: kiddos_ui_theme ..................   Passed    0.01 sec
+      Start 13: kiddos_ui_list_view
+13/16 Test #13: kiddos_ui_list_view ..............   Passed    0.01 sec
+      Start 14: kiddos_ui_checkbox
+14/16 Test #14: kiddos_ui_checkbox ...............   Passed    0.01 sec
+      Start 15: kiddos_ui_radio_group
+15/16 Test #15: kiddos_ui_radio_group ............   Passed    0.01 sec
+      Start 16: kiddos_ui_select
+16/16 Test #16: kiddos_ui_select .................   Passed    0.01 sec
+
+100% tests passed out of 16
+
+Total Test time (real) =   0.16 sec
+=== Working tree ===
+ M include/kiddos/app/application.hpp
+ M include/kiddos/ui/theme.hpp
+ M src/platform/sdl_platform.cpp
+ M src/ui/theme.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+?? include/kiddos/ui/text_input.hpp
+?? src/ui/text_input.cpp
+?? tests/ui_text_input_test.cpp
+ninja: no work to do.
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_ui_layout
+ 1/16 Test  #1: kiddos_ui_layout .................   Passed    0.01 sec
+      Start  2: kiddos_ui_geometry
+ 2/16 Test  #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+      Start  3: kiddos_ui_focus
+ 3/16 Test  #3: kiddos_ui_focus ..................   Passed    0.01 sec
+      Start  4: kiddos_ui_button
+ 4/16 Test  #4: kiddos_ui_button .................   Passed    0.01 sec
+      Start  5: kiddos_ui_controller
+ 5/16 Test  #5: kiddos_ui_controller .............   Passed    0.01 sec
+      Start  6: kiddos_ui_image
+ 6/16 Test  #6: kiddos_ui_image ..................   Passed    0.01 sec
+      Start  7: kiddos_ui_label
+ 7/16 Test  #7: kiddos_ui_label ..................   Passed    0.01 sec
+      Start  8: kiddos_ui_panel
+ 8/16 Test  #8: kiddos_ui_panel ..................   Passed    0.01 sec
+      Start  9: kiddos_ui_progress_bar
+ 9/16 Test  #9: kiddos_ui_progress_bar ...........   Passed    0.01 sec
+      Start 10: kiddos_ui_toggle
+10/16 Test #10: kiddos_ui_toggle .................   Passed    0.01 sec
+      Start 11: kiddos_ui_slider
+11/16 Test #11: kiddos_ui_slider .................   Passed    0.01 sec
+      Start 12: kiddos_ui_theme
+12/16 Test #12: kiddos_ui_theme ..................   Passed    0.01 sec
+      Start 13: kiddos_ui_list_view
+13/16 Test #13: kiddos_ui_list_view ..............   Passed    0.01 sec
+      Start 14: kiddos_ui_checkbox
+14/16 Test #14: kiddos_ui_checkbox ...............   Passed    0.01 sec
+      Start 15: kiddos_ui_radio_group
+15/16 Test #15: kiddos_ui_radio_group ............   Passed    0.01 sec
+      Start 16: kiddos_ui_select
+16/16 Test #16: kiddos_ui_select .................   Passed    0.01 sec
+
+100% tests passed out of 16
+
+Total Test time (real) =   0.14 sec
+[main b3b9d8e] feat: add KiddOS UI text input widget
+ 5 files changed, 382 insertions(+)
+ create mode 100644 include/kiddos/ui/text_input.hpp
+ create mode 100644 src/ui/text_input.cpp
+ create mode 100644 tests/ui_text_input_test.cpp
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   98e77ee..b3b9d8e  main -> main
