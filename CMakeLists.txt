@@ -66,6 +66,13 @@ target_compile_options(kiddos PRIVATE
 include(CTest)
 
 if(BUILD_TESTING)
+    add_executable(kiddos_platform_sdl_text_input_translator_test
+        tests/platform_sdl_text_input_translator_test.cpp)
+    target_include_directories(kiddos_platform_sdl_text_input_translator_test PRIVATE include)
+    target_link_libraries(kiddos_platform_sdl_text_input_translator_test PRIVATE PkgConfig::SDL2)
+    add_test(NAME kiddos_platform_sdl_text_input_translator
+        COMMAND kiddos_platform_sdl_text_input_translator_test)
+
     add_executable(kiddos_platform_text_input_interface_test
         tests/platform_text_input_interface_test.cpp)
     target_include_directories(kiddos_platform_text_input_interface_test PRIVATE include)

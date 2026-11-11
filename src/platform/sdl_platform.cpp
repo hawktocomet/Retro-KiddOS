@@ -1,5 +1,6 @@
 #include "kiddos/platform/sdl_platform.hpp"
 #include "kiddos/platform/sdl_keyboard_policy.hpp"
+#include "kiddos/platform/sdl_text_input_translator.hpp"
 
 #include <algorithm>
 #include <array>
@@ -514,65 +515,30 @@ bool SDLPlatform::pump_events() {
                 pending_actions_.push_back(Action::Quit);
                 break;
 
-            case SDL_KEYDOWN:
+            case SDL_KEYDOWN: {
                 if (!should_process_keydown(
                         event.key.keysym.sym, event.key.repeat,
                         text_input_active_)) break;
 
-                switch (event.key.keysym.sym) {
-                    case SDLK_BACKSPACE:
-                        if (text_input_active_) {
-                            pending_text_events_.push_back(
-                                {TextInputEventType::Backspace, {}});
-                        }
-                        break;
-                    case SDLK_DELETE:
-                        if (text_input_active_) {
-                            pending_text_events_.push_back(
-                                {TextInputEventType::Delete, {}});
-                        }
-                        break;
-                    case SDLK_HOME:
-                        if (text_input_active_) {
-                            pending_text_events_.push_back(
-                                {TextInputEventType::Home, {}});
-                        }
-                        break;
-                    case SDLK_END:
-                        if (text_input_active_) {
-                            pending_text_events_.push_back(
-                                {TextInputEventType::End, {}});
-                        }
-                        break;
-                    case SDLK_LEFT:
-                    case SDLK_RIGHT:
-                        if (text_input_active_) {
-                            pending_text_events_.push_back({
-                                event.key.keysym.sym == SDLK_LEFT
-                                    ? TextInputEventType::Left
-                                    : TextInputEventType::Right, {}});
-                        } else {
-                            pending_actions_.push_back(
-                                map_key(event.key.keysym.sym));
-                        }
-                        break;
-                    default: {
-                        const Action action =
-                            map_key(event.key.keysym.sym);
-                        if (action != Action::None) {
-                            pending_actions_.push_back(action);
-                        }
-                        break;
+                const auto text_event =
+                    SDLTextInputTranslator::translate(event, text_input_active_);
+                if (text_event) {
+                    pending_text_events_.push_back(*text_event);
+                } else {
+                    const Action action = map_key(event.key.keysym.sym);
+                    if (action != Action::None) {
+                        pending_actions_.push_back(action);
                     }
                 }
                 break;
+            }
 
-            case SDL_TEXTINPUT:
-                if (text_input_active_) {
-                    pending_text_events_.push_back(
-                        {TextInputEventType::Text, event.text.text});
-                }
+            case SDL_TEXTINPUT: {
+                const auto text_event =
+                    SDLTextInputTranslator::translate(event, text_input_active_);
+                if (text_event) pending_text_events_.push_back(*text_event);
                 break;
+            }
 
             case SDL_CONTROLLERBUTTONDOWN:
                 if (event.cbutton.which == controller_instance_) {
