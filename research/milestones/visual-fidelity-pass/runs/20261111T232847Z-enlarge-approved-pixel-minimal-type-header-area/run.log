@@ -1,0 +1,5 @@
+Updated wordmark_rect to {185, 4, 350, 64}.
+[1/4] Building CXX object CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o
+[2/4] Building CXX object CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o
+[3/4] Linking CXX executable kiddos_app_home_carousel_screen_test
+[4/4] Linking CXX executable kiddos
