@@ -1,0 +1,231 @@
+=== HOME SCREEN REFERENCES ===
+src/platform/sdl_platform.cpp:626:void SDLPlatform::draw_carousel(int selected_index) {
+src/app/application.cpp:3:#include "kiddos/app/home_carousel_screen.hpp"
+src/app/application.cpp:31:    screens_.push(std::make_unique<app::HomeCarouselScreen>(
+src/app/application.cpp:137:                   static_cast<app::HomeCarouselScreen*>(screens_.current())) {
+src/app/application.cpp:138:        home->set_selected_game(selected_game_);
+src/app/home_carousel_screen.cpp:1:#include "kiddos/app/home_carousel_screen.hpp"
+src/app/home_carousel_screen.cpp:21:constexpr std::array<const char*, HomeCarouselScreen::game_count>
+src/app/home_carousel_screen.cpp:28:constexpr std::array<const char*, HomeCarouselScreen::game_count>
+src/app/home_carousel_screen.cpp:43:    if ((game + 1) % HomeCarouselScreen::game_count == selected) {
+src/app/home_carousel_screen.cpp:144:HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+src/app/home_carousel_screen.cpp:179:    set_selected_game(1);
+src/app/home_carousel_screen.cpp:182:HomeCarouselScreen::~HomeCarouselScreen() {
+src/app/home_carousel_screen.cpp:192:void HomeCarouselScreen::set_selected_game(int index) {
+src/app/home_carousel_screen.cpp:230:void HomeCarouselScreen::update(float delta_seconds) {
+include/kiddos/platform/platform.hpp:23:    virtual void draw_carousel(int selected_index) = 0;
+include/kiddos/platform/sdl_platform.hpp:22:    void draw_carousel(int selected_index) override;
+include/kiddos/app/home_carousel_screen.hpp:13:class HomeCarouselScreen final : public ui::Screen {
+include/kiddos/app/home_carousel_screen.hpp:17:    explicit HomeCarouselScreen(SDL_Renderer* renderer);
+include/kiddos/app/home_carousel_screen.hpp:18:    ~HomeCarouselScreen() override;
+include/kiddos/app/home_carousel_screen.hpp:20:    void set_selected_game(int index);
+tests/platform_text_input_interface_test.cpp:10:    void draw_carousel(int) override {}
+tests/app_home_carousel_screen_test.cpp:1:#include "kiddos/app/home_carousel_screen.hpp"
+tests/app_home_carousel_screen_test.cpp:65:    kiddos::app::HomeCarouselScreen screen(nullptr);
+tests/app_home_carousel_screen_test.cpp:88:    screen.set_selected_game(0);
+tests/app_home_carousel_screen_test.cpp:92:    screen.set_selected_game(2);
+tests/app_home_carousel_screen_test.cpp:95:    screen.set_selected_game(1);
+tests/app_home_carousel_screen_test.cpp:98:    screen.set_selected_game(7);
+tests/app_home_carousel_screen_test.cpp:121:        kiddos::app::HomeCarouselScreen screen(native);
+tests/app_home_carousel_screen_test.cpp:138:        screen.set_selected_game(0);
+
+=== SCREEN UPDATE AND RENDER FLOW ===
+src/app/application.cpp:48:            screens_.update(0.008f);
+src/app/application.cpp:56:    screens_.clear();
+src/ui/renderer.cpp:36:bool Renderer::clear(Color color) const {
+src/ui/focus.cpp:51:void FocusManager::clear() noexcept {
+src/ui/focus.cpp:61:        clear();
+src/ui/focus.cpp:68:    clear();
+src/ui/focus.cpp:79:        clear();
+src/ui/focus.cpp:85:        clear();
+src/ui/image.cpp:82:        renderer.clear_clip();
+src/ui/list_view.cpp:134:    renderer.clear_clip();
+src/ui/screen.cpp:6:void Screen::render(Renderer& renderer) { root_.render(renderer); }
+src/ui/screen_manager.cpp:1:#include "kiddos/ui/screen_manager.hpp"
+src/ui/screen_manager.cpp:3:ScreenManager::~ScreenManager() { clear(); }
+src/ui/screen_manager.cpp:4:bool ScreenManager::push(std::unique_ptr<Screen> screen) {
+src/ui/screen_manager.cpp:13:bool ScreenManager::pop() {
+src/ui/screen_manager.cpp:20:bool ScreenManager::replace(std::unique_ptr<Screen> screen) {
+src/ui/screen_manager.cpp:29:void ScreenManager::clear() noexcept {
+src/ui/screen_manager.cpp:32:Screen* ScreenManager::current() noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+src/ui/screen_manager.cpp:33:const Screen* ScreenManager::current() const noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+src/ui/screen_manager.cpp:34:std::size_t ScreenManager::depth() const noexcept { return stack_.size(); }
+src/ui/screen_manager.cpp:35:void ScreenManager::update(float dt) { if (auto* s=current()) s->update(dt); }
+src/ui/screen_manager.cpp:36:void ScreenManager::render(Renderer& r) { if (auto* s=current()) s->render(r); }
+src/ui/screen_manager.cpp:37:bool ScreenManager::handle_action(UIAction a) {
+src/ui/screen_manager.cpp:41:bool ScreenManager::handle_text_input(const ::kiddos::TextInputEvent& e) {
+include/kiddos/app/application.hpp:5:#include "kiddos/ui/screen_manager.hpp"
+include/kiddos/app/application.hpp:17:    ui::ScreenManager screens_;
+include/kiddos/ui/renderer.hpp:20:    bool clear(Color color) const;
+include/kiddos/ui/container.hpp:45:            element->render(renderer);
+include/kiddos/ui/focus.hpp:21:    void clear() noexcept;
+include/kiddos/ui/screen_manager.hpp:6:class ScreenManager final {
+include/kiddos/ui/screen_manager.hpp:8:    ~ScreenManager();
+include/kiddos/ui/screen_manager.hpp:9:    ScreenManager() = default;
+include/kiddos/ui/screen_manager.hpp:10:    ScreenManager(const ScreenManager&) = delete;
+include/kiddos/ui/screen_manager.hpp:11:    ScreenManager& operator=(const ScreenManager&) = delete;
+include/kiddos/ui/screen_manager.hpp:15:    void clear() noexcept;
+include/kiddos/ui/ui.hpp:19:#include "kiddos/ui/screen_manager.hpp"
+
+=== BACKGROUND AND PALETTE COLORS ===
+src/platform/sdl_platform.cpp:117:                          int radius, Color background) {
+src/platform/sdl_platform.cpp:119:    color(r, background);
+src/platform/sdl_platform.cpp:192:        return Color{red, green, blue, alpha};
+src/platform/sdl_platform.cpp:222:        return Color{red, green, blue, alpha};
+src/platform/sdl_platform.cpp:254:        return Color{red, green, blue, alpha};
+src/platform/sdl_platform.cpp:325:                            ? Color{69, 151, 255, 255}
+src/platform/sdl_platform.cpp:326:                            : Color{80, 117, 170, 110});
+src/platform/sdl_platform.cpp:621:    color(renderer_, {8, 15, 35, 255});
+src/platform/sdl_platform.cpp:767:                       ? Color{24, 69, 139, 255}
+src/platform/sdl_platform.cpp:768:                       : Color{16, 30, 65, 255});
+src/platform/sdl_platform.cpp:772:                          ? Color{75, 165, 255, 255}
+src/platform/sdl_platform.cpp:773:                          : Color{65, 93, 145, 190});
+src/app/home_carousel_screen.cpp:11:constexpr ui::Color background{8, 15, 35, 255};
+src/ui/panel.cpp:24:void Panel::set_background(Color color) noexcept {
+src/ui/panel.cpp:25:    style_.background = color;
+src/ui/panel.cpp:49:    // An opaque background allows a clean, uniform border: fill the card
+src/ui/panel.cpp:50:    // with the border color, then the inset area with the background. This
+src/ui/panel.cpp:52:    if (thickness > 0 && style_.background.a == 255) {
+src/ui/panel.cpp:64:                inner, std::max(0, radius - thickness), style_.background
+src/ui/panel.cpp:70:    renderer.fill_rounded_rect(rect, radius, style_.background);
+src/ui/panel.cpp:72:    // Transparent backgrounds (for example glow outlines) draw the border
+src/ui/progress_bar.cpp:40:    renderer.fill_rect(area, style_.background);
+src/ui/theme.cpp:36:    style.background = colors_.surface;
+src/ui/theme.cpp:62:    style.background = colors_.disabled;
+src/ui/theme.cpp:71:    style.background = colors_.surface;
+src/ui/theme.cpp:81:    style.background = colors_.surface;
+src/ui/theme.cpp:94:    style.background = colors_.surface;
+src/ui/theme.cpp:107:    style.background = colors_.surface;
+src/ui/theme.cpp:119:    style.background = colors_.surface;
+src/ui/list_view.cpp:107:    renderer.fill_rect(area, style_.background);
+src/ui/checkbox.cpp:67:    renderer.fill_rect(box, enabled() && checked_ ? style_.checked : style_.background);
+src/ui/radio_group.cpp:84:        renderer.fill_rect(row, style_.background);
+src/ui/select.cpp:79:    renderer.fill_rect(area, style_.background);
+src/ui/text_input.cpp:171:    renderer.fill_rect(area, style_.background);
+include/kiddos/ui/color.hpp:16:inline constexpr Color navy{8, 15, 35, 255};
+include/kiddos/ui/panel.hpp:8:    Color background{20, 30, 55, 255};
+include/kiddos/ui/panel.hpp:22:    void set_background(Color color) noexcept;
+include/kiddos/ui/progress_bar.hpp:13:    Color background{15, 25, 45, 255};
+include/kiddos/ui/theme.hpp:17:    Color background{12, 20, 40, 255};
+include/kiddos/ui/list_view.hpp:13:    Color background{20, 34, 65, 255};
+include/kiddos/ui/checkbox.hpp:12:    Color background{20, 34, 65, 255};
+include/kiddos/ui/radio_group.hpp:14:    Color background{24, 32, 56, 255};
+include/kiddos/ui/select.hpp:13:    Color background{24, 32, 56, 255};
+include/kiddos/ui/text_input.hpp:13:    Color background{20, 30, 52, 255};
+
+=== ARTWORK INVENTORY ===
+assets/artwork/generated/carousel-car.bmp 88 KB
+assets/artwork/generated/carousel-car.png 8 KB
+assets/artwork/generated/carousel-mushroom.bmp 88 KB
+assets/artwork/generated/carousel-mushroom.png 8 KB
+assets/artwork/generated/carousel-selected.bmp 16 KB
+assets/artwork/generated/carousel-star.bmp 76 KB
+assets/artwork/generated/carousel-star.png 8 KB
+assets/artwork/generated/carousel-title.bmp 56 KB
+assets/artwork/generated/carousel-title-car.png 4 KB
+assets/artwork/generated/carousel-title.png 4 KB
+assets/artwork/generated/carousel-title-star.png 4 KB
+assets/artwork/generated/forest.bmp 1576 KB
+assets/artwork/generated/kiddos-wordmark.png 4 KB
+assets/artwork/generated/label-play.bmp 496 KB
+assets/artwork/generated/label-resume.bmp 496 KB
+assets/artwork/generated/label-start-over.bmp 496 KB
+assets/artwork/generated/navigation-hints.png 8 KB
+assets/artwork/generated/ocean.bmp 1576 KB
+assets/artwork/generated/space.bmp 1576 KB
+assets/artwork/source/branding/kiddos-wordmark.svg 4 KB
+assets/artwork/source/branding/navigation-hints.svg 4 KB
+assets/artwork/source/carousel/car.svg 4 KB
+assets/artwork/source/carousel/mushroom.svg 4 KB
+assets/artwork/source/carousel/selected.svg 4 KB
+assets/artwork/source/carousel/star.svg 4 KB
+assets/artwork/source/carousel/title-car.svg 4 KB
+assets/artwork/source/carousel/title-star.svg 4 KB
+assets/artwork/source/carousel/title.svg 4 KB
+assets/artwork/source/forest.svg 4 KB
+assets/artwork/source/ocean.svg 4 KB
+assets/artwork/source/space.svg 4 KB
+
+=== GAME LIBRARY / PLATFORM MODEL ===
+src/platform/sdl_platform.cpp:407:    const char* artwork_paths[] = {
+src/platform/sdl_platform.cpp:419:        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i], true);
+src/app/application.cpp:102:                        (selected_game_ + game_count_ - 1) % game_count_;
+src/app/application.cpp:107:                        (selected_game_ + 1) % game_count_;
+src/app/home_carousel_screen.cpp:21:constexpr std::array<const char*, HomeCarouselScreen::game_count>
+src/app/home_carousel_screen.cpp:22:artwork_paths{
+src/app/home_carousel_screen.cpp:28:constexpr std::array<const char*, HomeCarouselScreen::game_count>
+src/app/home_carousel_screen.cpp:43:    if ((game + 1) % HomeCarouselScreen::game_count == selected) {
+src/app/home_carousel_screen.cpp:145:    for (int i = 0; i < game_count; ++i) {
+src/app/home_carousel_screen.cpp:148:        artworks_[index].load(renderer, artwork_paths[index], false);
+src/app/home_carousel_screen.cpp:156:    for (int i = 0; i < game_count; ++i) {
+src/app/home_carousel_screen.cpp:193:    if (index < 0 || index >= game_count) return;
+src/app/home_carousel_screen.cpp:200:    for (int game = 0; game < game_count; ++game) {
+src/app/home_carousel_screen.cpp:209:                (game - previous + game_count) % game_count;
+src/app/home_carousel_screen.cpp:211:                (game - index + game_count) % game_count;
+include/kiddos/app/application.hpp:23:    static constexpr int game_count_ = 3;
+include/kiddos/app/home_carousel_screen.hpp:15:    static constexpr int game_count = 3;
+include/kiddos/app/home_carousel_screen.hpp:25:    std::array<ui::Texture, game_count> artworks_{};
+include/kiddos/app/home_carousel_screen.hpp:26:    std::array<ui::Texture, game_count> title_textures_{};
+include/kiddos/app/home_carousel_screen.hpp:31:    std::array<ui::Image*, game_count> game_images_{};
+include/kiddos/app/home_carousel_screen.hpp:32:    std::array<ui::Rect, game_count> target_bounds_{};
+include/kiddos/app/home_carousel_screen.hpp:33:    std::array<int, game_count> target_opacity_{};
+
+=== BUILD AND TEST ===
+ninja: no work to do.
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_app_ui_action_mapping
+ 1/26 Test  #1: kiddos_app_ui_action_mapping ................   Passed    0.00 sec
+      Start  2: kiddos_app_home_carousel_screen
+ 2/26 Test  #2: kiddos_app_home_carousel_screen .............   Passed    0.01 sec
+      Start  3: kiddos_platform_sdl_text_input_translator
+ 3/26 Test  #3: kiddos_platform_sdl_text_input_translator ...   Passed    0.00 sec
+      Start  4: kiddos_platform_text_input_interface
+ 4/26 Test  #4: kiddos_platform_text_input_interface ........   Passed    0.00 sec
+      Start  5: kiddos_platform_sdl_keyboard_policy
+ 5/26 Test  #5: kiddos_platform_sdl_keyboard_policy .........   Passed    0.00 sec
+      Start  6: kiddos_platform_text_input_event
+ 6/26 Test  #6: kiddos_platform_text_input_event ............   Passed    0.00 sec
+      Start  7: kiddos_ui_layout
+ 7/26 Test  #7: kiddos_ui_layout ............................   Passed    0.01 sec
+      Start  8: kiddos_ui_geometry
+ 8/26 Test  #8: kiddos_ui_geometry ..........................   Passed    0.00 sec
+      Start  9: kiddos_ui_focus
+ 9/26 Test  #9: kiddos_ui_focus .............................   Passed    0.00 sec
+      Start 10: kiddos_ui_button
+10/26 Test #10: kiddos_ui_button ............................   Passed    0.00 sec
+      Start 11: kiddos_ui_controller
+11/26 Test #11: kiddos_ui_controller ........................   Passed    0.00 sec
+      Start 12: kiddos_ui_renderer
+12/26 Test #12: kiddos_ui_renderer ..........................   Passed    0.01 sec
+      Start 13: kiddos_ui_image
+13/26 Test #13: kiddos_ui_image .............................   Passed    0.00 sec
+      Start 14: kiddos_ui_label
+14/26 Test #14: kiddos_ui_label .............................   Passed    0.00 sec
+      Start 15: kiddos_ui_panel
+15/26 Test #15: kiddos_ui_panel .............................   Passed    0.01 sec
+      Start 16: kiddos_ui_progress_bar
+16/26 Test #16: kiddos_ui_progress_bar ......................   Passed    0.00 sec
+      Start 17: kiddos_ui_toggle
+17/26 Test #17: kiddos_ui_toggle ............................   Passed    0.00 sec
+      Start 18: kiddos_ui_slider
+18/26 Test #18: kiddos_ui_slider ............................   Passed    0.01 sec
+      Start 19: kiddos_ui_theme
+19/26 Test #19: kiddos_ui_theme .............................   Passed    0.01 sec
+      Start 20: kiddos_ui_list_view
+20/26 Test #20: kiddos_ui_list_view .........................   Passed    0.00 sec
+      Start 21: kiddos_ui_checkbox
+21/26 Test #21: kiddos_ui_checkbox ..........................   Passed    0.00 sec
+      Start 22: kiddos_ui_radio_group
+22/26 Test #22: kiddos_ui_radio_group .......................   Passed    0.00 sec
+      Start 23: kiddos_ui_select
+23/26 Test #23: kiddos_ui_select ............................   Passed    0.00 sec
+      Start 24: kiddos_ui_text_input
+24/26 Test #24: kiddos_ui_text_input ........................   Passed    0.00 sec
+      Start 25: kiddos_ui_text_input_interaction
+25/26 Test #25: kiddos_ui_text_input_interaction ............   Passed    0.01 sec
+      Start 26: kiddos_ui_screen_manager
+26/26 Test #26: kiddos_ui_screen_manager ....................   Passed    0.00 sec
+
+100% tests passed out of 26
+
+Total Test time (real) =   0.12 sec
