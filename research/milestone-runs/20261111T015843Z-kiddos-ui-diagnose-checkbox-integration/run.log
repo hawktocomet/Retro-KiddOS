@@ -1,0 +1,51 @@
+=== Checkbox files ===
+ls: cannot access 'tests/ui_checkbox_test.cpp': No such file or directory
+-rw-r--r-- 1 hawk hawk 1208 Nov 10 20:58 include/kiddos/ui/checkbox.hpp
+-rw-r--r-- 1 hawk hawk 2576 Nov 10 20:58 src/ui/checkbox.cpp
+
+=== CMake checkbox references ===
+
+=== CMake library and test boundaries ===
+18:add_library(kiddos_ui STATIC
+46:add_executable(kiddos
+63:if(BUILD_TESTING)
+64:    add_executable(kiddos_ui_geometry_test
+70:    add_executable(kiddos_ui_layout_test
+88:    add_executable(kiddos_ui_focus_test
+100:    add_executable(kiddos_ui_button_test
+112:    add_executable(kiddos_ui_controller_test
+124:    add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
+129:    add_executable(kiddos_ui_label_test tests/ui_label_test.cpp)
+134:    add_executable(kiddos_ui_panel_test tests/ui_panel_test.cpp)
+139:    add_executable(kiddos_ui_progress_bar_test tests/ui_progress_bar_test.cpp)
+144:    add_executable(kiddos_ui_toggle_test tests/ui_toggle_test.cpp)
+149:    add_executable(kiddos_ui_slider_test tests/ui_slider_test.cpp)
+154:    add_executable(kiddos_ui_theme_test tests/ui_theme_test.cpp)
+158:    add_executable(kiddos_ui_list_view_test tests/ui_list_view_test.cpp)
+162:endif()
+
+=== Theme checkbox references ===
+include/kiddos/ui/theme.hpp-39-    SliderStyle slider_style() const noexcept;
+include/kiddos/ui/theme.hpp-40-    ProgressBarStyle progress_bar_style() const noexcept;
+include/kiddos/ui/theme.hpp-41-    ListViewStyle list_view_style() const noexcept;
+include/kiddos/ui/theme.hpp:42:    CheckboxStyle checkbox_style() const noexcept;
+include/kiddos/ui/theme.hpp-43-
+include/kiddos/ui/theme.hpp-44-private:
+include/kiddos/ui/theme.hpp-45-    ThemeColors colors_{};
+include/kiddos/ui/theme.hpp-46-};
+include/kiddos/ui/theme.hpp-47-
+include/kiddos/ui/theme.hpp-48-}
+
+=== Git working tree ===
+ M include/kiddos/app/application.hpp
+ M include/kiddos/ui/theme.hpp
+ M src/platform/sdl_platform.cpp
+ M src/ui/controller.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+?? include/kiddos/ui/checkbox.hpp
+?? src/ui/checkbox.cpp
