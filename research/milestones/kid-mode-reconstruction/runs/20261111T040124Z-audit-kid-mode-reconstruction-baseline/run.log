@@ -1,0 +1,122 @@
+=== REPOSITORY ===
+/home/hawk/KiddOS
+cefdf30 chore: record milestone run - audit-application-ui-integration-baseline
+
+=== SOURCE AND ASSET INVENTORY ===
+assets/artwork/generated/carousel-car.bmp
+assets/artwork/generated/carousel-mushroom.bmp
+assets/artwork/generated/carousel-selected.bmp
+assets/artwork/generated/carousel-star.bmp
+assets/artwork/generated/carousel-title.bmp
+assets/artwork/generated/forest.bmp
+assets/artwork/generated/label-play.bmp
+assets/artwork/generated/label-resume.bmp
+assets/artwork/generated/label-start-over.bmp
+assets/artwork/generated/ocean.bmp
+assets/artwork/generated/space.bmp
+assets/artwork/source/carousel/car.svg
+assets/artwork/source/carousel/mushroom.svg
+assets/artwork/source/carousel/selected.svg
+assets/artwork/source/carousel/star.svg
+assets/artwork/source/carousel/title.svg
+assets/artwork/source/forest.svg
+assets/artwork/source/ocean.svg
+assets/artwork/source/space.svg
+include/kiddos/app/application.hpp
+include/kiddos/core/action.hpp
+include/kiddos/kiddos_ui.hpp
+include/kiddos/platform/platform.hpp
+include/kiddos/platform/sdl_keyboard_policy.hpp
+include/kiddos/platform/sdl_platform.hpp
+include/kiddos/platform/sdl_text_input_translator.hpp
+include/kiddos/platform/text_input_event.hpp
+include/kiddos/ui/button.hpp
+include/kiddos/ui/checkbox.hpp
+include/kiddos/ui/color.hpp
+include/kiddos/ui/container.hpp
+include/kiddos/ui/controller.hpp
+include/kiddos/ui/element.hpp
+include/kiddos/ui/focus.hpp
+include/kiddos/ui/font.hpp
+include/kiddos/ui/geometry.hpp
+include/kiddos/ui/image.hpp
+include/kiddos/ui/label.hpp
+include/kiddos/ui/layout.hpp
+include/kiddos/ui/list_view.hpp
+include/kiddos/ui/panel.hpp
+include/kiddos/ui/progress_bar.hpp
+include/kiddos/ui/radio_group.hpp
+include/kiddos/ui/renderer.hpp
+include/kiddos/ui/screen.hpp
+include/kiddos/ui/screen_manager.hpp
+include/kiddos/ui/select.hpp
+include/kiddos/ui/slider.hpp
+include/kiddos/ui/text.hpp
+include/kiddos/ui/text_input.hpp
+include/kiddos/ui/text_input_interaction.hpp
+include/kiddos/ui/texture.hpp
+include/kiddos/ui/theme.hpp
+include/kiddos/ui/toggle.hpp
+include/kiddos/ui/ui.hpp
+src/app/application.cpp
+src/main.cpp
+src/platform/sdl_platform.cpp
+src/ui/button.cpp
+src/ui/checkbox.cpp
+src/ui/controller.cpp
+src/ui/focus.cpp
+src/ui/font.cpp
+src/ui/image.cpp
+src/ui/label.cpp
+src/ui/layout.cpp
+src/ui/list_view.cpp
+src/ui/panel.cpp
+src/ui/progress_bar.cpp
+src/ui/radio_group.cpp
+src/ui/renderer.cpp
+src/ui/screen.cpp
+src/ui/screen_manager.cpp
+src/ui/select.cpp
+src/ui/slider.cpp
+src/ui/text.cpp
+src/ui/text_input.cpp
+src/ui/text_input_interaction.cpp
+src/ui/texture.cpp
+src/ui/theme.cpp
+src/ui/toggle.cpp
+
+=== SCREEN AND UI INTEGRATION REFERENCES ===
+src/platform/sdl_platform.cpp:365:        "Retro KiddOS - Kid Mode",
+src/platform/sdl_platform.cpp:619:void SDLPlatform::draw_carousel(int selected_index) {
+src/platform/sdl_platform.cpp:706:void SDLPlatform::draw_game_actions(
+src/app/application.cpp:99:        platform_.draw_game_actions(
+src/app/application.cpp:102:        platform_.draw_carousel(selected_game_);
+src/ui/screen_manager.cpp:3:ScreenManager::~ScreenManager() { clear(); }
+src/ui/screen_manager.cpp:4:bool ScreenManager::push(std::unique_ptr<Screen> screen) {
+src/ui/screen_manager.cpp:13:bool ScreenManager::pop() {
+src/ui/screen_manager.cpp:20:bool ScreenManager::replace(std::unique_ptr<Screen> screen) {
+src/ui/screen_manager.cpp:29:void ScreenManager::clear() noexcept {
+src/ui/screen_manager.cpp:32:Screen* ScreenManager::current() noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+src/ui/screen_manager.cpp:33:const Screen* ScreenManager::current() const noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+src/ui/screen_manager.cpp:34:std::size_t ScreenManager::depth() const noexcept { return stack_.size(); }
+src/ui/screen_manager.cpp:35:void ScreenManager::update(float dt) { if (auto* s=current()) s->update(dt); }
+src/ui/screen_manager.cpp:36:void ScreenManager::render(Renderer& r) { if (auto* s=current()) s->render(r); }
+src/ui/screen_manager.cpp:37:bool ScreenManager::handle_action(UIAction a) {
+src/ui/screen_manager.cpp:41:bool ScreenManager::handle_text_input(const ::kiddos::TextInputEvent& e) {
+include/kiddos/platform/platform.hpp:17:    virtual void draw_carousel(int selected_index) = 0;
+include/kiddos/platform/platform.hpp:18:    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+include/kiddos/platform/sdl_platform.hpp:22:    void draw_carousel(int selected_index) override;
+include/kiddos/platform/sdl_platform.hpp:23:    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+include/kiddos/ui/screen.hpp:8:class Screen {
+include/kiddos/ui/screen_manager.hpp:6:class ScreenManager final {
+include/kiddos/ui/screen_manager.hpp:8:    ~ScreenManager();
+include/kiddos/ui/screen_manager.hpp:9:    ScreenManager() = default;
+include/kiddos/ui/screen_manager.hpp:10:    ScreenManager(const ScreenManager&) = delete;
+include/kiddos/ui/screen_manager.hpp:11:    ScreenManager& operator=(const ScreenManager&) = delete;
+
+=== BUILD CONFIGURATION ===
+./build/build.ninja
+./CMakeLists.txt
+
+=== AVAILABLE BUILD DIRECTORIES ===
+./build
