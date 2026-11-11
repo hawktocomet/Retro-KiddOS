@@ -9,6 +9,7 @@
 #include "kiddos/ui/checkbox.hpp"
 #include "kiddos/ui/radio_group.hpp"
 #include "kiddos/ui/select.hpp"
+#include "kiddos/ui/text_input.hpp"
 
 namespace kiddos::ui {
 
@@ -44,6 +45,7 @@ public:
     CheckboxStyle checkbox_style() const noexcept;
     RadioGroupStyle radio_group_style() const noexcept;
     SelectStyle select_style() const noexcept;
+    TextInputStyle text_input_style() const noexcept;
 
 private:
     ThemeColors colors_{};

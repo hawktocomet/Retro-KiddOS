@@ -114,4 +114,17 @@ SelectStyle Theme::select_style() const noexcept {
 }
 
 
+TextInputStyle Theme::text_input_style() const noexcept {
+    TextInputStyle style;
+    style.background = colors_.surface;
+    style.border = colors_.border;
+    style.focused_border = colors_.primary_bright;
+    style.text = colors_.text;
+    style.placeholder = colors_.text_muted;
+    style.cursor = colors_.primary_bright;
+    style.disabled_text = colors_.text_muted;
+    return style;
+}
+
+
 } // namespace kiddos::ui
