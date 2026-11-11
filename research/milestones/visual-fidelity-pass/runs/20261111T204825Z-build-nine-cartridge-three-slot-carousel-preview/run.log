@@ -1,0 +1,167 @@
+Updated carousel to nine cartridge positions and three visible slots.
+
+=== BUILD ===
+[1/7] Building CXX object CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -Wall -Wextra -Wpedantic -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o -MF CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o.d -o CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o -c /home/hawk/KiddOS/src/app/home_carousel_screen.cpp
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:23:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::left_art’
+   23 | constexpr ui::Rect left_art{24, 268, 128, 128};
+      |                    ^~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:15:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::left_art’ previously defined here
+   15 | constexpr ui::Rect left_art{24, 268, 128, 128};
+      |                    ^~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:24:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::center_art’
+   24 | constexpr ui::Rect center_art{210, 148, 300, 300};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:16:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::center_art’ previously defined here
+   16 | constexpr ui::Rect center_art{210, 148, 300, 300};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:25:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::right_art’
+   25 | constexpr ui::Rect right_art{568, 268, 128, 128};
+      |                    ^~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:17:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::right_art’ previously defined here
+   17 | constexpr ui::Rect right_art{568, 268, 128, 128};
+      |                    ^~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:27:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::wordmark_rect’
+   27 | constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+      |                    ^~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:20:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::wordmark_rect’ previously defined here
+   20 | constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+      |                    ^~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:28:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::hints_rect’
+   28 | constexpr ui::Rect hints_rect{0, 662, 720, 42};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:21:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::hints_rect’ previously defined here
+   21 | constexpr ui::Rect hints_rect{0, 662, 720, 42};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp: In constructor ‘kiddos::app::HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer*)’:
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:153:38: error: ‘wordmark_path’ was not declared in this scope; did you mean ‘wordmark_’?
+  153 |     wordmark_texture_.load(renderer, wordmark_path, false);
+      |                                      ^~~~~~~~~~~~~
+      |                                      wordmark_
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:158:35: error: ‘hints_path’ was not declared in this scope; did you mean ‘hints_’?
+  158 |     hints_texture_.load(renderer, hints_path, false);
+      |                                   ^~~~~~~~~~
+      |                                   hints_
+[2/7] Building CXX object CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o
+[3/7] Building CXX object CMakeFiles/kiddos.dir/src/main.cpp.o
+[4/7] Building CXX object CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o 
+/usr/bin/c++ -DKIDDOS_SOURCE_DIR=\"/home/hawk/KiddOS\" -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o -MF CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o.d -o CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o -c /home/hawk/KiddOS/src/app/home_carousel_screen.cpp
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:23:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::left_art’
+   23 | constexpr ui::Rect left_art{24, 268, 128, 128};
+      |                    ^~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:15:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::left_art’ previously defined here
+   15 | constexpr ui::Rect left_art{24, 268, 128, 128};
+      |                    ^~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:24:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::center_art’
+   24 | constexpr ui::Rect center_art{210, 148, 300, 300};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:16:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::center_art’ previously defined here
+   16 | constexpr ui::Rect center_art{210, 148, 300, 300};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:25:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::right_art’
+   25 | constexpr ui::Rect right_art{568, 268, 128, 128};
+      |                    ^~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:17:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::right_art’ previously defined here
+   17 | constexpr ui::Rect right_art{568, 268, 128, 128};
+      |                    ^~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:27:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::wordmark_rect’
+   27 | constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+      |                    ^~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:20:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::wordmark_rect’ previously defined here
+   20 | constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+      |                    ^~~~~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:28:20: error: redefinition of ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::hints_rect’
+   28 | constexpr ui::Rect hints_rect{0, 662, 720, 42};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:21:20: note: ‘constexpr const kiddos::ui::Rect kiddos::app::{anonymous}::hints_rect’ previously defined here
+   21 | constexpr ui::Rect hints_rect{0, 662, 720, 42};
+      |                    ^~~~~~~~~~
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp: In constructor ‘kiddos::app::HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer*)’:
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:153:38: error: ‘wordmark_path’ was not declared in this scope; did you mean ‘wordmark_’?
+  153 |     wordmark_texture_.load(renderer, wordmark_path, false);
+      |                                      ^~~~~~~~~~~~~
+      |                                      wordmark_
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp:158:35: error: ‘hints_path’ was not declared in this scope; did you mean ‘hints_’?
+  158 |     hints_texture_.load(renderer, hints_path, false);
+      |                                   ^~~~~~~~~~
+      |                                   hints_
+[5/7] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+ninja: build stopped: subcommand failed.
+
+=== TESTS ===
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_app_ui_action_mapping
+ 1/26 Test  #1: kiddos_app_ui_action_mapping ................   Passed    0.01 sec
+      Start  2: kiddos_app_home_carousel_screen
+ 2/26 Test  #2: kiddos_app_home_carousel_screen .............   Passed    0.09 sec
+      Start  3: kiddos_platform_sdl_text_input_translator
+ 3/26 Test  #3: kiddos_platform_sdl_text_input_translator ...   Passed    0.00 sec
+      Start  4: kiddos_platform_text_input_interface
+ 4/26 Test  #4: kiddos_platform_text_input_interface ........   Passed    0.00 sec
+      Start  5: kiddos_platform_sdl_keyboard_policy
+ 5/26 Test  #5: kiddos_platform_sdl_keyboard_policy .........   Passed    0.00 sec
+      Start  6: kiddos_platform_text_input_event
+ 6/26 Test  #6: kiddos_platform_text_input_event ............   Passed    0.00 sec
+      Start  7: kiddos_ui_layout
+ 7/26 Test  #7: kiddos_ui_layout ............................   Passed    0.01 sec
+      Start  8: kiddos_ui_geometry
+ 8/26 Test  #8: kiddos_ui_geometry ..........................   Passed    0.00 sec
+      Start  9: kiddos_ui_focus
+ 9/26 Test  #9: kiddos_ui_focus .............................   Passed    0.01 sec
+      Start 10: kiddos_ui_button
+10/26 Test #10: kiddos_ui_button ............................   Passed    0.01 sec
+      Start 11: kiddos_ui_controller
+11/26 Test #11: kiddos_ui_controller ........................   Passed    0.01 sec
+      Start 12: kiddos_ui_renderer
+12/26 Test #12: kiddos_ui_renderer ..........................   Passed    0.01 sec
+      Start 13: kiddos_ui_image
+13/26 Test #13: kiddos_ui_image .............................   Passed    0.01 sec
+      Start 14: kiddos_ui_label
+14/26 Test #14: kiddos_ui_label .............................   Passed    0.01 sec
+      Start 15: kiddos_ui_panel
+15/26 Test #15: kiddos_ui_panel .............................   Passed    0.01 sec
+      Start 16: kiddos_ui_progress_bar
+16/26 Test #16: kiddos_ui_progress_bar ......................   Passed    0.01 sec
+      Start 17: kiddos_ui_toggle
+17/26 Test #17: kiddos_ui_toggle ............................   Passed    0.01 sec
+      Start 18: kiddos_ui_slider
+18/26 Test #18: kiddos_ui_slider ............................   Passed    0.01 sec
+      Start 19: kiddos_ui_theme
+19/26 Test #19: kiddos_ui_theme .............................   Passed    0.01 sec
+      Start 20: kiddos_ui_list_view
+20/26 Test #20: kiddos_ui_list_view .........................   Passed    0.01 sec
+      Start 21: kiddos_ui_checkbox
+21/26 Test #21: kiddos_ui_checkbox ..........................   Passed    0.01 sec
+      Start 22: kiddos_ui_radio_group
+22/26 Test #22: kiddos_ui_radio_group .......................   Passed    0.01 sec
+      Start 23: kiddos_ui_select
+23/26 Test #23: kiddos_ui_select ............................   Passed    0.01 sec
+      Start 24: kiddos_ui_text_input
+24/26 Test #24: kiddos_ui_text_input ........................   Passed    0.01 sec
+      Start 25: kiddos_ui_text_input_interaction
+25/26 Test #25: kiddos_ui_text_input_interaction ............   Passed    0.01 sec
+      Start 26: kiddos_ui_screen_manager
+26/26 Test #26: kiddos_ui_screen_manager ....................   Passed    0.01 sec
+
+100% tests passed out of 26
+
+Total Test time (real) =   0.22 sec
+
+=== CARTRIDGE ASSET COUNT ===
+18
+
+=== WORKTREE ===
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M include/kiddos/app/ui_action_mapping.hpp
+ M include/kiddos/core/action.hpp
+ M src/app/application.cpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+ M tests/app_ui_action_mapping_test.cpp
+?? assets/artwork/generated/cartridges/
