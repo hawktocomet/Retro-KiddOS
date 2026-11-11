@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T204958Z-remove-duplicate-carousel-geometry-and-validate-nine-it
+research/milestones/visual-fidelity-pass/runs/20261111T205434Z-inspect-current-cartridge-screen-and-navigation-impleme
