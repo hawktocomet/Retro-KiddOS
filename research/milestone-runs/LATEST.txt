@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T000717Z-lvgl-feasibility-isolated-sdl-prototype
+research/milestone-runs/20261111T001117Z-lvgl-feasibility-prototype-build-fixes

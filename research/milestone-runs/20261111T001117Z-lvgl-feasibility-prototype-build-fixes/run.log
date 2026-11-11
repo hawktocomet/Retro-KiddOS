@@ -1,0 +1,146 @@
+=== Fix SDL event callback signature ===
+ERROR: Could not locate event callback end
+=== Disable unrelated LVGL examples and demos ===
+Disabled LVGL examples and demos.
+=== Reconfigure ===
+-- 
+-- Using lv_conf.h from the top-level project directory
+-- Enabling the building of ThorVG internal
+-- Enabling the building of examples
+-- Enabling the building of demos
+-- Configuring done (0.0s)
+-- Generating done (0.1s)
+-- Build files have been written to: /tmp/kiddos-lvgl-prototype-build
+=== Build ===
+[  6%] Built target lvgl_thorvg
+[ 59%] Built target lvgl
+[ 59%] Building C object CMakeFiles/kiddos_lvgl_prototype.dir/main.c.o
+[ 91%] Built target lvgl_examples
+[ 91%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/assets/img_benchmark_avatar.c.o
+/home/hawk/KiddOS/research/lvgl/prototype/main.c: In function ‘main’:
+/home/hawk/KiddOS/research/lvgl/prototype/main.c:199:23: error: passing argument 1 of ‘SDL_AddEventWatch’ from incompatible pointer type [-Wincompatible-pointer-types]
+  199 |     SDL_AddEventWatch(controller_event_watch, NULL);
+      |                       ^~~~~~~~~~~~~~~~~~~~~~
+      |                       |
+      |                       void (*)(void *, SDL_Event *)
+In file included from /usr/include/SDL2/SDL.h:40,
+                 from /home/hawk/KiddOS/research/lvgl/prototype/main.c:10:
+/usr/include/SDL2/SDL_events.h:1101:64: note: expected ‘SDL_EventFilter’ {aka ‘int (*)(void *, SDL_Event *)’} but argument is of type ‘void (*)(void *, SDL_Event *)’
+ 1101 | extern DECLSPEC void SDLCALL SDL_AddEventWatch(SDL_EventFilter filter,
+      |                                                ~~~~~~~~~~~~~~~~^~~~~~
+/home/hawk/KiddOS/research/lvgl/prototype/main.c:33:13: note: ‘controller_event_watch’ declared here
+   33 | static void controller_event_watch(void *userdata, SDL_Event *event)
+      |             ^~~~~~~~~~~~~~~~~~~~~~
+/usr/include/SDL2/SDL_events.h:1010:24: note: ‘SDL_EventFilter’ declared here
+ 1010 | typedef int (SDLCALL * SDL_EventFilter) (void *userdata, SDL_Event * event);
+      |                        ^~~~~~~~~~~~~~~
+/home/hawk/KiddOS/research/lvgl/prototype/main.c:222:23: error: passing argument 1 of ‘SDL_DelEventWatch’ from incompatible pointer type [-Wincompatible-pointer-types]
+  222 |     SDL_DelEventWatch(controller_event_watch, NULL);
+      |                       ^~~~~~~~~~~~~~~~~~~~~~
+      |                       |
+      |                       void (*)(void *, SDL_Event *)
+/usr/include/SDL2/SDL_events.h:1117:64: note: expected ‘SDL_EventFilter’ {aka ‘int (*)(void *, SDL_Event *)’} but argument is of type ‘void (*)(void *, SDL_Event *)’
+ 1117 | extern DECLSPEC void SDLCALL SDL_DelEventWatch(SDL_EventFilter filter,
+      |                                                ~~~~~~~~~~~~~~~~^~~~~~
+/home/hawk/KiddOS/research/lvgl/prototype/main.c:33:13: note: ‘controller_event_watch’ declared here
+   33 | static void controller_event_watch(void *userdata, SDL_Event *event)
+      |             ^~~~~~~~~~~~~~~~~~~~~~
+/usr/include/SDL2/SDL_events.h:1010:24: note: ‘SDL_EventFilter’ declared here
+ 1010 | typedef int (SDLCALL * SDL_EventFilter) (void *userdata, SDL_Event * event);
+      |                        ^~~~~~~~~~~~~~~
+make[2]: *** [CMakeFiles/kiddos_lvgl_prototype.dir/build.make:79: CMakeFiles/kiddos_lvgl_prototype.dir/main.c.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:118: CMakeFiles/kiddos_lvgl_prototype.dir/all] Error 2
+make[1]: *** Waiting for unfinished jobs....
+[ 91%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/assets/img_benchmark_lvgl_logo_argb.c.o
+[ 91%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/assets/img_benchmark_lvgl_logo_rgb.c.o
+[ 91%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/assets/lv_font_benchmark_montserrat_12_aligned.c.o
+[ 91%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/assets/lv_font_benchmark_montserrat_14_aligned.c.o
+[ 91%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/assets/lv_font_benchmark_montserrat_16_aligned.c.o
+[ 91%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/assets/lv_font_benchmark_montserrat_18_aligned.c.o
+[ 92%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/assets/lv_font_benchmark_montserrat_20_aligned.c.o
+[ 92%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/assets/lv_font_benchmark_montserrat_24_aligned.c.o
+[ 92%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/assets/lv_font_benchmark_montserrat_26_aligned.c.o
+[ 92%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/benchmark/lv_demo_benchmark.c.o
+[ 92%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/gltf/lv_demo_gltf.c.o
+[ 92%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/keypad_encoder/lv_demo_keypad_encoder.c.o
+[ 92%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/lv_demos.c.o
+[ 92%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_corner_large.c.o
+[ 92%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_list_pause.c.o
+[ 92%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_list_pause_large.c.o
+[ 93%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_list_play.c.o
+[ 93%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_list_play_large.c.o
+[ 93%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_loop.c.o
+[ 93%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_loop_large.c.o
+[ 93%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_next.c.o
+[ 93%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_next_large.c.o
+[ 93%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_pause.c.o
+[ 93%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_pause_large.c.o
+[ 93%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_play.c.o
+[ 94%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_play_large.c.o
+[ 94%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_prev.c.o
+[ 94%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_prev_large.c.o
+[ 94%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_rnd.c.o
+[ 94%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_btn_rnd_large.c.o
+[ 94%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_corner_left.c.o
+[ 94%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_corner_left_large.c.o
+[ 94%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_corner_right.c.o
+[ 94%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_corner_right_large.c.o
+[ 94%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_cover_1.c.o
+[ 95%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_cover_1_large.c.o
+[ 95%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_cover_2.c.o
+[ 95%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_cover_2_large.c.o
+[ 95%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_cover_3.c.o
+[ 95%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_cover_3_large.c.o
+[ 95%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_icon_1.c.o
+[ 95%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_icon_1_large.c.o
+[ 95%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_icon_2.c.o
+[ 95%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_icon_2_large.c.o
+[ 96%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_icon_3.c.o
+[ 96%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_icon_3_large.c.o
+[ 96%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_icon_4.c.o
+[ 96%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_icon_4_large.c.o
+[ 96%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_list_border.c.o
+[ 96%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_list_border_large.c.o
+[ 96%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_logo.c.o
+[ 96%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_slider_knob.c.o
+[ 96%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_slider_knob_large.c.o
+[ 96%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_wave_bottom.c.o
+[ 97%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_wave_bottom_large.c.o
+[ 97%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_wave_top.c.o
+[ 97%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/assets/img_lv_demo_music_wave_top_large.c.o
+[ 97%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/lv_demo_music.c.o
+[ 97%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/lv_demo_music_list.c.o
+[ 97%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/music/lv_demo_music_main.c.o
+[ 97%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/assets/img_render_arc_bg.c.o
+[ 97%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/assets/img_render_lvgl_logo_argb8888.c.o
+[ 97%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/assets/img_render_lvgl_logo_argb8888_premultiplied.c.o
+[ 98%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/assets/img_render_lvgl_logo_i1.c.o
+[ 98%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/assets/img_render_lvgl_logo_l8.c.o
+[ 98%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/assets/img_render_lvgl_logo_rgb565.c.o
+[ 98%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/assets/img_render_lvgl_logo_rgb565_swapped.c.o
+[ 98%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/assets/img_render_lvgl_logo_rgb565a8.c.o
+[ 98%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/assets/img_render_lvgl_logo_rgb888.c.o
+[ 98%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/assets/img_render_lvgl_logo_xrgb8888.c.o
+[ 98%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/render/lv_demo_render.c.o
+[ 98%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/stress/lv_demo_stress.c.o
+[ 98%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/vector_graphic/assets/img_demo_vector_avatar.c.o
+[ 99%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/vector_graphic/lv_demo_vector_graphic.c.o
+[ 99%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/widgets/assets/img_clothes.c.o
+[ 99%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/widgets/assets/img_demo_widgets_avatar.c.o
+[ 99%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/widgets/assets/img_demo_widgets_needle.c.o
+[ 99%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/widgets/assets/img_lvgl_logo.c.o
+[ 99%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/widgets/lv_demo_widgets.c.o
+[ 99%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/widgets/lv_demo_widgets_analytics.c.o
+[ 99%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/widgets/lv_demo_widgets_components.c.o
+[ 99%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/widgets/lv_demo_widgets_profile.c.o
+[100%] Building C object lvgl/CMakeFiles/lvgl_demos.dir/demos/widgets/lv_demo_widgets_shop.c.o
+[100%] Linking CXX static library liblvgl_demos.a
+[100%] Built target lvgl_demos
+make: *** [Makefile:91: all] Error 2
+=== SDL dummy-driver smoke test ===
+
+=== RESULT SUMMARY ===
+Configure exit: 0
+Build exit: 2
+Smoke test exit: 99
+Prototype: /home/hawk/KiddOS/research/lvgl/prototype
