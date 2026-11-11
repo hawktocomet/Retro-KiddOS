@@ -1,0 +1,9 @@
+=== Available screenshot tools ===
+/usr/bin/grim
+=== Launch prototype and capture desktop ===
+compositor doesn't support the screen capture protocol
+=== Application state ===
+Prototype is still running.
+=== Screenshot file ===
+No PNG screenshot captured.
+=== Runtime log ===
