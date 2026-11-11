@@ -1,0 +1,414 @@
+=== UI CONTROLLER ===
+#pragma once
+
+#include "kiddos/ui/button.hpp"
+#include "kiddos/ui/focus.hpp"
+
+namespace kiddos::ui {
+
+enum class UIAction {
+    Left,
+    Right,
+    Up,
+    Down,
+    Confirm,
+    Back
+};
+
+class ControllerInteraction final {
+public:
+    explicit ControllerInteraction(FocusManager& focus) noexcept;
+
+    bool handle(UIAction action);
+    bool cancel() noexcept;
+
+private:
+    FocusManager& focus_;
+};
+
+} // namespace kiddos::ui
+#include "kiddos/ui/controller.hpp"
+#include "kiddos/ui/toggle.hpp"
+#include "kiddos/ui/checkbox.hpp"
+#include "kiddos/ui/radio_group.hpp"
+#include "kiddos/ui/select.hpp"
+#include "kiddos/ui/slider.hpp"
+#include "kiddos/ui/list_view.hpp"
+
+namespace kiddos::ui {
+
+ControllerInteraction::ControllerInteraction(FocusManager& focus) noexcept
+    : focus_(focus) {
+}
+
+bool ControllerInteraction::handle(UIAction action) {
+    Element* focused = focus_.focused();
+
+    switch (action) {
+        case UIAction::Left:
+            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+                return radio->select_previous();
+            if (auto* select = dynamic_cast<Select*>(focused))
+                return select->select_previous();
+            if (auto* slider = dynamic_cast<Slider*>(focused))
+                return slider->adjust(-1);
+            return focus_.move(Direction::Left);
+
+        case UIAction::Right:
+            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+                return radio->select_next();
+            if (auto* select = dynamic_cast<Select*>(focused))
+                return select->select_next();
+            if (auto* slider = dynamic_cast<Slider*>(focused))
+                return slider->adjust(1);
+            return focus_.move(Direction::Right);
+
+        case UIAction::Up:
+            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+                return radio->select_previous();
+            if (auto* list = dynamic_cast<ListView*>(focused))
+                return list->move_selection(-1);
+            return focus_.move(Direction::Up);
+
+        case UIAction::Down:
+            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+                return radio->select_next();
+            if (auto* list = dynamic_cast<ListView*>(focused))
+                return list->move_selection(1);
+            return focus_.move(Direction::Down);
+
+        case UIAction::Confirm:
+            if (auto* button = dynamic_cast<Button*>(focused))
+                return button->activate();
+            if (auto* toggle = dynamic_cast<Toggle*>(focused))
+                return toggle->toggle();
+            if (auto* checkbox = dynamic_cast<Checkbox*>(focused))
+                return checkbox->toggle();
+            if (auto* list = dynamic_cast<ListView*>(focused))
+                return list->activate_selected();
+            return false;
+
+        case UIAction::Back:
+            return cancel();
+    }
+
+    return false;
+}
+
+bool ControllerInteraction::cancel() noexcept {
+    return false;
+}
+
+} // namespace kiddos::ui
+=== SCREEN MANAGER ===
+#pragma once
+#include "kiddos/ui/screen.hpp"
+#include <memory>
+#include <vector>
+namespace kiddos::ui {
+class ScreenManager final {
+public:
+    ~ScreenManager();
+    ScreenManager() = default;
+    ScreenManager(const ScreenManager&) = delete;
+    ScreenManager& operator=(const ScreenManager&) = delete;
+    bool push(std::unique_ptr<Screen> screen);
+    bool pop();
+    bool replace(std::unique_ptr<Screen> screen);
+    void clear() noexcept;
+    Screen* current() noexcept;
+    const Screen* current() const noexcept;
+    std::size_t depth() const noexcept;
+    void update(float delta_seconds);
+    void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    std::vector<std::unique_ptr<Screen>> stack_;
+};
+}
+#include "kiddos/ui/screen_manager.hpp"
+namespace kiddos::ui {
+ScreenManager::~ScreenManager() { clear(); }
+bool ScreenManager::push(std::unique_ptr<Screen> screen) {
+    if (!screen) return false;
+    if (auto* active = current()) active->on_suspend();
+    auto* next = screen.get();
+    stack_.push_back(std::move(screen));
+    next->on_enter();
+    next->focus().focus_first();
+    return true;
+}
+bool ScreenManager::pop() {
+    if (stack_.empty()) return false;
+    stack_.back()->on_exit();
+    stack_.pop_back();
+    if (auto* active = current()) { active->on_resume(); active->focus().focus_first(); }
+    return true;
+}
+bool ScreenManager::replace(std::unique_ptr<Screen> screen) {
+    if (!screen) return false;
+    if (auto* active = current()) { active->on_exit(); stack_.pop_back(); }
+    auto* next = screen.get();
+    stack_.push_back(std::move(screen));
+    next->on_enter();
+    next->focus().focus_first();
+    return true;
+}
+void ScreenManager::clear() noexcept {
+    while (!stack_.empty()) { stack_.back()->on_exit(); stack_.pop_back(); }
+}
+Screen* ScreenManager::current() noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+const Screen* ScreenManager::current() const noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+std::size_t ScreenManager::depth() const noexcept { return stack_.size(); }
+void ScreenManager::update(float dt) { if (auto* s=current()) s->update(dt); }
+void ScreenManager::render(Renderer& r) { if (auto* s=current()) s->render(r); }
+bool ScreenManager::handle_action(UIAction a) {
+    if (a == UIAction::Back) return pop();
+    auto* s=current(); return s ? s->handle_action(a) : false;
+}
+bool ScreenManager::handle_text_input(const ::kiddos::TextInputEvent& e) {
+    auto* s=current(); return s ? s->handle_text_input(e) : false;
+}
+}
+=== SCREEN LIFECYCLE ===
+#pragma once
+#include "kiddos/ui/container.hpp"
+#include "kiddos/ui/controller.hpp"
+#include "kiddos/ui/text_input_interaction.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+namespace kiddos::ui {
+class Screen {
+public:
+    Screen() noexcept;
+    virtual ~Screen() = default;
+    Screen(const Screen&) = delete;
+    Screen& operator=(const Screen&) = delete;
+    Container& root() noexcept;
+    FocusManager& focus() noexcept;
+    virtual void on_enter() {}
+    virtual void on_exit() {}
+    virtual void on_suspend() {}
+    virtual void on_resume() {}
+    virtual void update(float) {}
+    virtual void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    Container root_;
+    FocusManager focus_;
+    ControllerInteraction controller_;
+    TextInputInteraction text_input_;
+};
+}
+=== FOCUS MANAGER ===
+#pragma once
+
+#include "kiddos/ui/container.hpp"
+
+namespace kiddos::ui {
+
+enum class Direction {
+    Left,
+    Right,
+    Up,
+    Down
+};
+
+class FocusManager final {
+public:
+    explicit FocusManager(Container& root) noexcept;
+
+    Element* focused() const noexcept;
+    bool focus_first() noexcept;
+    bool move(Direction direction) noexcept;
+    void clear() noexcept;
+
+private:
+    Container& root_;
+    Element* focused_ = nullptr;
+
+    bool eligible(const Element* element) const noexcept;
+};
+
+} // namespace kiddos::ui
+#include "kiddos/ui/focus.hpp"
+
+#include <algorithm>
+#include <cstdlib>
+#include <limits>
+#include <vector>
+
+namespace kiddos::ui {
+
+namespace {
+
+void collect_focusable(Container& container,
+                       std::vector<Element*>& result) {
+    for (std::size_t i = 0; i < container.child_count(); ++i) {
+        Element* element = container.child(i);
+        if (!element || !element->visible() || !element->enabled()) continue;
+
+        if (element->focusable() && element->enabled()) {
+            result.push_back(element);
+        }
+
+        if (auto* nested = dynamic_cast<Container*>(element)) {
+            collect_focusable(*nested, result);
+        }
+    }
+}
+
+int center_x(const Rect& rect) {
+    return rect.x + rect.w / 2;
+}
+
+int center_y(const Rect& rect) {
+    return rect.y + rect.h / 2;
+}
+
+} // namespace
+
+FocusManager::FocusManager(Container& root) noexcept
+    : root_(root) {
+}
+
+Element* FocusManager::focused() const noexcept {
+    return focused_;
+}
+
+bool FocusManager::eligible(const Element* element) const noexcept {
+    return element && element->visible() && element->enabled()
+        && element->focusable();
+}
+
+void FocusManager::clear() noexcept {
+    if (focused_) focused_->set_focused(false);
+    focused_ = nullptr;
+}
+
+bool FocusManager::focus_first() noexcept {
+    std::vector<Element*> candidates;
+    collect_focusable(root_, candidates);
+
+    if (candidates.empty()) {
+        clear();
+        return false;
+    }
+
+    if (std::find(candidates.begin(), candidates.end(), focused_) != candidates.end()
+        && eligible(focused_)) return true;
+
+    clear();
+    focused_ = candidates.front();
+    focused_->set_focused(true);
+    return true;
+}
+
+bool FocusManager::move(Direction direction) noexcept {
+    std::vector<Element*> candidates;
+    collect_focusable(root_, candidates);
+
+    if (candidates.empty()) {
+        clear();
+        return false;
+    }
+
+    if (std::find(candidates.begin(), candidates.end(), focused_) == candidates.end()
+        || !eligible(focused_)) {
+        clear();
+        focused_ = candidates.front();
+        focused_->set_focused(true);
+        return true;
+    }
+
+    const Rect current = focused_->bounds();
+    const int cx = center_x(current);
+    const int cy = center_y(current);
+
+    Element* best = nullptr;
+    long long best_score = std::numeric_limits<long long>::max();
+
+    for (Element* candidate : candidates) {
+        if (candidate == focused_) continue;
+
+        const Rect target = candidate->bounds();
+        const int dx = center_x(target) - cx;
+        const int dy = center_y(target) - cy;
+
+        int primary = 0;
+        int secondary = 0;
+
+        switch (direction) {
+            case Direction::Left:
+                primary = -dx;
+                secondary = std::abs(dy);
+                break;
+            case Direction::Right:
+                primary = dx;
+                secondary = std::abs(dy);
+                break;
+            case Direction::Up:
+                primary = -dy;
+                secondary = std::abs(dx);
+                break;
+            case Direction::Down:
+                primary = dy;
+                secondary = std::abs(dx);
+                break;
+        }
+
+        if (primary <= 0) continue;
+
+        const long long score =
+            static_cast<long long>(primary) * 1000LL + secondary;
+
+        if (score < best_score) {
+            best_score = score;
+            best = candidate;
+        }
+    }
+
+    // No candidate in that direction: leave focus unchanged.
+    if (!best) return false;
+
+    focused_->set_focused(false);
+    focused_ = best;
+    focused_->set_focused(true);
+    return true;
+}
+
+} // namespace kiddos::ui
+=== PLATFORM ACTIONS ===
+#pragma once
+
+#include "kiddos/core/action.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+namespace kiddos {
+
+class Platform {
+public:
+    virtual ~Platform() = default;
+
+    virtual bool initialize() = 0;
+    virtual bool poll_action(Action& action) = 0;
+    virtual bool poll_text_input_event(TextInputEvent&) { return false; }
+    virtual void set_text_input_active(bool) {}
+    virtual void begin_frame() = 0;
+    virtual void draw_carousel(int selected_index) = 0;
+    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+    virtual void present() = 0;
+    virtual void shutdown() = 0;
+};
+
+} // namespace kiddos
+=== SDL RENDERER CREATION AND DESTRUCTION ===
+355:bool SDLPlatform::initialize() {
+380:    renderer_ = SDL_CreateRenderer(
+386:        renderer_ = SDL_CreateRenderer(
+770:void SDLPlatform::shutdown() {
+795:        SDL_DestroyRenderer(renderer_);
+=== CURRENT WORKTREE ===
+## main...origin/main
