@@ -1,0 +1,35 @@
+=== Platform implementations ===
+include/kiddos/platform/platform.hpp:12:    virtual bool poll_action(Action& action) = 0;
+include/kiddos/platform/sdl_platform.hpp:12:class SDLPlatform final : public Platform {
+include/kiddos/platform/sdl_platform.hpp:18:    bool poll_action(Action& action) override;
+src/platform/sdl_platform.cpp:611:bool SDLPlatform::poll_action(Action& action) {
+src/app/application.cpp:23:        while (platform_.poll_action(action)) {
+=== Platform ownership and use ===
+include/kiddos/app/application.hpp:9:    explicit Application(Platform& platform);
+include/kiddos/app/application.hpp:14:    Platform& platform_;
+src/app/application.cpp:8:Application::Application(Platform& platform)
+src/app/application.cpp:9:    : platform_(platform) {
+src/app/application.cpp:13:    if (!platform_.initialize()) {
+src/app/application.cpp:14:        platform_.shutdown();
+src/app/application.cpp:23:        while (platform_.poll_action(action)) {
+src/app/application.cpp:37:    platform_.shutdown();
+src/app/application.cpp:96:    platform_.begin_frame();
+src/app/application.cpp:99:        platform_.draw_game_actions(
+src/app/application.cpp:102:        platform_.draw_carousel(selected_game_);
+src/app/application.cpp:104:    platform_.present();
+=== Application event loop ===
+src/app/application.cpp:13:    if (!platform_.initialize()) {
+src/app/application.cpp:14:        platform_.shutdown();
+src/app/application.cpp:23:        while (platform_.poll_action(action)) {
+src/app/application.cpp:37:    platform_.shutdown();
+=== Platform-related tests ===
+tests/platform_sdl_keyboard_policy_test.cpp
+tests/platform_text_input_event_test.cpp
+=== Working tree ===
+ M include/kiddos/app/application.hpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
