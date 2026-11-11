@@ -1,0 +1,84 @@
+=== Theme ending ===
+    style.focused_border = colors_.primary_bright;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    return style;
+}
+
+
+} // namespace kiddos::ui
+
+=== RadioGroup CMake registration ===
+35:    src/ui/checkbox.cpp
+36:    src/ui/radio_group.cpp
+165:    add_executable(kiddos_ui_checkbox_test tests/ui_checkbox_test.cpp)
+166:    target_include_directories(kiddos_ui_checkbox_test PRIVATE include)
+167:    target_link_libraries(kiddos_ui_checkbox_test PRIVATE kiddos_ui)
+168:    add_test(NAME kiddos_ui_checkbox COMMAND kiddos_ui_checkbox_test)
+170:    add_executable(kiddos_ui_radio_group_test tests/ui_radio_group_test.cpp)
+171:    target_include_directories(kiddos_ui_radio_group_test PRIVATE include)
+172:    target_link_libraries(kiddos_ui_radio_group_test PRIVATE kiddos_ui)
+173:    add_test(NAME kiddos_ui_radio_group COMMAND kiddos_ui_radio_group_test)
+
+=== Build ===
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/17] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o
+[2/17] Linking CXX static library libkiddos_ui.a
+[3/17] Linking CXX executable kiddos_ui_focus_test
+[4/17] Linking CXX executable kiddos_ui_image_test
+[5/17] Linking CXX executable kiddos_ui_progress_bar_test
+[6/17] Linking CXX executable kiddos_ui_panel_test
+[7/17] Linking CXX executable kiddos_ui_layout_test
+[8/17] Linking CXX executable kiddos_ui_label_test
+[9/17] Linking CXX executable kiddos_ui_toggle_test
+[10/17] Linking CXX executable kiddos_ui_controller_test
+[11/17] Linking CXX executable kiddos_ui_slider_test
+[12/17] Linking CXX executable kiddos
+[13/17] Linking CXX executable kiddos_ui_button_test
+[14/17] Linking CXX executable kiddos_ui_theme_test
+[15/17] Linking CXX executable kiddos_ui_list_view_test
+[16/17] Linking CXX executable kiddos_ui_radio_group_test
+[17/17] Linking CXX executable kiddos_ui_checkbox_test
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_ui_layout
+ 1/15 Test  #1: kiddos_ui_layout .................   Passed    0.01 sec
+      Start  2: kiddos_ui_geometry
+ 2/15 Test  #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+      Start  3: kiddos_ui_focus
+ 3/15 Test  #3: kiddos_ui_focus ..................   Passed    0.01 sec
+      Start  4: kiddos_ui_button
+ 4/15 Test  #4: kiddos_ui_button .................   Passed    0.01 sec
+      Start  5: kiddos_ui_controller
+ 5/15 Test  #5: kiddos_ui_controller .............   Passed    0.01 sec
+      Start  6: kiddos_ui_image
+ 6/15 Test  #6: kiddos_ui_image ..................   Passed    0.01 sec
+      Start  7: kiddos_ui_label
+ 7/15 Test  #7: kiddos_ui_label ..................   Passed    0.01 sec
+      Start  8: kiddos_ui_panel
+ 8/15 Test  #8: kiddos_ui_panel ..................   Passed    0.01 sec
+      Start  9: kiddos_ui_progress_bar
+ 9/15 Test  #9: kiddos_ui_progress_bar ...........   Passed    0.01 sec
+      Start 10: kiddos_ui_toggle
+10/15 Test #10: kiddos_ui_toggle .................   Passed    0.01 sec
+      Start 11: kiddos_ui_slider
+11/15 Test #11: kiddos_ui_slider .................   Passed    0.01 sec
+      Start 12: kiddos_ui_theme
+12/15 Test #12: kiddos_ui_theme ..................   Passed    0.01 sec
+      Start 13: kiddos_ui_list_view
+13/15 Test #13: kiddos_ui_list_view ..............   Passed    0.01 sec
+      Start 14: kiddos_ui_checkbox
+14/15 Test #14: kiddos_ui_checkbox ...............   Passed    0.01 sec
+      Start 15: kiddos_ui_radio_group
+15/15 Test #15: kiddos_ui_radio_group ............Subprocess aborted***Exception:   0.15 sec
+kiddos_ui_radio_group_test: /home/hawk/KiddOS/tests/ui_radio_group_test.cpp:45: int main(): Assertion `group.selected() == 0' failed.
+
+
+93% tests passed, 1 tests failed out of 15
+
+Total Test time (real) =   0.29 sec
+
+The following tests FAILED:
+	 15 - kiddos_ui_radio_group (Subprocess aborted)
+Errors while running CTest
