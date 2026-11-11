@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T215018Z-fix-four-platform-carousel-boundary-tests
+research/milestones/visual-fidelity-pass/runs/20261111T215151Z-inspect-carousel-selection-boundary-behavior

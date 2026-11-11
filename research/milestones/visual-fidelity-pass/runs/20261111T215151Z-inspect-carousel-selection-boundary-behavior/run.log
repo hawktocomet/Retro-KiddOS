@@ -1,0 +1,128 @@
+--- Selection implementation ---
+src/app/home_carousel_screen.cpp-157-
+src/app/home_carousel_screen.cpp-158-    hints_texture_.load(renderer, hints_path, false);
+src/app/home_carousel_screen.cpp-159-    hints_ = &root().add<ui::Image>(&hints_texture_);
+src/app/home_carousel_screen.cpp-160-    hints_->set_bounds(hints_rect);
+src/app/home_carousel_screen.cpp-161-    hints_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp-162-
+src/app/home_carousel_screen.cpp-163-    root().add<StatusIndicators>();
+src/app/home_carousel_screen.cpp-164-
+src/app/home_carousel_screen.cpp:165:    set_selected_game(1);
+src/app/home_carousel_screen.cpp-166-}
+src/app/home_carousel_screen.cpp-167-
+src/app/home_carousel_screen.cpp-168-void HomeCarouselScreen::toggle_cartridge_style() {
+src/app/home_carousel_screen.cpp-169-    cartridge_style_ = (cartridge_style_ + 1) % 2;
+src/app/home_carousel_screen.cpp-170-
+src/app/home_carousel_screen.cpp-171-    if (selected_game_ < 0) return;
+src/app/home_carousel_screen.cpp-172-
+src/app/home_carousel_screen.cpp-173-    const std::array<int, 3> visible_games{
+src/app/home_carousel_screen.cpp-174-        (selected_game_ + game_count - 1) % game_count,
+src/app/home_carousel_screen.cpp-175-        selected_game_,
+src/app/home_carousel_screen.cpp-176-        (selected_game_ + 1) % game_count
+src/app/home_carousel_screen.cpp-177-    };
+src/app/home_carousel_screen.cpp-178-
+src/app/home_carousel_screen.cpp-179-    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+src/app/home_carousel_screen.cpp-180-        game_images_[slot]->set_texture(
+src/app/home_carousel_screen.cpp-181-            &cartridge_textures_[static_cast<std::size_t>(cartridge_style_)]
+src/app/home_carousel_screen.cpp-182-                                [static_cast<std::size_t>(visible_games[slot])]);
+src/app/home_carousel_screen.cpp-183-    }
+src/app/home_carousel_screen.cpp-184-}
+src/app/home_carousel_screen.cpp-185-
+src/app/home_carousel_screen.cpp-186-HomeCarouselScreen::~HomeCarouselScreen() {
+src/app/home_carousel_screen.cpp-187-    for (auto* image : game_images_) {
+src/app/home_carousel_screen.cpp-188-        if (image) image->set_texture(nullptr);
+src/app/home_carousel_screen.cpp-189-    }
+src/app/home_carousel_screen.cpp-190-
+src/app/home_carousel_screen.cpp-191-    if (wordmark_) wordmark_->set_texture(nullptr);
+src/app/home_carousel_screen.cpp-192-    if (hints_) hints_->set_texture(nullptr);
+src/app/home_carousel_screen.cpp-193-}
+src/app/home_carousel_screen.cpp-194-
+src/app/home_carousel_screen.cpp:195:void HomeCarouselScreen::set_selected_game(int index) {
+src/app/home_carousel_screen.cpp-196-    if (index < 0 || index >= game_count) return;
+src/app/home_carousel_screen.cpp-197-    if (index == selected_game_) return;
+src/app/home_carousel_screen.cpp-198-
+src/app/home_carousel_screen.cpp-199-    const int previous = selected_game_;
+src/app/home_carousel_screen.cpp-200-    const bool moving_right =
+src/app/home_carousel_screen.cpp-201-        previous >= 0 && index == (previous + 1) % game_count;
+src/app/home_carousel_screen.cpp-202-    const bool moving_left =
+src/app/home_carousel_screen.cpp-203-        previous >= 0 && index == (previous + game_count - 1) % game_count;
+src/app/home_carousel_screen.cpp-204-
+src/app/home_carousel_screen.cpp-205-    if (moving_right) {
+src/app/home_carousel_screen.cpp-206-        auto* recycled = game_images_[0];
+src/app/home_carousel_screen.cpp-207-        game_images_[0] = game_images_[1];
+src/app/home_carousel_screen.cpp-208-        game_images_[1] = game_images_[2];
+src/app/home_carousel_screen.cpp-209-        game_images_[2] = recycled;
+src/app/home_carousel_screen.cpp-210-        recycled->set_bounds({720, right_art.y, right_art.w, right_art.h});
+src/app/home_carousel_screen.cpp-211-    } else if (moving_left) {
+src/app/home_carousel_screen.cpp-212-        auto* recycled = game_images_[2];
+src/app/home_carousel_screen.cpp-213-        game_images_[2] = game_images_[1];
+src/app/home_carousel_screen.cpp-214-        game_images_[1] = game_images_[0];
+src/app/home_carousel_screen.cpp-215-        game_images_[0] = recycled;
+src/app/home_carousel_screen.cpp-216-        recycled->set_bounds({-128, left_art.y, left_art.w, left_art.h});
+src/app/home_carousel_screen.cpp-217-    }
+src/app/home_carousel_screen.cpp-218-
+src/app/home_carousel_screen.cpp-219-    selected_game_ = index;
+--
+include/kiddos/app/home_carousel_screen.hpp-13-
+include/kiddos/app/home_carousel_screen.hpp-14-class HomeCarouselScreen final : public ui::Screen {
+include/kiddos/app/home_carousel_screen.hpp-15-public:
+include/kiddos/app/home_carousel_screen.hpp-16-    static constexpr int game_count = 4;
+include/kiddos/app/home_carousel_screen.hpp-17-
+include/kiddos/app/home_carousel_screen.hpp-18-    explicit HomeCarouselScreen(SDL_Renderer* renderer);
+include/kiddos/app/home_carousel_screen.hpp-19-    ~HomeCarouselScreen() override;
+include/kiddos/app/home_carousel_screen.hpp-20-
+include/kiddos/app/home_carousel_screen.hpp:21:    void set_selected_game(int index);
+include/kiddos/app/home_carousel_screen.hpp-22-    void toggle_cartridge_style();
+include/kiddos/app/home_carousel_screen.hpp-23-    int cartridge_style() const noexcept { return cartridge_style_; }
+include/kiddos/app/home_carousel_screen.hpp-24-    int selected_game() const noexcept { return selected_game_; }
+include/kiddos/app/home_carousel_screen.hpp-25-    void update(float delta_seconds) override;
+include/kiddos/app/home_carousel_screen.hpp-26-
+include/kiddos/app/home_carousel_screen.hpp-27-private:
+include/kiddos/app/home_carousel_screen.hpp-28-    std::array<std::array<ui::Texture, game_count>, 2> cartridge_textures_{};
+include/kiddos/app/home_carousel_screen.hpp-29-    int cartridge_style_ = 1;
+include/kiddos/app/home_carousel_screen.hpp-30-
+include/kiddos/app/home_carousel_screen.hpp-31-    ui::Texture wordmark_texture_{};
+include/kiddos/app/home_carousel_screen.hpp-32-    ui::Texture hints_texture_{};
+include/kiddos/app/home_carousel_screen.hpp-33-
+include/kiddos/app/home_carousel_screen.hpp-34-    static constexpr std::size_t visible_slot_count_ = 3;
+include/kiddos/app/home_carousel_screen.hpp-35-    std::array<ui::Image*, visible_slot_count_> game_images_{};
+include/kiddos/app/home_carousel_screen.hpp-36-    std::array<ui::Rect, visible_slot_count_> target_bounds_{};
+include/kiddos/app/home_carousel_screen.hpp-37-    std::array<int, visible_slot_count_> target_opacity_{};
+include/kiddos/app/home_carousel_screen.hpp-38-    ui::Panel* highlight_ = nullptr;
+include/kiddos/app/home_carousel_screen.hpp-39-
+include/kiddos/app/home_carousel_screen.hpp-40-    ui::Image* wordmark_ = nullptr;
+include/kiddos/app/home_carousel_screen.hpp-41-    ui::Image* hints_ = nullptr;
+include/kiddos/app/home_carousel_screen.hpp-42-
+include/kiddos/app/home_carousel_screen.hpp-43-    int selected_game_ = -1;
+include/kiddos/app/home_carousel_screen.hpp-44-};
+include/kiddos/app/home_carousel_screen.hpp-45-
+
+--- Failing test assertions ---
+    78	    const auto* wordmark = find_by_bounds(screen, {275, 18, 170, 32});
+    79	    assert(wordmark);
+    80	    assert(wordmark->visible());
+    81	
+    82	    const auto* hints = find_by_bounds(screen, {0, 662, 720, 42});
+    83	    assert(hints);
+    84	    assert(hints->visible());
+    85	
+    86	    screen.set_selected_game(0);
+    87	    assert(screen.selected_game() == 0);
+    88	    assert(screen.selected_game() == 0);
+    89	
+    90	    screen.set_selected_game(3);
+    91	    assert(screen.selected_game() == 3);
+    92	
+    93	    screen.set_selected_game(4);
+    94	    assert(screen.selected_game() == 0);
+    95	
+    96	    screen.set_selected_game(0);
+    97	    assert(screen.selected_game() == 0);
+    98	
+    99	    // The transition can be advanced to completion without an SDL renderer.
+   100	    screen.update(1.0f);
+   101	}
+   102	
+   103	void test_renders_minimal_carousel() {
+   104	    assert(SDL_Init(0) == 0);
+   105	    IMG_Init(IMG_INIT_PNG);
