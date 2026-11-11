@@ -1,1 +1,1 @@
-research/milestones/kid-mode-reconstruction/runs/20261111T183913Z-refine-navigation-hints-card-borders-and-game-action-ic
+research/milestones/kid-mode-reconstruction/runs/20261111T185641Z-inspect-partial-visual-refinement-changes-before-direct

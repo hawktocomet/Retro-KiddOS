@@ -1,0 +1,455 @@
+=== WORKTREE STATUS ===
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+
+=== CHANGE SUMMARY ===
+ assets/artwork/generated/navigation-hints.png      | Bin 6804 -> 6816 bytes
+ .../artwork/source/branding/navigation-hints.svg   |   9 ++-
+ src/app/home_carousel_screen.cpp                   |  12 ++--
+ src/platform/sdl_platform.cpp                      |  63 ++++++++++++++-------
+ tests/app_home_carousel_screen_test.cpp            |   8 +++
+ 5 files changed, 65 insertions(+), 27 deletions(-)
+
+=== NAVIGATION HINT SOURCE ===
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="34" viewBox="0 0 720 34">
+  <!-- "<- BROWSE ->": a left-pointing arrow before the word and a
+       right-pointing arrow after it, with equal gaps on both sides, the
+       whole group centered around x=150. -->
+  <g fill="#8FA8CC">
+    <path d="M105 12 L105 24 L96 18 Z"/>
+    <path d="M196 12 L196 24 L205 18 Z"/>
+  </g>
+  <text x="116" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">BROWSE</text>
+
+  <circle cx="316" cy="18" r="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="316" y="22.5" text-anchor="middle" font-family="DejaVu Sans" font-size="11" font-weight="bold" fill="#8FA8CC">A</text>
+  <text x="332" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">SELECT</text>
+
+  <rect x="440" y="9" width="52" height="18" rx="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="466" y="22" text-anchor="middle" font-family="DejaVu Sans" font-size="10" font-weight="bold" letter-spacing="1" fill="#8FA8CC">START</text>
+  <rect x="500" y="9" width="58" height="18" rx="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="529" y="22" text-anchor="middle" font-family="DejaVu Sans" font-size="10" font-weight="bold" letter-spacing="1" fill="#8FA8CC">SELECT</text>
+  <text x="566" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">PARENT MENU</text>
+</svg>
+
+=== HOME CAROUSEL BORDER CHANGES ===
+diff --git a/src/app/home_carousel_screen.cpp b/src/app/home_carousel_screen.cpp
+index b735e5a..5c3e0b2 100644
+--- a/src/app/home_carousel_screen.cpp
++++ b/src/app/home_carousel_screen.cpp
+@@ -167,9 +167,11 @@ HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+     wordmark_texture_.load(renderer, wordmark_path, false);
+     hints_texture_.load(renderer, hints_path, false);
+ 
+-    // Smaller neighboring cards first, drawn behind the main card.
++    // Smaller neighboring cards first, drawn behind the main card. Cards
++    // carry a substantial border so the frames read clearly on the dark
++    // navy background; the center card is the heaviest.
+     auto& side_left = root().add<ui::Panel>(
+-        ui::PanelStyle{side_fill, side_border, 1, 24});
++        ui::PanelStyle{side_fill, side_border, 3, 24});
+     side_left.set_bounds(side_left_card);
+ 
+     side_left_art_ = &root().add<ui::Image>();
+@@ -178,7 +180,7 @@ HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+     side_left_art_->set_opacity(180);
+ 
+     auto& side_right = root().add<ui::Panel>(
+-        ui::PanelStyle{side_fill, side_border, 1, 24});
++        ui::PanelStyle{side_fill, side_border, 3, 24});
+     side_right.set_bounds(side_right_card);
+ 
+     side_right_art_ = &root().add<ui::Image>();
+@@ -188,12 +190,12 @@ HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+ 
+     // Main card is drawn after the neighbors so it overlaps both of them.
+     auto& center = root().add<ui::Panel>(
+-        ui::PanelStyle{center_fill, center_border, 1, 30});
++        ui::PanelStyle{center_fill, center_border, 4, 30});
+     center.set_bounds(center_card);
+ 
+     // Outer glow outline, matching the platform's second border pass.
+     auto& glow = root().add<ui::Panel>(
+-        ui::PanelStyle{ui::colors::transparent, center_glow, 1, 32});
++        ui::PanelStyle{ui::colors::transparent, center_glow, 2, 32});
+     glow.set_bounds(center_glow_rect);
+ 
+     center_art_ = &root().add<ui::Image>();
+
+=== ACTION ICON IMPLEMENTATION ===
+680-    if (index < 0 || index >= static_cast<int>(action_label_textures.size())) return;
+681-    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+682-    if (!texture) return;
+683-
+684-    SDL_Rect destination{x, y, 350, 72};
+685-    SDL_RenderCopy(r, texture, nullptr, &destination);
+686-}
+687-
+688-// Conventional play/resume symbol: a solid right-pointing triangle
+689-// centered on (x, y). Play and Resume share this geometry on purpose:
+690-// a filled play triangle is the conventional symbol for both actions,
+691-// and the text label next to it names the action.
+692:void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+693-    triangle(r, x - 18, y - 32, x - 18, y + 32, x + 30, y,
+694-             {220, 237, 255, 255});
+695-}
+696-
+697:void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+698:    draw_play_symbol(r, x, y);
+699-}
+700-
+701-// Conventional circular restart arrow: a thick ring open across the top
+702-// with a solid arrowhead continuing the ring clockwise. The ring band is
+703-// stamped as tightly overlapping filled disks along the arc so it renders
+704-// as one solid, evenly weighted band. Centered on (x, y).
+705:void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+706-    const Color icon{220, 237, 255, 255};
+707-    constexpr double kPi = 3.14159265358979323846;
+708-
+709-    // The band spans radii 21..27 (7 px thick, matching the solid
+710-    // arrowhead's stroke weight) and stays open across the top between
+711-    // 250 and 290 degrees. Stamps are spaced ~1.7 px along the arc so
+712-    // neighboring disks always overlap.
+713-    for (int step = 0; step <= 80; ++step) {
+714-        const double radians =
+715-            (290.0 + step * (320.0 / 80.0)) * kPi / 180.0;
+716-        circle(r,
+717-               x + static_cast<int>(std::lround(24.0 * std::cos(radians))),
+718-               y + static_cast<int>(std::lround(24.0 * std::sin(radians))),
+719-               3, icon);
+720-    }
+721-
+722-    // Arrowhead at the ring's upper-right end, pointing clockwise.
+723-    triangle(r, x + 27, y - 16,
+724-             x + 4, y - 10,
+725-             x + 13, y - 35,
+726-             icon);
+727-}
+728-
+729-} // namespace
+730-
+731-void SDLPlatform::draw_game_actions(
+732-    int selected_index, bool has_checkpoint, int selected_action) {
+733-
+734-    if (!renderer_) return;
+735-
+736-    draw_status(renderer_);
+737-
+738-    // Keep the selected game's artwork prominent.
+739-    draw_card(renderer_, selected_index,
+740-              {235, 48, 250, 310}, true);
+741-
+742-    const int action_count = has_checkpoint ? 2 : 1;
+743-    const int box_height = 112;
+744-    const int gap = 17;
+745-    const int total_height =
+746-        action_count * box_height + (action_count - 1) * gap;
+747-    const int start_y = 405 + (210 - total_height) / 2;
+748-
+749-    for (int i = 0; i < action_count; ++i) {
+750-        const int y = start_y + i * (box_height + gap);
+751-        const bool selected = i == selected_action;
+752-
+753-        SDL_Rect box{65, y, 590, box_height};
+754-
+755-        rounded_fill(renderer_, box, 22,
+756-                     selected
+757-                       ? Color{24, 69, 139, 255}
+758-                       : Color{16, 30, 65, 255});
+759-
+760-        rounded_outline(renderer_, box, 22,
+761-                        selected
+762-                          ? Color{75, 165, 255, 255}
+763-                          : Color{65, 93, 145, 190});
+764-
+765-        const int symbol_x = 145;
+766-        const int symbol_y = y + box_height / 2;
+767-
+768-        if (!has_checkpoint || i == 0) {
+769-            if (has_checkpoint) {
+770:                draw_resume_symbol(renderer_, symbol_x, symbol_y);
+771-                draw_action_label(renderer_, 1, 230, y + 20);
+772-            } else {
+773:                draw_play_symbol(renderer_, symbol_x, symbol_y);
+774-                draw_action_label(renderer_, 0, 230, y + 20);
+775-            }
+776-        } else {
+777:            draw_restart_symbol(renderer_, symbol_x, symbol_y);
+778-            draw_action_label(renderer_, 2, 230, y + 20);
+779-        }
+780-
+781-        if (selected) {
+782-            rounded_outline(renderer_,
+783-                            {box.x - 4, box.y - 4,
+784-                             box.w + 8, box.h + 8},
+785-                            26, {43, 126, 231, 180});
+786-        }
+787-    }
+788-}
+789-
+790-
+791-void SDLPlatform::present() {
+792-    if (renderer_) SDL_RenderPresent(renderer_);
+793-}
+794-
+795-void SDLPlatform::shutdown() {
+796-    close_controller();
+797-
+798-    for (auto& texture : artwork_textures) {
+799-        if (texture) {
+800-            SDL_DestroyTexture(texture);
+801-            texture = nullptr;
+802-        }
+803-    }
+804-    for (auto& texture : action_label_textures) {
+805-        if (texture) {
+806-            SDL_DestroyTexture(texture);
+807-            texture = nullptr;
+808-        }
+809-    }
+810-    if (carousel_title_texture) {
+811-        SDL_DestroyTexture(carousel_title_texture);
+812-        carousel_title_texture = nullptr;
+813-    }
+814-    if (carousel_selected_texture) {
+815-        SDL_DestroyTexture(carousel_selected_texture);
+816-        carousel_selected_texture = nullptr;
+817-    }
+818-
+819-    if (renderer_) {
+820-        SDL_DestroyRenderer(renderer_);
+821-        renderer_ = nullptr;
+822-    }
+823-
+824-    if (window_) {
+825-        SDL_DestroyWindow(window_);
+826-        window_ = nullptr;
+827-    }
+828-
+829-    if (initialized_) {
+830-        SDL_Quit();
+831-        initialized_ = false;
+832-    }
+833-}
+834-
+835-} // namespace kiddos
+
+=== ACTION CARD BORDER IMPLEMENTATION ===
+280-             a.x + a.w * 55 / 100, a.y + a.h * 60 / 100,
+281-             c(39, 139, 166));
+282-}
+283-
+284-void draw_art(SDL_Renderer* r, int index,
+285-              SDL_Rect area, Uint8 alpha) {
+286-    if (index < 0 || index >= static_cast<int>(artwork_textures.size())) return;
+287-    SDL_Texture* texture = artwork_textures[static_cast<std::size_t>(index)];
+288-    if (!texture) return;
+289-
+290-    SDL_SetTextureAlphaMod(texture, alpha);
+291-    SDL_RenderCopy(r, texture, nullptr, &area);
+292-    SDL_SetTextureAlphaMod(texture, 255);
+293-}
+294-
+295:void draw_card(SDL_Renderer* r, int index,
+296-               SDL_Rect rect, bool selected) {
+297-    const Uint8 alpha = selected ? 255 : 145;
+298-
+299-    rounded_fill(r,
+300-                 {rect.x - 5, rect.y - 5, rect.w + 10, rect.h + 10},
+301-                 30, {7, 13, 32, static_cast<Uint8>(selected ? 255 : 170)});
+302-
+303-    rounded_fill(r, rect, 25, {20, 34, 65, alpha});
+304-
+305-    SDL_Rect art{
+306-        rect.x + 9,
+307-        rect.y + 9,
+308-        rect.w - 18,
+309-        rect.h - 18
+310-    };
+311-
+312-    SDL_RenderSetClipRect(r, &art);
+313-    draw_art(r, index, art, alpha);
+314-    SDL_RenderSetClipRect(r, nullptr);
+315-    mask_artwork_corners(r, art, 18, {20, 34, 65, alpha});
+316-
+317-    // A three-pass concentric outline gives the card a substantial,
+318-    // uniform border consistent with the home carousel's heavier frames.
+319-    for (int inset = 0; inset < 3; ++inset) {
+320-        rounded_outline(r,
+321-                        {rect.x + inset, rect.y + inset,
+322-                         rect.w - inset * 2, rect.h - inset * 2},
+323-                        25 - inset,
+324-                        selected
+325-                            ? Color{69, 151, 255, 255}
+326-                            : Color{80, 117, 170, 110});
+327-    }
+328-
+329-    if (selected) {
+330-        rounded_outline(r,
+331-                        {rect.x - 2, rect.y - 2, rect.w + 4, rect.h + 4},
+332-                        27, {43, 105, 210, 170});
+333-    }
+334-}
+335-
+336-void draw_status(SDL_Renderer* r) {
+337-    const Color white{205, 222, 255, 220};
+338-    color(r, white);
+339-
+340-    // Sound status: speaker and sound waves.
+341-    triangle(r, 31, 34, 43, 25, 43, 51, white);
+342-    rectangle(r, {25, 33, 10, 12}, white);
+343-
+344-    color(r, {80, 157, 255, 220});
+345-    SDL_RenderDrawLine(r, 49, 29, 54, 34);
+346-    SDL_RenderDrawLine(r, 54, 34, 54, 42);
+347-    SDL_RenderDrawLine(r, 54, 42, 49, 47);
+348-
+349-    // Battery status: outline, terminal, charge fill.
+350-    outline(r, {657, 27, 34, 19}, white);
+351-    rectangle(r, {691, 33, 4, 7}, white);
+352-    rectangle(r, {661, 31, 22, 11},
+353-              {67, 157, 255, 240});
+354-}
+355-
+356-} // namespace
+357-
+358-SDLPlatform::~SDLPlatform() {
+359-    shutdown();
+360-}
+
+=== PARTIAL PLATFORM DIFF ===
+diff --git a/src/platform/sdl_platform.cpp b/src/platform/sdl_platform.cpp
+index 3112018..1da027b 100644
+--- a/src/platform/sdl_platform.cpp
++++ b/src/platform/sdl_platform.cpp
+@@ -314,10 +314,17 @@ void draw_card(SDL_Renderer* r, int index,
+     SDL_RenderSetClipRect(r, nullptr);
+     mask_artwork_corners(r, art, 18, {20, 34, 65, alpha});
+ 
+-    rounded_outline(r, rect, 25,
+-            selected
+-                ? Color{69, 151, 255, 255}
+-                : Color{80, 117, 170, 110});
++    // A three-pass concentric outline gives the card a substantial,
++    // uniform border consistent with the home carousel's heavier frames.
++    for (int inset = 0; inset < 3; ++inset) {
++        rounded_outline(r,
++                        {rect.x + inset, rect.y + inset,
++                         rect.w - inset * 2, rect.h - inset * 2},
++                        25 - inset,
++                        selected
++                            ? Color{69, 151, 255, 255}
++                            : Color{80, 117, 170, 110});
++    }
+ 
+     if (selected) {
+         rounded_outline(r,
+@@ -678,27 +685,45 @@ void draw_action_label(SDL_Renderer* r, int index,
+     SDL_RenderCopy(r, texture, nullptr, &destination);
+ }
+ 
++// Conventional play/resume symbol: a solid right-pointing triangle
++// centered on (x, y). Play and Resume share this geometry on purpose:
++// a filled play triangle is the conventional symbol for both actions,
++// and the text label next to it names the action.
+ void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+-    triangle(r, x, y - 34, x, y + 34,
+-             x + 58, y, {220, 237, 255, 255});
++    triangle(r, x - 18, y - 32, x - 18, y + 32, x + 30, y,
++             {220, 237, 255, 255});
+ }
+ 
+ void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+-    circle(r, x, y, 30, {220, 237, 255, 255});
+-    circle(r, x, y, 19, {15, 29, 62, 255});
+-    triangle(r, x + 10, y - 36,
+-             x + 42, y - 12,
+-             x + 7, y - 8,
+-             {220, 237, 255, 255});
++    draw_play_symbol(r, x, y);
+ }
+ 
++// Conventional circular restart arrow: a thick ring open across the top
++// with a solid arrowhead continuing the ring clockwise. The ring band is
++// stamped as tightly overlapping filled disks along the arc so it renders
++// as one solid, evenly weighted band. Centered on (x, y).
+ void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+-    circle(r, x, y, 29, {220, 237, 255, 255});
+-    circle(r, x, y, 18, {15, 29, 62, 255});
+-    triangle(r, x - 27, y - 30,
+-             x + 10, y - 31,
+-             x - 14, y + 2,
+-             {220, 237, 255, 255});
++    const Color icon{220, 237, 255, 255};
++    constexpr double kPi = 3.14159265358979323846;
++
++    // The band spans radii 21..27 (7 px thick, matching the solid
++    // arrowhead's stroke weight) and stays open across the top between
++    // 250 and 290 degrees. Stamps are spaced ~1.7 px along the arc so
++    // neighboring disks always overlap.
++    for (int step = 0; step <= 80; ++step) {
++        const double radians =
++            (290.0 + step * (320.0 / 80.0)) * kPi / 180.0;
++        circle(r,
++               x + static_cast<int>(std::lround(24.0 * std::cos(radians))),
++               y + static_cast<int>(std::lround(24.0 * std::sin(radians))),
++               3, icon);
++    }
++
++    // Arrowhead at the ring's upper-right end, pointing clockwise.
++    triangle(r, x + 27, y - 16,
++             x + 4, y - 10,
++             x + 13, y - 35,
++             icon);
+ }
+ 
+ } // namespace
+@@ -745,7 +770,7 @@ void SDLPlatform::draw_game_actions(
+                 draw_resume_symbol(renderer_, symbol_x, symbol_y);
+                 draw_action_label(renderer_, 1, 230, y + 20);
+             } else {
+-                draw_play_symbol(renderer_, symbol_x - 20, symbol_y);
++                draw_play_symbol(renderer_, symbol_x, symbol_y);
+                 draw_action_label(renderer_, 0, 230, y + 20);
+             }
+         } else {
+
+=== CONTROL DOCUMENTATION ===
+# Input Controls
+
+## Kid Mode
+
+- Left / Right: browse games.
+- Up / Down: choose a game action.
+- A: confirm.
+- B: passed through as the normal in-game B button.
+- X / Y / L / R / START / SELECT: normal in-game controls, except for
+  the universal START + SELECT shortcut.
+
+## Universal shortcut
+
+START + SELECT held continuously for approximately two seconds:
+
+- During gameplay: request the child-friendly exit confirmation.
+- On the game carousel: open the parent PIN screen.
+
+A short press of either button individually must not trigger the shortcut.
+
+The shortcut must ultimately work across supported emulators. Its final
+implementation depends on auditing EmuELEC input handling and emulator
+integration; desktop input handling alone is not proof of handheld support.
+
+## Exit confirmation
+
+The child can choose:
+
+- Yes, return to games.
+- No, keep playing.
+
+The game should close gracefully when exit is confirmed, and the carousel
+should remember the previously selected game.
+
+=== END INSPECTION ===
