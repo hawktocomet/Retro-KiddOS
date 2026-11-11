@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T195644Z-inspect-carousel-highlight-before-removing-outline
+research/milestones/visual-fidelity-pass/runs/20261111T195746Z-replace-selected-artwork-outline-with-subtle-backlight
