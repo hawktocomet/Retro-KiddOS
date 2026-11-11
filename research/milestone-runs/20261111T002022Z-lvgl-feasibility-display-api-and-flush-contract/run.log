@@ -1,0 +1,619 @@
+=== Public display header ===
+/**
+ * @file lv_display.h
+ *
+ */
+
+#ifndef LV_DISPLAY_H
+#define LV_DISPLAY_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*********************
+ *      INCLUDES
+ *********************/
+#include "../lv_types.h"
+#include "../core/lv_timer.h"
+#include "../core/lv_event.h"
+#include "../draw/lv_color.h"
+#include "../core/lv_area.h"
+
+/*********************
+ *      DEFINES
+ *********************/
+
+#ifndef LV_ATTRIBUTE_FLUSH_READY
+#define LV_ATTRIBUTE_FLUSH_READY
+#endif
+
+/**********************
+ *      TYPEDEFS
+ **********************/
+
+typedef enum {
+    /**
+     * Use the buffer(s) to render the screen is smaller parts.
+     * This way the buffers can be smaller then the display to save RAM. At least 1/10 screen size buffer(s) are recommended.
+     */
+    LV_DISPLAY_RENDER_MODE_PARTIAL,
+
+    /**
+     * The buffer(s) has to be screen sized and LVGL will render into the correct location of the buffer.
+     * This way the buffer always contain the whole image. Only the changed ares will be updated.
+     * With 2 buffers the buffers' content are kept in sync automatically and in flush_cb only address change is required.
+     */
+    LV_DISPLAY_RENDER_MODE_DIRECT,
+
+    /**
+     * Always redraw the whole screen even if only one pixel has been changed.
+     * With 2 buffers in flush_cb only an address change is required.
+     */
+    LV_DISPLAY_RENDER_MODE_FULL,
+} lv_display_render_mode_t;
+
+typedef enum {
+    LV_SCREEN_LOAD_ANIM_NONE,
+    LV_SCREEN_LOAD_ANIM_OVER_LEFT,
+    LV_SCREEN_LOAD_ANIM_OVER_RIGHT,
+    LV_SCREEN_LOAD_ANIM_OVER_TOP,
+    LV_SCREEN_LOAD_ANIM_OVER_BOTTOM,
+    LV_SCREEN_LOAD_ANIM_MOVE_LEFT,
+    LV_SCREEN_LOAD_ANIM_MOVE_RIGHT,
+    LV_SCREEN_LOAD_ANIM_MOVE_TOP,
+    LV_SCREEN_LOAD_ANIM_MOVE_BOTTOM,
+    LV_SCREEN_LOAD_ANIM_FADE_IN,
+    LV_SCREEN_LOAD_ANIM_FADE_ON = LV_SCREEN_LOAD_ANIM_FADE_IN, /*For backward compatibility*/
+    LV_SCREEN_LOAD_ANIM_FADE_OUT,
+    LV_SCREEN_LOAD_ANIM_OUT_LEFT,
+    LV_SCREEN_LOAD_ANIM_OUT_RIGHT,
+    LV_SCREEN_LOAD_ANIM_OUT_TOP,
+    LV_SCREEN_LOAD_ANIM_OUT_BOTTOM,
+} lv_screen_load_anim_t;
+
+typedef void (*lv_display_flush_cb_t)(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map);
+typedef void (*lv_display_flush_wait_cb_t)(lv_display_t * disp);
+typedef void (*lv_display_sync_cb_t)(lv_display_t * disp, const lv_area_t * area);
+typedef void (*lv_display_sync_wait_cb_t)(lv_display_t * disp);
+
+/**********************
+ * GLOBAL PROTOTYPES
+ **********************/
+
+/**
+ * Create a new display with the given resolution
+ * @param hor_res   horizontal resolution in pixels
+ * @param ver_res   vertical resolution in pixels
+ * @return          pointer to a display object or `NULL` on error
+ */
+lv_display_t * lv_display_create(int32_t hor_res, int32_t ver_res);
+
+/**
+ * Remove a display
+ * @param disp      pointer to display @nullable
+ */
+void lv_display_delete(lv_display_t * disp);
+
+/**
+ * Set a default display. The new screens will be created on it by default.
+ * @param disp      pointer to a display @nullable
+ */
+void lv_display_set_default(lv_display_t * disp);
+
+/**
+ * Get the default display
+ * @return          pointer to the default display
+ */
+lv_display_t * lv_display_get_default(void);
+
+/**
+ * Get the next display.
+ * @param disp      pointer to the current display. @nullable. When NULL it returns the first display.
+ * @return          the next display or NULL if no more. Gives the first display when the parameter is NULL.
+ */
+lv_display_t * lv_display_get_next(lv_display_t * disp);
+
+/*---------------------
+ * RESOLUTION
+ *--------------------*/
+
+/**
+ * Sets the resolution of a display. `LV_EVENT_RESOLUTION_CHANGED` event will be sent.
+ * Here the native resolution of the device should be set. If the display will be rotated later with
+ * `lv_display_set_rotation` LVGL will swap the hor. and ver. resolution automatically.
+ * @param disp      pointer to a display
+ * @param hor_res   the new horizontal resolution
+ * @param ver_res   the new vertical resolution
+ */
+void lv_display_set_resolution(lv_display_t * disp, int32_t hor_res, int32_t ver_res);
+
+/**
+ * It's not mandatory to use the whole display for LVGL, however in some cases physical resolution is important.
+ * For example the touchpad still sees whole resolution and the values needs to be converted
+ * to the active LVGL display area.
+ * @param disp      pointer to a display
+ * @param hor_res   the new physical horizontal resolution, or -1 to assume it's the same as the normal hor. res.
+ * @param ver_res   the new physical vertical resolution, or -1 to assume it's the same as the normal hor. res.
+ */
+void lv_display_set_physical_resolution(lv_display_t * disp, int32_t hor_res, int32_t ver_res);
+
+/**
+ * If physical resolution is not the same as the normal resolution
+ * the offset of the active display area can be set here.
+ * @param disp      pointer to a display
+ * @param x         X offset
+ * @param y         Y offset
+ */
+void lv_display_set_offset(lv_display_t * disp, int32_t x, int32_t y);
+
+/**
+ * Set the rotation of this display. LVGL will swap the horizontal and vertical resolutions internally.
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @param rotation  `LV_ROTATION_0/90/180/270`
+ */
+void lv_display_set_rotation(lv_display_t * disp, lv_rotation_t rotation);
+
+/**
+ * Use matrix rotation for the display. This function is depended on `LV_DRAW_TRANSFORM_USE_MATRIX`
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @param enable    true: enable matrix rotation, false: disable
+ */
+void lv_display_set_matrix_rotation(lv_display_t * disp, bool enable);
+
+/**
+ * Set the DPI (dot per inch) of the display.
+ * dpi = sqrt(hor_res^2 + ver_res^2) / diagonal"
+ * @param disp      pointer to a display
+ * @param dpi       the new DPI
+ */
+void lv_display_set_dpi(lv_display_t * disp, int32_t dpi);
+
+/**
+ * Get the horizontal resolution of a display.
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return          the horizontal resolution of the display.
+ */
+int32_t lv_display_get_horizontal_resolution(const lv_display_t * disp);
+
+/**
+ * Get the vertical resolution of a display
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return          the vertical resolution of the display
+ */
+int32_t lv_display_get_vertical_resolution(const lv_display_t * disp);
+
+/**
+ * Get the original horizontal resolution of a display without considering rotation
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return          the horizontal resolution of the display.
+ */
+int32_t lv_display_get_original_horizontal_resolution(const lv_display_t * disp);
+
+/**
+ * Get the original vertical resolution of a display without considering rotation
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return          the vertical resolution of the display
+ */
+int32_t lv_display_get_original_vertical_resolution(const lv_display_t * disp);
+
+/**
+ * Get the physical horizontal resolution of a display
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return the      physical horizontal resolution of the display
+ */
+int32_t lv_display_get_physical_horizontal_resolution(const lv_display_t * disp);
+
+/**
+ * Get the physical vertical resolution of a display
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return          the physical vertical resolution of the display
+ */
+int32_t lv_display_get_physical_vertical_resolution(const lv_display_t * disp);
+
+/**
+ * Get the horizontal offset from the full / physical display
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return          the horizontal offset from the physical display
+ */
+int32_t lv_display_get_offset_x(const lv_display_t * disp);
+
+/**
+ * Get the vertical offset from the full / physical display
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return          the horizontal offset from the physical display
+ */
+int32_t lv_display_get_offset_y(const lv_display_t * disp);
+
+/**
+ * Get the current rotation of this display.
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return          the current rotation
+ */
+lv_rotation_t lv_display_get_rotation(lv_display_t * disp);
+
+/**
+ * Get if matrix rotation is enabled for a display or not
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return          true: matrix rotation is enabled; false: disabled
+ */
+bool lv_display_get_matrix_rotation(lv_display_t * disp);
+
+/**
+ * Get the DPI of the display
+ * @param disp      pointer to a display (NULL to use the default display)
+ * @return          dpi of the display
+ */
+int32_t lv_display_get_dpi(const lv_display_t * disp);
+
+/*---------------------
+ * BUFFERING
+ *--------------------*/
+
+/**
+ * Set the buffers for a display, similarly to `lv_display_set_draw_buffers`, but accept the raw buffer pointers.
+ * For DIRECT/FULL rending modes, the buffer size must be at least
+ * `hor_res * ver_res * lv_color_format_get_size(lv_display_get_color_format(disp))`
+ * @param disp              pointer to a display
+ * @param buf1              first buffer
+ * @param buf2              second buffer @nullable
+ * @param buf_size          buffer size in byte
+ * @param render_mode       LV_DISPLAY_RENDER_MODE_PARTIAL/DIRECT/FULL
+ */
+void lv_display_set_buffers(lv_display_t * disp, void * buf1, void * buf2, uint32_t buf_size,
+                            lv_display_render_mode_t render_mode);
+
+/**
+ * Set the frame buffers for a display, similarly to `lv_display_set_buffers`, but allow
+ * for a custom stride as required by a display controller.
+ * This allows the frame buffers to have a stride alignment different from the rest of
+ * the buffers.
+ * @param disp              pointer to a display
+ * @param buf1              first buffer
+ * @param buf2              second buffer (can be `NULL`)
+ * @param buf_size          buffer size in byte
+ * @param stride            buffer stride in bytes
+ * @param render_mode       LV_DISPLAY_RENDER_MODE_PARTIAL/DIRECT/FULL
+ */
+void lv_display_set_buffers_with_stride(lv_display_t * disp, void * buf1, void * buf2, uint32_t buf_size,
+                                        uint32_t stride, lv_display_render_mode_t render_mode);
+
+/**
+=== Public display API symbols ===
+37:     * This way the buffers can be smaller then the display to save RAM. At least 1/10 screen size buffer(s) are recommended.
+44:     * With 2 buffers the buffers' content are kept in sync automatically and in flush_cb only address change is required.
+50:     * With 2 buffers in flush_cb only an address change is required.
+53:} lv_display_render_mode_t;
+74:typedef void (*lv_display_flush_cb_t)(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map);
+75:typedef void (*lv_display_flush_wait_cb_t)(lv_display_t * disp);
+89:lv_display_t * lv_display_create(int32_t hor_res, int32_t ver_res);
+101:void lv_display_set_default(lv_display_t * disp);
+123: * `lv_display_set_rotation` LVGL will swap the hor. and ver. resolution automatically.
+128:void lv_display_set_resolution(lv_display_t * disp, int32_t hor_res, int32_t ver_res);
+138:void lv_display_set_physical_resolution(lv_display_t * disp, int32_t hor_res, int32_t ver_res);
+147:void lv_display_set_offset(lv_display_t * disp, int32_t x, int32_t y);
+154:void lv_display_set_rotation(lv_display_t * disp, lv_rotation_t rotation);
+161:void lv_display_set_matrix_rotation(lv_display_t * disp, bool enable);
+169:void lv_display_set_dpi(lv_display_t * disp, int32_t dpi);
+253: * Set the buffers for a display, similarly to `lv_display_set_draw_buffers`, but accept the raw buffer pointers.
+255: * `hor_res * ver_res * lv_color_format_get_size(lv_display_get_color_format(disp))`
+260: * @param render_mode       LV_DISPLAY_RENDER_MODE_PARTIAL/DIRECT/FULL
+262:void lv_display_set_buffers(lv_display_t * disp, void * buf1, void * buf2, uint32_t buf_size,
+263:                            lv_display_render_mode_t render_mode);
+266: * Set the frame buffers for a display, similarly to `lv_display_set_buffers`, but allow
+268: * This allows the frame buffers to have a stride alignment different from the rest of
+269: * the buffers.
+275: * @param render_mode       LV_DISPLAY_RENDER_MODE_PARTIAL/DIRECT/FULL
+277:void lv_display_set_buffers_with_stride(lv_display_t * disp, void * buf1, void * buf2, uint32_t buf_size,
+278:                                        uint32_t stride, lv_display_render_mode_t render_mode);
+281: * Set the buffers for a display, accept a draw buffer pointer.
+282: * Normally use `lv_display_set_buffers` is enough for most cases.
+288:void lv_display_set_draw_buffers(lv_display_t * disp, lv_draw_buf_t * buf1, lv_draw_buf_t * buf2);
+295:void lv_display_set_3rd_draw_buffer(lv_display_t * disp, lv_draw_buf_t * buf3);
+300: * @param render_mode       LV_DISPLAY_RENDER_MODE_PARTIAL/DIRECT/FULL
+302:void lv_display_set_render_mode(lv_display_t * disp, lv_display_render_mode_t render_mode);
+309:void lv_display_set_flush_cb(lv_display_t * disp, lv_display_flush_cb_t flush_cb);
+316:lv_display_flush_cb_t lv_display_get_flush_cb(lv_display_t * disp);
+321: * If not set the `disp->flushing` flag is used which can be cleared with `lv_display_flush_ready()`
+324: *                  If NULL `lv_display_flush_ready()` can be used to signal that flushing is ready.
+326:void lv_display_set_flush_wait_cb(lv_display_t * disp, lv_display_flush_wait_cb_t wait_cb);
+329: * Set the sync callback which will be called to synchronize invalidated areas between frame buffers pre-render.
+333:void lv_display_set_sync_cb(lv_display_t * disp, lv_display_sync_cb_t sync_cb);
+343:void lv_display_set_sync_wait_cb(lv_display_t * disp, lv_display_sync_wait_cb_t wait_cb);
+348: * @param color_format      Possible values are
+355:void lv_display_set_color_format(lv_display_t * disp, lv_color_format_t color_format);
+362:lv_color_format_t lv_display_get_color_format(lv_display_t * disp);
+369:void lv_display_set_tile_cnt(lv_display_t * disp, uint32_t tile_cnt);
+384:void lv_display_set_antialiasing(lv_display_t * disp, bool en);
+397:LV_ATTRIBUTE_FLUSH_READY void lv_display_flush_ready(lv_display_t * disp);
+406:LV_ATTRIBUTE_FLUSH_READY bool lv_display_flush_is_last(lv_display_t * disp);
+435:lv_display_render_mode_t lv_display_get_render_mode(lv_display_t * disp);
+621:void lv_display_set_theme(lv_display_t * disp, lv_theme_t * th);
+704:void lv_display_set_user_data(lv_display_t * disp, void * user_data);
+709: * `lv_display_set_user_data()` instead.
+713:void lv_display_set_driver_data(lv_display_t * disp, void * driver_data);
+716: * Get the custom pointer set by `lv_display_set_user_data()`.
+723: * Get the driver specific pointer set by `lv_display_set_driver_data()`.
+731: * this alternates between the two buffers after each flush.
+752: * Get the size of the draw buffers
+841:void lv_display_set_external_data(lv_display_t * disp, void * data, void (* free_cb)(void * data));
+=== Public area header ===
+/**
+ * @file lv_area.h
+ *
+ */
+
+#ifndef LV_AREA_H
+#define LV_AREA_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*********************
+ *      INCLUDES
+ *********************/
+#include "../config/lv_conf_internal.h"
+#include "../lv_types.h"
+#include "../misc/lv_math.h"
+
+/*********************
+ *      DEFINES
+ *********************/
+
+/**********************
+ *      TYPEDEFS
+ **********************/
+
+/**
+ * Represents a point on the screen.
+ */
+typedef struct {
+    int32_t x;
+    int32_t y;
+} lv_point_t;
+
+typedef struct {
+    lv_value_precise_t x;
+    lv_value_precise_t y;
+} lv_point_precise_t;
+
+/** Represents an area of the screen.*/
+typedef struct {
+    int32_t x1;
+    int32_t y1;
+    int32_t x2;
+    int32_t y2;
+} lv_area_t;
+
+/** Alignments*/
+
+typedef enum {
+    LV_ALIGN_DEFAULT = 0,
+    LV_ALIGN_TOP_LEFT,
+    LV_ALIGN_TOP_MID,
+    LV_ALIGN_TOP_RIGHT,
+    LV_ALIGN_BOTTOM_LEFT,
+    LV_ALIGN_BOTTOM_MID,
+    LV_ALIGN_BOTTOM_RIGHT,
+    LV_ALIGN_LEFT_MID,
+    LV_ALIGN_RIGHT_MID,
+    LV_ALIGN_CENTER,
+
+    LV_ALIGN_OUT_TOP_LEFT,
+    LV_ALIGN_OUT_TOP_MID,
+    LV_ALIGN_OUT_TOP_RIGHT,
+    LV_ALIGN_OUT_BOTTOM_LEFT,
+    LV_ALIGN_OUT_BOTTOM_MID,
+    LV_ALIGN_OUT_BOTTOM_RIGHT,
+    LV_ALIGN_OUT_LEFT_TOP,
+    LV_ALIGN_OUT_LEFT_MID,
+    LV_ALIGN_OUT_LEFT_BOTTOM,
+    LV_ALIGN_OUT_RIGHT_TOP,
+    LV_ALIGN_OUT_RIGHT_MID,
+    LV_ALIGN_OUT_RIGHT_BOTTOM,
+} lv_align_t;
+
+typedef enum {
+    LV_DIR_NONE     = 0x00,
+    LV_DIR_LEFT     = (1 << 0),
+    LV_DIR_RIGHT    = (1 << 1),
+    LV_DIR_TOP      = (1 << 2),
+    LV_DIR_BOTTOM   = (1 << 3),
+    LV_DIR_HOR      = LV_DIR_LEFT | LV_DIR_RIGHT,
+    LV_DIR_VER      = LV_DIR_TOP | LV_DIR_BOTTOM,
+    LV_DIR_ALL      = LV_DIR_HOR | LV_DIR_VER,
+} lv_dir_t;
+
+typedef enum {
+    LV_ROTATION_0 = 0,
+    LV_ROTATION_90,
+    LV_ROTATION_180,
+    LV_ROTATION_270,
+} lv_rotation_t;
+
+typedef enum {
+    LV_ROTATION_DIR_CW = 0,
+    LV_ROTATION_DIR_CCW,
+} lv_rotation_dir_t;
+
+/**********************
+ * GLOBAL PROTOTYPES
+ **********************/
+
+/**
+ * Initialize an area
+ * @param area_p pointer to an area
+ * @param x1 left coordinate of the area
+ * @param y1 top coordinate of the area
+ * @param x2 right coordinate of the area
+ * @param y2 bottom coordinate of the area
+ */
+void lv_area_set(lv_area_t * area_p, int32_t x1, int32_t y1, int32_t x2, int32_t y2);
+
+/**
+ * Copy an area
+ * @param dest pointer to the destination area
+ * @param src pointer to the source area
+ */
+void lv_area_copy(lv_area_t * dest, const lv_area_t * src);
+
+/**
+ * Get the width of an area
+ * @param area_p pointer to an area
+ * @return the width of the area (if x1 == x2 -> width = 1)
+ */
+int32_t lv_area_get_width(const lv_area_t * area_p);
+
+/**
+ * Get the height of an area
+ * @param area_p pointer to an area
+ * @return the height of the area (if y1 == y2 -> height = 1)
+ */
+int32_t lv_area_get_height(const lv_area_t * area_p);
+
+/**
+ * Set the width of an area
+ * @param area_p pointer to an area
+ * @param w the new width of the area (w == 1 makes x1 == x2)
+ */
+void lv_area_set_width(lv_area_t * area_p, int32_t w);
+
+/**
+ * Set the height of an area
+ * @param area_p pointer to an area
+ * @param h the new height of the area (h == 1 makes y1 == y2)
+ */
+void lv_area_set_height(lv_area_t * area_p, int32_t h);
+
+/**
+ * Return with area of an area (x * y)
+ * @param area_p pointer to an area
+ * @return size of area
+ */
+uint32_t lv_area_get_size(const lv_area_t * area_p);
+
+void lv_area_increase(lv_area_t * area, int32_t w_extra, int32_t h_extra);
+
+void lv_area_move(lv_area_t * area, int32_t x_ofs, int32_t y_ofs);
+
+/**
+=== Flush callback typedef ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/display/lv_display.h:74:typedef void (*lv_display_flush_cb_t)(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/display/lv_display.h:309:void lv_display_set_flush_cb(lv_display_t * disp, lv_display_flush_cb_t flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/display/lv_display.h:316:lv_display_flush_cb_t lv_display_get_flush_cb(lv_display_t * disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h:75:    lv_display_flush_cb_t flush_cb;
+=== Public display buffer usage examples ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-87-    if(buf2 == NULL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-88-        LV_LOG_ERROR("display buffer malloc failed");
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-89-        lv_free(buf1);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-90-        return;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-91-    }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c:92:    lv_display_set_buffers(lcd_disp, buf1, buf2, buf_size, LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-93-}
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-94-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-95-/**********************
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-96- *   STATIC FUNCTIONS
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-97- **********************/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-98-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-99-/* Callback is called when background transfer finished */
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-100-static void lcd_color_transfer_ready_cb(SPI_HandleTypeDef * hspi)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-101-{
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_lcd_stm32_template.c-102-    /* CS high */
+--
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-65-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-66-    /* Example 1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-67-     * One buffer for partial rendering*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-68-    LV_ATTRIBUTE_MEM_ALIGN
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-69-    static uint8_t buf_1_1[MY_DISP_HOR_RES * 10 * BYTE_PER_PIXEL];            /*A buffer for 10 rows*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c:70:    lv_display_set_buffers(disp, buf_1_1, NULL, sizeof(buf_1_1), LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-71-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-72-    /* Example 2
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-73-     * Two buffers for partial rendering
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-74-     * In flush_cb DMA or similar hardware should be used to update the display in the background.*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-75-    LV_ATTRIBUTE_MEM_ALIGN
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-76-    static uint8_t buf_2_1[MY_DISP_HOR_RES * 10 * BYTE_PER_PIXEL];
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-77-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-78-    LV_ATTRIBUTE_MEM_ALIGN
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-79-    static uint8_t buf_2_2[MY_DISP_HOR_RES * 10 * BYTE_PER_PIXEL];
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c:80:    lv_display_set_buffers(disp, buf_2_1, buf_2_2, sizeof(buf_2_1), LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-81-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-82-    /* Example 3
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-83-     * Two buffers screen sized buffer for double buffering.
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-84-     * Both LV_DISPLAY_RENDER_MODE_DIRECT and LV_DISPLAY_RENDER_MODE_FULL works, see their comments*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-85-    LV_ATTRIBUTE_MEM_ALIGN
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-86-    static uint8_t buf_3_1[MY_DISP_HOR_RES * MY_DISP_VER_RES * BYTE_PER_PIXEL];
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-87-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-88-    LV_ATTRIBUTE_MEM_ALIGN
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-89-    static uint8_t buf_3_2[MY_DISP_HOR_RES * MY_DISP_VER_RES * BYTE_PER_PIXEL];
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c:90:    lv_display_set_buffers(disp, buf_3_1, buf_3_2, sizeof(buf_3_1), LV_DISPLAY_RENDER_MODE_DIRECT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-91-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-92-}
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-93-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-94-/**********************
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-95- *   STATIC FUNCTIONS
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-96- **********************/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-97-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-98-/*Initialize your display and the required peripherals.*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-99-static void disp_init(void)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-100-{
+--
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-21-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-22-int main(void)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-23-{
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-24-    lv_init();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-25-    lv_display_t * display = lv_display_create(WIDTH, HEIGHT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c:26:    lv_display_set_buffers(display, buffer, NULL, sizeof(buffer), LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-27-    lv_display_set_flush_cb(display, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-28-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-29-    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-30-    lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-31-    lv_indev_set_read_cb(indev, indev_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-32-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-33-    LV_IMAGE_DECLARE(lvgl_logo);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-34-    lv_obj_t * image = lv_image_create(lv_screen_active());
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-35-    lv_image_set_src(image, &lvgl_logo);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/minimal/main.c-36-    lv_obj_t * button = lv_button_create(lv_screen_active());
+--
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-21-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-22-int main(void)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-23-{
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-24-    lv_init();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-25-    lv_display_t * display = lv_display_create(WIDTH, HEIGHT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c:26:    lv_display_set_buffers(display, buffer, NULL, sizeof(buffer), LV_DISPLAY_RENDER_MODE_FULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-27-    lv_display_set_flush_cb(display, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-28-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-29-    lv_indev_t * indev = lv_indev_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-30-    lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-31-    lv_indev_set_read_cb(indev, indev_read_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-32-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-33-    lv_demo_widgets();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-34-    lv_demo_widgets_start_slideshow();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-35-    while(1) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/test_memory_usage/common/app_widgets.c-36-        uint32_t ms = lv_timer_handler();
+--
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-42-    static  LV_ATTRIBUTE_MEM_ALIGN uint8_t buf1[200 + LV_DRAW_BUF_ALIGN];
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-43-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-44-    lv_display_t * disp = lv_display_create(10, 20);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-45-    lv_display_set_color_format(disp, LV_COLOR_FORMAT_RGB888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-46-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c:47:    lv_display_set_buffers(disp, lv_draw_buf_align(buf0, LV_COLOR_FORMAT_RGB888), lv_draw_buf_align(buf1,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-48-                                                                                                    LV_COLOR_FORMAT_RGB888), 200, LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-49-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-50-    TEST_ASSERT_EQUAL(200, lv_display_get_draw_buf_size(disp));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-51-    lv_display_delete(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-52-}
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/tests/src/test_cases/test_display.c-53-
+=== Public display creation examples ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-60-    /*------------------------------------
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-61-     * Create a display and set a flush_cb
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-62-     * -----------------------------------*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c:63:    lv_display_t * disp = lv_display_create(MY_DISP_HOR_RES, MY_DISP_VER_RES);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-64-    lv_display_set_flush_cb(disp, disp_flush);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-65-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-66-    /* Example 1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-67-     * One buffer for partial rendering*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-68-    LV_ATTRIBUTE_MEM_ALIGN
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-69-    static uint8_t buf_1_1[MY_DISP_HOR_RES * 10 * BYTE_PER_PIXEL];            /*A buffer for 10 rows*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-70-    lv_display_set_buffers(disp, buf_1_1, NULL, sizeof(buf_1_1), LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/examples/porting/lv_port_disp_template.c-71-
