@@ -1,0 +1,15 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/17] Building CXX object CMakeFiles/kiddos_ui_list_view_test.dir/tests/ui_list_view_test.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos_ui_list_view_test.dir/tests/ui_list_view_test.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos_ui_list_view_test.dir/tests/ui_list_view_test.cpp.o -MF CMakeFiles/kiddos_ui_list_view_test.dir/tests/ui_list_view_test.cpp.o.d -o CMakeFiles/kiddos_ui_list_view_test.dir/tests/ui_list_view_test.cpp.o -c /home/hawk/KiddOS/tests/ui_list_view_test.cpp
+In file included from /usr/include/c++/16/cassert:46,
+                 from /home/hawk/KiddOS/tests/ui_list_view_test.cpp:4:
+/home/hawk/KiddOS/tests/ui_list_view_test.cpp: In function ‘int main()’:
+/home/hawk/KiddOS/tests/ui_list_view_test.cpp:34:5: error: expression list treated as compound expression in functional cast [-fpermissive]
+   34 |     assert(list.set_row_height(36), list.row_height() == 36);
+      |     ^~~~~~
+[2/17] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/controller.cpp.o
+[3/17] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/list_view.cpp.o
+ninja: build stopped: subcommand failed.
