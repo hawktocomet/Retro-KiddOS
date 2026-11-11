@@ -8,9 +8,23 @@ fi
 
 cd "$ROOT" || exit 1
 
-TITLE="$1"
-if [ -z "$TITLE" ]; then
-    echo "Usage: ./tools/kiddos-milestone 'Milestone name' <<'TASK'"
+MILESTONE="$1"
+TITLE="$2"
+
+if [ -z "$MILESTONE" ] || [ -z "$TITLE" ]; then
+    echo "Usage: ./tools/kiddos-milestone <milestone-slug> 'Run title' <<'TASK'"
+    exit 1
+fi
+
+if ! [[ "$MILESTONE" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+    echo "ERROR: Milestone slug must contain lowercase letters, numbers, and hyphens only."
+    exit 1
+fi
+
+MILESTONE_DIR="research/milestones/$MILESTONE"
+
+if [ ! -d "$MILESTONE_DIR" ]; then
+    echo "ERROR: Milestone does not exist: $MILESTONE_DIR"
     exit 1
 fi
 
@@ -27,10 +41,16 @@ fi
 
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 SLUG="$(printf '%s' "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//' | cut -c1-55)"
-RUN="research/milestone-runs/${STAMP}-${SLUG}"
+
+if [ -z "$SLUG" ]; then
+    echo "ERROR: Title must contain letters or numbers."
+    exit 1
+fi
+
+RUN="$MILESTONE_DIR/runs/${STAMP}-${SLUG}"
 LOG="$RUN/run.log"
 REPORT="$RUN/REPORT.md"
-LATEST="research/milestone-runs/LATEST.txt"
+LATEST="$MILESTONE_DIR/LATEST.txt"
 TASKFILE="$(mktemp)"
 
 if [ -t 0 ]; then
@@ -43,6 +63,8 @@ mkdir -p "$RUN"
 cat > "$TASKFILE"
 
 echo "Running: $TITLE"
+echo "Milestone: $MILESTONE"
+echo "Output: $RUN"
 echo "Full output is being captured."
 
 bash "$TASKFILE" > "$LOG" 2>&1
@@ -61,6 +83,7 @@ fi
 cat > "$REPORT" <<EOF
 # Milestone Run Report
 
+- Milestone: $MILESTONE
 - Title: $TITLE
 - Timestamp (UTC): $STAMP
 - Result: $RESULT
@@ -97,6 +120,7 @@ echo
 echo "======================================"
 echo "MILESTONE REPORT"
 echo "======================================"
+echo "Milestone: $MILESTONE"
 echo "Title: $TITLE"
 echo "Result: $RESULT"
 echo "Output lines: $LINES"
