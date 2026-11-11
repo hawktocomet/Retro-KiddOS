@@ -1,0 +1,28 @@
+===== BUILD =====
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/5] Building CXX object CMakeFiles/kiddos_ui_geometry_test.dir/tests/ui_geometry_test.cpp.o
+[2/5] Linking CXX executable kiddos_ui_geometry_test
+[3/5] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/renderer.cpp.o
+[4/5] Linking CXX static library libkiddos_ui.a
+[5/5] Linking CXX executable kiddos
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_ui_geometry
+1/1 Test #1: kiddos_ui_geometry ...............   Passed    0.00 sec
+
+100% tests passed out of 1
+
+Total Test time (real) =   0.00 sec
+
+===== STAGING IMPLEMENTATION =====
+
+===== IMPLEMENTATION STATUS =====
+ CMakeLists.txt                 | 30 ++++++++++++++-
+ docs/KIDDOS_UI_LIBRARY.md      | 42 ++++++++++++++++++++
+ include/kiddos/ui/color.hpp    | 21 ++++++++++
+ include/kiddos/ui/geometry.hpp | 27 +++++++++++++
+ include/kiddos/ui/renderer.hpp | 38 ++++++++++++++++++
+ src/ui/renderer.cpp            | 87 ++++++++++++++++++++++++++++++++++++++++++
+ tests/ui_geometry_test.cpp     | 23 +++++++++++
+ 7 files changed, 267 insertions(+), 1 deletion(-)

@@ -13,6 +13,19 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
 
+add_library(kiddos_ui STATIC
+    src/ui/renderer.cpp
+)
+
+target_include_directories(kiddos_ui PUBLIC include)
+target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2)
+
+target_compile_options(kiddos_ui PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
 add_executable(kiddos
     src/main.cpp
     src/app/application.cpp
@@ -20,10 +33,25 @@ add_executable(kiddos
 )
 
 target_include_directories(kiddos PRIVATE include)
-target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
+target_link_libraries(kiddos PRIVATE kiddos_ui)
 
 target_compile_options(kiddos PRIVATE
     -Wall
     -Wextra
     -Wpedantic
 )
+
+include(CTest)
+
+if(BUILD_TESTING)
+    add_executable(kiddos_ui_geometry_test
+        tests/ui_geometry_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_geometry_test PRIVATE include)
+
+    add_test(
+        NAME kiddos_ui_geometry
+        COMMAND kiddos_ui_geometry_test
+    )
+endif()
