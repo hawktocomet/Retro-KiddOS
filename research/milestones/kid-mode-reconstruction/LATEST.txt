@@ -1,1 +1,1 @@
-research/milestones/kid-mode-reconstruction/runs/20261111T190013Z-correct-navigation-arrows-and-finish-border-and-restart
+research/milestones/kid-mode-reconstruction/runs/20261111T190209Z-build-and-test-polished-kid-mode-home-screen
