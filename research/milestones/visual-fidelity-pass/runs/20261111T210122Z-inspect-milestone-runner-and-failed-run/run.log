@@ -1,0 +1,146 @@
+=== RUNNER HELP ===
+#!/bin/bash
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [ -z "$ROOT" ]; then
+    echo "ERROR: Not inside a Git repository."
+    exit 1
+fi
+
+cd "$ROOT" || exit 1
+
+MILESTONE="$1"
+TITLE="$2"
+
+if [ -z "$MILESTONE" ] || [ -z "$TITLE" ]; then
+    echo "Usage: ./tools/kiddos-milestone <milestone-slug> 'Run title' <<'TASK'"
+    exit 1
+fi
+
+if ! [[ "$MILESTONE" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+    echo "ERROR: Milestone slug must contain lowercase letters, numbers, and hyphens only."
+    exit 1
+fi
+
+MILESTONE_DIR="research/milestones/$MILESTONE"
+
+if [ ! -d "$MILESTONE_DIR" ]; then
+    echo "ERROR: Milestone does not exist: $MILESTONE_DIR"
+    exit 1
+fi
+
+BRANCH="$(git branch --show-current)"
+if [ -z "$BRANCH" ]; then
+    echo "ERROR: No current Git branch."
+    exit 1
+fi
+
+if ! git remote get-url origin >/dev/null 2>&1; then
+    echo "ERROR: GitHub origin remote unavailable."
+    exit 1
+fi
+
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+SLUG="$(printf '%s' "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//' | cut -c1-55)"
+
+if [ -z "$SLUG" ]; then
+    echo "ERROR: Title must contain letters or numbers."
+    exit 1
+fi
+
+RUN="$MILESTONE_DIR/runs/${STAMP}-${SLUG}"
+LOG="$RUN/run.log"
+REPORT="$RUN/REPORT.md"
+LATEST="$MILESTONE_DIR/LATEST.txt"
+TASKFILE="$(mktemp)"
+
+if [ -t 0 ]; then
+    echo "ERROR: Supply commands through a TASK heredoc."
+    rm -f "$TASKFILE"
+    exit 1
+fi
+
+mkdir -p "$RUN"
+cat > "$TASKFILE"
+
+echo "Running: $TITLE"
+echo "Milestone: $MILESTONE"
+echo "Output: $RUN"
+echo "Full output is being captured."
+
+bash "$TASKFILE" > "$LOG" 2>&1
+TASK_RC=$?
+rm -f "$TASKFILE"
+
+LINES="$(wc -l < "$LOG")"
+SIZE="$(du -h "$LOG" | cut -f1)"
+
+if [ "$TASK_RC" -eq 0 ]; then
+    RESULT="SUCCESS"
+else
+    RESULT="FAILED (exit code $TASK_RC)"
+fi
+
+cat > "$REPORT" <<EOF
+# Milestone Run Report
+
+- Milestone: $MILESTONE
+- Title: $TITLE
+- Timestamp (UTC): $STAMP
+- Result: $RESULT
+- Branch: $BRANCH
+- Log: $LOG
+- Lines captured: $LINES
+- Log size: $SIZE
+
+Full terminal output is available in run.log.
+EOF
+
+printf '%s\n' "$RUN" > "$LATEST"
+
+git add -f -- "$RUN" "$LATEST"
+git add -- tools/kiddos-milestone
+
+git commit -m "chore: record milestone run - $SLUG"
+COMMIT_RC=$?
+
+if [ "$COMMIT_RC" -ne 0 ]; then
+    echo "ERROR: Could not commit milestone results."
+    exit 2
+fi
+
+git push origin "$BRANCH"
+PUSH_RC=$?
+
+if [ "$PUSH_RC" -ne 0 ]; then
+    echo "ERROR: GitHub upload failed. Results remain local."
+    exit 3
+fi
+
+echo
+echo "======================================"
+echo "MILESTONE REPORT"
+echo "======================================"
+echo "Milestone: $MILESTONE"
+echo "Title: $TITLE"
+echo "Result: $RESULT"
+echo "Output lines: $LINES"
+echo "GitHub upload: VERIFIED"
+echo "Report: $REPORT"
+echo "Full log: $LOG"
+echo
+echo "LAST 20 LINES:"
+tail -n 20 "$LOG"
+echo
+echo "======================================"
+
+exit "$TASK_RC"
+=== LATEST RUN FILES ===
+research/milestones/visual-fidelity-pass/runs/20261111T205928Z-default-to-cartridge-option-2-and-improve-carousel-anim/run.log
+research/milestones/visual-fidelity-pass/runs/20261111T205928Z-default-to-cartridge-option-2-and-improve-carousel-anim/REPORT.md
+=== RUN DIRECTORY CONTENTS ===
+total 8
+drwxr-xr-x 1 hawk hawk   32 Nov 11 15:59 .
+drwxr-xr-x 1 hawk hawk 7028 Nov 11 16:01 ..
+-rw-r--r-- 1 hawk hawk  448 Nov 11 15:59 REPORT.md
+-rw-r--r-- 1 hawk hawk  421 Nov 11 15:59 run.log
