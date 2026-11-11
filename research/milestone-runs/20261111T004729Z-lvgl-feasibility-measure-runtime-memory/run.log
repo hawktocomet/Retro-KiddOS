@@ -1,0 +1,15 @@
+=== Process status ===
+Name:	kiddos_lvgl_sdl
+VmPeak:	  945064 kB
+VmSize:	  945064 kB
+VmHWM:	   95200 kB
+VmRSS:	   95200 kB
+VmData:	  160612 kB
+VmStk:	     132 kB
+PROCESS_ALIVE=PASS
+
+=== Runtime output ===
+No SDL game controller detected; keyboard arrows remain available.\nAdapter running: LVGL -> custom flush callback -> existing SDL_Renderer
+Press Escape or close the window to exit.
+SYNTHETIC_NEXT_NAV=PASS\n
+MEMORY_CHECK_COMPLETE=PASS

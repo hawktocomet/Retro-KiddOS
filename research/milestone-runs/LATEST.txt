@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T004701Z-lvgl-feasibility-measure-runtime-footprint
+research/milestone-runs/20261111T004729Z-lvgl-feasibility-measure-runtime-memory
