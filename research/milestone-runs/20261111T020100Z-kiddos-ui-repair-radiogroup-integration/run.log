@@ -1,0 +1,32 @@
+35:    src/ui/checkbox.cpp
+36:    src/ui/radio_group.cpp
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/21] Building CXX object CMakeFiles/kiddos_ui_theme_test.dir/tests/ui_theme_test.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos_ui_theme_test.dir/tests/ui_theme_test.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos_ui_theme_test.dir/tests/ui_theme_test.cpp.o -MF CMakeFiles/kiddos_ui_theme_test.dir/tests/ui_theme_test.cpp.o.d -o CMakeFiles/kiddos_ui_theme_test.dir/tests/ui_theme_test.cpp.o -c /home/hawk/KiddOS/tests/ui_theme_test.cpp
+In file included from /home/hawk/KiddOS/tests/ui_theme_test.cpp:1:
+/home/hawk/KiddOS/include/kiddos/ui/theme.hpp:43:51: error: stray ‘\’ in program
+   43 |     CheckboxStyle checkbox_style() const noexcept;\n    RadioGroupStyle radio_group_style() const noexcept;
+      |                                                   ^
+/home/hawk/KiddOS/include/kiddos/ui/theme.hpp:43:52: error: ‘n’ does not name a type
+   43 |     CheckboxStyle checkbox_style() const noexcept;\n    RadioGroupStyle radio_group_style() const noexcept;
+      |                                                    ^
+[2/21] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/radio_group.cpp.o
+[3/21] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -Wall -Wextra -Wpedantic -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o -MF CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o.d -o CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o -c /home/hawk/KiddOS/src/ui/theme.cpp
+In file included from /home/hawk/KiddOS/src/ui/theme.cpp:1:
+/home/hawk/KiddOS/include/kiddos/ui/theme.hpp:43:51: error: stray ‘\’ in program
+   43 |     CheckboxStyle checkbox_style() const noexcept;\n    RadioGroupStyle radio_group_style() const noexcept;
+      |                                                   ^
+/home/hawk/KiddOS/include/kiddos/ui/theme.hpp:43:52: error: ‘n’ does not name a type
+   43 |     CheckboxStyle checkbox_style() const noexcept;\n    RadioGroupStyle radio_group_style() const noexcept;
+      |                                                    ^
+/home/hawk/KiddOS/src/ui/theme.cpp:92:1: error: ‘RadioGroupStyle’ does not name a type
+   92 | RadioGroupStyle Theme::radio_group_style() const noexcept {
+      | ^~~~~~~~~~~~~~~
+[4/21] Building CXX object CMakeFiles/kiddos_ui_radio_group_test.dir/tests/ui_radio_group_test.cpp.o
+[5/21] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/controller.cpp.o
+ninja: build stopped: subcommand failed.
