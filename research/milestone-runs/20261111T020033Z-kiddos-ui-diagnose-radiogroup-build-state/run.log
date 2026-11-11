@@ -1,0 +1,75 @@
+=== Current commit ===
+c9ea497 chore: record milestone run - kiddos-ui-radiogroup-widget
+
+=== Checkbox files ===
+-rw-r--r-- 1 hawk hawk 1208 Nov 10 20:58 include/kiddos/ui/checkbox.hpp
+-rw-r--r-- 1 hawk hawk 2576 Nov 10 20:58 src/ui/checkbox.cpp
+-rw-r--r-- 1 hawk hawk 3473 Nov 10 21:00 src/ui/radio_group.cpp
+
+=== Git tracked checkbox files ===
+include/kiddos/ui/checkbox.hpp
+research/milestone-runs/20261111T015806Z-kiddos-ui-reusable-checkbox-widget/REPORT.md
+research/milestone-runs/20261111T015806Z-kiddos-ui-reusable-checkbox-widget/run.log
+research/milestone-runs/20261111T015843Z-kiddos-ui-diagnose-checkbox-integration/REPORT.md
+research/milestone-runs/20261111T015843Z-kiddos-ui-diagnose-checkbox-integration/run.log
+research/milestone-runs/20261111T015919Z-kiddos-ui-complete-checkbox-integration/REPORT.md
+research/milestone-runs/20261111T015919Z-kiddos-ui-complete-checkbox-integration/run.log
+src/ui/checkbox.cpp
+tests/ui_checkbox_test.cpp
+
+=== CMake source entries ===
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
+pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
+
+add_library(kiddos_ui STATIC
+    src/ui/renderer.cpp
+    src/ui/layout.cpp
+    src/ui/focus.cpp
+    src/ui/button.cpp
+    src/ui/controller.cpp
+    src/ui/font.cpp
+    src/ui/text.cpp
+    src/ui/texture.cpp
+    src/ui/image.cpp
+    src/ui/label.cpp
+    src/ui/panel.cpp
+    src/ui/progress_bar.cpp
+    src/ui/toggle.cpp
+    src/ui/slider.cpp
+    src/ui/theme.cpp
+    src/ui/list_view.cpp
+    src/ui/checkbox.cpp\n    src/ui/radio_group.cpp
+)
+
+target_include_directories(kiddos_ui PUBLIC include)
+target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
+
+target_compile_options(kiddos_ui PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+=== Working tree ===
+ M CMakeLists.txt
+ M include/kiddos/app/application.hpp
+ M include/kiddos/ui/theme.hpp
+ M src/platform/sdl_platform.cpp
+ M src/ui/controller.cpp
+ M src/ui/theme.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+?? include/kiddos/ui/radio_group.hpp
+?? src/ui/radio_group.cpp
+?? tests/ui_radio_group_test.cpp
+
+=== RadioGroup files ===
+-rw-r--r-- 1 hawk hawk 1354 Nov 10 21:00 include/kiddos/ui/radio_group.hpp
+-rw-r--r-- 1 hawk hawk 1746 Nov 10 21:00 tests/ui_radio_group_test.cpp
