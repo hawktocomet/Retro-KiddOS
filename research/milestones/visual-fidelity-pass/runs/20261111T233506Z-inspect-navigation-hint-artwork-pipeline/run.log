@@ -1,0 +1,8 @@
+=== Artwork generation references ===
+=== Available renderers ===
+/usr/bin/rsvg-convert
+/usr/bin/magick
+/usr/bin/convert
+=== Current artwork files ===
+-rw-r--r-- 1 hawk hawk 7185 Nov 11 15:12 assets/artwork/generated/navigation-hints.png
+-rw-r--r-- 1 hawk hawk 1407 Nov 11 15:12 assets/artwork/source/branding/navigation-hints.svg
