@@ -1,0 +1,653 @@
+=== GIT STATUS ===
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+?? assets/artwork/generated/boxart/
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/platform.hpp
+=== HOME SCREEN SOURCE ===
+#include "kiddos/app/home_carousel_screen.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <string>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr ui::Color background{1, 1, 1, 255};
+
+constexpr ui::Rect left_art{24, 268, 128, 128};
+constexpr ui::Rect center_art{180, 180, 360, 360};
+constexpr ui::Rect right_art{568, 268, 128, 128};
+
+constexpr ui::Rect title_rect{145, 465, 430, 54};
+constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+constexpr ui::Rect hints_rect{0, 662, 720, 42};
+
+
+
+constexpr const char* wordmark_path =
+    "assets/artwork/generated/kiddos-wordmark.png";
+constexpr const char* hints_path =
+    "assets/artwork/generated/navigation-hints.png";
+
+void fill_speaker_cone(
+    ui::Renderer& renderer,
+    int narrow_x,
+    int narrow_top,
+    int narrow_bottom,
+    int wide_x,
+    int wide_top,
+    int wide_bottom,
+    ui::Color color
+) {
+    for (int y = wide_top; y <= wide_bottom; ++y) {
+        int left = narrow_x;
+
+        if (y < narrow_top) {
+            left += (narrow_top - y) * (wide_x - narrow_x) /
+                    (narrow_top - wide_top);
+        } else if (y > narrow_bottom) {
+            left += (y - narrow_bottom) * (wide_x - narrow_x) /
+                    (wide_bottom - narrow_bottom);
+        }
+
+        renderer.draw_line({left, y}, {wide_x, y}, color);
+    }
+}
+
+void draw_arc(
+    ui::Renderer& renderer,
+    ui::Point center,
+    int radius,
+    double start_degrees,
+    double end_degrees,
+    ui::Color color
+) {
+    constexpr double pi = 3.14159265358979323846;
+    const int steps = std::max(2, radius * 2);
+    const double delta = (end_degrees - start_degrees) / steps;
+
+    auto point_at = [&](double degrees) {
+        const double radians = degrees * pi / 180.0;
+        return ui::Point{
+            center.x + static_cast<int>(std::lround(radius * std::cos(radians))),
+            center.y + static_cast<int>(std::lround(radius * std::sin(radians)))
+        };
+    };
+
+    ui::Point previous = point_at(start_degrees);
+    for (int i = 1; i <= steps; ++i) {
+        const ui::Point point = point_at(start_degrees + delta * i);
+        renderer.draw_line(previous, point, color);
+        previous = point;
+    }
+}
+
+class StatusIndicators final : public ui::Element {
+protected:
+    void draw(ui::Renderer& renderer) override {
+        const ui::Color primary{190, 208, 235, 210};
+        const ui::Color accent{105, 160, 225, 210};
+
+        // Compact speaker indicator.
+        renderer.fill_rect({25, 32, 7, 12}, primary);
+        fill_speaker_cone(renderer, 32, 32, 44, 42, 27, 49, primary);
+        draw_arc(renderer, {44, 38}, 7, -48.0, 48.0, accent);
+
+        // Quiet battery indicator.
+        renderer.outline_rect({660, 29, 30, 16}, primary);
+        renderer.fill_rect({691, 34, 3, 6}, primary);
+        renderer.fill_rect({664, 33, 20, 8}, accent);
+    }
+};
+
+int interpolate(int current, int target, float amount) {
+    return static_cast<int>(std::lround(
+        current + (target - current) * amount));
+}
+
+ui::Rect interpolate_rect(
+    ui::Rect current,
+    ui::Rect target,
+    float amount
+) {
+    return {
+        interpolate(current.x, target.x, amount),
+        interpolate(current.y, target.y, amount),
+        interpolate(current.w, target.w, amount),
+        interpolate(current.h, target.h, amount)
+    };
+}
+
+} // namespace
+
+HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+    constexpr std::array<const char*, game_count> game_cover_paths{{
+        "assets/artwork/generated/boxart/gb-tetris.png",
+        "assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png",
+        "assets/artwork/generated/boxart/snes-super-mario-world.png",
+        "assets/artwork/generated/boxart/arcade-pac-man.png"
+    }};
+
+    for (std::size_t game = 0; game < game_textures_.size(); ++game) {
+        game_textures_[game].load(renderer, game_cover_paths[game], false);
+    }
+
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto& image = root().add<ui::Image>();
+        image.set_fit(ui::ImageFit::contain);
+        image.set_bounds(slot_bounds[slot]);
+        game_images_[slot] = &image;
+    }
+
+    wordmark_texture_.load(renderer, wordmark_path, false);
+    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+    wordmark_->set_bounds(wordmark_rect);
+    wordmark_->set_fit(ui::ImageFit::contain);
+
+    hints_texture_.load(renderer, hints_path, false);
+    hints_ = &root().add<ui::Image>(&hints_texture_);
+    hints_->set_bounds(hints_rect);
+    hints_->set_fit(ui::ImageFit::contain);
+
+    root().add<StatusIndicators>();
+
+    set_selected_game(1);
+}
+
+HomeCarouselScreen::~HomeCarouselScreen() {
+    for (auto* image : game_images_) {
+        if (image) image->set_texture(nullptr);
+    }
+
+    if (wordmark_) wordmark_->set_texture(nullptr);
+    if (hints_) hints_->set_texture(nullptr);
+}
+
+void HomeCarouselScreen::set_selected_game(int index) {
+    if (index < 0 || index >= game_count) return;
+    if (index == selected_game_) return;
+
+    const int previous = selected_game_;
+    const bool moving_right =
+        previous >= 0 && index == (previous + 1) % game_count;
+    const bool moving_left =
+        previous >= 0 && index == (previous + game_count - 1) % game_count;
+
+    if (moving_right) {
+        auto* recycled = game_images_[0];
+        game_images_[0] = game_images_[1];
+        game_images_[1] = game_images_[2];
+        game_images_[2] = recycled;
+        recycled->set_bounds({720, right_art.y, right_art.w, right_art.h});
+    } else if (moving_left) {
+        auto* recycled = game_images_[2];
+        game_images_[2] = game_images_[1];
+        game_images_[1] = game_images_[0];
+        game_images_[0] = recycled;
+        recycled->set_bounds({-128, left_art.y, left_art.w, left_art.h});
+    }
+
+    selected_game_ = index;
+
+    const std::array<int, 3> visible_games{
+        (index + game_count - 1) % game_count,
+        index,
+        (index + 1) % game_count
+    };
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto* image = game_images_[slot];
+        image->set_texture(
+            &game_textures_[static_cast<std::size_t>(visible_games[slot])]);
+        target_bounds_[slot] = slot_bounds[slot];
+        target_opacity_[slot] = slot == 1 ? 255 : 118;
+
+        if (!moving_right && !moving_left) {
+            image->set_bounds(slot_bounds[slot]);
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[slot]));
+        }
+    }
+}
+
+void HomeCarouselScreen::update(float delta_seconds) {
+    if (delta_seconds <= 0.0f) return;
+
+    // A critically damped-feeling ease that settles quickly while allowing
+    // another direction input to retarget the carousel mid-motion.
+    const float amount = std::clamp(
+        1.0f - std::exp(-delta_seconds * 7.0f), 0.0f, 1.0f);
+
+    for (std::size_t i = 0; i < game_images_.size(); ++i) {
+        ui::Image* image = game_images_[i];
+        if (!image) continue;
+
+        const ui::Rect current = image->bounds();
+        const ui::Rect target = target_bounds_[i];
+        const ui::Rect next = interpolate_rect(current, target, amount);
+
+        const int opacity = interpolate(
+            image->opacity(), target_opacity_[i], amount);
+
+        image->set_bounds(next);
+        image->set_opacity(static_cast<std::uint8_t>(
+            std::clamp(opacity, 0, 255)));
+
+        if (std::abs(next.x - target.x) <= 1 &&
+            std::abs(next.y - target.y) <= 1 &&
+            std::abs(next.w - target.w) <= 1 &&
+            std::abs(next.h - target.h) <= 1) {
+            image->set_bounds(target);
+        }
+
+        if (std::abs(opacity - target_opacity_[i]) <= 1) {
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[i]));
+        }
+    }
+}
+
+} // namespace kiddos::app
+=== HEADER AND WORDMARK REFERENCES ===
+src/platform/sdl_platform.cpp:1:#include "kiddos/platform/sdl_platform.hpp"
+src/platform/sdl_platform.cpp:2:#include "kiddos/platform/sdl_keyboard_policy.hpp"
+src/platform/sdl_platform.cpp:3:#include "kiddos/platform/sdl_text_input_translator.hpp"
+src/platform/sdl_platform.cpp:10:namespace kiddos {
+src/platform/sdl_platform.cpp:372:        "Retro KiddOS - Kid Mode",
+src/platform/sdl_platform.cpp:848:} // namespace kiddos
+src/app/application.cpp:1:#include "kiddos/app/application.hpp"
+src/app/application.cpp:3:#include "kiddos/app/home_carousel_screen.hpp"
+src/app/application.cpp:4:#include "kiddos/app/ui_action_mapping.hpp"
+src/app/application.cpp:11:namespace kiddos {
+src/app/application.cpp:145:} // namespace kiddos
+src/app/home_carousel_screen.cpp:1:#include "kiddos/app/home_carousel_screen.hpp"
+src/app/home_carousel_screen.cpp:8:namespace kiddos::app {
+src/app/home_carousel_screen.cpp:15:constexpr ui::Rect center_art{180, 180, 360, 360};
+src/app/home_carousel_screen.cpp:19:constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+src/app/home_carousel_screen.cpp:24:constexpr const char* wordmark_path =
+src/app/home_carousel_screen.cpp:25:    "assets/artwork/generated/kiddos-wordmark.png";
+src/app/home_carousel_screen.cpp:143:    wordmark_texture_.load(renderer, wordmark_path, false);
+src/app/home_carousel_screen.cpp:144:    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+src/app/home_carousel_screen.cpp:145:    wordmark_->set_bounds(wordmark_rect);
+src/app/home_carousel_screen.cpp:146:    wordmark_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp:163:    if (wordmark_) wordmark_->set_texture(nullptr);
+src/app/home_carousel_screen.cpp:254:} // namespace kiddos::app
+src/main.cpp:1:#include "kiddos/app/application.hpp"
+src/main.cpp:2:#include "kiddos/platform/sdl_platform.hpp"
+src/main.cpp:5:    kiddos::SDLPlatform platform;
+src/main.cpp:6:    kiddos::Application application(platform);
+src/ui/renderer.cpp:1:#include "kiddos/ui/renderer.hpp"
+src/ui/renderer.cpp:6:namespace kiddos::ui {
+src/ui/renderer.cpp:254:} // namespace kiddos::ui
+src/ui/layout.cpp:1:#include "kiddos/ui/layout.hpp"
+src/ui/layout.cpp:6:namespace kiddos::ui {
+src/ui/layout.cpp:73:} // namespace kiddos::ui
+src/ui/focus.cpp:1:#include "kiddos/ui/focus.hpp"
+src/ui/focus.cpp:8:namespace kiddos::ui {
+src/ui/focus.cpp:147:} // namespace kiddos::ui
+src/ui/button.cpp:1:#include "kiddos/ui/button.hpp"
+src/ui/button.cpp:2:#include "kiddos/ui/text.hpp"
+src/ui/button.cpp:6:namespace kiddos::ui {
+src/ui/button.cpp:29:void Button::set_font(const Font* font) noexcept {
+src/ui/button.cpp:30:    font_ = font;
+src/ui/button.cpp:33:const Font* Button::font() const noexcept {
+src/ui/button.cpp:34:    return font_;
+src/ui/button.cpp:76:    if (font_ && font_->valid() && !label_.empty()) {
+src/ui/button.cpp:87:            text.draw_centered(label_, *font_, text_area, text_color);
+src/ui/button.cpp:92:} // namespace kiddos::ui
+src/ui/controller.cpp:1:#include "kiddos/ui/controller.hpp"
+src/ui/controller.cpp:2:#include "kiddos/ui/toggle.hpp"
+src/ui/controller.cpp:3:#include "kiddos/ui/checkbox.hpp"
+src/ui/controller.cpp:4:#include "kiddos/ui/radio_group.hpp"
+src/ui/controller.cpp:5:#include "kiddos/ui/select.hpp"
+src/ui/controller.cpp:6:#include "kiddos/ui/slider.hpp"
+src/ui/controller.cpp:7:#include "kiddos/ui/list_view.hpp"
+src/ui/controller.cpp:9:namespace kiddos::ui {
+src/ui/controller.cpp:73:} // namespace kiddos::ui
+src/ui/font.cpp:1:#include "kiddos/ui/font.hpp"
+src/ui/font.cpp:4:namespace kiddos::ui {
+src/ui/font.cpp:5:Font::~Font() { reset(); }
+src/ui/font.cpp:6:Font::Font(Font&& other) noexcept
+src/ui/font.cpp:7:    : font_(std::exchange(other.font_, nullptr)) {}
+src/ui/font.cpp:8:Font& Font::operator=(Font&& other) noexcept {
+src/ui/font.cpp:11:        font_ = std::exchange(other.font_, nullptr);
+src/ui/font.cpp:15:bool Font::load(const std::string& path, int point_size) {
+src/ui/font.cpp:18:    font_ = TTF_OpenFont(path.c_str(), point_size);
+src/ui/font.cpp:19:    return font_ != nullptr;
+src/ui/font.cpp:21:void Font::reset() noexcept {
+src/ui/font.cpp:22:    if (font_) {
+src/ui/font.cpp:23:        TTF_CloseFont(font_);
+src/ui/font.cpp:24:        font_ = nullptr;
+src/ui/font.cpp:27:bool Font::valid() const noexcept { return font_ != nullptr; }
+src/ui/font.cpp:28:TTF_Font* Font::native() const noexcept { return font_; }
+src/ui/text.cpp:1:#include "kiddos/ui/text.hpp"
+src/ui/text.cpp:3:namespace kiddos::ui {
+src/ui/text.cpp:7:bool TextRenderer::draw(const std::string& text, const Font& font,
+src/ui/text.cpp:9:    if (!renderer_.valid() || !font.valid() || text.empty()) return false;
+src/ui/text.cpp:12:        TTF_RenderUTF8_Blended(font.native(), text.c_str(), tint);
+src/ui/text.cpp:28:bool TextRenderer::draw_centered(const std::string& text, const Font& font,
+src/ui/text.cpp:30:    if (!font.valid() || text.empty() || area.empty()) return false;
+src/ui/text.cpp:33:    if (TTF_SizeUTF8(font.native(), text.c_str(), &width, &height) != 0)
+src/ui/text.cpp:35:    return draw(text, font,
+src/ui/texture.cpp:1:#include "kiddos/ui/texture.hpp"
+src/ui/texture.cpp:6:namespace kiddos::ui {
+src/ui/image.cpp:1:#include "kiddos/ui/image.hpp"
+src/ui/image.cpp:6:namespace kiddos::ui {
+src/ui/label.cpp:1:#include "kiddos/ui/label.hpp"
+src/ui/label.cpp:2:#include "kiddos/ui/text.hpp"
+src/ui/label.cpp:7:namespace kiddos::ui {
+src/ui/label.cpp:21:void Label::set_font(const Font* font) noexcept {
+src/ui/label.cpp:22:    font_ = font;
+src/ui/label.cpp:25:const Font* Label::font() const noexcept {
+src/ui/label.cpp:26:    return font_;
+src/ui/label.cpp:48:    if (!font_ || !font_->valid() || text_.empty() || area.empty()) {
+src/ui/label.cpp:55:    if (TTF_SizeUTF8(font_->native(), text_.c_str(), &width, &height) != 0) {
+src/ui/label.cpp:75:    text_renderer.draw(text_, *font_, {x, y}, color_);
+src/ui/panel.cpp:1:#include "kiddos/ui/panel.hpp"
+src/ui/panel.cpp:6:namespace kiddos::ui {
+src/ui/progress_bar.cpp:1:#include "kiddos/ui/progress_bar.hpp"
+src/ui/progress_bar.cpp:5:namespace kiddos::ui {
+src/ui/toggle.cpp:1:#include "kiddos/ui/toggle.hpp"
+src/ui/toggle.cpp:6:namespace kiddos::ui {
+src/ui/slider.cpp:1:#include "kiddos/ui/slider.hpp"
+src/ui/slider.cpp:6:namespace kiddos::ui {
+src/ui/theme.cpp:1:#include "kiddos/ui/theme.hpp"
+src/ui/theme.cpp:3:namespace kiddos::ui {
+src/ui/theme.cpp:9:Theme Theme::kiddos_default() noexcept {
+src/ui/theme.cpp:130:} // namespace kiddos::ui
+src/ui/list_view.cpp:1:#include "kiddos/ui/list_view.hpp"
+src/ui/list_view.cpp:2:#include "kiddos/ui/text.hpp"
+src/ui/list_view.cpp:7:namespace kiddos::ui {
+src/ui/list_view.cpp:67:void ListView::set_font(const Font* font) noexcept {
+src/ui/list_view.cpp:68:    font_ = font;
+src/ui/list_view.cpp:126:        if (font_ && font_->valid() && !items_[index].empty()) {
+src/ui/list_view.cpp:128:            text.draw(items_[index], *font_,
+src/ui/checkbox.cpp:1:#include "kiddos/ui/checkbox.hpp"
+src/ui/checkbox.cpp:2:#include "kiddos/ui/text.hpp"
+src/ui/checkbox.cpp:3:#include "kiddos/ui/geometry.hpp"
+src/ui/checkbox.cpp:8:namespace kiddos::ui {
+src/ui/checkbox.cpp:39:void Checkbox::set_font(const Font* font) noexcept {
+src/ui/checkbox.cpp:40:    font_ = font;
+src/ui/checkbox.cpp:43:const Font* Checkbox::font() const noexcept {
+src/ui/checkbox.cpp:44:    return font_;
+src/ui/checkbox.cpp:84:    if (font_ && font_->valid() && !label_.empty()) {
+src/ui/checkbox.cpp:95:                label_, *font_, text_area,
+src/ui/radio_group.cpp:1:#include "kiddos/ui/radio_group.hpp"
+src/ui/radio_group.cpp:2:#include "kiddos/ui/text.hpp"
+src/ui/radio_group.cpp:7:namespace kiddos::ui {
+src/ui/radio_group.cpp:48:void RadioGroup::set_font(const Font* font) noexcept {
+src/ui/radio_group.cpp:49:    font_ = font;
+src/ui/radio_group.cpp:52:const Font* RadioGroup::font() const noexcept {
+src/ui/radio_group.cpp:53:    return font_;
+src/ui/radio_group.cpp:96:        if (font_ && font_->valid()) {
+src/ui/radio_group.cpp:101:                text.draw_centered(options_[i], *font_, text_area,
+src/ui/select.cpp:1:#include "kiddos/ui/select.hpp"
+src/ui/select.cpp:2:#include "kiddos/ui/text.hpp"
+src/ui/select.cpp:7:namespace kiddos::ui {
+src/ui/select.cpp:55:void Select::set_font(const Font* font) noexcept {
+src/ui/select.cpp:56:    font_ = font;
+src/ui/select.cpp:59:const Font* Select::font() const noexcept {
+src/ui/select.cpp:60:    return font_;
+src/ui/select.cpp:103:    if (font_ && font_->valid()) {
+src/ui/select.cpp:112:            text.draw_centered(*selected_option(), *font_, text_area,
+src/ui/text_input.cpp:1:#include "kiddos/ui/text_input.hpp"
+src/ui/text_input.cpp:2:#include "kiddos/ui/text.hpp"
+src/ui/text_input.cpp:7:namespace kiddos::ui {
+src/ui/text_input.cpp:142:void TextInput::set_font(const Font* font) noexcept {
+src/ui/text_input.cpp:143:    font_ = font;
+src/ui/text_input.cpp:146:const Font* TextInput::font() const noexcept {
+src/ui/text_input.cpp:147:    return font_;
+src/ui/text_input.cpp:175:    if (!font_ || !font_->valid()) return;
+src/ui/text_input.cpp:191:        text_renderer.draw(displayed, *font_,
+src/ui/text_input.cpp:199:        if (TTF_SizeUTF8(font_->native(), before.c_str(),
+src/ui/text_input_interaction.cpp:1:#include "kiddos/ui/text_input_interaction.hpp"
+src/ui/text_input_interaction.cpp:2:#include "kiddos/ui/text_input.hpp"
+src/ui/text_input_interaction.cpp:4:namespace kiddos::ui {
+src/ui/text_input_interaction.cpp:44:} // namespace kiddos::ui
+src/ui/screen.cpp:1:#include "kiddos/ui/screen.hpp"
+src/ui/screen.cpp:2:namespace kiddos::ui {
+src/ui/screen.cpp:11:bool Screen::handle_text_input(const ::kiddos::TextInputEvent& event) {
+src/ui/screen.cpp:13:    case ::kiddos::TextInputEventType::Text: return text_input_.insert_text(event.text);
+src/ui/screen.cpp:14:    case ::kiddos::TextInputEventType::Backspace: return text_input_.handle(TextInputKey::Backspace);
+=== IMAGE AND FONT ASSETS ===
+./assets/artwork/generated/boxart/arcade-pac-man.png
+./assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png
+./assets/artwork/generated/boxart/gb-tetris.png
+./assets/artwork/generated/boxart/snes-super-mario-world.png
+./assets/artwork/generated/carousel-car.png
+./assets/artwork/generated/carousel-mushroom.png
+./assets/artwork/generated/carousel-star.png
+./assets/artwork/generated/carousel-title-car.png
+./assets/artwork/generated/carousel-title.png
+./assets/artwork/generated/carousel-title-star.png
+./assets/artwork/generated/cartridges/option-1/cartridge-01.png
+./assets/artwork/generated/cartridges/option-1/cartridge-02.png
+./assets/artwork/generated/cartridges/option-1/cartridge-03.png
+./assets/artwork/generated/cartridges/option-1/cartridge-04.png
+./assets/artwork/generated/cartridges/option-1/cartridge-05.png
+./assets/artwork/generated/cartridges/option-1/cartridge-06.png
+./assets/artwork/generated/cartridges/option-1/cartridge-07.png
+./assets/artwork/generated/cartridges/option-1/cartridge-08.png
+./assets/artwork/generated/cartridges/option-1/cartridge-09.png
+./assets/artwork/generated/cartridges/option-2/cartridge-01.png
+./assets/artwork/generated/cartridges/option-2/cartridge-02.png
+./assets/artwork/generated/cartridges/option-2/cartridge-03.png
+./assets/artwork/generated/cartridges/option-2/cartridge-04.png
+./assets/artwork/generated/cartridges/option-2/cartridge-05.png
+./assets/artwork/generated/cartridges/option-2/cartridge-06.png
+./assets/artwork/generated/cartridges/option-2/cartridge-07.png
+./assets/artwork/generated/cartridges/option-2/cartridge-08.png
+./assets/artwork/generated/cartridges/option-2/cartridge-09.png
+./assets/artwork/generated/kiddos-wordmark.png
+./assets/artwork/generated/navigation-hints.png
+./assets/artwork/source/branding/kiddos-wordmark.svg
+./assets/artwork/source/branding/navigation-hints.svg
+./assets/artwork/source/carousel/car.svg
+./assets/artwork/source/carousel/mushroom.svg
+./assets/artwork/source/carousel/selected.svg
+./assets/artwork/source/carousel/star.svg
+./assets/artwork/source/carousel/title-car.svg
+./assets/artwork/source/carousel/title-star.svg
+./assets/artwork/source/carousel/title.svg
+./assets/artwork/source/cartridges/cart-option-1.png
+./assets/artwork/source/cartridges/cart-option-2.png
+./assets/artwork/source/forest.svg
+./assets/artwork/source/ocean.svg
+./assets/artwork/source/space.svg
+./docs/reference/retro-pixel-pocket.jpg
+./research/firmware/manufacturer/RetroPixel_Pocket/config/noobs/marketing/slides/A.png
+./research/firmware/manufacturer/RetroPixel_Pocket/config/noobs/marketing/slides/B.png
+./research/firmware/manufacturer/RetroPixel_Pocket/config/noobs/marketing/slides/C.png
+./research/firmware/manufacturer/RetroPixel_Pocket/config/noobs/marketing/slides/D.png
+./research/firmware/manufacturer/RetroPixel_Pocket/config/noobs/marketing/slides/E.png
+./research/firmware/manufacturer/RetroPixel_Pocket/config/noobs/marketing/slides_vga/A.png
+./research/firmware/manufacturer/RetroPixel_Pocket/config/noobs/marketing/slides_vga/B.png
+./research/firmware/manufacturer/RetroPixel_Pocket/config/noobs/marketing/slides_vga/C.png
+./research/firmware/manufacturer/RetroPixel_Pocket/config/noobs/marketing/slides_vga/D.png
+./research/firmware/manufacturer/RetroPixel_Pocket/config/noobs/marketing/slides_vga/E.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/AmberELEC/DREAMS.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/AmberELEC/logo.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/AmberELEC/rg351p hotkeys 351ELEC purple.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/AmberELEC/rg351p hotkeys 351ELEC white.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/AmberELEC/splash/blank.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/AmberELEC/splash/splash-640.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/DREAMS.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/logo.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/rg351p hotkeys 351ELEC purple.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/rg351p hotkeys 351ELEC white.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/splash/blank.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/splash/splash-640.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/background.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/button-hover.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/button-normal.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fade.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/BarlowCondensed/BarlowCondensed-Medium.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/FiraSansCondensed/FiraSansCondensed-Bold.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/FiraSansCondensed/FiraSansCondensed-Medium.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/FiraSansCondensed/FiraSansCondensed-Regular.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/Teko/Teko-Bold.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/Teko/Teko-Light.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/Teko/Teko-Medium.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/Teko/Teko-Regular.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/fonts/Teko/Teko-SemiBold.ttf
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/16x16/battery=25.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/16x16/battery=50.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/16x16/battery=75.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/16x16/battery=charging.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/16x16/battery=empty.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/16x16/battery=full.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/16x16/calendar=default.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/16x16/wifi=on.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/24x24/battery=25.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/24x24/battery=50.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/24x24/battery=75.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/24x24/battery=charging.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/24x24/battery=empty.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/24x24/battery=full.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/24x24/calendar=default.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/24x24/wifi=on.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/72x72/battery=25.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/72x72/battery=50.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/72x72/battery=75.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/72x72/battery=charging.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/72x72/battery=empty.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/72x72/battery=full.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/72x72/calendar=default.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/72x72/wifi=on.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/brush.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/cartridge=1-1.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/cartridge=2-3.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/cog.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/exit-to-app.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/folder=1-1.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/folder=2-3.png
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/gamepad-round.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/gamepad-square.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/image.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/kodi.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/library-shelves.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/power.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/restart.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/star.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/trophy.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/update.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/volume-high.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/icons/wifi-strength-3.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/input_active.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/input_inactive.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/3do.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/advision.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/amigacd32.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/amiga.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/amstradcpc.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/arcade.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/arduboy.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/atari2600.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/atari5200.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/atari7800.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/atari800.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/atarijaguar.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/atarilynx.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/atarist.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/atomiswave.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/auto-allgames.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/auto-at2players.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/auto-at4players.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/auto-favorites.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/auto-lastplayed.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/auto-lightgun.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/auto-neverplayed.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/auto-retroachievements.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/auto-verticalarcade.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/build.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/c128.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/c16.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/c64.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/cdi.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/channelf.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/chip8.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/colecovision.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/cps1.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/cps2.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/cps3.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/custom-collections.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/daphne.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/doom.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/dreamcast.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/easyrpg.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/ecwolf.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/ep64-128.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/famicom.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/fbn.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/fds.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/Final Fantasy.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gamate.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gameandwatch.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gamegear.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gameking.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gamemaster.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gamepocketcomputer.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gbah.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gba.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gbch.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gbc.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gbh.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/gb.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/genesis.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/genh.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/ggh.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/Grouvee Playing.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/homebrew.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/imageviewer.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/intellivision.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/j2me.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/laserdisc.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/lowresnx.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/mame.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/Mario.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/mastersystem.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/megacd.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/megadrive-japan.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/megadrive.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/megaduck.svg
+=== SCREENSHOT AND PREVIEW ASSETS ===
+./include/kiddos/app/home_carousel_screen.hpp
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/homebrew.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/mono/homebrew.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/systems/blurred/homebrew.blurred.webp
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/systems/homebrew.webp
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/assets/logos/homebrew.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/assets/systems/homebrew.webp
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/settings/display/video/snapshot-screenshot.xml
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/settings/display/view-grid/grid-screenshot.xml
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/dvbhdhomerun/patches/dvbhdhomerun-001-conf_file.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/dvbhdhomerun/patches/dvbhdhomerun-002-auto_detect.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/dvbhdhomerun/patches/dvbhdhomerun-hdhomerun_discover_find_devices_custom_v2.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/dvbhdhomerun/patches/dvbhdhomerun-linux-3.8.4.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/dvbhdhomerun/patches/dvbhdhomerun-linux-4.2.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/network/iptables/config/home.v4
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/network/iptables/config/home.v6
+./src/app/home_carousel_screen.cpp
+./tests/app_home_carousel_screen_test.cpp
+=== BUILD TEST BASELINE ===
+  Test #24: kiddos_ui_text_input
+  Test #25: kiddos_ui_text_input_interaction
+  Test #26: kiddos_ui_screen_manager
+
+Total Tests: 26
