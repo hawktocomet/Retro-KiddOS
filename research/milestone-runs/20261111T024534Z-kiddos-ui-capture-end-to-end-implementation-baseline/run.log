@@ -1,0 +1,429 @@
+=== Git state ===
+ M include/kiddos/app/application.hpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+c8c808f chore: record milestone run - kiddos-ui-stabilize-sdl-text-translator-tests
+=== Build configuration ===
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+=== Existing build ===
+ninja: no work to do.
+=== Existing test baseline ===
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_platform_sdl_text_input_translator
+ 1/22 Test  #1: kiddos_platform_sdl_text_input_translator ...   Passed    0.00 sec
+      Start  2: kiddos_platform_text_input_interface
+ 2/22 Test  #2: kiddos_platform_text_input_interface ........   Passed    0.00 sec
+      Start  3: kiddos_platform_sdl_keyboard_policy
+ 3/22 Test  #3: kiddos_platform_sdl_keyboard_policy .........   Passed    0.00 sec
+      Start  4: kiddos_platform_text_input_event
+ 4/22 Test  #4: kiddos_platform_text_input_event ............   Passed    0.00 sec
+      Start  5: kiddos_ui_layout
+ 5/22 Test  #5: kiddos_ui_layout ............................   Passed    0.00 sec
+      Start  6: kiddos_ui_geometry
+ 6/22 Test  #6: kiddos_ui_geometry ..........................   Passed    0.00 sec
+      Start  7: kiddos_ui_focus
+ 7/22 Test  #7: kiddos_ui_focus .............................   Passed    0.00 sec
+      Start  8: kiddos_ui_button
+ 8/22 Test  #8: kiddos_ui_button ............................   Passed    0.00 sec
+      Start  9: kiddos_ui_controller
+ 9/22 Test  #9: kiddos_ui_controller ........................   Passed    0.00 sec
+      Start 10: kiddos_ui_image
+10/22 Test #10: kiddos_ui_image .............................   Passed    0.00 sec
+      Start 11: kiddos_ui_label
+11/22 Test #11: kiddos_ui_label .............................   Passed    0.00 sec
+      Start 12: kiddos_ui_panel
+12/22 Test #12: kiddos_ui_panel .............................   Passed    0.00 sec
+      Start 13: kiddos_ui_progress_bar
+13/22 Test #13: kiddos_ui_progress_bar ......................   Passed    0.00 sec
+      Start 14: kiddos_ui_toggle
+14/22 Test #14: kiddos_ui_toggle ............................   Passed    0.00 sec
+      Start 15: kiddos_ui_slider
+15/22 Test #15: kiddos_ui_slider ............................   Passed    0.00 sec
+      Start 16: kiddos_ui_theme
+16/22 Test #16: kiddos_ui_theme .............................   Passed    0.00 sec
+      Start 17: kiddos_ui_list_view
+17/22 Test #17: kiddos_ui_list_view .........................   Passed    0.00 sec
+      Start 18: kiddos_ui_checkbox
+18/22 Test #18: kiddos_ui_checkbox ..........................   Passed    0.00 sec
+      Start 19: kiddos_ui_radio_group
+19/22 Test #19: kiddos_ui_radio_group .......................   Passed    0.00 sec
+      Start 20: kiddos_ui_select
+20/22 Test #20: kiddos_ui_select ............................   Passed    0.00 sec
+      Start 21: kiddos_ui_text_input
+21/22 Test #21: kiddos_ui_text_input ........................   Passed    0.00 sec
+      Start 22: kiddos_ui_text_input_interaction
+22/22 Test #22: kiddos_ui_text_input_interaction ............   Passed    0.00 sec
+
+100% tests passed out of 22
+
+Total Test time (real) =   0.09 sec
+=== Public UI headers ===
+include/kiddos/ui/button.hpp
+include/kiddos/ui/checkbox.hpp
+include/kiddos/ui/color.hpp
+include/kiddos/ui/container.hpp
+include/kiddos/ui/controller.hpp
+include/kiddos/ui/element.hpp
+include/kiddos/ui/focus.hpp
+include/kiddos/ui/font.hpp
+include/kiddos/ui/geometry.hpp
+include/kiddos/ui/image.hpp
+include/kiddos/ui/label.hpp
+include/kiddos/ui/layout.hpp
+include/kiddos/ui/list_view.hpp
+include/kiddos/ui/panel.hpp
+include/kiddos/ui/progress_bar.hpp
+include/kiddos/ui/radio_group.hpp
+include/kiddos/ui/renderer.hpp
+include/kiddos/ui/select.hpp
+include/kiddos/ui/slider.hpp
+include/kiddos/ui/text.hpp
+include/kiddos/ui/text_input.hpp
+include/kiddos/ui/text_input_interaction.hpp
+include/kiddos/ui/texture.hpp
+include/kiddos/ui/theme.hpp
+include/kiddos/ui/toggle.hpp
+=== UI implementations ===
+src/ui/button.cpp
+src/ui/checkbox.cpp
+src/ui/controller.cpp
+src/ui/focus.cpp
+src/ui/font.cpp
+src/ui/image.cpp
+src/ui/label.cpp
+src/ui/layout.cpp
+src/ui/list_view.cpp
+src/ui/panel.cpp
+src/ui/progress_bar.cpp
+src/ui/radio_group.cpp
+src/ui/renderer.cpp
+src/ui/select.cpp
+src/ui/slider.cpp
+src/ui/text.cpp
+src/ui/text_input.cpp
+src/ui/text_input_interaction.cpp
+src/ui/texture.cpp
+src/ui/theme.cpp
+src/ui/toggle.cpp
+=== UI tests ===
+tests/platform_sdl_keyboard_policy_test.cpp
+tests/platform_sdl_text_input_translator_test.cpp
+tests/platform_text_input_event_test.cpp
+tests/platform_text_input_interface_test.cpp
+tests/ui_button_test.cpp
+tests/ui_checkbox_test.cpp
+tests/ui_controller_test.cpp
+tests/ui_focus_test.cpp
+tests/ui_geometry_test.cpp
+tests/ui_image_test.cpp
+tests/ui_label_test.cpp
+tests/ui_layout_test.cpp
+tests/ui_list_view_test.cpp
+tests/ui_panel_test.cpp
+tests/ui_progress_bar_test.cpp
+tests/ui_radio_group_test.cpp
+tests/ui_select_test.cpp
+tests/ui_slider_test.cpp
+tests/ui_text_input_interaction_test.cpp
+tests/ui_text_input_test.cpp
+tests/ui_theme_test.cpp
+tests/ui_toggle_test.cpp
+=== Application and platform interfaces ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+
+namespace kiddos {
+
+class Application {
+public:
+    explicit Application(Platform& platform);
+
+    int run();
+
+private:
+    Platform& platform_;
+    bool running_ = true;
+    int selected_game_ = 1;
+    bool action_screen_ = false;
+    int selected_action_ = 0;
+    static constexpr int game_count_ = 3;
+
+    void handle_action(Action action);
+    void render();
+};
+
+} // namespace kiddos
+#include "kiddos/app/application.hpp"
+
+#include <chrono>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+            if (!running_) {
+                break;
+            }
+        }
+
+        if (running_) {
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::NavigateLeft:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + game_count_ - 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateRight:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateUp:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::NavigateDown:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::Confirm:
+            if (!action_screen_) {
+                action_screen_ = true;
+                selected_action_ = 0;
+            }
+            // Game launching is intentionally not implemented yet.
+            break;
+
+        case Action::Back:
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
+            break;
+
+        case Action::None:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    if (action_screen_) {
+        // Game 1 is a temporary checkpoint demonstration fixture.
+        platform_.draw_game_actions(
+            selected_game_, selected_game_ == 1, selected_action_);
+    } else {
+        platform_.draw_carousel(selected_game_);
+    }
+    platform_.present();
+}
+
+} // namespace kiddos
+#pragma once
+
+#include "kiddos/core/action.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+namespace kiddos {
+
+class Platform {
+public:
+    virtual ~Platform() = default;
+
+    virtual bool initialize() = 0;
+    virtual bool poll_action(Action& action) = 0;
+    virtual bool poll_text_input_event(TextInputEvent&) { return false; }
+    virtual void set_text_input_active(bool) {}
+    virtual void begin_frame() = 0;
+    virtual void draw_carousel(int selected_index) = 0;
+    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+    virtual void present() = 0;
+    virtual void shutdown() = 0;
+};
+
+} // namespace kiddos
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+#include <SDL.h>
+
+#include <deque>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    bool poll_text_input_event(TextInputEvent& event) override;
+    void set_text_input_active(bool active) override;
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+    bool text_input_active_ = false;
+    std::deque<Action> pending_actions_;
+    std::deque<TextInputEvent> pending_text_events_;
+    bool pump_events();
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+=== UI library documentation ===
+# KiddOS UI Library
+
+## Purpose
+
+KiddOS UI is a first-party C++20 interface library built on SDL2.
+
+SDL2 remains responsible for low-level window, graphics, input, and audio
+integration. KiddOS UI owns the reusable interface abstractions and
+components.
+
+## Current foundation
+
+- Geometry: Point and Rect.
+- Color: RGBA values and initial theme colors.
+- Renderer: non-owning SDL_Renderer adapter.
+- Drawing: clear, filled rectangles, outlines, lines, and points.
+- Clipping: set and clear rectangular clipping regions.
+- Tests: geometry boundary behavior.
+
+## Ownership
+
+Renderer does not own SDL_Renderer. The platform adapter creates and
+destroys SDL resources. This keeps hardware and SDL lifecycle management
+outside the reusable UI library.
+
+## Planned modules
+
+1. Rendering and drawing primitives.
+2. Layout and containers.
+3. Widget and element hierarchy.
+4. Buttons, cards, lists, and menus.
+5. Controller focus and navigation.
+6. Themes, fonts, images, and animation.
+
+## Design principles
+
+- Handheld-first and physical-control-first.
+- 720 x 720 logical coordinate system.
+- No dependency on LVGL.
+- No application-specific game logic inside the library.
+- Reusable components instead of manually drawing every screen.
+- Keep memory and rendering overhead appropriate for the target device.
+
+## Widget hierarchy and layout
+
+The second implementation milestone adds:
+
+- `Element`: reusable UI element base class.
+- `Container`: owns and renders child elements.
+- `Axis`: horizontal and vertical layout directions.
+- `Insets`: configurable content padding.
+- `StackLayout`: automatic equal-space child positioning.
+
+Containers own their children through `std::unique_ptr`. Hidden children
+are excluded from automatic stack layout. The library does not impose
+application-specific game or screen logic.
+
+Layout tests cover horizontal and vertical distribution, padding, gaps,
+hidden children, and empty containers.
+
+## Focus and directional navigation
+
+The focus manager tracks one focusable element in a container hierarchy.
+It skips hidden and disabled elements, supports nested containers, and
+moves directionally using element bounds. If no eligible element exists
+in the requested direction, focus remains where it is.
+
+Focus state is exposed by `Element::focused()` so widgets can render
+their own focused appearance without coupling the library to a theme.
+
+## Button widget
+
+The Button widget encapsulates a reusable interactive surface with normal,
+focused, pressed, and disabled visual states. It exposes a label for the
+future font/text subsystem and an activation callback. Activation is
+rejected while hidden or disabled, or when no callback is assigned.
+Button rendering is handled internally through the shared Renderer.
+
+## Controller interaction
+
+`ControllerInteraction` translates abstract UI actions into focus movement
+and button activation. It supports four directional actions and Confirm.
+Back is reserved for application-level navigation and currently performs
+no action. SDL-specific controller event mapping remains the platform
+adapter's responsibility.
+
+## Text and fonts
+
+Text rendering uses SDL_ttf. `Font` owns an SDL_ttf font resource and
+supports move-only ownership. `TextRenderer` renders UTF-8 text and can
+center text inside a rectangle. SDL_ttf initialization and shutdown remain
+the responsibility of the application/platform lifecycle.

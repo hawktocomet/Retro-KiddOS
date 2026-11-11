@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T024334Z-kiddos-ui-stabilize-sdl-text-translator-tests
+research/milestone-runs/20261111T024534Z-kiddos-ui-capture-end-to-end-implementation-baseline
