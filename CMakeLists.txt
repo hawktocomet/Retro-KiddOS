@@ -27,6 +27,7 @@ add_library(kiddos_ui STATIC
     src/ui/image.cpp
     src/ui/label.cpp
     src/ui/panel.cpp
+    src/ui/progress_bar.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
@@ -130,4 +131,9 @@ if(BUILD_TESTING)
     target_include_directories(kiddos_ui_panel_test PRIVATE include)
     target_link_libraries(kiddos_ui_panel_test PRIVATE kiddos_ui)
     add_test(NAME kiddos_ui_panel COMMAND kiddos_ui_panel_test)
+
+    add_executable(kiddos_ui_progress_bar_test tests/ui_progress_bar_test.cpp)
+    target_include_directories(kiddos_ui_progress_bar_test PRIVATE include)
+    target_link_libraries(kiddos_ui_progress_bar_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_progress_bar COMMAND kiddos_ui_progress_bar_test)
 endif()
