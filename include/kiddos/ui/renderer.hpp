@@ -21,6 +21,7 @@ public:
     bool outline_rect(Rect rect, Color color) const;
     bool draw_line(Point from, Point to, Color color) const;
     bool draw_point(Point point, Color color) const;
+    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination) const;
 
     bool set_clip(Rect rect) const;
     bool clear_clip() const;

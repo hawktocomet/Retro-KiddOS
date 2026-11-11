@@ -65,6 +65,14 @@ bool Renderer::draw_point(Point point, Color color) const {
     ) == 0;
 }
 
+bool Renderer::draw_texture(SDL_Texture* texture, Rect source, Rect destination) const {
+    if (!renderer_ || !texture || source.empty() || destination.empty()) return false;
+
+    SDL_Rect src{source.x, source.y, source.w, source.h};
+    SDL_Rect dst{destination.x, destination.y, destination.w, destination.h};
+    return SDL_RenderCopy(renderer_, texture, &src, &dst) == 0;
+}
+
 bool Renderer::set_clip(Rect rect) const {
     if (!renderer_) return false;
 

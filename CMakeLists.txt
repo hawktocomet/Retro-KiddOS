@@ -13,6 +13,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
 pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
+pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
 
 add_library(kiddos_ui STATIC
     src/ui/renderer.cpp
@@ -22,10 +23,12 @@ add_library(kiddos_ui STATIC
     src/ui/controller.cpp
     src/ui/font.cpp
     src/ui/text.cpp
+    src/ui/texture.cpp
+    src/ui/image.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
-target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF)
+target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
 
 target_compile_options(kiddos_ui PRIVATE
     -Wall
@@ -110,4 +113,9 @@ if(BUILD_TESTING)
         NAME kiddos_ui_controller
         COMMAND kiddos_ui_controller_test
     )
+
+    add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
+    target_include_directories(kiddos_ui_image_test PRIVATE include)
+    target_link_libraries(kiddos_ui_image_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_image COMMAND kiddos_ui_image_test)
 endif()
