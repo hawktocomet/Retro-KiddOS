@@ -1,0 +1,224 @@
+=== Inspect focus style and input behavior ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:408:    if(obj->hidden && has_state(obj, LV_STATE_FOCUSED)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:411:            lv_group_focus_next(group);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:678:    set_state(obj, LV_STATE_FOCUSED, en);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:929:    return has_state(obj, LV_STATE_FOCUSED);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1650:            if(c == LV_KEY_RIGHT || c == LV_KEY_UP) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1653:            else if(c == LV_KEY_LEFT || c == LV_KEY_DOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1682:            else if(c == LV_KEY_RIGHT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1689:            else if(c == LV_KEY_LEFT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1705:        lv_state_t state = LV_STATE_FOCUSED;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1737:        lv_obj_remove_state(obj, LV_STATE_FOCUSED | LV_STATE_EDITED | LV_STATE_FOCUS_KEY);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_group.c:273:void lv_group_focus_next(lv_group_t * group)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_group.c:284:void lv_group_focus_prev(lv_group_t * group)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_group.c:353:void lv_group_set_wrap(lv_group_t * group, bool en)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_group.c:466:        lv_group_focus_next(g);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_group.c:468:        lv_group_focus_prev(g);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_obj_style.h:37:    LV_STATE_FOCUSED     = 1 << 3,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_obj.h:392: * @param state     the states to add. E.g `LV_STATE_PRESSED | LV_STATE_FOCUSED`
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_obj.h:400: * @param state     the states to add. E.g `LV_STATE_PRESSED | LV_STATE_FOCUSED`
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_obj.h:407: * @param state     the states to add. E.g `LV_STATE_PRESSED | LV_STATE_FOCUSED`
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_obj.h:424:/** Add or remove `LV_STATE_FOCUSED`. The other states remain unchanged.
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_obj.h:687:/** Get whether the object is in `LV_STATE_FOCUSED`
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:26:    LV_KEY_RIGHT     = 19,  /*0x13*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:27:    LV_KEY_LEFT      = 20,  /*0x14*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:115:void lv_group_focus_next(lv_group_t * group);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:121:void lv_group_focus_prev(lv_group_t * group);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_group.h:173:void lv_group_set_wrap(lv_group_t * group, bool en);
+=== Inspect adapter focus styling ===
+     1	#include <SDL.h>
+     2	#include <stdint.h>
+     3	#include <stdio.h>
+     4	#include <stdlib.h>
+     5	
+     6	#include "lvgl.h"
+     7	
+     8	#define SCREEN_W 720
+     9	#define SCREEN_H 720
+    10	#define BUFFER_ROWS 40
+    11	
+    12	static SDL_Window *window;
+    13	static SDL_Renderer *renderer;
+    14	static SDL_Texture *texture;
+    15	static uint8_t draw_buffer[SCREEN_W * BUFFER_ROWS * 2];
+    16	static lv_indev_t *keypad;
+    17	static lv_group_t *focus_group;
+    18	static uint32_t keypad_key;
+    19	static bool keypad_pressed;
+    20	
+    21	static void read_controller(lv_indev_t *indev, lv_indev_data_t *data)
+    22	{
+    23	    (void)indev;
+    24	    data->key = keypad_key;
+    25	    data->state = keypad_pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+    26	    keypad_pressed = false;
+    27	}
+    28	
+    29	static void flush_to_sdl(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
+    30	{
+    31	    SDL_Rect rect = {
+    32	        .x = area->x1,
+    33	        .y = area->y1,
+    34	        .w = area->x2 - area->x1 + 1,
+    35	        .h = area->y2 - area->y1 + 1
+    36	    };
+    37	
+    38	    if (rect.w > 0 && rect.h > 0) {
+    39	        SDL_UpdateTexture(texture, &rect, pixels, rect.w * 2);
+    40	        SDL_RenderClear(renderer);
+    41	        SDL_RenderCopy(renderer, texture, NULL, NULL);
+    42	        SDL_RenderPresent(renderer);
+    43	    }
+    44	
+    45	    lv_display_flush_ready(display);
+    46	}
+    47	
+    48	static void make_ui(void)
+    49	{
+    50	    lv_obj_t *screen = lv_screen_active();
+    51	    lv_obj_set_style_bg_color(screen, lv_color_hex(0x071426), 0);
+    52	    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+    53	
+    54	    lv_obj_t *header = lv_obj_create(screen);
+    55	    lv_obj_set_size(header, 680, 76);
+    56	    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 18);
+    57	    lv_obj_set_style_bg_color(header, lv_color_hex(0x102B4A), 0);
+    58	    lv_obj_set_style_border_width(header, 0, 0);
+    59	    lv_obj_set_style_radius(header, 18, 0);
+    60	
+    61	    lv_obj_t *title = lv_label_create(header);
+    62	    lv_label_set_text(title, "KiddOS");
+    63	    lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
+    64	    lv_obj_center(title);
+    65	
+    66	    focus_group = lv_group_create();
+    67	    const char *names[] = {"GAME ONE", "GAME TWO", "GAME THREE"};
+    68	    const int widths[] = {170, 230, 170};
+    69	
+    70	    for (int i = 0; i < 3; i++) {
+    71	        lv_obj_t *card = lv_obj_create(screen);
+    72	        lv_obj_set_size(card, widths[i], i == 1 ? 330 : 270);
+    73	        lv_obj_align(card, LV_ALIGN_CENTER, (i - 1) * 205, 25);
+    74	        lv_obj_set_style_bg_color(card,
+    75	            i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+    76	        lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+    77	        lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+    78	        lv_obj_set_style_radius(card, 22, 0);
+    79	        lv_group_add_obj(focus_group, card);
+    80	
+    81	        lv_obj_t *label = lv_label_create(card);
+    82	        lv_label_set_text(label, names[i]);
+    83	        lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    84	        lv_obj_center(label);
+    85	    }
+    86	
+    87	    lv_obj_t *footer = lv_label_create(screen);
+    88	    lv_label_set_text(footer, "SDL2 renderer adapter prototype");
+    89	    lv_obj_set_style_text_color(footer, lv_color_hex(0x8FAAC5), 0);
+    90	    lv_obj_align(footer, LV_ALIGN_BOTTOM_MID, 0, -24);
+    91	}
+    92	
+    93	int main(void)
+    94	{
+    95	    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+    96	        fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
+    97	        return 1;
+    98	    }
+    99	
+   100	    window = SDL_CreateWindow("KiddOS LVGL SDL Renderer Adapter",
+   101	        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+   102	        SCREEN_W, SCREEN_H, SDL_WINDOW_SHOWN);
+   103	    if (!window) {
+   104	        fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
+   105	        return 1;
+   106	    }
+   107	
+   108	    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+   109	    if (!renderer)
+   110	        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+   111	    if (!renderer) {
+   112	        fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
+   113	        return 1;
+   114	    }
+   115	
+   116	    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565,
+   117	        SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
+   118	    if (!texture) {
+   119	        fprintf(stderr, "SDL_CreateTexture: %s\n", SDL_GetError());
+   120	        return 1;
+   121	    }
+   122	
+   123	    SDL_SetRenderDrawColor(renderer, 7, 20, 38, 255);
+   124	    SDL_RenderClear(renderer);
+   125	    SDL_RenderPresent(renderer);
+   126	
+   127	    lv_init();
+   128	
+   129	    lv_display_t *display = lv_display_create(SCREEN_W, SCREEN_H);
+   130	    lv_display_set_color_format(display, LV_COLOR_FORMAT_RGB565);
+   131	    lv_display_set_flush_cb(display, flush_to_sdl);
+   132	    lv_display_set_buffers(display, draw_buffer, NULL, sizeof(draw_buffer),
+   133	        LV_DISPLAY_RENDER_MODE_PARTIAL);
+   134	
+   135	    make_ui();
+   136	
+   137	    keypad = lv_indev_create();
+   138	    lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+   139	    lv_indev_set_read_cb(keypad, read_controller);
+   140	    lv_indev_set_group(keypad, focus_group);
+   141	    lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+   142	
+   143	    printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+   144	    printf("Press Escape or close the window to exit.\n");
+   145	
+   146	    int running = 1;
+   147	    while (running) {
+   148	        SDL_Event event;
+   149	        while (SDL_PollEvent(&event)) {
+   150	            if (event.type == SDL_QUIT)
+   151	                running = 0;
+   152	            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+   153	                running = 0;
+   154	
+   155	            if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+   156	                switch (event.cbutton.button) {
+   157	                    case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+   158	                    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+   159	                    case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+   160	                    case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+   161	                    case SDL_CONTROLLER_BUTTON_A: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+   162	                    case SDL_CONTROLLER_BUTTON_B: keypad_key = LV_KEY_ESC; keypad_pressed = true; break;
+   163	                    default: break;
+   164	                }
+   165	            }
+   166	
+   167	            if (event.type == SDL_KEYDOWN) {
+   168	                switch (event.key.keysym.sym) {
+   169	                    case SDLK_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+   170	                    case SDLK_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+   171	                    case SDLK_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+   172	                    case SDLK_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+   173	                    case SDLK_RETURN: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+   174	                    default: break;
+   175	                }
+   176	            }
+   177	        }
+   178	        lv_timer_handler();
+   179	        SDL_Delay(5);
+   180	    }
+   181	
+   182	    lv_deinit();
+   183	    SDL_DestroyTexture(texture);
+   184	    SDL_DestroyRenderer(renderer);
+   185	    SDL_DestroyWindow(window);
+   186	    SDL_Quit();
+   187	    return 0;
+   188	}
+=== Verify executable starts and remains stable ===
+RUN_EXIT=124
+Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer
+Press Escape or close the window to exit.
+RUNTIME_STABILITY=PASS
+=== Check controller availability on host ===
+Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer
+Press Escape or close the window to exit.

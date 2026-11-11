@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T003344Z-lvgl-feasibility-fix-controller-build
+research/milestone-runs/20261111T003513Z-lvgl-feasibility-verify-focus-navigation
