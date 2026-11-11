@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T002753Z-lvgl-feasibility-correct-custom-renderer-configuration
+research/milestone-runs/20261111T002823Z-lvgl-feasibility-resolve-renderer-configuration

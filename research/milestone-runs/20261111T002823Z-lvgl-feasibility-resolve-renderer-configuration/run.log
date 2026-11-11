@@ -1,0 +1,196 @@
+=== LVGL SDL backend configuration ===
+#if LV_USE_QNX
+/** Number of screen-sized buffers */
+#define LV_QNX_BUF_COUNT 1
+
+#endif /*LV_USE_QNX*/
+
+/** Open a window on a PC desktop with SDL2 and read mouse and keyboard input. */
+#define LV_USE_SDL 1
+
+#if LV_USE_SDL
+/** SDL include path */
+#define LV_SDL_INCLUDE_PATH "SDL2/SDL.h"
+
+/** Select how the SDL driver presents rendered frames.
+ *  Possible values:
+ *  - LV_SDL_BACKEND_SW: Software (SDL surface)
+ *  - LV_SDL_BACKEND_TEXTURE: Cached SDL textures (enable: LV_USE_DRAW_SDL)
+ *  - LV_SDL_BACKEND_EGL: EGL (OpenGL ES, hardware-accelerated) (requires LV_USE_DRAW_OPENGLES || LV_USE_DRAW_NANOVG)
+ */
+#define LV_SDL_BACKEND LV_SDL_BACKEND_TEXTURE
+
+/** Direct mode is recommended for best performance.
+ *  Possible values:
+ *  - LV_DISPLAY_RENDER_MODE_PARTIAL: Partial mode
+ *  - LV_DISPLAY_RENDER_MODE_DIRECT: Direct mode
+ *  - LV_DISPLAY_RENDER_MODE_FULL: Full mode
+ */
+#define LV_SDL_RENDER_MODE LV_DISPLAY_RENDER_MODE_DIRECT
+
+/** Number of screen-sized buffers */
+#define LV_SDL_BUF_COUNT 1
+
+/** Ask SDL for a GPU-backed renderer instead of a software one. */
+#define LV_SDL_ACCELERATED 0
+
+/** Fullscreen */
+#define LV_SDL_FULLSCREEN 0
+
+/** Exit when all windows are closed */
+#define LV_SDL_DIRECT_EXIT 1
+
+/** SDL mousewheel mode
+ *  Possible values:
+ *  - LV_SDL_MOUSEWHEEL_MODE_ENCODER: Encoder input device
+ *  - LV_SDL_MOUSEWHEEL_MODE_CROWN: Smart watch crown
+ */
+#define LV_SDL_MOUSEWHEEL_MODE LV_SDL_MOUSEWHEEL_MODE_ENCODER
+
+#endif /*LV_USE_SDL*/
+
+/** Display and input drivers for UEFI firmware, based on the Graphics Output, keyboard and pointer protocols. */
+#define LV_USE_UEFI 0
+
+#if LV_USE_UEFI
+/** Header wrapping the UEFI framework (EDK2, gnu-efi, ...) */
+#define LV_USE_UEFI_INCLUDE "myefi.h"
+
+/** Allocate memory with the UEFI boot services instead of the C library.
+ *  Only takes effect with the custom stdlib malloc implementation.
+ */
+#define LV_UEFI_USE_MEMORY_SERVICES 0
+
+#endif /*LV_USE_UEFI*/
+
+/** Open a window on a Wayland compositor on Linux or BSD and read mouse, keyboard and touch input. */
+#define LV_USE_WAYLAND 0
+
+#if LV_USE_WAYLAND
+/** LVGL is deinitialized before the application exits. */
+#define LV_WAYLAND_DIRECT_EXIT 1
+
+#if !LV_USE_DRAW_OPENGLES
+#if !LV_USE_DRAW_NANOVG
+/** Default backend, using wl_shm for double-buffered direct rendering.
+ *  Compatible with all Wayland compositors; no special hardware required.
+ *  Unavailable with the OpenGL ES and NanoVG renderers, which can only
+ *  render into a GPU surface.
+ */
+#define LV_WAYLAND_USE_SHM 1
+
+/** Presents software-rendered frames through linear DMA-BUFs that the
+ *  compositor can scan out directly, saving its copy out of shared memory.
+ *  Requires a compositor with zwp_linux_dmabuf_v1 and a gbm implementation
+ *  able to allocate CPU-mappable buffers, plus libdrm and gbm (-ldrm -lgbm).
+ *  Needs no GPU API: unavailable with the OpenGL ES and NanoVG renderers,
+ *  which can only render into a GPU surface.
+=== LVGL internal SDL config selection ===
+#endif
+
+#if LV_NEMA_USE_CUSTOM_INCLUDE && !(LV_USE_NEMA_HAL == LV_NEMA_HAL_STM32 && LV_USE_NEMA_GFX)
+    #error "LV_NEMA_USE_CUSTOM_INCLUDE requires LV_USE_NEMA_HAL == LV_NEMA_HAL_STM32 && LV_USE_NEMA_GFX (Kconfig depends on)"
+#endif
+
+#if LV_USE_NEMA_VG && !(LV_USE_NEMA_GFX)
+    #error "LV_USE_NEMA_VG requires LV_USE_NEMA_GFX (Kconfig depends on)"
+#endif
+
+#if (LV_USE_PXP) && !LV_USE_DRAW_PXP
+    #error "LV_USE_DRAW_PXP must be enabled: Kconfig selects it from LV_USE_PXP"
+#endif
+
+#if LV_USE_ROTATE_PXP && !(LV_USE_DRAW_PXP)
+    #error "LV_USE_ROTATE_PXP requires LV_USE_DRAW_PXP (Kconfig depends on)"
+#endif
+
+#if LV_USE_PXP_ASSERT && !(LV_USE_DRAW_PXP)
+    #error "LV_USE_PXP_ASSERT requires LV_USE_DRAW_PXP (Kconfig depends on)"
+#endif
+
+#if LV_USE_PPA_IMG && !(LV_USE_PPA)
+    #error "LV_USE_PPA_IMG requires LV_USE_PPA (Kconfig depends on)"
+#endif
+
+#if LV_USE_DRAW_DMA2D_INTERRUPT && !(LV_USE_DRAW_DMA2D)
+    #error "LV_USE_DRAW_DMA2D_INTERRUPT requires LV_USE_DRAW_DMA2D (Kconfig depends on)"
+#endif
+
+#if LV_USE_SIFLI_EPIC_ASSERT && !(LV_USE_SIFLI_EPIC)
+    #error "LV_USE_SIFLI_EPIC_ASSERT requires LV_USE_SIFLI_EPIC (Kconfig depends on)"
+#endif
+
+#if (LV_USE_G2D || (LV_WAYLAND_USE_G2D && !LV_USE_DRAW_OPENGLES && !LV_USE_DRAW_NANOVG && LV_USE_WAYLAND)) && !LV_USE_DRAW_G2D
+    #error "LV_USE_DRAW_G2D must be enabled: Kconfig selects it from LV_USE_G2D || (LV_WAYLAND_USE_G2D && !LV_USE_DRAW_OPENGLES && !LV_USE_DRAW_NANOVG && LV_USE_WAYLAND)"
+#endif
+
+#if LV_USE_G2D_ASSERT && !(LV_USE_DRAW_G2D && LV_USE_DRAW_G2D)
+    #error "LV_USE_G2D_ASSERT requires LV_USE_DRAW_G2D && LV_USE_DRAW_G2D (Kconfig depends on)"
+#endif
+
+#if LV_USE_DRAW_IPA_INTERRUPT && !(LV_USE_OS == LV_OS_FREERTOS && LV_USE_DRAW_IPA)
+    #error "LV_USE_DRAW_IPA_INTERRUPT requires LV_USE_OS == LV_OS_FREERTOS && LV_USE_DRAW_IPA (Kconfig depends on)"
+#endif
+
+#if (LV_SDL_BACKEND == LV_SDL_BACKEND_TEXTURE) && !LV_USE_DRAW_SDL
+    #error "LV_USE_DRAW_SDL must be enabled: Kconfig selects it from LV_SDL_BACKEND == LV_SDL_BACKEND_TEXTURE"
+#endif
+
+#if (LV_USE_MATRIX || LV_USE_GESTURE_RECOGNITION) && !LV_USE_FLOAT
+    #error "LV_USE_FLOAT must be enabled: Kconfig selects it from LV_USE_MATRIX || LV_USE_GESTURE_RECOGNITION"
+#endif
+
+#if LV_LOG_PRINTF && !(LV_USE_LOG)
+    #error "LV_LOG_PRINTF requires LV_USE_LOG (Kconfig depends on)"
+#endif
+
+#if LV_THEME_DEFAULT_DARK && !(LV_USE_THEME_DEFAULT)
+    #error "LV_THEME_DEFAULT_DARK requires LV_USE_THEME_DEFAULT (Kconfig depends on)"
+#endif
+
+#if (LV_USE_DEMO_RENDER && LV_BUILD_DEMOS) && !LV_USE_GRID
+    #error "LV_USE_GRID must be enabled: Kconfig selects it from LV_USE_DEMO_RENDER && LV_BUILD_DEMOS"
+#endif
+
+#if (LV_USE_TEST_SCREENSHOT_COMPARE && LV_USE_TEST) && !LV_USE_LODEPNG
+    #error "LV_USE_LODEPNG must be enabled: Kconfig selects it from LV_USE_TEST_SCREENSHOT_COMPARE && LV_USE_TEST"
+#endif
+
+#if LV_USE_SVG && !(LV_DRAW_HAS_VECTOR_SUPPORT)
+=== CMake options controlling examples/demos ===
+=== Adapter CMakeLists ===
+cmake_minimum_required(VERSION 3.16)
+project(kiddos_lvgl_sdl_adapter C)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+set(LV_CONF_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lv_conf.h" CACHE STRING "" FORCE)
+set(LV_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(LV_BUILD_DEMOS OFF CACHE BOOL "" FORCE)
+set(LV_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(LVGL_DIR "/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099" CACHE PATH "" FORCE)
+
+find_package(SDL2 REQUIRED)
+add_subdirectory("${LVGL_DIR}" "${CMAKE_BINARY_DIR}/lvgl")
+
+add_executable(kiddos_lvgl_sdl_adapter main.c)
+target_include_directories(kiddos_lvgl_sdl_adapter PRIVATE "${LVGL_DIR}")
+target_link_libraries(kiddos_lvgl_sdl_adapter PRIVATE lvgl SDL2::SDL2)
+=== Current config selections ===
+227:#define LV_USE_DRAW_SW 1
+290:#define LV_USE_DRAW_SW 1
+314:#define LV_USE_DRAW_SW 1
+691:#define LV_USE_DRAW_SDL 0
+1819:#define LV_SDL_BACKEND LV_SDL_BACKEND_TEXTURE
+2496:#define LV_BUILD_EXAMPLES 1
+2505:#define LV_BUILD_DEMOS 1
+=== Identify SDL backend enum values ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:111:#define LV_SDL_BACKEND_TEXTURE   1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3538:        #define LV_SDL_BACKEND CONFIG_LV_SDL_BACKEND
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:3540:        #define LV_SDL_BACKEND LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:4883:    #if ((LV_SDL_BACKEND == LV_SDL_BACKEND_EGL && (LV_USE_DRAW_OPENGLES || LV_USE_DRAW_NANOVG)) && (LV_USE_SDL))
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:5146:#if (LV_SDL_BACKEND == LV_SDL_BACKEND_TEXTURE) && !LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/config/lv_conf_internal.h:5147:    #error "LV_USE_DRAW_SDL must be enabled: Kconfig selects it from LV_SDL_BACKEND == LV_SDL_BACKEND_TEXTURE"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:24:	config LV_SDL_BACKEND_TEXTURE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:42:	default 1 if LV_SDL_BACKEND_TEXTURE
