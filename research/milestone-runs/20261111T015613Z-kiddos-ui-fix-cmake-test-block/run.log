@@ -1,0 +1,13 @@
+CMake Error at CMakeLists.txt:166 (add_executable):
+  add_executable cannot create target "kiddos_ui_list_view_test" because
+  another target with the same name already exists.  The existing target is
+  an executable created in source directory "/home/hawk/KiddOS".  See
+  documentation for policy CMP0002 for more details.
+
+
+CMake Error at CMakeLists.txt:169 (add_test):
+  add_test given test NAME "kiddos_ui_list_view" which already exists in this
+  directory.
+
+
+-- Configuring incomplete, errors occurred!
