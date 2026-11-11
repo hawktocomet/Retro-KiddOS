@@ -1,0 +1,192 @@
+=== Display API signatures ===
+grep: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.h: No such file or directory
+=== Flush callback and area definitions ===
+grep: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.h: No such file or directory
+grep: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_area.h: No such file or directory
+=== SDL texture update contract ===
+325- *          was active, the format was unsupported, or the width or height
+326- *          were out of range; call SDL_GetError() for more information.
+327- *
+328- * \since This function is available since SDL 2.0.0.
+329- *
+330: * \sa SDL_CreateTextureFromSurface
+331- * \sa SDL_DestroyTexture
+332- * \sa SDL_QueryTexture
+333: * \sa SDL_UpdateTexture
+334- */
+335:extern DECLSPEC SDL_Texture * SDLCALL SDL_CreateTexture(SDL_Renderer * renderer,
+336-                                                        Uint32 format,
+337-                                                        int access, int w,
+338-                                                        int h);
+339-
+340-/**
+341- * Create a texture from an existing surface.
+342- *
+343- * The surface is not modified or freed by this function.
+344- *
+345- * The SDL_TextureAccess hint for the created texture is
+346- * `SDL_TEXTUREACCESS_STATIC`.
+347- *
+--
+355- * \returns the created texture or NULL on failure; call SDL_GetError() for
+356- *          more information.
+357- *
+358- * \since This function is available since SDL 2.0.0.
+359- *
+360: * \sa SDL_CreateTexture
+361- * \sa SDL_DestroyTexture
+362- * \sa SDL_QueryTexture
+363- */
+364:extern DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface);
+365-
+366-/**
+367- * Query the attributes of a texture.
+368- *
+369- * \param texture the texture to query.
+370- * \param format a pointer filled in with the raw format of the texture; the
+371- *               actual format may differ, but pixel transfers will use this
+372- *               format (one of the SDL_PixelFormatEnum values). This argument
+373- *               can be NULL if you don't need this information.
+374- * \param access a pointer filled in with the actual access to the texture
+375- *               (one of the SDL_TextureAccess values). This argument can be
+376- *               NULL if you don't need this information.
+--
+381- * \returns 0 on success or a negative error code on failure; call
+382- *          SDL_GetError() for more information.
+383- *
+384- * \since This function is available since SDL 2.0.0.
+385- *
+386: * \sa SDL_CreateTexture
+387- */
+388-extern DECLSPEC int SDLCALL SDL_QueryTexture(SDL_Texture * texture,
+389-                                             Uint32 * format, int *access,
+390-                                             int *w, int *h);
+391-
+392-/**
+393- * Set an additional color value multiplied into render copy operations.
+394- *
+395- * When this texture is rendered, during the copy operation each source color
+396- * channel is modulated by the appropriate color value according to the
+397- * following formula:
+398- *
+--
+590- * \returns 0 on success or a negative error code on failure; call
+591- *          SDL_GetError() for more information.
+592- *
+593- * \since This function is available since SDL 2.0.0.
+594- *
+595: * \sa SDL_CreateTexture
+596- * \sa SDL_LockTexture
+597- * \sa SDL_UnlockTexture
+598- */
+599:extern DECLSPEC int SDLCALL SDL_UpdateTexture(SDL_Texture * texture,
+600-                                              const SDL_Rect * rect,
+601-                                              const void *pixels, int pitch);
+602-
+603-/**
+604- * Update a rectangle within a planar YV12 or IYUV texture with new pixel
+605- * data.
+606- *
+607: * You can use SDL_UpdateTexture() as long as your pixel data is a contiguous
+608- * block of Y and U/V planes in the proper order, but this function is
+609- * available if your pixel data is not contiguous.
+610- *
+611- * \param texture the texture to update.
+612- * \param rect a pointer to the rectangle of pixels to update, or NULL to
+613- *             update the entire texture.
+614- * \param Yplane the raw pixel data for the Y plane.
+615- * \param Ypitch the number of bytes between rows of pixel data for the Y
+616- *               plane.
+617- * \param Uplane the raw pixel data for the U plane.
+618- * \param Upitch the number of bytes between rows of pixel data for the U
+619- *               plane.
+--
+623- * \returns 0 on success or -1 if the texture is not valid; call
+624- *          SDL_GetError() for more information.
+625- *
+626- * \since This function is available since SDL 2.0.1.
+627- *
+628: * \sa SDL_UpdateTexture
+629- */
+630-extern DECLSPEC int SDLCALL SDL_UpdateYUVTexture(SDL_Texture * texture,
+631-                                                 const SDL_Rect * rect,
+632-                                                 const Uint8 *Yplane, int Ypitch,
+633-                                                 const Uint8 *Uplane, int Upitch,
+634-                                                 const Uint8 *Vplane, int Vpitch);
+635-
+636-/**
+637- * Update a rectangle within a planar NV12 or NV21 texture with new pixels.
+638- *
+639: * You can use SDL_UpdateTexture() as long as your pixel data is a contiguous
+640- * block of NV12/21 planes in the proper order, but this function is available
+641- * if your pixel data is not contiguous.
+642- *
+643- * \param texture the texture to update.
+644- * \param rect a pointer to the rectangle of pixels to update, or NULL to
+645- *             update the entire texture.
+646- * \param Yplane the raw pixel data for the Y plane.
+647- * \param Ypitch the number of bytes between rows of pixel data for the Y
+648- *               plane.
+649- * \param UVplane the raw pixel data for the UV plane.
+650- * \param UVpitch the number of bytes between rows of pixel data for the UV
+651- *                plane.
+--
+1777- *
+1778- * \param texture the texture to destroy.
+1779- *
+1780- * \since This function is available since SDL 2.0.0.
+1781- *
+1782: * \sa SDL_CreateTexture
+1783: * \sa SDL_CreateTextureFromSurface
+1784- */
+1785-extern DECLSPEC void SDLCALL SDL_DestroyTexture(SDL_Texture * texture);
+1786-
+1787-/**
+1788- * Destroy the rendering context for a window and free associated textures.
+1789- *
+1790- * If `renderer` is NULL, this function will return immediately after setting
+1791- * the SDL error message to "Invalid renderer". See SDL_GetError().
+1792- *
+1793- * \param renderer the rendering context.
+1794- *
+1795- * \since This function is available since SDL 2.0.0.
+=== Prototype CMake configuration ===
+cmake_minimum_required(VERSION 3.16)
+project(kiddos_lvgl_prototype C)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+set(LV_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(LV_BUILD_DEMOS OFF CACHE BOOL "" FORCE)
+
+if(NOT DEFINED LVGL_SOURCE_DIR)
+    message(FATAL_ERROR "Pass -DLVGL_SOURCE_DIR=/path/to/pinned/lvgl")
+endif()
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+
+set(LV_CONF_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lv_conf.h" CACHE STRING "" FORCE)
+set(LV_CONF_INCLUDE_SIMPLE ON CACHE BOOL "" FORCE)
+
+add_subdirectory("${LVGL_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/lvgl")
+
+add_executable(kiddos_lvgl_prototype main.c)
+target_include_directories(kiddos_lvgl_prototype PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(kiddos_lvgl_prototype PRIVATE lvgl PkgConfig::SDL2)
+=== LVGL color configuration ===
+136: *  - LV_COLOR_FORMAT_RGB565_SWAPPED: RGB565 (Big-endian)
+227:#define LV_USE_DRAW_SW 1
+229:#if LV_USE_DRAW_SW
+290:#define LV_USE_DRAW_SW_COMPLEX_GRADIENTS 0
+314:#define LV_USE_DRAW_SW_ASM LV_DRAW_SW_ASM_NONE
+316:#if LV_USE_DRAW_SW_ASM == LV_DRAW_SW_ASM_CUSTOM
+320:#endif /*LV_USE_DRAW_SW_ASM == LV_DRAW_SW_ASM_CUSTOM*/
+321:#endif /*LV_USE_DRAW_SW*/
+527: *  Enable: LV_USE_DRAW_SW
+559: *  Enable: LV_USE_DRAW_SW
+603: *  Enable: LV_USE_DRAW_SW
+689: *  Enable: LV_USE_DRAW_SW
+691:#define LV_USE_DRAW_SDL 1
+1816: *  - LV_SDL_BACKEND_TEXTURE: Cached SDL textures (enable: LV_USE_DRAW_SDL)
