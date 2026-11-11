@@ -1,0 +1,159 @@
+=== Tick API declarations ===
+grep: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/lv_api_map_v9.h: No such file or directory
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick_private.h:30:    lv_tick_get_cb_t tick_get_cb;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick_private.h:30:    lv_tick_get_cb_t tick_get_cb;
+
+=== Tick implementation ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-90-            }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-91-        }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-92-    }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-93-}
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-94-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c:95:void lv_tick_set_cb(lv_tick_get_cb_t cb)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-96-{
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-97-    state.tick_get_cb = cb;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-98-}
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-99-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-100-lv_tick_get_cb_t lv_tick_get_cb(void)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-101-{
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-102-    return state.tick_get_cb;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-103-}
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-104-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-105-void lv_delay_set_cb(lv_delay_cb_t cb)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-106-{
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-107-    state.delay_cb = cb;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-108-}
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-109-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-110-/**********************
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-111- *   STATIC FUNCTIONS
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/tick/lv_tick.c-112- **********************/
+--
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-62- *   GLOBAL FUNCTIONS
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-63- **********************/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-64-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-65-void lv_windows_platform_init(void)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-66-{
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c:67:    lv_tick_set_cb(lv_windows_tick_count_callback);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-68-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-69-    lv_delay_set_cb(lv_windows_delay_callback);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-70-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-71-    lv_timer_create(
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-72-        lv_windows_check_display_existence_timer_callback,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-73-        200,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-74-        NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-75-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-76-    // Try to ensure the default group exists.
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-77-    {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-78-        lv_group_t * default_group = lv_group_get_default();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-79-        if(!default_group) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-80-            default_group = lv_group_create();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-81-            if(default_group) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-82-                lv_group_set_default(default_group);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-83-            }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-84-        }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c-85-    }
+--
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-258-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-259-    }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-260-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-261-    lv_ll_init(&lv_wl_ctx.window_ll, sizeof(lv_wl_window_t));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-262-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c:263:    lv_tick_set_cb(tick_get_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-264-    lv_wl_ctx.read_compositor_events_timer = lv_timer_create(read_compositor_events_timer_cb, LV_DEF_REFR_PERIOD, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-265-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-266-    if(lv_wl_ctx.xdg_output_mgr) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-267-        for(uint8_t i = 0; i < lv_wl_ctx.wl_output_count; i++) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-268-            output_bind_xdg_output(lv_wl_ctx.physical_outputs[i]);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-269-        }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-270-        /* Wait for the name and logical size of every output to arrive, so that
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-271-         * `lv_wayland_get_display_size` can be used right after initialization */
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-272-        wl_display_roundtrip(lv_wl_ctx.wl_display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-273-    }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-274-    else {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-275-        LV_LOG_WARN("zxdg_output_manager_v1 is not available, "
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-276-                    "outputs can't be identified by their connector name");
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-277-    }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-278-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-279-    is_wayland_initialized = true;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-280-    return LV_RESULT_OK;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland.c-281-}
+--
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-64-        SDL_SetHint(SDL_HINT_VIDEO_X11_FORCE_EGL, "1");
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-65-#endif
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-66-        SDL_Init(SDL_INIT_VIDEO);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-67-        SDL_StartTextInput();
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-68-        event_handler_timer = lv_timer_create(sdl_event_handler, 5, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:69:        lv_tick_set_cb(SDL_GetTicks);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-70-        lv_delay_set_cb(SDL_Delay);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-71-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-72-        inited = true;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-73-    }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-74-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-75-    lv_sdl_window_t * dsc = lv_malloc_zeroed(sizeof(lv_sdl_window_t));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-76-    LV_ASSERT_MALLOC(dsc);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-77-    if(dsc == NULL) return NULL;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-78-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-79-    lv_display_t * disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-80-    if(disp == NULL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-81-        lv_free(dsc);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-82-        return NULL;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-83-    }
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-84-    lv_display_set_driver_data(disp, dsc);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-85-    lv_result_t res = window_create(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-86-    if(res != LV_RESULT_OK) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c-87-        LV_LOG_ERROR("Failed to initialize window");
+--
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c-83-                                 SCREEN_APPLICATION_CONTEXT) != 0) {
+
+=== Adapter LVGL initialization ===
+145-                    break;
+146-                }
+147-            }
+148-        }
+149-    } else {
+150-        printf("No SDL game controller detected; keyboard arrows remain available.\\n");
+151-    }
+152-
+153:    lv_init();
+154-
+155-    lv_display_t *display = lv_display_create(SCREEN_W, SCREEN_H);
+156-    lv_display_set_color_format(display, LV_COLOR_FORMAT_RGB565);
+157-    lv_display_set_flush_cb(display, flush_to_sdl);
+158-    lv_display_set_buffers(display, draw_buffer, NULL, sizeof(draw_buffer),
+159-        LV_DISPLAY_RENDER_MODE_PARTIAL);
+160-
+161-    make_ui();
+162-
+163-    keypad = lv_indev_create();
+164-    lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+165-    lv_indev_set_read_cb(keypad, read_controller);
+166-    lv_indev_set_group(keypad, focus_group);
+167-    lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+168-    lv_obj_t *test_initial_focus = lv_group_get_focused(focus_group);
+169-    bool test_release_sent = false;
+170-    bool test_result_reported = false;
+171-    uint32_t test_started = SDL_GetTicks();
+
+=== LVGL tick configuration ===
+104:#define LV_USE_OS LV_OS_NONE
+106:#if LV_USE_OS == LV_OS_CUSTOM
+110:#endif /*LV_USE_OS == LV_OS_CUSTOM*/
+112:#if LV_USE_OS == LV_OS_FREERTOS
+124:#endif /*LV_USE_OS == LV_OS_FREERTOS*/
+153:#define LV_DEF_REFR_PERIOD 33
+188:#if LV_USE_OS != LV_OS_NONE
+205:#endif /*LV_USE_OS != LV_OS_NONE*/
+269:#if LV_USE_OS != LV_OS_NONE
+273:#endif /*LV_USE_OS != LV_OS_NONE*/
+509:#if LV_USE_OS != LV_OS_NONE
+515:#endif /*LV_USE_OS != LV_OS_NONE*/
+563:#if LV_USE_OS != LV_OS_NONE
+576:#endif /*LV_USE_OS != LV_OS_NONE*/
+613:#if LV_USE_OS != LV_OS_NONE
+619:#endif /*LV_USE_OS != LV_OS_NONE*/
+677:#if LV_USE_OS == LV_OS_FREERTOS
+684:#endif /*LV_USE_OS == LV_OS_FREERTOS*/
+1215:#if LV_USE_OS == LV_OS_NONE
+1219:#endif /*LV_USE_OS == LV_OS_NONE*/
+1916:#if LV_USE_OS == LV_OS_WINDOWS
+1920:#endif /*LV_USE_OS == LV_OS_WINDOWS*/
