@@ -1,0 +1,340 @@
+=== Review current SDL event handling and dependencies ===
+#include "kiddos/platform/sdl_platform.hpp"
+#include "kiddos/platform/sdl_keyboard_policy.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <iostream>
+
+namespace kiddos {
+
+namespace {
+
+struct Color {
+    Uint8 r, g, b, a;
+};
+
+std::array<SDL_Texture*, 3> artwork_textures{};
+std::array<SDL_Texture*, 3> action_label_textures{};
+SDL_Texture* carousel_title_texture{};
+SDL_Texture* carousel_selected_texture{};
+
+SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+                                 const char* path,
+                                 bool magenta_key = false) {
+    SDL_Surface* surface = SDL_LoadBMP(path);
+    if (!surface) {
+        std::cerr << "Could not load " << path << ": "
+                  << SDL_GetError() << '\\n';
+        return nullptr;
+    }
+
+    if (magenta_key) {
+        const Uint32 key = SDL_MapRGB(surface->format, 255, 0, 255);
+        SDL_SetColorKey(surface, SDL_TRUE, key);
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    if (texture) {
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    } else {
+        std::cerr << "Could not create texture for " << path << ": "
+                  << SDL_GetError() << '\\n';
+    }
+        case SDLK_ESCAPE: return Action::Back;
+        case SDLK_q: return Action::Quit;
+        default: return Action::None;
+    }
+}
+
+Action SDLPlatform::map_controller_button(Uint8 button) {
+    switch (button) {
+        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+            return Action::NavigateLeft;
+        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+            return Action::NavigateRight;
+        case SDL_CONTROLLER_BUTTON_DPAD_UP:
+            return Action::NavigateUp;
+        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+            return Action::NavigateDown;
+        case SDL_CONTROLLER_BUTTON_A:
+            return Action::Confirm;
+        case SDL_CONTROLLER_BUTTON_B:
+            return Action::Back;
+        default:
+            return Action::None;
+    }
+}
+
+bool SDLPlatform::pump_events() {
+    SDL_Event event;
+    bool received = false;
+
+    while (SDL_PollEvent(&event)) {
+        received = true;
+
+        switch (event.type) {
+            case SDL_QUIT:
+                pending_actions_.push_back(Action::Quit);
+                break;
+
+            case SDL_KEYDOWN:
+                if (!should_process_keydown(
+                        event.key.keysym.sym, event.key.repeat,
+                        text_input_active_)) break;
+
+                switch (event.key.keysym.sym) {
+                    case SDLK_BACKSPACE:
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::Backspace, {}});
+                        }
+                        break;
+                    case SDLK_DELETE:
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::Delete, {}});
+                        }
+                        break;
+                    case SDLK_HOME:
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::Home, {}});
+                        }
+                        break;
+                    case SDLK_END:
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::End, {}});
+                        }
+                        break;
+                    case SDLK_LEFT:
+                    case SDLK_RIGHT:
+                        if (text_input_active_) {
+                            pending_text_events_.push_back({
+                                event.key.keysym.sym == SDLK_LEFT
+                                    ? TextInputEventType::Left
+                                    : TextInputEventType::Right, {}});
+                        } else {
+                            pending_actions_.push_back(
+                                map_key(event.key.keysym.sym));
+                        }
+                        break;
+                    default: {
+                        const Action action =
+                            map_key(event.key.keysym.sym);
+                        if (action != Action::None) {
+                            pending_actions_.push_back(action);
+                        }
+                        break;
+                    }
+                }
+                break;
+
+            case SDL_TEXTINPUT:
+                if (text_input_active_) {
+                    pending_text_events_.push_back(
+                        {TextInputEventType::Text, event.text.text});
+                }
+                break;
+
+            case SDL_CONTROLLERBUTTONDOWN:
+                if (event.cbutton.which == controller_instance_) {
+                    const Action action =
+                        map_controller_button(event.cbutton.button);
+                    if (action != Action::None) {
+                        pending_actions_.push_back(action);
+                    }
+                }
+                break;
+
+            case SDL_CONTROLLERDEVICEADDED:
+                open_controller(event.cdevice.which);
+                break;
+
+            case SDL_CONTROLLERDEVICEREMOVED:
+                if (event.cdevice.which == controller_instance_) {
+                    close_controller();
+                }
+                break;
+
+            case SDL_WINDOWEVENT:
+                if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
+                    pending_actions_.push_back(Action::Quit);
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return received;
+}
+
+bool SDLPlatform::poll_action(Action& action) {
+    if (pending_actions_.empty()) pump_events();
+
+    if (pending_actions_.empty()) {
+        action = Action::None;
+        return false;
+    }
+
+    action = pending_actions_.front();
+    pending_actions_.pop_front();
+    return true;
+}
+
+bool SDLPlatform::poll_text_input_event(TextInputEvent& text_event) {
+    if (pending_text_events_.empty()) pump_events();
+
+    if (pending_text_events_.empty()) return false;
+
+    text_event = std::move(pending_text_events_.front());
+    pending_text_events_.pop_front();
+    return true;
+}
+
+void SDLPlatform::set_text_input_active(bool active) {
+    if (text_input_active_ == active) return;
+=== Review action and text event contracts ===
+#pragma once
+
+namespace kiddos {
+
+enum class Action {
+    None,
+    NavigateLeft,
+    NavigateRight,
+    NavigateUp,
+    NavigateDown,
+    Confirm,
+    Back,
+    Quit
+};
+
+} // namespace kiddos
+#pragma once
+
+#include <string>
+
+namespace kiddos {
+
+enum class TextInputEventType {
+    Text,
+    Backspace,
+    Delete,
+    Left,
+    Right,
+    Home,
+    End
+};
+
+struct TextInputEvent {
+    TextInputEventType type = TextInputEventType::Text;
+    std::string text;
+};
+
+} // namespace kiddos
+=== Review platform declarations ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+#include <SDL.h>
+
+#include <deque>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    bool poll_text_input_event(TextInputEvent& event) override;
+    void set_text_input_active(bool active) override;
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+    bool text_input_active_ = false;
+    std::deque<Action> pending_actions_;
+    std::deque<TextInputEvent> pending_text_events_;
+    bool pump_events();
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+=== Confirm SDL event subsystem support ===
+/usr/include/SDL2/SDL.h-80- *  specify the subsystems which you will be using in your application.
+/usr/include/SDL2/SDL.h-81- */
+/usr/include/SDL2/SDL.h-82-/* @{ */
+/usr/include/SDL2/SDL.h-83-#define SDL_INIT_TIMER          0x00000001u
+/usr/include/SDL2/SDL.h-84-#define SDL_INIT_AUDIO          0x00000010u
+/usr/include/SDL2/SDL.h:85:#define SDL_INIT_VIDEO          0x00000020u  /**< SDL_INIT_VIDEO implies SDL_INIT_EVENTS */
+/usr/include/SDL2/SDL.h:86:#define SDL_INIT_JOYSTICK       0x00000200u  /**< SDL_INIT_JOYSTICK implies SDL_INIT_EVENTS */
+/usr/include/SDL2/SDL.h-87-#define SDL_INIT_HAPTIC         0x00001000u
+/usr/include/SDL2/SDL.h-88-#define SDL_INIT_GAMECONTROLLER 0x00002000u  /**< SDL_INIT_GAMECONTROLLER implies SDL_INIT_JOYSTICK */
+/usr/include/SDL2/SDL.h:89:#define SDL_INIT_EVENTS         0x00004000u
+/usr/include/SDL2/SDL.h-90-#define SDL_INIT_SENSOR         0x00008000u
+/usr/include/SDL2/SDL.h-91-#define SDL_INIT_NOPARACHUTE    0x00100000u  /**< compatibility; this flag is ignored. */
+/usr/include/SDL2/SDL.h-92-#define SDL_INIT_EVERYTHING ( \
+/usr/include/SDL2/SDL.h:93:                SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | \
+/usr/include/SDL2/SDL.h-94-                SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER | SDL_INIT_SENSOR \
+/usr/include/SDL2/SDL.h-95-            )
+/usr/include/SDL2/SDL.h-96-/* @} */
+/usr/include/SDL2/SDL.h-97-
+/usr/include/SDL2/SDL.h-98-/**
+/usr/include/SDL2/SDL.h-99- * Initialize the SDL library.
+/usr/include/SDL2/SDL.h-100- *
+/usr/include/SDL2/SDL.h-101- * SDL_Init() simply forwards to calling SDL_InitSubSystem(). Therefore, the
+/usr/include/SDL2/SDL.h-102- * two may be used interchangeably. Though for readability of your code
+/usr/include/SDL2/SDL.h-103- * SDL_InitSubSystem() might be preferred.
+/usr/include/SDL2/SDL.h-104- *
+/usr/include/SDL2/SDL.h-105- * The file I/O (for example: SDL_RWFromFile) and threading (SDL_CreateThread)
+--
+/usr/include/SDL2/SDL.h-120- * - `SDL_INIT_JOYSTICK`: joystick subsystem; automatically initializes the
+/usr/include/SDL2/SDL.h-121- *   events subsystem
+/usr/include/SDL2/SDL.h-122- * - `SDL_INIT_HAPTIC`: haptic (force feedback) subsystem
+/usr/include/SDL2/SDL.h-123- * - `SDL_INIT_GAMECONTROLLER`: controller subsystem; automatically
+/usr/include/SDL2/SDL.h-124- *   initializes the joystick subsystem
+/usr/include/SDL2/SDL.h:125: * - `SDL_INIT_EVENTS`: events subsystem
+/usr/include/SDL2/SDL.h-126- * - `SDL_INIT_EVERYTHING`: all of the above subsystems
+/usr/include/SDL2/SDL.h-127- * - `SDL_INIT_NOPARACHUTE`: compatibility; this flag is ignored
+/usr/include/SDL2/SDL.h-128- *
+/usr/include/SDL2/SDL.h-129- * Subsystem initialization is ref-counted, you must call SDL_QuitSubSystem()
+/usr/include/SDL2/SDL.h-130- * for each SDL_InitSubSystem() to correctly shutdown a subsystem manually (or
+/usr/include/SDL2/SDL.h-131- * call SDL_Quit() to force shutdown). If a subsystem is already loaded then
+/usr/include/SDL2/SDL.h-132- * this call will increase the ref-count and return.
+/usr/include/SDL2/SDL.h-133- *
+/usr/include/SDL2/SDL.h-134- * \param flags subsystem initialization flags.
+/usr/include/SDL2/SDL.h-135- * \returns 0 on success or a negative error code on failure; call
+/usr/include/SDL2/SDL.h-136- *          SDL_GetError() for more information.
+/usr/include/SDL2/SDL.h-137- *
+=== Working tree ===
+ M include/kiddos/app/application.hpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
