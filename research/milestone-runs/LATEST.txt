@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T003325Z-lvgl-feasibility-add-sdl-controller-navigation
+research/milestone-runs/20261111T003344Z-lvgl-feasibility-fix-controller-build
