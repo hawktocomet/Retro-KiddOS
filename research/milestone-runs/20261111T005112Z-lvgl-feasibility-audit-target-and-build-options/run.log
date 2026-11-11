@@ -1,0 +1,299 @@
+=== LVGL CMake options ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/CMakeLists.txt:48:  if (BUILD_SHARED_LIBS)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/CMakePresets.json:19:        "BUILD_SHARED_LIBS": "ON"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/CMakePresets.json:50:        "BUILD_SHARED_LIBS": "ON"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/CMakePresets.json:72:        "BUILD_SHARED_LIBS": "ON",
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/CMakePresets.json:73:        "BUILD_LV_USE_KCONFIG": "ON"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/CMakePresets.json:85:        "BUILD_SHARED_LIBS": "ON",
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/CMakePresets.json:86:        "LV_BUILD_USE_KCONFIG": "ON"
+
+=== Current build cache options ===
+CMAKE_BUILD_TYPE:STRING=
+CMAKE_C_COMPILER:FILEPATH=/usr/bin/cc
+
+=== Current config: enabled major subsystems ===
+37:#define LV_USE_STDLIB_MALLOC LV_STDLIB_BUILTIN
+46:#define LV_USE_STDLIB_STRING LV_STDLIB_BUILTIN
+55:#define LV_USE_STDLIB_SPRINTF LV_STDLIB_BUILTIN
+59:#define LV_MEM_SIZE 65536
+104:#define LV_USE_OS LV_OS_NONE
+117:#define LV_USE_FREERTOS_TASK_NOTIFY 0
+159:#define LV_DRAW_BUF_STRIDE_ALIGN 1
+162:#define LV_DRAW_BUF_ALIGN 4
+168:#define LV_USE_MATRIX 0
+172:#define LV_DRAW_TRANSFORM_USE_MATRIX 0
+180:#define LV_DRAW_LAYER_SIMPLE_BUF_SIZE 24576
+186:#define LV_DRAW_LAYER_MAX_MEMORY 0
+190:#define LV_DRAW_THREAD_STACK_SIZE 8192
+203:#define LV_DRAW_THREAD_PRIO 3
+212:#define LV_USE_VECTOR_GRAPHIC 0
+215:#define LV_USE_SNAPSHOT 0
+218:#define LV_USE_THORVG 0
+222:#define LV_USE_THORVG_INTERNAL 0
+227:#define LV_USE_DRAW_SW 0
+231:#define LV_DRAW_SW_SUPPORT_RGB565 1
+234:#define LV_DRAW_SW_SUPPORT_RGB565_SWAPPED 0
+237:#define LV_DRAW_SW_SUPPORT_RGB565A8 0
+240:#define LV_DRAW_SW_SUPPORT_RGB888 0
+243:#define LV_DRAW_SW_SUPPORT_XRGB8888 0
+246:#define LV_DRAW_SW_SUPPORT_ARGB8888 0
+249:#define LV_DRAW_SW_SUPPORT_ARGB8888_PREMULTIPLIED 0
+252:#define LV_DRAW_SW_SUPPORT_L8 0
+255:#define LV_DRAW_SW_SUPPORT_AL88 0
+258:#define LV_DRAW_SW_SUPPORT_A8 0
+261:#define LV_DRAW_SW_SUPPORT_I1 0
+265:#define LV_DRAW_SW_I1_LUM_THRESHOLD 127
+271:#define LV_DRAW_SW_DRAW_UNIT_CNT 1
+276:#define LV_USE_DRAW_ARM2D_SYNC 0
+279:#define LV_USE_NATIVE_HELIUM_ASM 0
+284:#define LV_DRAW_SW_COMPLEX 1
+290:#define LV_USE_DRAW_SW 0
+296:#define LV_DRAW_SW_SHADOW_CACHE_SIZE 0
+301:#define LV_DRAW_SW_CIRCLE_CACHE_SIZE 4
+314:#define LV_USE_DRAW_SW 0
+318:#define LV_DRAW_SW_ASM_CUSTOM_INCLUDE ""
+327:#define LV_USE_DRAW_VG_LITE 0
+367:#define LV_USE_VG_LITE_DRIVER 0
+391:#define LV_USE_VG_LITE_THORVG 0
+416:#define LV_USE_DRAW_DAVE2D 0
+419:#define LV_USE_NEMA_GFX 0
+442:#define LV_USE_NEMA_LIB LV_NEMA_LIB_NONE
+450:#define LV_USE_NEMA_HAL LV_NEMA_HAL_CUSTOM
+478:#define LV_USE_NEMA_VG 0
+498:#define LV_USE_PXP 0
+503:#define LV_USE_DRAW_PXP 0
+507:#define LV_USE_ROTATE_PXP 0
+513:#define LV_USE_PXP_DRAW_THREAD 0
+520:#define LV_USE_PXP_ASSERT 0
+529:#define LV_USE_PPA 0
+535:#define LV_USE_PPA_IMG 0
+542:#define LV_USE_DRAW_DMA2D 0
+546:#define LV_DRAW_DMA2D_HAL_INCLUDE "stm32h7xx_hal.h"
+551:#define LV_USE_DRAW_DMA2D_INTERRUPT 0
+561:#define LV_USE_SIFLI_EPIC 0
+568:#define LV_USE_SIFLI_EPIC_DRAW_THREAD 0
+573:#define LV_USE_SIFLI_EPIC_ASSERT 0
+579:#define LV_USE_DRAW_EVE 0
+585:#define LV_DRAW_EVE_EVE_GENERATION 4
+590:#define LV_DRAW_EVE_WRITE_BUFFER_SIZE 2048
+598:#define LV_USE_G2D 0
+605:#define LV_USE_DRAW_G2D 0
+617:#define LV_USE_G2D_DRAW_THREAD 0
+624:#define LV_USE_G2D_ASSERT 0
+632:#define LV_USE_DRAW_NANOVG 0
+657:#define LV_USE_DRAW_OPENGLES 0
+663:#define LV_DRAW_OPENGLES_TEXTURE_CACHE_COUNT 64
+668:#define LV_USE_DRAW_IPA 0
+675:#define LV_DRAW_IPA_HAL_INCLUDE "gd32h7xx.h"
+682:#define LV_USE_DRAW_IPA_INTERRUPT 0
+691:#define LV_USE_DRAW_SDL 0
+727:#define LV_USE_GRIDNAV 0
+733:#define LV_USE_GESTURE_RECOGNITION 0
+761:#define LV_USE_OBJ_NAME 0
+764:#define LV_USE_OBJ_ID 0
+777:#define LV_USE_OBJ_ID_BUILTIN 0
+782:#define LV_USE_OBJ_PROPERTY 0
+788:#define LV_USE_OBJ_PROPERTY_NAME 0
+796:#define LV_USE_EXT_DATA 0
+799:#define LV_USE_FLOAT 0
+802:#define LV_USE_OBSERVER 0
+805:#define LV_USE_TRANSLATION 0
+808:#define LV_USE_COLOR_FILTER 0
+817:#define LV_USE_LOG 0
+875:#define LV_USE_THEME_DEFAULT 0
+890:#define LV_USE_THEME_SIMPLE 0
+893:#define LV_USE_THEME_MONO 0
+902:#define LV_USE_FLEX 0
+905:#define LV_USE_GRID 0
+924:#define LV_USE_RLE 0
+927:#define LV_USE_LZ4 0
+931:#define LV_USE_LZ4_INTERNAL 0
+939:#define LV_USE_LODEPNG 0
+942:#define LV_USE_LIBPNG 0
+945:#define LV_USE_BMP 0
+948:#define LV_USE_TJPGD 0
+951:#define LV_USE_LIBJPEG_TURBO 0
+954:#define LV_USE_LIBWEBP 0
+960:#define LV_USE_SVG 0
+964:#define LV_USE_SVG_ANIMATION 0
+967:#define LV_USE_SVG_DEBUG 0
+1007:#define LV_USE_BIDI 0
+1023:#define LV_USE_ARABIC_PERSIAN_CHARS 0
+1028:#define LV_FONT_MONTSERRAT_8 0
+1031:#define LV_FONT_MONTSERRAT_10 0
+1034:#define LV_FONT_MONTSERRAT_12 0
+1037:#define LV_FONT_MONTSERRAT_14 1
+1040:#define LV_FONT_MONTSERRAT_16 0
+1043:#define LV_FONT_MONTSERRAT_18 0
+1046:#define LV_FONT_MONTSERRAT_20 0
+1049:#define LV_FONT_MONTSERRAT_22 0
+1052:#define LV_FONT_MONTSERRAT_24 0
+1055:#define LV_FONT_MONTSERRAT_26 0
+1058:#define LV_FONT_MONTSERRAT_28 0
+1061:#define LV_FONT_MONTSERRAT_30 0
+1064:#define LV_FONT_MONTSERRAT_32 0
+1067:#define LV_FONT_MONTSERRAT_34 0
+1070:#define LV_FONT_MONTSERRAT_36 0
+1073:#define LV_FONT_MONTSERRAT_38 0
+1076:#define LV_FONT_MONTSERRAT_40 0
+1079:#define LV_FONT_MONTSERRAT_42 0
+1082:#define LV_FONT_MONTSERRAT_44 0
+1085:#define LV_FONT_MONTSERRAT_46 0
+1088:#define LV_FONT_MONTSERRAT_48 0
+1091:#define LV_FONT_MONTSERRAT_28_COMPRESSED 0
+1094:#define LV_FONT_DEJAVU_16_PERSIAN_HEBREW 0
+1097:#define LV_FONT_SOURCE_HAN_SANS_SC_14_CJK 0
+1100:#define LV_FONT_SOURCE_HAN_SANS_SC_16_CJK 0
+1103:#define LV_FONT_UNSCII_8 0
+1106:#define LV_FONT_UNSCII_16 0
+1111:#define LV_FONT_USE_CUSTOM_INCLUDE 0
+1122:#define LV_FONT_CUSTOM_INCLUDE ""
+1138:#define LV_USE_CUSTOM_FONT_DEFAULT 0
+1171:#define LV_FONT_DEFAULT LV_FONT_DEFAULT_MONTSERRAT_14
+1179:#define LV_FONT_FMT_TXT_LARGE 0
+1182:#define LV_USE_FONT_COMPRESSED 0
+1187:#define LV_USE_FONT_PLACEHOLDER 0
+1192:#define LV_USE_FONT_MANAGER 0
+1196:#define LV_FONT_MANAGER_NAME_MAX_LEN 32
+1201:#define LV_USE_IMGFONT 0
+1204:#define LV_USE_FREETYPE 0
+1223:#define LV_USE_TINY_TTF 0
+1253:#define LV_USE_3DTEXTURE 0
+1256:#define LV_USE_ANIMIMG 0
+1259:#define LV_USE_ARC 0
+1262:#define LV_USE_ARCLABEL 0
+1265:#define LV_USE_BAR 0
+1271:#define LV_USE_BARCODE 0
+1274:#define LV_USE_BUTTON 1
+1277:#define LV_USE_BUTTONMATRIX 0
+1280:#define LV_USE_CALENDAR 0
+1344:#define LV_USE_CALENDAR_HEADER_ARROW 0
+1347:#define LV_USE_CALENDAR_HEADER_DROPDOWN 0
+1350:#define LV_USE_CALENDAR_CHINESE 0
+1358:#define LV_USE_CANVAS 0
+1361:#define LV_USE_CHART 0
+1364:#define LV_USE_CHECKBOX 0
+1370:#define LV_USE_DROPDOWN 0
+1375:#define LV_USE_FFMPEG 0
+1391:#define LV_USE_GIF 0
+1409:#define LV_USE_GLTF 0
+1416:#define LV_USE_GSTREAMER 0
+1419:#define LV_USE_IMAGE 1
+1422:#define LV_USE_IMAGEBUTTON 0
+1429:#define LV_USE_IME_PINYIN 0
+1452:#define LV_USE_KEYBOARD 0
+1455:#define LV_USE_LABEL 1
+1472:#define LV_USE_LED 0
+1475:#define LV_USE_LINE 0
+1482:#define LV_USE_LOTTIE 0
+1490:#define LV_USE_MSGBOX 0
+1496:#define LV_USE_QRCODE 0
+1502:#define LV_USE_ROLLER 0
+1505:#define LV_USE_SCALE 0
+1511:#define LV_USE_SLIDER 0
+1514:#define LV_USE_SPAN 0
+
+=== KiddOS target/build architecture references ===
+
+=== Existing platform compiler and binary architecture ===
+/tmp/kiddos-lvgl-minimal-build/kiddos_lvgl_sdl_adapter: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=2b2279d89213c3cedbdb50220c64a4c809c90a66, for GNU/Linux 4.4.0, not stripped
+./build/CMakeFiles/4.4.4/CMakeCXXCompiler.cmake:24:set(CMAKE_CXX_COMPILER_ARCHITECTURE_ID "x86_64")
+./build/CMakeFiles/4.4.4/CMakeCXXCompiler.cmake:37:set(CMAKE_CXX_COMPILER_LINKER_ARCHITECTURE_FLAGS "-m;elf")
+./build/CMakeFiles/4.4.4/CMakeCXXCompiler.cmake:72:set(CMAKE_CXX_LIBRARY_ARCHITECTURE "")
+./build/CMakeFiles/4.4.4/CMakeCXXCompiler.cmake:82:if(CMAKE_CXX_LIBRARY_ARCHITECTURE)
+./build/CMakeFiles/4.4.4/CMakeCXXCompiler.cmake:83:  set(CMAKE_LIBRARY_ARCHITECTURE "")
+./research/firmware/manufacturer/RetroPixel_Pocket/.github/workflows/clean-package.yaml:42:                  DEVICE=$device ARCH=$arch PACKAGE=$package make package-clean
+./research/firmware/manufacturer/RetroPixel_Pocket/config/docker/package.mk:7:PKG_ARCH="@ARCH@"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/package.mk:87:  echo "${DEVICE}" > ${INSTALL}/usr/config/.OS_ARCH
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/audio/opus/package.mk:15:#if [ "${TARGET_ARCH}" = "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/audio/soxr/package.mk:21:if [ "${TARGET_ARCH}" = "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/compress/zstd/package.mk:29:  cmake -DCMAKE_TOOLCHAIN_FILE=cmake-zstd.conf \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/debug/valgrind/package.mk:13:if [ "${TARGET_ARCH}" = "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/debug/valgrind/package.mk:15:elif [ "${TARGET_ARCH}" = "aarch64" -o "${TARGET_ARCH}" = "x86_64" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/arm-mem/package.mk:8:PKG_ARCH="arm"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/arm-mem/package.mk:26:  export CROSS_COMPILE=${TARGET_PREFIX}
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/librga/package.mk:6:PKG_ARCH="arm aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/ncurses/package.mk:70:  #cp -rf ${INSTALL}/usr/lib/* ${TOOLCHAIN}/${TARGET_ARCH}-libreelec-linux-gnu${TARGET_ABI}/lib
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/drastic/package.mk:7:PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-audio-sdl/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-core/package.mk:25:  export CROSS_COMPILE="${TARGET_PREFIX}"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-input-sdl/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-rsp-hle/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-ui-console/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-video-glide64mk2/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/mupen64plussa/mupen64plussa-video-rice/package.mk:26:  export CROSS_COMPILE="${TARGET_PREFIX}"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/openbor/package.mk:15:  PKG_MAKE_OPTS_TARGET="BUILD_LINUX_${ARCH}=1 NO_STRIP=1 -C ${PKG_BUILD}/engine SDKPATH=${SYSROOT_PREFIX} PREFIX=${TARGET_NAME}"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/raze/libvpx/package.mk:11:  case ${ARCH} in
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/solarus/luajit/package.mk:33:  [ "${ARCH}" = "arm" ] && BIT="-m32"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/solarus/luajit/package.mk:45:		${JITARCH} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/solarus/package.mk:6:PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/emulators/yabasanshiroSA/package.mk:37:                         -DCMAKE_TOOLCHAIN_FILE=${PKG_BUILD}/yabause/src/retro_arena/n2.cmake \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/beetle-pcfx/package.mk:16:  if [ "${ARCH}" == "i386" -o "${ARCH}" == "x86_64" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/dosbox-core/package.mk:7:PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/emuscv/package.mk:6:#PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/ep128emu/package.mk:7:PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/fake08/package.mk:6:PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/flycast2021/package.mk:27:  PKG_MAKE_OPTS_TARGET+=" ARCH=arm platform=arm64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/genesis-plus-gx-wide/package.mk:16:  if [ "${ARCH}" == "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/genesis-plus-gx/package.mk:16:  if [ "${ARCH}" == "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/gpsp/package.mk:16:  if [ "${ARCH}" == "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/handy/package.mk:15:if [ ${ARCH} = "aarch64" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/hatari/package.mk:20:  if [ "${ARCH}" == "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/jaxe/package.mk:6:PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/lowresnx/package.mk:6:#PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame/package.mk:33:                      ARCH= \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame/package.mk:49:  unset ARCH
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame/package.mk:52:  export ARCHOPTS="-D__aarch64__ -DASMJIT_BUILD_X86"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2003-plus/package.mk:20:  make ARCH="" CC="${CC}" NATIVE_CC="${CC}" LD="${CC}"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2010/package.mk:16:  if [ "${ARCH}" == "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2010/package.mk:18:  elif [ "${ARCH}" == "i386" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2010/package.mk:20:  elif [ "${ARCH}" == "x86_64" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2010/package.mk:22:  elif [ "${ARCH}" == "aarch64" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2016/package.mk:30:                      ARCH= \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2016/package.mk:44:  unset ARCH
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mame2016/package.mk:47:  export ARCHOPTS="-D__aarch64__ -DASMJIT_BUILD_X86"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mgba/package.mk:21:  if [[ "${ARCH}" =~ "arm" ]]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/mojozork/package.mk:7:PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/same_cdi/package.mk:27:                      ARCH= \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/same_cdi/package.mk:40:  unset ARCH
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/same_cdi/package.mk:43:  export ARCHOPTS="-D__aarch64__ -DASMJIT_BUILD_X86"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/smsplus-gx/package.mk:19:  if [ "${ARCH}" == "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/snes9x/package.mk:16:  if [ "${ARCH}" == "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/swanstation/package.mk:8:PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/vice/package.mk:16:  if [ "${ARCH}" == "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/libretro/wasm4/package.mk:6:#PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/build-lib32/package.mk:5:PKG_ARCH="arm"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/build-lib32/package.mk:13:  if [ "${ARCH}" = "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/gptokeyb/package.mk:7:PKG_ARCH="any"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/lib32/package.mk:6:PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/retroarch/package.mk:54:  if [ ${ARCH} == "arm" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/retroarch/package.mk:64:  make HAVE_LIBRETRODB=1 HAVE_NETWORKING=1 HAVE_LAKKA=1 HAVE_ZARCH=1 HAVE_QT=0 HAVE_LANGEXTRA=1 HAVE_LAKKA_PROJECT=0 HAVE_LAKKA_SERVER=0
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/retrorun/package.mk:19:  make config=release ARCH= verbose=1
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/rg351p-js2xbox/package.mk:6:PKG_ARCH="aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/graphics/glfw/package.mk:7:PKG_ARCH="x86_64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/graphics/gpu-viv-bin-mx6q/package.mk:7:PKG_ARCH="arm"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/graphics/imx-gpu-viv/package.mk:14:PKG_ARCH="arm"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/graphics/libhybris/package.mk:16:PKG_CONFIGURE_OPTS_TARGET="--enable-arch=${TARGET_ARCH} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/graphics/libjpeg-turbo/package.mk:31:if [ ${TARGET_ARCH} = "x86_64" ]; then
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/graphics/opengl-mali/package.mk:7:PKG_ARCH="arm"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/graphics/vsxu/package.mk:8:PKG_ARCH="i386 x86_64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/graphics/vulkan-headers/package.mk:7:PKG_ARCH="any"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/graphics/vulkan-loader/package.mk:7:PKG_ARCH="any"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/graphics/vulkan-tools/package.mk:7:PKG_ARCH="any"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8188EU/package.mk:23:       ARCH=${TARGET_KERNEL_ARCH} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8188EU/package.mk:25:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8192CU/package.mk:23:       ARCH=${TARGET_KERNEL_ARCH} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8192CU/package.mk:25:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8192DU/package.mk:22:       ARCH=${TARGET_KERNEL_ARCH} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8192DU/package.mk:24:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8192EU/package.mk:22:       ARCH=${TARGET_KERNEL_ARCH} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8192EU/package.mk:24:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8812AU/package.mk:23:       ARCH=${TARGET_KERNEL_ARCH} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8812AU/package.mk:25:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8814AU/package.mk:8:PKG_ARCH="any"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8814AU/package.mk:26:       ARCH=${TARGET_KERNEL_ARCH} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8814AU/package.mk:28:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8821CU/package.mk:34:       ARCH=${TARGET_KERNEL_ARCH} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/RTL8821CU/package.mk:36:       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8152-aml/package.mk:7:PKG_ARCH="arm aarch64"
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/RTL8152-aml/package.mk:19:    ARCH=${TARGET_KERNEL_ARCH} \
