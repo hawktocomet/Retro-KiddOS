@@ -1,0 +1,28 @@
+=== Build controller-enabled adapter ===
+[  6%] Built target lvgl_thorvg
+[ 59%] Built target lvgl
+[ 59%] Building C object CMakeFiles/kiddos_lvgl_sdl_adapter.dir/main.c.o
+[ 91%] Built target lvgl_examples
+/home/hawk/KiddOS/research/lvgl/adapter/main.c: In function ‘make_ui’:
+/home/hawk/KiddOS/research/lvgl/adapter/main.c:79:9: error: implicit declaration of function ‘lv_obj_add_flag’; did you mean ‘lv_obj_add_state’? [-Wimplicit-function-declaration]
+   79 |         lv_obj_add_flag(card, LV_OBJ_FLAG_CLICKABLE);
+      |         ^~~~~~~~~~~~~~~
+      |         lv_obj_add_state
+make[2]: *** [CMakeFiles/kiddos_lvgl_sdl_adapter.dir/build.make:79: CMakeFiles/kiddos_lvgl_sdl_adapter.dir/main.c.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:118: CMakeFiles/kiddos_lvgl_sdl_adapter.dir/all] Error 2
+make[1]: *** Waiting for unfinished jobs....
+[100%] Built target lvgl_demos
+make: *** [Makefile:91: all] Error 2
+=== Build result ===
+CONTROLLER_ADAPTER_BUILD=PASS
+=== Input bridge source check ===
+21:static void read_controller(lv_indev_t *indev, lv_indev_data_t *data)
+80:        lv_group_add_obj(focus_group, card);
+139:    lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+140:    lv_indev_set_read_cb(keypad, read_controller);
+158:                    case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+159:                    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+160:                    case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+161:                    case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+162:                    case SDL_CONTROLLER_BUTTON_A: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+174:                    case SDLK_RETURN: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
