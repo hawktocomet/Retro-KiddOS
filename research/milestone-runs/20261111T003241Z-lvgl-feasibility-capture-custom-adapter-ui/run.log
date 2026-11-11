@@ -1,0 +1,10 @@
+=== Launch adapter ===
+=== Capture desktop ===
+compositor doesn't support the screen capture protocol
+GRIM_EXIT=1
+=== Stop adapter ===
+=== Capture details ===
+SCREEN_CAPTURE=FAIL
+=== Adapter output ===
+Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer
+Press Escape or close the window to exit.
