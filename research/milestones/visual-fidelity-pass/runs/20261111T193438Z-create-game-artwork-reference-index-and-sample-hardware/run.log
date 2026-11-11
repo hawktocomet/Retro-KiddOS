@@ -1,0 +1,19 @@
+=== HARDWARE REFERENCE COLOR SAMPLE ===
+<stdin>:15: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+ 18.3%  #010101
+ 17.9%  #293F82
+ 16.9%  #F8F7F5
+ 13.4%  #EEEEEA
+ 13.2%  #F5F5F2
+ 10.1%  #FBFBF9
+  5.8%  #5A83C9
+  2.9%  #192463
+  0.8%  #01010F
+  0.5%  #000101
+  0.3%  #010100
+  0.0%  #000004
+Wrote docs/reference/retro-pixel-pocket-palette.md
+
+=== REFERENCE FILES ===
+-rw-r--r-- 1 hawk hawk 3.2K Nov 11 14:34 docs/reference/game-artwork-sources.md
+-rw-r--r-- 1 hawk hawk 1.6K Nov 11 14:34 docs/reference/retro-pixel-pocket-palette.md

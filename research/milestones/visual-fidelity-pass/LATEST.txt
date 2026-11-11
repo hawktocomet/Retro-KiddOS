@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T192932Z-inventory-supported-platforms-and-game-artwork-sources
+research/milestones/visual-fidelity-pass/runs/20261111T193438Z-create-game-artwork-reference-index-and-sample-hardware
