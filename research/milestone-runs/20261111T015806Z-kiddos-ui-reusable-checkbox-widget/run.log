@@ -1,0 +1,56 @@
+Traceback (most recent call last):
+  File "<stdin>", line 203, in <module>
+AssertionError
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/17] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o
+[2/17] Building CXX object CMakeFiles/kiddos_ui_theme_test.dir/tests/ui_theme_test.cpp.o
+[3/17] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/controller.cpp.o
+[4/17] Linking CXX static library libkiddos_ui.a
+[5/17] Linking CXX executable kiddos_ui_button_test
+[6/17] Linking CXX executable kiddos_ui_label_test
+[7/17] Linking CXX executable kiddos_ui_image_test
+[8/17] Linking CXX executable kiddos
+[9/17] Linking CXX executable kiddos_ui_layout_test
+[10/17] Linking CXX executable kiddos_ui_controller_test
+FAILED: [code=1] kiddos_ui_controller_test 
+: && /usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/kiddos_ui_controller_test.dir/link.d CMakeFiles/kiddos_ui_controller_test.dir/tests/ui_controller_test.cpp.o -o kiddos_ui_controller_test  libkiddos_ui.a  /usr/lib/libSDL2_ttf.so  /usr/lib/libSDL2_image.so  /usr/lib/libSDL2.so && :
+/usr/bin/ld: libkiddos_ui.a(controller.cpp.o): warning: relocation against `_ZTIN6kiddos2ui8CheckboxE' in read-only section `.text'
+/usr/bin/ld: libkiddos_ui.a(controller.cpp.o): in function `kiddos::ui::ControllerInteraction::handle(kiddos::ui::UIAction)':
+/home/hawk/KiddOS/src/ui/controller.cpp:47:(.text+0x309): undefined reference to `typeinfo for kiddos::ui::Checkbox'
+/usr/bin/ld: /home/hawk/KiddOS/src/ui/controller.cpp:48:(.text+0x33e): undefined reference to `kiddos::ui::Checkbox::toggle()'
+/usr/bin/ld: warning: creating DT_TEXTREL in a PIE
+collect2: error: ld returned 1 exit status
+[11/17] Linking CXX executable kiddos_ui_toggle_test
+FAILED: [code=1] kiddos_ui_toggle_test 
+: && /usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/kiddos_ui_toggle_test.dir/link.d CMakeFiles/kiddos_ui_toggle_test.dir/tests/ui_toggle_test.cpp.o -o kiddos_ui_toggle_test  libkiddos_ui.a  /usr/lib/libSDL2_ttf.so  /usr/lib/libSDL2_image.so  /usr/lib/libSDL2.so && :
+/usr/bin/ld: libkiddos_ui.a(controller.cpp.o): warning: relocation against `_ZTIN6kiddos2ui8CheckboxE' in read-only section `.text'
+/usr/bin/ld: libkiddos_ui.a(controller.cpp.o): in function `kiddos::ui::ControllerInteraction::handle(kiddos::ui::UIAction)':
+/home/hawk/KiddOS/src/ui/controller.cpp:47:(.text+0x309): undefined reference to `typeinfo for kiddos::ui::Checkbox'
+/usr/bin/ld: /home/hawk/KiddOS/src/ui/controller.cpp:48:(.text+0x33e): undefined reference to `kiddos::ui::Checkbox::toggle()'
+/usr/bin/ld: warning: creating DT_TEXTREL in a PIE
+collect2: error: ld returned 1 exit status
+[12/17] Linking CXX executable kiddos_ui_focus_test
+[13/17] Linking CXX executable kiddos_ui_progress_bar_test
+[14/17] Linking CXX executable kiddos_ui_panel_test
+[15/17] Linking CXX executable kiddos_ui_theme_test
+[16/17] Linking CXX executable kiddos_ui_slider_test
+FAILED: [code=1] kiddos_ui_slider_test 
+: && /usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/kiddos_ui_slider_test.dir/link.d CMakeFiles/kiddos_ui_slider_test.dir/tests/ui_slider_test.cpp.o -o kiddos_ui_slider_test  libkiddos_ui.a  /usr/lib/libSDL2_ttf.so  /usr/lib/libSDL2_image.so  /usr/lib/libSDL2.so && :
+/usr/bin/ld: libkiddos_ui.a(controller.cpp.o): warning: relocation against `_ZTIN6kiddos2ui8CheckboxE' in read-only section `.text'
+/usr/bin/ld: libkiddos_ui.a(controller.cpp.o): in function `kiddos::ui::ControllerInteraction::handle(kiddos::ui::UIAction)':
+/home/hawk/KiddOS/src/ui/controller.cpp:47:(.text+0x309): undefined reference to `typeinfo for kiddos::ui::Checkbox'
+/usr/bin/ld: /home/hawk/KiddOS/src/ui/controller.cpp:48:(.text+0x33e): undefined reference to `kiddos::ui::Checkbox::toggle()'
+/usr/bin/ld: warning: creating DT_TEXTREL in a PIE
+collect2: error: ld returned 1 exit status
+[17/17] Linking CXX executable kiddos_ui_list_view_test
+FAILED: [code=1] kiddos_ui_list_view_test 
+: && /usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/kiddos_ui_list_view_test.dir/link.d CMakeFiles/kiddos_ui_list_view_test.dir/tests/ui_list_view_test.cpp.o -o kiddos_ui_list_view_test  libkiddos_ui.a  /usr/lib/libSDL2_ttf.so  /usr/lib/libSDL2_image.so  /usr/lib/libSDL2.so && :
+/usr/bin/ld: libkiddos_ui.a(controller.cpp.o): warning: relocation against `_ZTIN6kiddos2ui8CheckboxE' in read-only section `.text'
+/usr/bin/ld: libkiddos_ui.a(controller.cpp.o): in function `kiddos::ui::ControllerInteraction::handle(kiddos::ui::UIAction)':
+/home/hawk/KiddOS/src/ui/controller.cpp:47:(.text+0x309): undefined reference to `typeinfo for kiddos::ui::Checkbox'
+/usr/bin/ld: /home/hawk/KiddOS/src/ui/controller.cpp:48:(.text+0x33e): undefined reference to `kiddos::ui::Checkbox::toggle()'
+/usr/bin/ld: warning: creating DT_TEXTREL in a PIE
+collect2: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.
