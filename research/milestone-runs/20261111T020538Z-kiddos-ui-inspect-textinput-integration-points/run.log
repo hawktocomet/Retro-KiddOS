@@ -1,0 +1,668 @@
+=== Text rendering API ===
+#pragma once
+#include "kiddos/ui/color.hpp"
+#include "kiddos/ui/font.hpp"
+#include "kiddos/ui/geometry.hpp"
+#include "kiddos/ui/renderer.hpp"
+#include <string>
+
+namespace kiddos::ui {
+class TextRenderer final {
+public:
+    explicit TextRenderer(Renderer& renderer) noexcept;
+    bool draw(const std::string& text, const Font& font,
+              Point position, Color color);
+    bool draw_centered(const std::string& text, const Font& font,
+                       Rect area, Color color);
+private:
+    Renderer& renderer_;
+};
+}
+#pragma once
+#include <SDL_ttf.h>
+#include <string>
+
+namespace kiddos::ui {
+class Font final {
+public:
+    Font() = default;
+    ~Font();
+    Font(const Font&) = delete;
+    Font& operator=(const Font&) = delete;
+    Font(Font&& other) noexcept;
+    Font& operator=(Font&& other) noexcept;
+    bool load(const std::string& path, int point_size);
+    void reset() noexcept;
+    bool valid() const noexcept;
+    TTF_Font* native() const noexcept;
+private:
+    TTF_Font* font_ = nullptr;
+};
+}
+
+=== Element and event APIs ===
+#pragma once
+
+#include "kiddos/ui/geometry.hpp"
+#include "kiddos/ui/renderer.hpp"
+
+namespace kiddos::ui {
+
+class Element {
+public:
+    virtual ~Element() = default;
+
+    void set_bounds(Rect bounds) noexcept { bounds_ = bounds; }
+    Rect bounds() const noexcept { return bounds_; }
+
+    void set_visible(bool visible) noexcept { visible_ = visible; }
+    bool visible() const noexcept { return visible_; }
+
+    void set_enabled(bool enabled) noexcept { enabled_ = enabled; }
+    bool enabled() const noexcept { return enabled_; }
+
+    void set_focusable(bool focusable) noexcept {
+        focusable_ = focusable;
+    }
+
+    bool focusable() const noexcept { return focusable_; }
+
+    void set_focused(bool focused) noexcept { focused_ = focused; }
+    bool focused() const noexcept { return focused_; }
+
+    void render(Renderer& renderer) {
+        if (visible_) draw(renderer);
+    }
+
+protected:
+    virtual void draw(Renderer& renderer) = 0;
+
+private:
+    Rect bounds_{};
+    bool visible_ = true;
+    bool enabled_ = true;
+    bool focusable_ = false;
+    bool focused_ = false;
+};
+
+} // namespace kiddos::ui
+#pragma once
+
+#include "kiddos/ui/button.hpp"
+#include "kiddos/ui/focus.hpp"
+
+namespace kiddos::ui {
+
+enum class UIAction {
+    Left,
+    Right,
+    Up,
+    Down,
+    Confirm,
+    Back
+};
+
+class ControllerInteraction final {
+public:
+    explicit ControllerInteraction(FocusManager& focus) noexcept;
+
+    bool handle(UIAction action);
+    bool cancel() noexcept;
+
+private:
+    FocusManager& focus_;
+};
+
+} // namespace kiddos::ui
+
+=== SDL input handling ===
+#include "kiddos/platform/sdl_platform.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <iostream>
+
+namespace kiddos {
+
+namespace {
+
+struct Color {
+    Uint8 r, g, b, a;
+};
+
+std::array<SDL_Texture*, 3> artwork_textures{};
+std::array<SDL_Texture*, 3> action_label_textures{};
+SDL_Texture* carousel_title_texture{};
+SDL_Texture* carousel_selected_texture{};
+
+SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+                                 const char* path,
+                                 bool magenta_key = false) {
+    SDL_Surface* surface = SDL_LoadBMP(path);
+    if (!surface) {
+        std::cerr << "Could not load " << path << ": "
+                  << SDL_GetError() << '\\n';
+        return nullptr;
+    }
+
+    if (magenta_key) {
+        const Uint32 key = SDL_MapRGB(surface->format, 255, 0, 255);
+        SDL_SetColorKey(surface, SDL_TRUE, key);
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    if (texture) {
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    } else {
+        std::cerr << "Could not create texture for " << path << ": "
+                  << SDL_GetError() << '\\n';
+    }
+    return texture;
+}
+
+void color(SDL_Renderer* r, Color c) {
+    SDL_SetRenderDrawColor(r, c.r, c.g, c.b, c.a);
+}
+
+void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+    color(r, c);
+    SDL_RenderFillRect(r, &rect);
+}
+
+void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+    color(r, c);
+    SDL_RenderDrawRect(r, &rect);
+}
+
+void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    for (int y = 0; y < rect.h; ++y) {
+        int inset = 0;
+        if (y < radius) {
+            const double dy = radius - y - 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        } else if (y >= rect.h - radius) {
+            const double dy = y - (rect.h - radius) + 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        }
+        SDL_RenderDrawLine(r, rect.x + inset, rect.y + y,
+                           rect.x + rect.w - 1 - inset, rect.y + y);
+    }
+}
+
+void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y,
+                       rect.x + rect.w - radius - 1, rect.y);
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y + rect.h - 1,
+                       rect.x + rect.w - radius - 1, rect.y + rect.h - 1);
+    SDL_RenderDrawLine(r, rect.x, rect.y + radius,
+                       rect.x, rect.y + rect.h - radius - 1);
+    SDL_RenderDrawLine(r, rect.x + rect.w - 1, rect.y + radius,
+                       rect.x + rect.w - 1, rect.y + rect.h - radius - 1);
+
+    for (int i = 0; i <= radius * 2; ++i) {
+        const double angle = (3.14159265358979323846 / 2.0) *
+                             static_cast<double>(i) /
+                             std::max(1, radius * 2);
+        const int dx = static_cast<int>(std::round(radius * std::cos(angle)));
+        const int dy = static_cast<int>(std::round(radius * std::sin(angle)));
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + rect.h - radius - 1 + dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + rect.h - radius - 1 + dy);
+    }
+}
+
+void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+                          int radius, Color background) {
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, background);
+
+    for (int y = 0; y < radius; ++y) {
+        const double dy = radius - y - 0.5;
+        const int inset = radius - static_cast<int>(
+            std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        SDL_RenderDrawLine(r, rect.x, rect.y + y,
+                           rect.x + inset, rect.y + y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, rect.y + y,
+                           rect.x + rect.w - 1, rect.y + y);
+
+        const int bottom_y = rect.y + rect.h - 1 - y;
+        SDL_RenderDrawLine(r, rect.x, bottom_y,
+                           rect.x + inset, bottom_y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, bottom_y,
+                           rect.x + rect.w - 1, bottom_y);
+    }
+}
+
+void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+    color(r, c);
+
+    for (int y = -radius; y <= radius; ++y) {
+        const int x = static_cast<int>(
+            std::sqrt(static_cast<double>(
+                radius * radius - y * y
+            ))
+        );
+        SDL_RenderDrawLine(r, cx - x, cy + y, cx + x, cy + y);
+    }
+}
+
+void triangle(SDL_Renderer* r, int x1, int y1,
+              int x2, int y2, int x3, int y3, Color c) {
+    color(r, c);
+
+    const int min_y = std::min({y1, y2, y3});
+    const int max_y = std::max({y1, y2, y3});
+
+    for (int y = min_y; y <= max_y; ++y) {
+        int intersections[3];
+        int count = 0;
+
+        const int xs[] = {x1, x2, x3};
+        const int ys[] = {y1, y2, y3};
+
+        for (int i = 0; i < 3; ++i) {
+            const int j = (i + 1) % 3;
+
+            if ((ys[i] <= y && ys[j] > y) ||
+                (ys[j] <= y && ys[i] > y)) {
+                const int x = xs[i] +
+                    (y - ys[i]) * (xs[j] - xs[i]) /
+                    (ys[j] - ys[i]);
+
+                intersections[count++] = x;
+            }
+        }
+
+        if (count == 2) {
+            SDL_RenderDrawLine(
+                r,
+                std::min(intersections[0], intersections[1]),
+                y,
+                std::max(intersections[0], intersections[1]),
+                y
+            );
+        }
+    }
+}
+
+void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(17, 24, 67));
+
+    circle(r, a.x + a.w * 68 / 100,
+           a.y + a.h * 29 / 100,
+           a.w / 5, c(91, 99, 255));
+
+    circle(r, a.x + a.w * 68 / 100,
+           a.y + a.h * 29 / 100,
+           a.w / 7, c(168, 154, 255));
+
+    for (int i = 0; i < 12; ++i) {
+        const int x = a.x + (i * 47 + 19) % a.w;
+        const int y = a.y + (i * 71 + 31) % (a.h * 65 / 100);
+        circle(r, x, y, 2, c(220, 231, 255));
+    }
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 2, a.y + a.h / 3,
+             a.x + a.w, a.y + a.h, c(39, 63, 139));
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 3, a.y + a.h * 60 / 100,
+             a.x + a.w * 72 / 100, a.y + a.h, c(26, 43, 103));
+}
+
+void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(17, 73, 87));
+
+    circle(r, a.x + a.w * 70 / 100,
+           a.y + a.h * 25 / 100,
+           a.w / 7, c(113, 224, 203));
+
+    triangle(r, a.x, a.y + a.h * 80 / 100,
+             a.x + a.w / 2, a.y + a.h / 3,
+             a.x + a.w, a.y + a.h * 80 / 100,
+             c(32, 119, 107));
+
+    triangle(r, a.x, a.y + a.h,
+             a.x + a.w / 2, a.y + a.h / 2,
+             a.x + a.w, a.y + a.h,
+             c(16, 69, 78));
+
+    for (int i = 0; i < 6; ++i) {
+        const int x = a.x + (i * 61 + 23) % a.w;
+        rectangle(r, {x, a.y + a.h * 65 / 100, 8, a.h / 4},
+                  c(85, 62, 49));
+        triangle(r, x - 19, a.y + a.h * 68 / 100,
+                 x + 4, a.y + a.h * 39 / 100,
+                 x + 27, a.y + a.h * 68 / 100,
+                 c(42, 160, 120));
+    }
+}
+
+void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+    auto c = [alpha](Uint8 red, Uint8 green, Uint8 blue) {
+        return Color{red, green, blue, alpha};
+    };
+
+    rectangle(r, a, c(25, 91, 157));
+
+    circle(r, a.x + a.w / 2,
+           a.y + a.h / 3,
+           a.w / 6, c(255, 207, 124));
+
+
+=== Existing widget conventions ===
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/font.hpp"
+
+#include <functional>
+#include <string>
+#include <vector>
+
+namespace kiddos::ui {
+
+struct SelectStyle {
+    Color background{24, 32, 56, 255};
+    Color border{90, 105, 135, 255};
+    Color focused_border{80, 170, 255, 255};
+    Color text{240, 244, 255, 255};
+    Color disabled_text{130, 140, 160, 255};
+    Color arrow{200, 215, 240, 255};
+};
+
+class Select final : public Element {
+public:
+    explicit Select(std::vector<std::string> options = {}, int selected = 0);
+
+    void set_options(std::vector<std::string> options);
+    const std::vector<std::string>& options() const noexcept;
+
+    bool set_selected(int index);
+    int selected() const noexcept;
+    const std::string* selected_option() const noexcept;
+
+    bool select_next();
+    bool select_previous();
+
+    void set_font(const Font* font) noexcept;
+    const Font* font() const noexcept;
+
+    void set_style(SelectStyle style) noexcept;
+    const SelectStyle& style() const noexcept;
+
+    void set_on_change(std::function<void(int)> callback);
+
+private:
+    std::vector<std::string> options_;
+    int selected_{-1};
+    const Font* font_{nullptr};
+    SelectStyle style_{};
+    std::function<void(int)> on_change_;
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/font.hpp"
+
+#include <functional>
+#include <string>
+
+namespace kiddos::ui {
+
+struct CheckboxStyle {
+    Color background{20, 34, 65, 255};
+    Color checked{45, 125, 230, 255};
+    Color checkmark{245, 248, 255, 255};
+    Color border{65, 105, 165, 255};
+    Color focused_border{75, 155, 255, 255};
+    Color text{245, 248, 255, 255};
+    Color disabled_text{160, 175, 200, 255};
+};
+
+class Checkbox final : public Element {
+public:
+    explicit Checkbox(std::string label = {}, bool checked = false);
+
+    void set_label(std::string label);
+    const std::string& label() const noexcept;
+
+    void set_checked(bool checked);
+    bool checked() const noexcept;
+    bool toggle();
+
+    void set_font(const Font* font) noexcept;
+    const Font* font() const noexcept;
+
+    void set_style(CheckboxStyle style) noexcept;
+    const CheckboxStyle& style() const noexcept;
+
+    void set_on_change(std::function<void(bool)> callback);
+
+private:
+    std::string label_;
+    bool checked_ = false;
+    const Font* font_ = nullptr;
+    CheckboxStyle style_{};
+    std::function<void(bool)> on_change_;
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+
+=== CMake and test registration ===
+cmake_minimum_required(VERSION 3.20)
+
+project(KiddOS
+    VERSION 0.2.0
+    DESCRIPTION "A child-friendly gaming environment for the Retro Pixel Pocket"
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
+pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
+
+add_library(kiddos_ui STATIC
+    src/ui/renderer.cpp
+    src/ui/layout.cpp
+    src/ui/focus.cpp
+    src/ui/button.cpp
+    src/ui/controller.cpp
+    src/ui/font.cpp
+    src/ui/text.cpp
+    src/ui/texture.cpp
+    src/ui/image.cpp
+    src/ui/label.cpp
+    src/ui/panel.cpp
+    src/ui/progress_bar.cpp
+    src/ui/toggle.cpp
+    src/ui/slider.cpp
+    src/ui/theme.cpp
+    src/ui/list_view.cpp
+    src/ui/checkbox.cpp
+    src/ui/radio_group.cpp
+    src/ui/select.cpp
+)
+
+target_include_directories(kiddos_ui PUBLIC include)
+target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
+
+target_compile_options(kiddos_ui PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+add_executable(kiddos
+    src/main.cpp
+    src/app/application.cpp
+    src/platform/sdl_platform.cpp
+)
+
+target_include_directories(kiddos PRIVATE include)
+target_link_libraries(kiddos PRIVATE kiddos_ui)
+
+target_compile_options(kiddos PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+include(CTest)
+
+if(BUILD_TESTING)
+    add_executable(kiddos_ui_geometry_test
+        tests/ui_geometry_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_geometry_test PRIVATE include)
+
+    add_executable(kiddos_ui_layout_test
+        tests/ui_layout_test.cpp
+        src/ui/layout.cpp
+    )
+
+    target_include_directories(kiddos_ui_layout_test PRIVATE include)
+    target_link_libraries(kiddos_ui_layout_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_layout
+        COMMAND kiddos_ui_layout_test
+    )
+
+    add_test(
+        NAME kiddos_ui_geometry
+        COMMAND kiddos_ui_geometry_test
+    )
+
+    add_executable(kiddos_ui_focus_test
+        tests/ui_focus_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_focus_test PRIVATE include)
+    target_link_libraries(kiddos_ui_focus_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_focus
+        COMMAND kiddos_ui_focus_test
+    )
+
+    add_executable(kiddos_ui_button_test
+        tests/ui_button_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_button_test PRIVATE include)
+    target_link_libraries(kiddos_ui_button_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_button
+        COMMAND kiddos_ui_button_test
+    )
+
+    add_executable(kiddos_ui_controller_test
+        tests/ui_controller_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_controller_test PRIVATE include)
+    target_link_libraries(kiddos_ui_controller_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_controller
+        COMMAND kiddos_ui_controller_test
+    )
+
+    add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
+    target_include_directories(kiddos_ui_image_test PRIVATE include)
+    target_link_libraries(kiddos_ui_image_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_image COMMAND kiddos_ui_image_test)
+
+    add_executable(kiddos_ui_label_test tests/ui_label_test.cpp)
+    target_include_directories(kiddos_ui_label_test PRIVATE include)
+    target_link_libraries(kiddos_ui_label_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_label COMMAND kiddos_ui_label_test)
+
+    add_executable(kiddos_ui_panel_test tests/ui_panel_test.cpp)
+    target_include_directories(kiddos_ui_panel_test PRIVATE include)
+    target_link_libraries(kiddos_ui_panel_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_panel COMMAND kiddos_ui_panel_test)
+
+    add_executable(kiddos_ui_progress_bar_test tests/ui_progress_bar_test.cpp)
+    target_include_directories(kiddos_ui_progress_bar_test PRIVATE include)
+    target_link_libraries(kiddos_ui_progress_bar_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_progress_bar COMMAND kiddos_ui_progress_bar_test)
+
+    add_executable(kiddos_ui_toggle_test tests/ui_toggle_test.cpp)
+    target_include_directories(kiddos_ui_toggle_test PRIVATE include)
+    target_link_libraries(kiddos_ui_toggle_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_toggle COMMAND kiddos_ui_toggle_test)
+
+    add_executable(kiddos_ui_slider_test tests/ui_slider_test.cpp)
+    target_include_directories(kiddos_ui_slider_test PRIVATE include)
+    target_link_libraries(kiddos_ui_slider_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_slider COMMAND kiddos_ui_slider_test)
+
+    add_executable(kiddos_ui_theme_test tests/ui_theme_test.cpp)
+    target_include_directories(kiddos_ui_theme_test PRIVATE include)
+    target_link_libraries(kiddos_ui_theme_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_theme COMMAND kiddos_ui_theme_test)
+    add_executable(kiddos_ui_list_view_test tests/ui_list_view_test.cpp)
+    target_include_directories(kiddos_ui_list_view_test PRIVATE include)
+    target_link_libraries(kiddos_ui_list_view_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_list_view COMMAND kiddos_ui_list_view_test)
+
+    add_executable(kiddos_ui_checkbox_test tests/ui_checkbox_test.cpp)
+    target_include_directories(kiddos_ui_checkbox_test PRIVATE include)
+    target_link_libraries(kiddos_ui_checkbox_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_checkbox COMMAND kiddos_ui_checkbox_test)
+
+    add_executable(kiddos_ui_radio_group_test tests/ui_radio_group_test.cpp)
+    target_include_directories(kiddos_ui_radio_group_test PRIVATE include)
+    target_link_libraries(kiddos_ui_radio_group_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_radio_group COMMAND kiddos_ui_radio_group_test)
+
+    add_executable(kiddos_ui_select_test tests/ui_select_test.cpp)
+    target_include_directories(kiddos_ui_select_test PRIVATE include)
+    target_link_libraries(kiddos_ui_select_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_select COMMAND kiddos_ui_select_test)
+endif()
+
+
+
