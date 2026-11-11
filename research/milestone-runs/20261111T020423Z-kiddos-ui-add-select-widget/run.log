@@ -1,0 +1,204 @@
+=== Existing renderer and geometry APIs ===
+#pragma once
+
+#include "kiddos/ui/color.hpp"
+#include "kiddos/ui/geometry.hpp"
+
+#include <SDL.h>
+
+namespace kiddos::ui {
+
+// Non-owning SDL2 renderer adapter.
+// The SDLPlatform remains responsible for creating and destroying SDL_Renderer.
+class Renderer final {
+public:
+    explicit Renderer(SDL_Renderer* renderer = nullptr) noexcept;
+
+    void attach(SDL_Renderer* renderer) noexcept;
+    bool valid() const noexcept;
+
+    bool clear(Color color) const;
+    bool fill_rect(Rect rect, Color color) const;
+    bool outline_rect(Rect rect, Color color) const;
+    bool draw_line(Point from, Point to, Color color) const;
+    bool draw_point(Point point, Color color) const;
+    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination) const;
+
+    bool set_clip(Rect rect) const;
+    bool clear_clip() const;
+
+    void present() const;
+
+    SDL_Renderer* native() const noexcept;
+
+private:
+    SDL_Renderer* renderer_ = nullptr;
+
+    bool set_color(Color color) const;
+};
+
+} // namespace kiddos::ui
+#pragma once
+
+#include "kiddos/ui/geometry.hpp"
+#include "kiddos/ui/renderer.hpp"
+
+namespace kiddos::ui {
+
+class Element {
+public:
+    virtual ~Element() = default;
+
+    void set_bounds(Rect bounds) noexcept { bounds_ = bounds; }
+    Rect bounds() const noexcept { return bounds_; }
+
+    void set_visible(bool visible) noexcept { visible_ = visible; }
+    bool visible() const noexcept { return visible_; }
+
+    void set_enabled(bool enabled) noexcept { enabled_ = enabled; }
+    bool enabled() const noexcept { return enabled_; }
+
+    void set_focusable(bool focusable) noexcept {
+        focusable_ = focusable;
+    }
+
+    bool focusable() const noexcept { return focusable_; }
+
+    void set_focused(bool focused) noexcept { focused_ = focused; }
+    bool focused() const noexcept { return focused_; }
+
+    void render(Renderer& renderer) {
+        if (visible_) draw(renderer);
+    }
+
+protected:
+    virtual void draw(Renderer& renderer) = 0;
+
+private:
+    Rect bounds_{};
+    bool visible_ = true;
+    bool enabled_ = true;
+    bool focusable_ = false;
+    bool focused_ = false;
+};
+
+} // namespace kiddos::ui
+
+=== Existing theme test conventions ===
+#include "kiddos/ui/theme.hpp"
+#include "kiddos/ui/list_view.hpp"
+
+#include <cassert>
+
+int main() {
+    using namespace kiddos::ui;
+
+    Theme theme = Theme::kiddos_default();
+    const ThemeColors& colors = theme.colors();
+
+    assert(colors.background.r == 12);
+    assert(colors.background.g == 20);
+    assert(colors.background.b == 40);
+
+    assert(colors.primary.r == 45);
+    assert(colors.primary.g == 125);
+    assert(colors.primary.b == 230);
+
+    const ButtonStyle button = theme.button_style();
+    assert(button.normal.r == colors.surface.r);
+    assert(button.focused.g == colors.primary_dark.g);
+    assert(button.text.r == colors.text.r);
+
+    const PanelStyle panel = theme.panel_style();
+    assert(panel.background.r == colors.surface.r);
+    assert(panel.border.r == colors.border.r);
+
+    const ToggleStyle toggle = theme.toggle_style();
+    assert(toggle.on.r == colors.primary.r);
+    assert(toggle.off.r == colors.disabled.r);
+
+    const SliderStyle slider = theme.slider_style();
+    assert(slider.fill.g == colors.primary.g);
+    assert(slider.track.r == colors.disabled.r);
+
+    const ProgressBarStyle progress = theme.progress_bar_style();
+    assert(progress.fill.b == colors.primary.b);
+    assert(progress.background.r == colors.disabled.r);
+
+    ThemeColors alternate = colors;
+    alternate.primary = {200, 100, 50, 255};
+    theme.set_colors(alternate);
+
+    assert(theme.colors().primary.r == 200);
+    assert(theme.button_style().focused.r == colors.primary_dark.r);
+    assert(theme.toggle_style().on.r == 200);
+
+    const auto list_style = theme.list_view_style();
+    assert(list_style.background.r == theme.colors().surface.r);
+    assert(list_style.text.r == theme.colors().text.r);
+
+    const CheckboxStyle checkbox = theme.checkbox_style();
+    assert(checkbox.background.r == theme.colors().surface.r);
+    assert(checkbox.checked.r == theme.colors().primary.r);
+    assert(checkbox.text.r == theme.colors().text.r);
+
+    return 0;
+}
+
+=== Existing controller test conventions ===
+#include "kiddos/ui/controller.hpp"
+
+#include <cassert>
+
+int main() {
+    using namespace kiddos::ui;
+
+    Container root;
+    auto& play = root.add<Button>("Play");
+    auto& settings = root.add<Button>("Settings");
+    auto& watch = root.add<Button>("Watch");
+
+    play.set_bounds({0, 0, 200, 60});
+    settings.set_bounds({220, 0, 200, 60});
+    watch.set_bounds({440, 0, 200, 60});
+
+    int play_count = 0;
+    int settings_count = 0;
+    play.set_on_activate([&] { ++play_count; });
+    settings.set_on_activate([&] { ++settings_count; });
+
+    FocusManager focus(root);
+    ControllerInteraction controller(focus);
+
+    assert(focus.focus_first());
+    assert(focus.focused() == &play);
+
+    assert(controller.handle(UIAction::Right));
+    assert(focus.focused() == &settings);
+
+    assert(controller.handle(UIAction::Confirm));
+    assert(settings_count == 1);
+    assert(play_count == 0);
+
+    assert(controller.handle(UIAction::Left));
+    assert(focus.focused() == &play);
+
+    assert(controller.handle(UIAction::Confirm));
+    assert(play_count == 1);
+
+    assert(!controller.handle(UIAction::Right) == false);
+    assert(focus.focused() == &settings);
+
+    settings.set_enabled(false);
+    assert(controller.handle(UIAction::Left));
+    assert(focus.focused() == &play);
+    assert(controller.handle(UIAction::Right));
+    assert(focus.focused() == &watch);
+
+    assert(!controller.handle(UIAction::Confirm));
+
+    assert(!controller.handle(UIAction::Back));
+    assert(focus.focused() == &watch);
+
+    return 0;
+}
