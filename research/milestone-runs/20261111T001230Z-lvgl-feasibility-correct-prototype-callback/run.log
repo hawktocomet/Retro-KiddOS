@@ -1,0 +1,21 @@
+Callback signature, return value, and keypad initialization checked.
+=== Configure prototype ===
+-- 
+-- Using lv_conf.h from the top-level project directory
+-- Enabling the building of ThorVG internal
+-- Enabling the building of examples
+-- Enabling the building of demos
+-- Configuring done (0.0s)
+-- Generating done (0.1s)
+-- Build files have been written to: /tmp/kiddos-lvgl-prototype-build
+=== Build prototype target only ===
+[ 10%] Built target lvgl_thorvg
+[100%] Built target lvgl
+[100%] Building C object CMakeFiles/kiddos_lvgl_prototype.dir/main.c.o
+[100%] Linking C executable kiddos_lvgl_prototype
+[100%] Built target kiddos_lvgl_prototype
+=== SDL dummy-driver smoke test ===
+
+Configure exit: 0
+Build exit: 0
+Smoke test exit: 0
