@@ -1,0 +1,27 @@
+Removed synthetic key injection and temporary trace instrumentation.
+Remaining keyboard/controller handlers:
+170: if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+173: if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+175: case SDL_CONTROLLER_BUTTON_DPAD_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+176: case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+177: case SDL_CONTROLLER_BUTTON_DPAD_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+178: case SDL_CONTROLLER_BUTTON_DPAD_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+179: case SDL_CONTROLLER_BUTTON_A: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+180: case SDL_CONTROLLER_BUTTON_B: keypad_key = LV_KEY_ESC; keypad_pressed = true; break;
+185: if (event.type == SDL_KEYUP) {
+192: keypad_pressed = false;
+198: if (event.type == SDL_KEYDOWN) {
+200: case SDLK_LEFT: keypad_key = LV_KEY_LEFT; keypad_pressed = true; break;
+201: case SDLK_RIGHT: keypad_key = LV_KEY_RIGHT; keypad_pressed = true; break;
+202: case SDLK_UP: keypad_key = LV_KEY_UP; keypad_pressed = true; break;
+203: case SDLK_DOWN: keypad_key = LV_KEY_DOWN; keypad_pressed = true; break;
+204: case SDLK_RETURN: keypad_key = LV_KEY_ENTER; keypad_pressed = true; break;
+[ 10%] Built target lvgl_thorvg
+[100%] Built target lvgl
+[100%] Building C object CMakeFiles/kiddos_lvgl_sdl_adapter.dir/main.c.o
+[100%] Linking C executable kiddos_lvgl_sdl_adapter
+[100%] Built target kiddos_lvgl_sdl_adapter
+BUILD_EXIT=0
+No SDL game controller detected; keyboard arrows remain available.\nAdapter running: LVGL -> custom flush callback -> existing SDL_Renderer
+Press Escape or close the window to exit.
+RUNTIME_EXIT=124
