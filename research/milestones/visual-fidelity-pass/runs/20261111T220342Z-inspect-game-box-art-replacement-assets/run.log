@@ -1,0 +1,137 @@
+--- Existing artwork directories ---
+assets/artwork/generated/carousel-car.bmp
+assets/artwork/generated/carousel-car.png
+assets/artwork/generated/carousel-mushroom.bmp
+assets/artwork/generated/carousel-mushroom.png
+assets/artwork/generated/carousel-selected.bmp
+assets/artwork/generated/carousel-star.bmp
+assets/artwork/generated/carousel-star.png
+assets/artwork/generated/carousel-title.bmp
+assets/artwork/generated/carousel-title-car.png
+assets/artwork/generated/carousel-title.png
+assets/artwork/generated/carousel-title-star.png
+assets/artwork/generated/cartridges/option-1/cartridge-01.png
+assets/artwork/generated/cartridges/option-1/cartridge-02.png
+assets/artwork/generated/cartridges/option-1/cartridge-03.png
+assets/artwork/generated/cartridges/option-1/cartridge-04.png
+assets/artwork/generated/cartridges/option-1/cartridge-05.png
+assets/artwork/generated/cartridges/option-1/cartridge-06.png
+assets/artwork/generated/cartridges/option-1/cartridge-07.png
+assets/artwork/generated/cartridges/option-1/cartridge-08.png
+assets/artwork/generated/cartridges/option-1/cartridge-09.png
+assets/artwork/generated/cartridges/option-2/cartridge-01.png
+assets/artwork/generated/cartridges/option-2/cartridge-02.png
+assets/artwork/generated/cartridges/option-2/cartridge-03.png
+assets/artwork/generated/cartridges/option-2/cartridge-04.png
+assets/artwork/generated/cartridges/option-2/cartridge-05.png
+assets/artwork/generated/cartridges/option-2/cartridge-06.png
+assets/artwork/generated/cartridges/option-2/cartridge-07.png
+assets/artwork/generated/cartridges/option-2/cartridge-08.png
+assets/artwork/generated/cartridges/option-2/cartridge-09.png
+assets/artwork/generated/forest.bmp
+assets/artwork/generated/kiddos-wordmark.png
+assets/artwork/generated/label-play.bmp
+assets/artwork/generated/label-resume.bmp
+assets/artwork/generated/label-start-over.bmp
+assets/artwork/generated/navigation-hints.png
+assets/artwork/generated/ocean.bmp
+assets/artwork/generated/space.bmp
+assets/artwork/source/branding/kiddos-wordmark.svg
+assets/artwork/source/branding/navigation-hints.svg
+assets/artwork/source/carousel/car.svg
+assets/artwork/source/carousel/mushroom.svg
+assets/artwork/source/carousel/selected.svg
+assets/artwork/source/carousel/star.svg
+assets/artwork/source/carousel/title-car.svg
+assets/artwork/source/carousel/title-star.svg
+assets/artwork/source/carousel/title.svg
+assets/artwork/source/cartridges/cart-option-1.png
+assets/artwork/source/cartridges/cart-option-2.png
+assets/artwork/source/forest.svg
+assets/artwork/source/ocean.svg
+assets/artwork/source/space.svg
+
+--- Existing game and cover artwork references ---
+include/kiddos/app/home_carousel_screen.hpp:23:    void toggle_cartridge_style();
+include/kiddos/app/home_carousel_screen.hpp:24:    int cartridge_style() const noexcept { return cartridge_style_; }
+include/kiddos/app/home_carousel_screen.hpp:29:    std::array<std::array<ui::Texture, game_count>, 2> cartridge_textures_{};
+include/kiddos/app/home_carousel_screen.hpp:30:    int cartridge_style_ = 1;
+include/kiddos/app/home_carousel_screen.hpp:36:    std::array<ui::Image*, visible_slot_count_> game_images_{};
+include/kiddos/ui/image.hpp:10:enum class ImageFit {
+include/kiddos/ui/image.hpp:12:    cover,
+include/kiddos/ui/image.hpp:26:    ImageFit fit
+include/kiddos/ui/image.hpp:36:    void set_fit(ImageFit fit) noexcept;
+include/kiddos/ui/image.hpp:37:    ImageFit fit() const noexcept;
+include/kiddos/ui/image.hpp:46:    ImageFit fit_ = ImageFit::contain;
+src/app/application.cpp:80:                    home->toggle_cartridge_style();
+src/app/home_carousel_screen.cpp:122:    // Keep the selected cartridge subtly emphasized without a visible frame.
+src/app/home_carousel_screen.cpp:129:        for (int cartridge = 0; cartridge < game_count; ++cartridge) {
+src/app/home_carousel_screen.cpp:131:                "assets/artwork/generated/cartridges/option-" +
+src/app/home_carousel_screen.cpp:132:                std::to_string(style + 1) + "/cartridge-" +
+src/app/home_carousel_screen.cpp:133:                (cartridge < 9 ? "0" : "") +
+src/app/home_carousel_screen.cpp:134:                std::to_string(cartridge + 1) + ".png";
+src/app/home_carousel_screen.cpp:136:            cartridge_textures_[static_cast<std::size_t>(style)]
+src/app/home_carousel_screen.cpp:137:                               [static_cast<std::size_t>(cartridge)]
+src/app/home_carousel_screen.cpp:146:    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+src/app/home_carousel_screen.cpp:148:        image.set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp:150:        game_images_[slot] = &image;
+src/app/home_carousel_screen.cpp:156:    wordmark_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp:161:    hints_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp:168:void HomeCarouselScreen::toggle_cartridge_style() {
+src/app/home_carousel_screen.cpp:169:    cartridge_style_ = (cartridge_style_ + 1) % 2;
+src/app/home_carousel_screen.cpp:179:    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+src/app/home_carousel_screen.cpp:180:        game_images_[slot]->set_texture(
+src/app/home_carousel_screen.cpp:181:            &cartridge_textures_[static_cast<std::size_t>(cartridge_style_)]
+src/app/home_carousel_screen.cpp:187:    for (auto* image : game_images_) {
+src/app/home_carousel_screen.cpp:206:        auto* recycled = game_images_[0];
+src/app/home_carousel_screen.cpp:207:        game_images_[0] = game_images_[1];
+src/app/home_carousel_screen.cpp:208:        game_images_[1] = game_images_[2];
+src/app/home_carousel_screen.cpp:209:        game_images_[2] = recycled;
+src/app/home_carousel_screen.cpp:212:        auto* recycled = game_images_[2];
+src/app/home_carousel_screen.cpp:213:        game_images_[2] = game_images_[1];
+src/app/home_carousel_screen.cpp:214:        game_images_[1] = game_images_[0];
+src/app/home_carousel_screen.cpp:215:        game_images_[0] = recycled;
+src/app/home_carousel_screen.cpp:230:    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+src/app/home_carousel_screen.cpp:231:        auto* image = game_images_[slot];
+src/app/home_carousel_screen.cpp:233:            &cartridge_textures_[static_cast<std::size_t>(cartridge_style_)]
+src/app/home_carousel_screen.cpp:254:    for (std::size_t i = 0; i < game_images_.size(); ++i) {
+src/app/home_carousel_screen.cpp:255:        ui::Image* image = game_images_[i];
+src/ui/renderer.cpp:169:    // straight edge lines are skipped: the lines already cover them, and
+src/ui/image.cpp:12:    ImageFit fit
+src/ui/image.cpp:22:    if (fit == ImageFit::stretch) {
+src/ui/image.cpp:30:    if (fit == ImageFit::contain) {
+src/ui/image.cpp:61:void Image::set_fit(ImageFit fit) noexcept { fit_ = fit; }
+src/ui/image.cpp:62:ImageFit Image::fit() const noexcept { return fit_; }
+src/ui/image.cpp:79:    if (fit_ == ImageFit::cover) {
+src/ui/panel.cpp:73:    // as clean rounded outlines instead of covering the content beneath.
+tests/ui_image_test.cpp:11:        100, 100, bounds, ImageFit::contain
+tests/ui_image_test.cpp:19:    const auto cover = calculate_image_geometry(
+tests/ui_image_test.cpp:20:        100, 100, bounds, ImageFit::cover
+tests/ui_image_test.cpp:22:    assert(cover.valid);
+tests/ui_image_test.cpp:23:    assert(cover.source.x == 0);
+tests/ui_image_test.cpp:24:    assert(cover.source.y == 25);
+tests/ui_image_test.cpp:25:    assert(cover.source.w == 100);
+tests/ui_image_test.cpp:26:    assert(cover.source.h == 50);
+tests/ui_image_test.cpp:27:    assert(cover.destination.x == 0);
+tests/ui_image_test.cpp:28:    assert(cover.destination.y == 0);
+tests/ui_image_test.cpp:29:    assert(cover.destination.w == 200);
+tests/ui_image_test.cpp:30:    assert(cover.destination.h == 100);
+tests/ui_image_test.cpp:33:        100, 100, bounds, ImageFit::stretch
+tests/ui_image_test.cpp:41:    assert(!calculate_image_geometry(0, 100, bounds, ImageFit::contain).valid);
+tests/ui_image_test.cpp:42:    assert(!calculate_image_geometry(100, 100, {}, ImageFit::cover).valid);
+tests/app_home_carousel_screen_test.cpp:67:    // Three cartridge slots, wordmark, hints, status, and highlight.
+tests/app_home_carousel_screen_test.cpp:71:    assert(screen.cartridge_style() == 1);
+tests/app_home_carousel_screen_test.cpp:72:    screen.toggle_cartridge_style();
+tests/app_home_carousel_screen_test.cpp:73:    assert(screen.cartridge_style() == 0);
+tests/app_home_carousel_screen_test.cpp:75:    screen.toggle_cartridge_style();
+tests/app_home_carousel_screen_test.cpp:76:    assert(screen.cartridge_style() == 1);
+tests/app_home_carousel_screen_test.cpp:127:        // Three cartridge positions, wordmark, and hints are visible.
+tests/app_home_carousel_screen_test.cpp:134:        // Selecting another cartridge updates all three visible slots.
+
+--- Current artwork dimensions ---
+assets/artwork/generated/cartridges/option-2/cartridge-01.png: PNG image data, 399 x 415, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-02.png: PNG image data, 439 x 429, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-03.png: PNG image data, 398 x 435, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-04.png: PNG image data, 398 x 359, 8-bit/color RGBA, non-interlaced
+
+--- Image rendering fit behavior ---
