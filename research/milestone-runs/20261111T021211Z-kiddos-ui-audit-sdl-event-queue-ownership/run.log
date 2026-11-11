@@ -1,0 +1,221 @@
+=== Current SDL event polling ===
+
+Action SDLPlatform::map_key(SDL_Keycode key) {
+    switch (key) {
+        case SDLK_LEFT: return Action::NavigateLeft;
+        case SDLK_RIGHT: return Action::NavigateRight;
+        case SDLK_UP: return Action::NavigateUp;
+        case SDLK_DOWN: return Action::NavigateDown;
+        case SDLK_RETURN:
+        case SDLK_SPACE: return Action::Confirm;
+        case SDLK_ESCAPE: return Action::Back;
+        case SDLK_q: return Action::Quit;
+        default: return Action::None;
+    }
+}
+
+Action SDLPlatform::map_controller_button(Uint8 button) {
+    switch (button) {
+        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+            return Action::NavigateLeft;
+        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+            return Action::NavigateRight;
+        case SDL_CONTROLLER_BUTTON_DPAD_UP:
+            return Action::NavigateUp;
+        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+            return Action::NavigateDown;
+        case SDL_CONTROLLER_BUTTON_A:
+            return Action::Confirm;
+        case SDL_CONTROLLER_BUTTON_B:
+            return Action::Back;
+        default:
+            return Action::None;
+    }
+}
+
+bool SDLPlatform::poll_action(Action& action) {
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        action = Action::None;
+
+        switch (event.type) {
+            case SDL_QUIT:
+                action = Action::Quit;
+                return true;
+
+            case SDL_KEYDOWN:
+                if (event.key.repeat == 0) {
+                    action = map_key(event.key.keysym.sym);
+                }
+                break;
+
+            case SDL_CONTROLLERBUTTONDOWN:
+                if (event.cbutton.which == controller_instance_) {
+                    action = map_controller_button(event.cbutton.button);
+                }
+                break;
+
+            case SDL_CONTROLLERDEVICEADDED:
+                open_controller(event.cdevice.which);
+                break;
+
+            case SDL_CONTROLLERDEVICEREMOVED:
+                if (event.cdevice.which == controller_instance_) {
+                    close_controller();
+                }
+                break;
+
+            case SDL_WINDOWEVENT:
+                if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
+                    action = Action::Quit;
+                    return true;
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        if (action != Action::None) return true;
+    }
+
+    return false;
+}
+
+
+bool SDLPlatform::poll_text_input_event(TextInputEvent& text_event) {
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+            case SDL_TEXTINPUT:
+                text_event = {TextInputEventType::Text, event.text.text};
+                return true;
+
+            case SDL_KEYDOWN:
+                if (event.key.repeat != 0) continue;
+                switch (event.key.keysym.sym) {
+                    case SDLK_BACKSPACE:
+                        text_event = {TextInputEventType::Backspace, {}};
+                        return true;
+                    case SDLK_DELETE:
+                        text_event = {TextInputEventType::Delete, {}};
+                        return true;
+                    case SDLK_LEFT:
+                        text_event = {TextInputEventType::Left, {}};
+                        return true;
+                    case SDLK_RIGHT:
+                        text_event = {TextInputEventType::Right, {}};
+                        return true;
+                    case SDLK_HOME:
+                        text_event = {TextInputEventType::Home, {}};
+                        return true;
+                    case SDLK_END:
+                        text_event = {TextInputEventType::End, {}};
+                        return true;
+                    default:
+                        break;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return false;
+}
+
+void SDLPlatform::set_text_input_active(bool active) {
+    if (active) {
+        SDL_StartTextInput();
+    } else {
+        SDL_StopTextInput();
+    }
+}
+
+void SDLPlatform::begin_frame() {
+    if (!renderer_) return;
+
+    color(renderer_, {8, 15, 35, 255});
+    SDL_RenderClear(renderer_);
+=== SDL platform declarations ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+#include <SDL.h>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    bool poll_text_input_event(TextInputEvent& event);
+    void set_text_input_active(bool active);
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+=== Text event contract ===
+#pragma once
+
+#include <string>
+
+namespace kiddos {
+
+enum class TextInputEventType {
+    Text,
+    Backspace,
+    Delete,
+    Left,
+    Right,
+    Home,
+    End
+};
+
+struct TextInputEvent {
+    TextInputEventType type = TextInputEventType::Text;
+    std::string text;
+};
+
+} // namespace kiddos
+=== Current working tree ===
+ M include/kiddos/app/application.hpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+=== SDL event polling references ===
+include/kiddos/platform/platform.hpp:12:    virtual bool poll_action(Action& action) = 0;
+include/kiddos/platform/sdl_platform.hpp:16:    bool poll_action(Action& action) override;
+include/kiddos/platform/sdl_platform.hpp:17:    bool poll_text_input_event(TextInputEvent& event);
+src/platform/sdl_platform.cpp:504:bool SDLPlatform::poll_action(Action& action) {
+src/platform/sdl_platform.cpp:507:    while (SDL_PollEvent(&event)) {
+src/platform/sdl_platform.cpp:555:bool SDLPlatform::poll_text_input_event(TextInputEvent& text_event) {
+src/platform/sdl_platform.cpp:558:    while (SDL_PollEvent(&event)) {
+src/app/application.cpp:23:        while (platform_.poll_action(action)) {
