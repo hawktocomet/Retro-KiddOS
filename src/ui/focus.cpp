@@ -13,7 +13,7 @@ void collect_focusable(Container& container,
                        std::vector<Element*>& result) {
     for (std::size_t i = 0; i < container.child_count(); ++i) {
         Element* element = container.child(i);
-        if (!element || !element->visible()) continue;
+        if (!element || !element->visible() || !element->enabled()) continue;
 
         if (element->focusable() && element->enabled()) {
             result.push_back(element);
@@ -62,7 +62,8 @@ bool FocusManager::focus_first() noexcept {
         return false;
     }
 
-    if (eligible(focused_)) return true;
+    if (std::find(candidates.begin(), candidates.end(), focused_) != candidates.end()
+        && eligible(focused_)) return true;
 
     clear();
     focused_ = candidates.front();
@@ -79,7 +80,8 @@ bool FocusManager::move(Direction direction) noexcept {
         return false;
     }
 
-    if (!eligible(focused_)) {
+    if (std::find(candidates.begin(), candidates.end(), focused_) == candidates.end()
+        || !eligible(focused_)) {
         clear();
         focused_ = candidates.front();
         focused_->set_focused(true);

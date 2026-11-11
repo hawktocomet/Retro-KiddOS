@@ -1,92 +1,37 @@
 # KiddOS UI Library
 
-## Purpose
+Reusable C++20 SDL2 interface library for handheld applications.
 
-KiddOS UI is a first-party C++20 interface library built on SDL2.
+## Build and install
 
-SDL2 remains responsible for low-level window, graphics, input, and audio
-integration. KiddOS UI owns the reusable interface abstractions and
-components.
+    cmake -S . -B build
+    cmake --build build
+    ctest --test-dir build --output-on-failure
+    cmake --install build --prefix ./install
 
-## Current foundation
+Include the complete public API with `#include <kiddos/kiddos_ui.hpp>`.
+The CMake build-tree alias is `KiddOS::UI`.
 
-- Geometry: Point and Rect.
-- Color: RGBA values and initial theme colors.
-- Renderer: non-owning SDL_Renderer adapter.
-- Drawing: clear, filled rectangles, outlines, lines, and points.
-- Clipping: set and clear rectangular clipping regions.
-- Tests: geometry boundary behavior.
+## Screens
 
-## Ownership
+Derive from `kiddos::ui::Screen`, add widgets to `root()`, and override
+lifecycle hooks or `update()` as required. `ScreenManager` owns screens
+and provides push, pop, replace, clear, update, render, controller-action
+dispatch, and text-input dispatch.
 
-Renderer does not own SDL_Renderer. The platform adapter creates and
-destroys SDL resources. This keeps hardware and SDL lifecycle management
-outside the reusable UI library.
+Pushing suspends the previous screen. Popping exits the active screen and
+resumes the previous one. Replacing exits the active screen. Back pops
+the stack. Abstract platform events are routed to the active screen.
 
-## Planned modules
+Containers own child elements. ScreenManager owns screens. The application
+remains responsible for SDL initialization and renderer lifetime.
 
-1. Rendering and drawing primitives.
-2. Layout and containers.
-3. Widget and element hierarchy.
-4. Buttons, cards, lists, and menus.
-5. Controller focus and navigation.
-6. Themes, fonts, images, and animation.
+## Widgets
 
-## Design principles
+Button, Image, Label, Panel, ProgressBar, Toggle, Slider, Checkbox,
+RadioGroup, Select, TextInput, and ListView.
 
-- Handheld-first and physical-control-first.
-- 720 x 720 logical coordinate system.
-- No dependency on LVGL.
-- No application-specific game logic inside the library.
-- Reusable components instead of manually drawing every screen.
-- Keep memory and rendering overhead appropriate for the target device.
+## Scope
 
-## Widget hierarchy and layout
-
-The second implementation milestone adds:
-
-- `Element`: reusable UI element base class.
-- `Container`: owns and renders child elements.
-- `Axis`: horizontal and vertical layout directions.
-- `Insets`: configurable content padding.
-- `StackLayout`: automatic equal-space child positioning.
-
-Containers own their children through `std::unique_ptr`. Hidden children
-are excluded from automatic stack layout. The library does not impose
-application-specific game or screen logic.
-
-Layout tests cover horizontal and vertical distribution, padding, gaps,
-hidden children, and empty containers.
-
-## Focus and directional navigation
-
-The focus manager tracks one focusable element in a container hierarchy.
-It skips hidden and disabled elements, supports nested containers, and
-moves directionally using element bounds. If no eligible element exists
-in the requested direction, focus remains where it is.
-
-Focus state is exposed by `Element::focused()` so widgets can render
-their own focused appearance without coupling the library to a theme.
-
-## Button widget
-
-The Button widget encapsulates a reusable interactive surface with normal,
-focused, pressed, and disabled visual states. It exposes a label for the
-future font/text subsystem and an activation callback. Activation is
-rejected while hidden or disabled, or when no callback is assigned.
-Button rendering is handled internally through the shared Renderer.
-
-## Controller interaction
-
-`ControllerInteraction` translates abstract UI actions into focus movement
-and button activation. It supports four directional actions and Confirm.
-Back is reserved for application-level navigation and currently performs
-no action. SDL-specific controller event mapping remains the platform
-adapter's responsibility.
-
-## Text and fonts
-
-Text rendering uses SDL_ttf. `Font` owns an SDL_ttf font resource and
-supports move-only ownership. `TextRenderer` renders UTF-8 text and can
-center text inside a rectangle. SDL_ttf initialization and shutdown remain
-the responsibility of the application/platform lifecycle.
+The library contains no game catalog, emulator, game policy, or parental
+control logic. Those belong to application layers built on top of the UI.

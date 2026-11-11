@@ -37,9 +37,15 @@ add_library(kiddos_ui STATIC
     src/ui/select.cpp
     src/ui/text_input.cpp
     src/ui/text_input_interaction.cpp
+    src/ui/screen.cpp
+    src/ui/screen_manager.cpp
 )
 
-target_include_directories(kiddos_ui PUBLIC include)
+add_library(KiddOS::UI ALIAS kiddos_ui)
+target_include_directories(kiddos_ui PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
 
 target_compile_options(kiddos_ui PRIVATE
@@ -221,3 +227,8 @@ endif()
 
 
 
+
+include(GNUInstallDirs)
+install(TARGETS kiddos_ui ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY include/kiddos DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.hpp")
