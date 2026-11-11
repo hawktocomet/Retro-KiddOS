@@ -1,0 +1,563 @@
+=== PLATFORM INCLUDES AND DRAWING HELPERS ===
+#include "kiddos/platform/sdl_platform.hpp"
+#include "kiddos/platform/sdl_keyboard_policy.hpp"
+#include "kiddos/platform/sdl_text_input_translator.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <iostream>
+
+namespace kiddos {
+
+namespace {
+
+struct Color {
+    Uint8 r, g, b, a;
+};
+
+std::array<SDL_Texture*, 3> artwork_textures{};
+std::array<SDL_Texture*, 3> action_label_textures{};
+SDL_Texture* carousel_title_texture{};
+SDL_Texture* carousel_selected_texture{};
+
+SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+                                 const char* path,
+                                 bool magenta_key = false) {
+    SDL_Surface* surface = SDL_LoadBMP(path);
+    if (!surface) {
+        std::cerr << "Could not load " << path << ": "
+                  << SDL_GetError() << '\\n';
+        return nullptr;
+    }
+
+    if (magenta_key) {
+        const Uint32 key = SDL_MapRGB(surface->format, 255, 0, 255);
+        SDL_SetColorKey(surface, SDL_TRUE, key);
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    if (texture) {
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    } else {
+        std::cerr << "Could not create texture for " << path << ": "
+                  << SDL_GetError() << '\\n';
+    }
+    return texture;
+}
+
+void color(SDL_Renderer* r, Color c) {
+    SDL_SetRenderDrawColor(r, c.r, c.g, c.b, c.a);
+}
+
+void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+    color(r, c);
+    SDL_RenderFillRect(r, &rect);
+}
+
+void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+    color(r, c);
+    SDL_RenderDrawRect(r, &rect);
+}
+
+void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    for (int y = 0; y < rect.h; ++y) {
+        int inset = 0;
+        if (y < radius) {
+            const double dy = radius - y - 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        } else if (y >= rect.h - radius) {
+            const double dy = y - (rect.h - radius) + 0.5;
+            inset = radius - static_cast<int>(
+                std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        }
+        SDL_RenderDrawLine(r, rect.x + inset, rect.y + y,
+                           rect.x + rect.w - 1 - inset, rect.y + y);
+    }
+}
+
+void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+    if (rect.w <= 0 || rect.h <= 0) return;
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, c);
+
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y,
+                       rect.x + rect.w - radius - 1, rect.y);
+    SDL_RenderDrawLine(r, rect.x + radius, rect.y + rect.h - 1,
+                       rect.x + rect.w - radius - 1, rect.y + rect.h - 1);
+    SDL_RenderDrawLine(r, rect.x, rect.y + radius,
+                       rect.x, rect.y + rect.h - radius - 1);
+    SDL_RenderDrawLine(r, rect.x + rect.w - 1, rect.y + radius,
+                       rect.x + rect.w - 1, rect.y + rect.h - radius - 1);
+
+    for (int i = 0; i <= radius * 2; ++i) {
+        const double angle = (3.14159265358979323846 / 2.0) *
+                             static_cast<double>(i) /
+                             std::max(1, radius * 2);
+        const int dx = static_cast<int>(std::round(radius * std::cos(angle)));
+        const int dy = static_cast<int>(std::round(radius * std::sin(angle)));
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + radius - dy);
+        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+                            rect.y + rect.h - radius - 1 + dy);
+        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+                            rect.y + rect.h - radius - 1 + dy);
+    }
+}
+
+void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+                          int radius, Color background) {
+    radius = std::max(0, std::min(radius, std::min(rect.w, rect.h) / 2));
+    color(r, background);
+
+    for (int y = 0; y < radius; ++y) {
+        const double dy = radius - y - 0.5;
+        const int inset = radius - static_cast<int>(
+            std::sqrt(std::max(0.0, radius * radius - dy * dy)));
+        SDL_RenderDrawLine(r, rect.x, rect.y + y,
+                           rect.x + inset, rect.y + y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, rect.y + y,
+                           rect.x + rect.w - 1, rect.y + y);
+
+        const int bottom_y = rect.y + rect.h - 1 - y;
+        SDL_RenderDrawLine(r, rect.x, bottom_y,
+                           rect.x + inset, bottom_y);
+        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, bottom_y,
+                           rect.x + rect.w - 1, bottom_y);
+    }
+}
+
+void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+    color(r, c);
+
+    for (int y = -radius; y <= radius; ++y) {
+        const int x = static_cast<int>(
+            std::sqrt(static_cast<double>(
+                radius * radius - y * y
+            ))
+        );
+        SDL_RenderDrawLine(r, cx - x, cy + y, cx + x, cy + y);
+    }
+}
+
+void triangle(SDL_Renderer* r, int x1, int y1,
+              int x2, int y2, int x3, int y3, Color c) {
+    color(r, c);
+
+    const int min_y = std::min({y1, y2, y3});
+    const int max_y = std::max({y1, y2, y3});
+
+    for (int y = min_y; y <= max_y; ++y) {
+        int intersections[3];
+        int count = 0;
+
+        const int xs[] = {x1, x2, x3};
+        const int ys[] = {y1, y2, y3};
+
+        for (int i = 0; i < 3; ++i) {
+            const int j = (i + 1) % 3;
+
+            if ((ys[i] <= y && ys[j] > y) ||
+                (ys[j] <= y && ys[i] > y)) {
+                const int x = xs[i] +
+                    (y - ys[i]) * (xs[j] - xs[i]) /
+                    (ys[j] - ys[i]);
+
+                intersections[count++] = x;
+            }
+        }
+
+        if (count == 2) {
+            SDL_RenderDrawLine(
+                r,
+
+=== ICON IMPLEMENTATIONS ===
+
+    // Artwork always follows the actual selected game.
+    draw_art(renderer_, selected_index,
+             {center.x + 115, center.y + 70, 200, 205}, 255);
+
+    // Game title belongs below the main card; no SELECTED badge.
+    if (carousel_title_texture && selected_index == 1) {
+        SDL_Rect title{220, 525, 280, 42};
+        SDL_RenderCopy(renderer_, carousel_title_texture,
+                       nullptr, &title);
+    }
+
+    draw_status(renderer_);
+}
+
+
+namespace {
+
+void draw_action_label(SDL_Renderer* r, int index,
+                       int x, int y) {
+    if (index < 0 || index >= static_cast<int>(action_label_textures.size())) return;
+    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+    if (!texture) return;
+
+    SDL_Rect destination{x, y, 350, 72};
+    SDL_RenderCopy(r, texture, nullptr, &destination);
+}
+
+// Conventional play/resume symbol: a solid right-pointing triangle
+// centered on (x, y). Play and Resume share this geometry on purpose:
+// a filled play triangle is the conventional symbol for both actions,
+// and the text label next to it names the action.
+void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+    triangle(r, x - 18, y - 32, x - 18, y + 32, x + 30, y,
+             {220, 237, 255, 255});
+}
+
+void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+    draw_play_symbol(r, x, y);
+}
+
+// Conventional circular restart arrow: a thick ring open across the top
+// with a solid arrowhead continuing the ring clockwise. The ring band is
+// stamped as tightly overlapping filled disks along the arc so it renders
+// as one solid, evenly weighted band. Centered on (x, y).
+void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+    const Color icon{220, 237, 255, 255};
+    constexpr double kPi = 3.14159265358979323846;
+
+    // The band spans radii 21..27 (7 px thick, matching the solid
+    // arrowhead's stroke weight) and stays open across the top between
+    // 250 and 290 degrees. Stamps are spaced ~1.7 px along the arc so
+    // neighboring disks always overlap.
+    for (int step = 0; step <= 80; ++step) {
+        const double radians =
+            (290.0 + step * (320.0 / 80.0)) * kPi / 180.0;
+        circle(r,
+               x + static_cast<int>(std::lround(24.0 * std::cos(radians))),
+               y + static_cast<int>(std::lround(24.0 * std::sin(radians))),
+               3, icon);
+    }
+
+    // Arrowhead at the ring's upper-right end, pointing clockwise.
+    triangle(r, x + 27, y - 16,
+             x + 4, y - 10,
+             x + 13, y - 35,
+             icon);
+}
+
+} // namespace
+
+void SDLPlatform::draw_game_actions(
+    int selected_index, bool has_checkpoint, int selected_action) {
+
+    if (!renderer_) return;
+
+    draw_status(renderer_);
+
+    // Keep the selected game's artwork prominent.
+    draw_card(renderer_, selected_index,
+              {235, 48, 250, 310}, true);
+
+    const int action_count = has_checkpoint ? 2 : 1;
+    const int box_height = 112;
+    const int gap = 17;
+    const int total_height =
+        action_count * box_height + (action_count - 1) * gap;
+    const int start_y = 405 + (210 - total_height) / 2;
+
+    for (int i = 0; i < action_count; ++i) {
+        const int y = start_y + i * (box_height + gap);
+        const bool selected = i == selected_action;
+
+        SDL_Rect box{65, y, 590, box_height};
+
+        rounded_fill(renderer_, box, 22,
+                     selected
+                       ? Color{24, 69, 139, 255}
+                       : Color{16, 30, 65, 255});
+
+        rounded_outline(renderer_, box, 22,
+                        selected
+                          ? Color{75, 165, 255, 255}
+                          : Color{65, 93, 145, 190});
+
+        const int symbol_x = 145;
+        const int symbol_y = y + box_height / 2;
+
+        if (!has_checkpoint || i == 0) {
+            if (has_checkpoint) {
+                draw_resume_symbol(renderer_, symbol_x, symbol_y);
+                draw_action_label(renderer_, 1, 230, y + 20);
+            } else {
+                draw_play_symbol(renderer_, symbol_x, symbol_y);
+                draw_action_label(renderer_, 0, 230, y + 20);
+            }
+        } else {
+            draw_restart_symbol(renderer_, symbol_x, symbol_y);
+            draw_action_label(renderer_, 2, 230, y + 20);
+        }
+
+        if (selected) {
+            rounded_outline(renderer_,
+                            {box.x - 4, box.y - 4,
+                             box.w + 8, box.h + 8},
+                            26, {43, 126, 231, 180});
+        }
+    }
+}
+
+
+
+=== NAVIGATION HINTS DRAWING AND TEXTURE ===
+    }
+}
+
+// Draws the sound and battery indicators in the top corners of the screen,
+// matching SDLPlatform::draw_status.
+class StatusIndicators final : public ui::Element {
+protected:
+    void draw(ui::Renderer& renderer) override {
+        const ui::Color body{205, 222, 255, 220};
+        const ui::Color waves{80, 157, 255, 220};
+        const ui::Color charge{67, 157, 255, 240};
+
+        // Sound status: speaker cabinet, flared cone, and two sound waves.
+        renderer.fill_rect({25, 33, 8, 14}, body);
+        fill_speaker_cone(renderer, 33, 33, 46, 44, 27, 52, body);
+
+        draw_arc(renderer, {47, 39}, 6, -50.0, 50.0, waves);
+        draw_arc(renderer, {47, 39}, 12, -50.0, 50.0, waves);
+
+        // Battery status: outline, terminal, charge fill.
+        renderer.outline_rect({657, 27, 34, 19}, body);
+        renderer.fill_rect({691, 33, 4, 7}, body);
+        renderer.fill_rect({661, 31, 22, 11}, charge);
+    }
+};
+
+} // namespace
+
+HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+    for (int index = 0; index < game_count; ++index) {
+        artworks_[static_cast<std::size_t>(index)].load(
+            renderer, artwork_paths[static_cast<std::size_t>(index)], false);
+    }
+    for (int index = 0; index < game_count; ++index) {
+        title_textures_[static_cast<std::size_t>(index)].load(
+            renderer, title_paths[static_cast<std::size_t>(index)], false);
+    }
+    wordmark_texture_.load(renderer, wordmark_path, false);
+    hints_texture_.load(renderer, hints_path, false);
+
+    // Smaller neighboring cards first, drawn behind the main card. Cards
+    // carry a substantial border so the frames read clearly on the dark
+    // navy background; the center card is the heaviest.
+    auto& side_left = root().add<ui::Panel>(
+        ui::PanelStyle{side_fill, side_border, 3, 24});
+    side_left.set_bounds(side_left_card);
+
+    side_left_art_ = &root().add<ui::Image>();
+    side_left_art_->set_bounds(side_left_art);
+    side_left_art_->set_fit(ui::ImageFit::stretch);
+    side_left_art_->set_opacity(180);
+
+    auto& side_right = root().add<ui::Panel>(
+        ui::PanelStyle{side_fill, side_border, 3, 24});
+    side_right.set_bounds(side_right_card);
+
+    side_right_art_ = &root().add<ui::Image>();
+    side_right_art_->set_bounds(side_right_art);
+    side_right_art_->set_fit(ui::ImageFit::stretch);
+    side_right_art_->set_opacity(180);
+
+    // Main card is drawn after the neighbors so it overlaps both of them.
+    auto& center = root().add<ui::Panel>(
+        ui::PanelStyle{center_fill, center_border, 4, 30});
+    center.set_bounds(center_card);
+
+    // Outer glow outline, matching the platform's second border pass.
+    auto& glow = root().add<ui::Panel>(
+        ui::PanelStyle{ui::colors::transparent, center_glow, 2, 32});
+    glow.set_bounds(center_glow_rect);
+
+    center_art_ = &root().add<ui::Image>();
+    center_art_->set_bounds(center_art_rect);
+    center_art_->set_fit(ui::ImageFit::stretch);
+
+    // The title always shows the currently selected game's name, centered
+    // below the main card.
+    title_ = &root().add<ui::Image>();
+    title_->set_bounds(title_rect);
+    title_->set_fit(ui::ImageFit::contain);
+
+    // KiddOS wordmark centered at the top of the screen.
+    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+    wordmark_->set_bounds(wordmark_rect);
+    wordmark_->set_fit(ui::ImageFit::contain);
+
+    // Physical control hints centered along the bottom of the screen.
+    hints_ = &root().add<ui::Image>(&hints_texture_);
+    hints_->set_bounds(hints_rect);
+    hints_->set_fit(ui::ImageFit::contain);
+
+    root().add<StatusIndicators>();
+
+    set_selected_game(1);
+}
+
+HomeCarouselScreen::~HomeCarouselScreen() {
+    // Detach the images from the screen-owned textures before those
+    // textures are destroyed, so no element references a dead texture.
+    if (side_left_art_) side_left_art_->set_texture(nullptr);
+    if (side_right_art_) side_right_art_->set_texture(nullptr);
+    if (center_art_) center_art_->set_texture(nullptr);
+    if (title_) title_->set_texture(nullptr);
+    if (wordmark_) wordmark_->set_texture(nullptr);
+    if (hints_) hints_->set_texture(nullptr);
+}
+
+void HomeCarouselScreen::set_selected_game(int index) {
+    if (index < 0 || index >= game_count) return;
+
+    selected_game_ = index;
+
+    // Neighbors use the same wrap-around mapping as draw_carousel.
+    if (side_left_art_) {
+        side_left_art_->set_texture(
+            &artworks_[static_cast<std::size_t>((index + 2) % game_count)]);
+    }
+    if (side_right_art_) {
+        side_right_art_->set_texture(
+            &artworks_[static_cast<std::size_t>((index + 1) % game_count)]);
+    }
+    if (center_art_) {
+        center_art_->set_texture(
+            &artworks_[static_cast<std::size_t>(index)]);
+    }
+
+    // The title below the card follows the selected game.
+    if (title_) {
+        title_->set_texture(
+            &title_textures_[static_cast<std::size_t>(index)]);
+    }
+}
+
+} // namespace kiddos::app
+
+=== CURRENT TEST COVERAGE ===
+105-    }
+106-    return nullptr;
+107-}
+108-
+109-void test_structure_without_renderer() {
+110-    kiddos::app::HomeCarouselScreen screen(nullptr);
+111-
+112-    // Two side cards, two side artworks, center card, glow outline,
+113:    // center artwork, title, wordmark, hints, and the status indicators.
+114-    assert(screen.root().child_count() == 11);
+115-    assert(screen.selected_game() == 1);
+116-
+117-    // The title area sits centered directly below the center card and is
+118-    // always visible; its texture follows the selected game.
+119-    const Element* title =
+120-        find_by_bounds(screen, {145, 523, 430, 44});
+121-    assert(title);
+122-    assert(title->visible());
+123-
+124:    // The wordmark and the control hints are present.
+125-    const Element* wordmark =
+126-        find_by_bounds(screen, {235, 12, 250, 46});
+127-    assert(wordmark);
+128-    assert(wordmark->visible());
+129-
+130:    const Element* hints =
+131-        find_by_bounds(screen, {0, 682, 720, 34});
+132:    assert(hints);
+133:    assert(hints->visible());
+134-
+135-    // Selecting a game swaps the shown title texture.
+136-    const auto* title_image =
+137-        static_cast<const kiddos::ui::Image*>(title);
+138-    const kiddos::ui::Texture* middle_title = title_image->texture();
+139-    assert(middle_title);
+140-
+141-    screen.set_selected_game(0);
+142-    assert(screen.selected_game() == 0);
+143-    const kiddos::ui::Texture* left_title = title_image->texture();
+144-    assert(left_title != middle_title);
+145-
+146-    screen.set_selected_game(2);
+147-    const kiddos::ui::Texture* right_title = title_image->texture();
+148-    assert(right_title != middle_title);
+149-    assert(right_title != left_title);
+150-
+151-    screen.set_selected_game(1);
+--
+183-        // Background outside the cards.
+184-        assert(same_color(pixel(surface, 10, 100), background));
+185-
+186-        // Center and side card fills keep their established colors.
+187-        assert(same_color(pixel(surface, 500, 160), {18, 63, 117, 255}));
+188-        assert(same_color(pixel(surface, 60, 300), {16, 41, 75, 255}));
+189-        assert(same_color(pixel(surface, 650, 300), {16, 41, 75, 255}));
+190-
+191:        // The card borders are clean and uniform: the top edge of the
+192:        // center card is exactly the border color, and the side card edge
+193:        // carries its border color blended over the background.
+194-        assert(same_color(pixel(surface, 360, 135), {36, 164, 255, 255}));
+195-        const Color side_edge = pixel(surface, 120, 250);
+196-        assert(side_edge.b > 110 && side_edge.r > 30);
+197-
+198:        // The borders are thick enough to read as intentional frames:
+199:        // the center card's border spans four pixels before its fill
+200:        // starts, and the side cards' border spans three.
+201-        assert(same_color(pixel(surface, 360, 138), {36, 164, 255, 255}));
+202-        assert(same_color(pixel(surface, 360, 141), {18, 63, 117, 255}));
+203-        assert(!same_color(pixel(surface, 120, 252), {16, 41, 75, 255}));
+204-        assert(same_color(pixel(surface, 120, 255), {16, 41, 75, 255}));
+205-
+206-        // The outer glow outline is continuous around the corner arcs.
+207-        const Color glow_over_background{24, 102, 164, 255};
+208-        assert(any_pixel_near(surface, 152, 141, 2, glow_over_background));
+209-        assert(any_pixel_near(surface, 568, 141, 2, glow_over_background));
+210-        assert(any_pixel_near(surface, 152, 499, 2, glow_over_background));
+211-        assert(any_pixel_near(surface, 568, 499, 2, glow_over_background));
+212-
+213-        // The selected game's title appears below the main card.
+214-        const Rect title_area{145, 523, 430, 44};
+215-        assert(any_pixel_different(surface, title_area, background));
+216-
+217-        // Selected artwork is drawn inside the main card.
+218-        const Color with_mushroom = pixel(surface, 360, 307);
+219-        assert(!same_color(with_mushroom, background));
+220-
+221:        // The KiddOS wordmark and the control hints are rendered.
+222-        assert(any_pixel_different(surface, {235, 12, 250, 46}, background));
+223-        assert(any_pixel_different(surface, {0, 682, 720, 34}, background));
+224-
+225-        // No magenta keying artifacts remain in the title or artwork.
+226-        assert(!has_magenta_fringe(surface, title_area));
+227-        assert(!has_magenta_fringe(surface, {260, 205, 200, 205}));
+228-
+229-        // Selecting another game changes the artwork and the title: the
+230-        // shorter STAR title is horizontally centered, so its text starts
+231-        // clearly further right than the SUPER MARIO title.
+232-        const int super_mario_x = first_content_pixel_x(
+233-            surface, title_area, 540, background);
+234-
+235-        screen.set_selected_game(0);
+236-        renderer.clear(background);
+237-        screen.render(renderer);
+238-
+239-        const Color with_star = pixel(surface, 360, 307);
+
+=== BUILD TARGETS ===
+test: phony
+kiddos_ui: phony
+
+=== INSPECTION COMPLETE ===
