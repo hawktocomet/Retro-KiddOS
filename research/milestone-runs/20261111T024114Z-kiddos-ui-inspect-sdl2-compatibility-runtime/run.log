@@ -1,0 +1,32 @@
+=== Library package ownership ===
+/usr/lib/libSDL2-2.0.so.0 is owned by sdl2-compat 2.32.74-1
+/usr/lib/libSDL3.so.0 is owned by sdl3 3.4.18-1
+=== Library symlinks ===
+lrwxrwxrwx 1 root root      16 Oct  3 09:00 /usr/lib/libSDL2-2.0.so -> libSDL2-2.0.so.0
+lrwxrwxrwx 1 root root      24 Oct  3 09:00 /usr/lib/libSDL2-2.0.so.0 -> libSDL2-2.0.so.0.3200.74
+-rwxr-xr-x 1 root root  397920 Oct  3 09:00 /usr/lib/libSDL2-2.0.so.0.3200.74
+lrwxrwxrwx 1 root root      12 Oct  3 08:51 /usr/lib/libSDL3.so -> libSDL3.so.0
+lrwxrwxrwx 1 root root      17 Oct  3 08:51 /usr/lib/libSDL3.so.0 -> libSDL3.so.0.4.18
+-rwxr-xr-x 1 root root 3316184 Oct  3 08:51 /usr/lib/libSDL3.so.0.4.18
+=== Installed SDL packages ===
+sdl2-compat 2.32.74-1
+sdl2_image 2.8.12-2
+sdl2_ttf 2.24.0-2
+sdl3 3.4.18-1
+sdl3_ttf 3.2.2-3
+=== SDL2 compatibility library metadata ===
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x000000000000000e (SONAME)             Library soname: [libSDL2-2.0.so.0]
+=== SDL versions without initialization ===
+SDL headers/runtime: 2.32.74
+SDL_GetVersion: 2.32.74
+SDL_WasInit before init: 0
+=== Current working tree ===
+ M include/kiddos/app/application.hpp
+ M tests/platform_sdl_text_input_translator_test.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
