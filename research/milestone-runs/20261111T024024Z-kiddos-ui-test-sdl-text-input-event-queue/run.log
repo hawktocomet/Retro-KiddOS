@@ -1,0 +1,16 @@
+=== Build ===
+[1/2] Building CXX object CMakeFiles/kiddos_platform_sdl_text_input_translator_test.dir/tests/platform_sdl_text_input_translator_test.cpp.o
+[2/2] Linking CXX executable kiddos_platform_sdl_text_input_translator_test
+=== Run SDL translator queue test ===
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_platform_sdl_text_input_translator
+1/1 Test #1: kiddos_platform_sdl_text_input_translator ...***Exception: SegFault  0.07 sec
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   0.08 sec
+
+The following tests FAILED:
+	  1 - kiddos_platform_sdl_text_input_translator (SEGFAULT)
+Errors while running CTest
