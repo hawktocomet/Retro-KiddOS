@@ -1,0 +1,224 @@
+=== SDL test environment availability ===
+2.32.74
+=== SDL event queue APIs ===
+/usr/include/SDL2/SDL_events.h:723: * SDL_PumpEvents() is hidden from the user since SDL_PollEvent() and
+/usr/include/SDL2/SDL_events.h:730: * \sa SDL_PollEvent
+/usr/include/SDL2/SDL_events.h:759: * SDL_PeepEvents().
+/usr/include/SDL2/SDL_events.h:777: * \sa SDL_PollEvent
+/usr/include/SDL2/SDL_events.h:779: * \sa SDL_PushEvent
+/usr/include/SDL2/SDL_events.h:781:extern DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event * events, int numevents,
+/usr/include/SDL2/SDL_events.h:882: * SDL_PollEvent() is the favored way of receiving system events since it can
+/usr/include/SDL2/SDL_events.h:892: *     while (SDL_PollEvent(&event)) {  // poll until all events are handled!
+/usr/include/SDL2/SDL_events.h:907: * \sa SDL_PeepEvents
+/usr/include/SDL2/SDL_events.h:908: * \sa SDL_PushEvent
+/usr/include/SDL2/SDL_events.h:913:extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
+/usr/include/SDL2/SDL_events.h:931: * \sa SDL_PollEvent
+/usr/include/SDL2/SDL_events.h:957: * \sa SDL_PollEvent
+/usr/include/SDL2/SDL_events.h:971: * caller may dispose of the memory pointed to after SDL_PushEvent() returns.
+/usr/include/SDL2/SDL_events.h:978: * Note: Events pushed onto the queue with SDL_PushEvent() get passed through
+/usr/include/SDL2/SDL_events.h:979: * the event filter but events added with SDL_PeepEvents() do not.
+/usr/include/SDL2/SDL_events.h:992: * \sa SDL_PeepEvents
+/usr/include/SDL2/SDL_events.h:993: * \sa SDL_PollEvent
+/usr/include/SDL2/SDL_events.h:996:extern DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event * event);
+/usr/include/SDL2/SDL_events.h:1039: * Note: Events pushed onto the queue with SDL_PushEvent() get passed through
+/usr/include/SDL2/SDL_events.h:1040: * the event filter, but events pushed onto the queue with SDL_PeepEvents() do
+/usr/include/SDL2/SDL_events.h:1051: * \sa SDL_PeepEvents
+/usr/include/SDL2/SDL_events.h:1052: * \sa SDL_PushEvent
+/usr/include/SDL2/SDL_events.h:1089: * SDL_PushEvent(), but not for disabled events, nor for events by a filter
+/usr/include/SDL2/SDL_events.h:1091: * through SDL_PeepEvents().
+/usr/include/SDL2/SDL_events.h:1184: * \sa SDL_PushEvent
+/usr/include/SDL2/SDL_hints.h:3060: * usual or programatically set the hint with SDL_SetHint, which won't
+/usr/include/SDL2/SDL_hints.h:3070:#define SDL_HINT_VIDEODRIVER "SDL_VIDEODRIVER"
+/usr/include/SDL2/SDL_hints.h:3083: * usual or programatically set the hint with SDL_SetHint, which won't
+/usr/include/SDL2/SDL_hints.h:3195: * \sa SDL_SetHint
+/usr/include/SDL2/SDL_hints.h:3197:extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
+/usr/include/SDL2/SDL_hints.h:3205: * variable that takes precedence. You can use SDL_SetHintWithPriority() to
+/usr/include/SDL2/SDL_hints.h:3215: * \sa SDL_SetHintWithPriority
+/usr/include/SDL2/SDL_hints.h:3217:extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
+/usr/include/SDL2/SDL_hints.h:3233: * \sa SDL_SetHint
+/usr/include/SDL2/SDL_hints.h:3247: * \sa SDL_SetHint
+/usr/include/SDL2/SDL_hints.h:3260: * \sa SDL_SetHint
+/usr/include/SDL2/SDL_hints.h:3261: * \sa SDL_SetHintWithPriority
+/usr/include/SDL2/SDL_hints.h:3276: * \sa SDL_SetHint
+=== SDL platform public and private API ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+#include <SDL.h>
+
+#include <deque>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    bool poll_text_input_event(TextInputEvent& event) override;
+    void set_text_input_active(bool active) override;
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+    bool text_input_active_ = false;
+    std::deque<Action> pending_actions_;
+    std::deque<TextInputEvent> pending_text_events_;
+    bool pump_events();
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+=== Current test build conventions ===
+)
+
+target_include_directories(kiddos PRIVATE include)
+target_link_libraries(kiddos PRIVATE kiddos_ui)
+
+target_compile_options(kiddos PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+include(CTest)
+
+if(BUILD_TESTING)
+    add_executable(kiddos_platform_text_input_interface_test
+        tests/platform_text_input_interface_test.cpp)
+    target_include_directories(kiddos_platform_text_input_interface_test PRIVATE include)
+    add_test(NAME kiddos_platform_text_input_interface
+        COMMAND kiddos_platform_text_input_interface_test)
+
+    add_executable(kiddos_platform_sdl_keyboard_policy_test
+        tests/platform_sdl_keyboard_policy_test.cpp)
+    target_include_directories(kiddos_platform_sdl_keyboard_policy_test PRIVATE include)
+    target_link_libraries(kiddos_platform_sdl_keyboard_policy_test PRIVATE PkgConfig::SDL2)
+    add_test(NAME kiddos_platform_sdl_keyboard_policy
+        COMMAND kiddos_platform_sdl_keyboard_policy_test)
+
+    add_executable(kiddos_platform_text_input_event_test
+        tests/platform_text_input_event_test.cpp)
+    target_include_directories(kiddos_platform_text_input_event_test PRIVATE include)
+    add_test(NAME kiddos_platform_text_input_event
+        COMMAND kiddos_platform_text_input_event_test)
+
+    add_executable(kiddos_ui_geometry_test
+        tests/ui_geometry_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_geometry_test PRIVATE include)
+
+    add_executable(kiddos_ui_layout_test
+        tests/ui_layout_test.cpp
+        src/ui/layout.cpp
+    )
+
+    target_include_directories(kiddos_ui_layout_test PRIVATE include)
+    target_link_libraries(kiddos_ui_layout_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_layout
+        COMMAND kiddos_ui_layout_test
+    )
+
+    add_test(
+        NAME kiddos_ui_geometry
+        COMMAND kiddos_ui_geometry_test
+    )
+
+    add_executable(kiddos_ui_focus_test
+        tests/ui_focus_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_focus_test PRIVATE include)
+    target_link_libraries(kiddos_ui_focus_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_focus
+        COMMAND kiddos_ui_focus_test
+    )
+
+    add_executable(kiddos_ui_button_test
+        tests/ui_button_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_button_test PRIVATE include)
+    target_link_libraries(kiddos_ui_button_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_button
+        COMMAND kiddos_ui_button_test
+    )
+
+    add_executable(kiddos_ui_controller_test
+        tests/ui_controller_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_controller_test PRIVATE include)
+    target_link_libraries(kiddos_ui_controller_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_controller
+        COMMAND kiddos_ui_controller_test
+    )
+
+    add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
+    target_include_directories(kiddos_ui_image_test PRIVATE include)
+    target_link_libraries(kiddos_ui_image_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_image COMMAND kiddos_ui_image_test)
+
+    add_executable(kiddos_ui_label_test tests/ui_label_test.cpp)
+    target_include_directories(kiddos_ui_label_test PRIVATE include)
+    target_link_libraries(kiddos_ui_label_test PRIVATE kiddos_ui)
+=== Existing test source conventions ===
+#include "kiddos/platform/sdl_keyboard_policy.hpp"
+
+#include <cassert>
+
+int main() {
+    using kiddos::should_process_keydown;
+
+    assert(should_process_keydown(SDLK_a, 0, false));
+    assert(!should_process_keydown(SDLK_a, 1, false));
+    assert(!should_process_keydown(SDLK_a, 1, true));
+
+    assert(should_process_keydown(SDLK_BACKSPACE, 0, true));
+    assert(should_process_keydown(SDLK_BACKSPACE, 1, true));
+    assert(!should_process_keydown(SDLK_BACKSPACE, 1, false));
+
+    assert(should_process_keydown(SDLK_DELETE, 1, true));
+    assert(should_process_keydown(SDLK_HOME, 1, true));
+    assert(should_process_keydown(SDLK_END, 1, true));
+    assert(should_process_keydown(SDLK_LEFT, 1, true));
+    assert(should_process_keydown(SDLK_RIGHT, 1, true));
+
+    assert(!should_process_keydown(SDLK_UP, 1, true));
+    assert(!should_process_keydown(SDLK_DOWN, 1, true));
+
+    return 0;
+}
+=== Working tree ===
+ M include/kiddos/app/application.hpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
