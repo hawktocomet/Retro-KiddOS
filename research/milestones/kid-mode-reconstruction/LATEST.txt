@@ -1,1 +1,1 @@
-research/milestones/kid-mode-reconstruction/runs/20261111T174853Z-inspect-corrected-carousel-integration-interfaces
+research/milestones/kid-mode-reconstruction/runs/20261111T174926Z-inspect-renderer-and-screen-integration-lifecycle

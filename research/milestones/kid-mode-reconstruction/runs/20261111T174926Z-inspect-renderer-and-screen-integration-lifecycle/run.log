@@ -1,0 +1,837 @@
+=== PLATFORM INTERFACE ===
+#pragma once
+
+#include "kiddos/core/action.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+namespace kiddos {
+
+class Platform {
+public:
+    virtual ~Platform() = default;
+
+    virtual bool initialize() = 0;
+    virtual bool poll_action(Action& action) = 0;
+    virtual bool poll_text_input_event(TextInputEvent&) { return false; }
+    virtual void set_text_input_active(bool) {}
+    virtual void begin_frame() = 0;
+    virtual void draw_carousel(int selected_index) = 0;
+    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+    virtual void present() = 0;
+    virtual void shutdown() = 0;
+};
+
+} // namespace kiddos
+=== RENDERER INTERFACE ===
+#pragma once
+
+#include "kiddos/ui/color.hpp"
+#include "kiddos/ui/geometry.hpp"
+
+#include <SDL.h>
+#include <cstdint>
+
+namespace kiddos::ui {
+
+// Non-owning SDL2 renderer adapter.
+// The SDLPlatform remains responsible for creating and destroying SDL_Renderer.
+class Renderer final {
+public:
+    explicit Renderer(SDL_Renderer* renderer = nullptr) noexcept;
+
+    void attach(SDL_Renderer* renderer) noexcept;
+    bool valid() const noexcept;
+
+    bool clear(Color color) const;
+    bool fill_rect(Rect rect, Color color) const;
+    bool outline_rect(Rect rect, Color color) const;
+    bool draw_line(Point from, Point to, Color color) const;
+    bool draw_point(Point point, Color color) const;
+    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination,
+                      std::uint8_t opacity = 255) const;
+    bool fill_rounded_rect(Rect rect, int radius, Color color) const;
+    bool outline_rounded_rect(Rect rect, int radius, Color color) const;
+
+    bool set_clip(Rect rect) const;
+    bool clear_clip() const;
+
+    void present() const;
+
+    SDL_Renderer* native() const noexcept;
+
+private:
+    SDL_Renderer* renderer_ = nullptr;
+
+    bool set_color(Color color) const;
+};
+
+} // namespace kiddos::ui
+#include "kiddos/ui/renderer.hpp"
+
+#include <algorithm>
+#include <cmath>
+
+namespace kiddos::ui {
+
+Renderer::Renderer(SDL_Renderer* renderer) noexcept
+    : renderer_(renderer) {
+}
+
+void Renderer::attach(SDL_Renderer* renderer) noexcept {
+    renderer_ = renderer;
+}
+
+bool Renderer::valid() const noexcept {
+    return renderer_ != nullptr;
+}
+
+SDL_Renderer* Renderer::native() const noexcept {
+    return renderer_;
+}
+
+bool Renderer::set_color(Color color) const {
+    if (!renderer_) return false;
+
+    return SDL_SetRenderDrawColor(
+        renderer_,
+        color.r,
+        color.g,
+        color.b,
+        color.a
+    ) == 0;
+}
+
+bool Renderer::clear(Color color) const {
+    if (!set_color(color)) return false;
+    return SDL_RenderClear(renderer_) == 0;
+}
+
+bool Renderer::fill_rect(Rect rect, Color color) const {
+    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+
+    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+    return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+}
+
+bool Renderer::outline_rect(Rect rect, Color color) const {
+    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+
+    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+    return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+}
+
+bool Renderer::draw_line(Point from, Point to, Color color) const {
+    if (!renderer_ || !set_color(color)) return false;
+
+    return SDL_RenderDrawLine(
+        renderer_, from.x, from.y, to.x, to.y
+    ) == 0;
+}
+
+bool Renderer::draw_point(Point point, Color color) const {
+    if (!renderer_ || !set_color(color)) return false;
+
+    return SDL_RenderDrawPoint(
+        renderer_, point.x, point.y
+    ) == 0;
+}
+
+bool Renderer::draw_texture(
+    SDL_Texture* texture,
+    Rect source,
+    Rect destination,
+    std::uint8_t opacity
+) const {
+    if (!renderer_ || !texture || source.empty() || destination.empty()) return false;
+
+    Uint8 previous_opacity = 255;
+    if (SDL_GetTextureAlphaMod(texture, &previous_opacity) != 0) return false;
+    if (SDL_SetTextureAlphaMod(texture, opacity) != 0) return false;
+
+    SDL_Rect src{source.x, source.y, source.w, source.h};
+    SDL_Rect dst{destination.x, destination.y, destination.w, destination.h};
+    const bool rendered = SDL_RenderCopy(renderer_, texture, &src, &dst) == 0;
+    const bool restored = SDL_SetTextureAlphaMod(texture, previous_opacity) == 0;
+
+    return rendered && restored;
+}
+
+bool Renderer::fill_rounded_rect(Rect rect, int radius, Color color) const {
+    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+
+    radius = std::clamp(radius, 0, std::min(rect.w, rect.h) / 2);
+    if (radius == 0) {
+        SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+        return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+    }
+
+    for (int y = 0; y < rect.h; ++y) {
+        int dy = 0;
+        if (y < radius) {
+            dy = radius - y;
+        } else if (y >= rect.h - radius) {
+            dy = y - (rect.h - radius - 1);
+        }
+
+        const double inside = std::max(
+            0.0,
+            static_cast<double>(radius * radius - dy * dy)
+        );
+        const int inset = static_cast<int>(
+            std::ceil(radius - std::sqrt(inside))
+        );
+
+        if (SDL_RenderDrawLine(
+                renderer_,
+                rect.x + inset,
+                rect.y + y,
+                rect.x + rect.w - 1 - inset,
+                rect.y + y
+            ) != 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Renderer::outline_rounded_rect(Rect rect, int radius, Color color) const {
+    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+
+    radius = std::clamp(radius, 0, std::min(rect.w, rect.h) / 2);
+    if (radius == 0) {
+        SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+        return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+    }
+
+    for (int y = 0; y < rect.h; ++y) {
+        int dy = 0;
+        if (y < radius) {
+            dy = radius - y;
+        } else if (y >= rect.h - radius) {
+            dy = y - (rect.h - radius - 1);
+        }
+
+        const double inside = std::max(
+            0.0,
+            static_cast<double>(radius * radius - dy * dy)
+        );
+        const int inset = static_cast<int>(
+            std::ceil(radius - std::sqrt(inside))
+        );
+
+        if (SDL_RenderDrawPoint(renderer_, rect.x + inset, rect.y + y) != 0 ||
+            SDL_RenderDrawPoint(renderer_, rect.x + rect.w - 1 - inset, rect.y + y) != 0) {
+            return false;
+        }
+    }
+
+    if (SDL_RenderDrawLine(
+            renderer_, rect.x + radius, rect.y,
+            rect.x + rect.w - radius - 1, rect.y
+        ) != 0) {
+        return false;
+    }
+
+    return SDL_RenderDrawLine(
+        renderer_, rect.x + radius, rect.y + rect.h - 1,
+        rect.x + rect.w - radius - 1, rect.y + rect.h - 1
+    ) == 0;
+}
+
+bool Renderer::set_clip(Rect rect) const {
+    if (!renderer_) return false;
+
+    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+    return SDL_RenderSetClipRect(renderer_, &native_rect) == 0;
+}
+
+bool Renderer::clear_clip() const {
+    if (!renderer_) return false;
+
+    return SDL_RenderSetClipRect(renderer_, nullptr) == 0;
+}
+
+void Renderer::present() const {
+    if (renderer_) {
+        SDL_RenderPresent(renderer_);
+    }
+}
+
+} // namespace kiddos::ui
+=== SCREEN AND SCREEN MANAGER ===
+#pragma once
+#include "kiddos/ui/container.hpp"
+#include "kiddos/ui/controller.hpp"
+#include "kiddos/ui/text_input_interaction.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+namespace kiddos::ui {
+class Screen {
+public:
+    Screen() noexcept;
+    virtual ~Screen() = default;
+    Screen(const Screen&) = delete;
+    Screen& operator=(const Screen&) = delete;
+    Container& root() noexcept;
+    FocusManager& focus() noexcept;
+    virtual void on_enter() {}
+    virtual void on_exit() {}
+    virtual void on_suspend() {}
+    virtual void on_resume() {}
+    virtual void update(float) {}
+    virtual void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    Container root_;
+    FocusManager focus_;
+    ControllerInteraction controller_;
+    TextInputInteraction text_input_;
+};
+}
+#pragma once
+#include "kiddos/ui/screen.hpp"
+#include <memory>
+#include <vector>
+namespace kiddos::ui {
+class ScreenManager final {
+public:
+    ~ScreenManager();
+    ScreenManager() = default;
+    ScreenManager(const ScreenManager&) = delete;
+    ScreenManager& operator=(const ScreenManager&) = delete;
+    bool push(std::unique_ptr<Screen> screen);
+    bool pop();
+    bool replace(std::unique_ptr<Screen> screen);
+    void clear() noexcept;
+    Screen* current() noexcept;
+    const Screen* current() const noexcept;
+    std::size_t depth() const noexcept;
+    void update(float delta_seconds);
+    void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    std::vector<std::unique_ptr<Screen>> stack_;
+};
+}
+#include "kiddos/ui/screen_manager.hpp"
+namespace kiddos::ui {
+ScreenManager::~ScreenManager() { clear(); }
+bool ScreenManager::push(std::unique_ptr<Screen> screen) {
+    if (!screen) return false;
+    if (auto* active = current()) active->on_suspend();
+    auto* next = screen.get();
+    stack_.push_back(std::move(screen));
+    next->on_enter();
+    next->focus().focus_first();
+    return true;
+}
+bool ScreenManager::pop() {
+    if (stack_.empty()) return false;
+    stack_.back()->on_exit();
+    stack_.pop_back();
+    if (auto* active = current()) { active->on_resume(); active->focus().focus_first(); }
+    return true;
+}
+bool ScreenManager::replace(std::unique_ptr<Screen> screen) {
+    if (!screen) return false;
+    if (auto* active = current()) { active->on_exit(); stack_.pop_back(); }
+    auto* next = screen.get();
+    stack_.push_back(std::move(screen));
+    next->on_enter();
+    next->focus().focus_first();
+    return true;
+}
+void ScreenManager::clear() noexcept {
+    while (!stack_.empty()) { stack_.back()->on_exit(); stack_.pop_back(); }
+}
+Screen* ScreenManager::current() noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+const Screen* ScreenManager::current() const noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+std::size_t ScreenManager::depth() const noexcept { return stack_.size(); }
+void ScreenManager::update(float dt) { if (auto* s=current()) s->update(dt); }
+void ScreenManager::render(Renderer& r) { if (auto* s=current()) s->render(r); }
+bool ScreenManager::handle_action(UIAction a) {
+    if (a == UIAction::Back) return pop();
+    auto* s=current(); return s ? s->handle_action(a) : false;
+}
+bool ScreenManager::handle_text_input(const ::kiddos::TextInputEvent& e) {
+    auto* s=current(); return s ? s->handle_text_input(e) : false;
+}
+}
+=== APPLICATION IMPLEMENTATION ===
+#include "kiddos/app/application.hpp"
+
+#include <chrono>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+            if (!running_) {
+                break;
+            }
+        }
+
+        if (running_) {
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::NavigateLeft:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + game_count_ - 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateRight:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateUp:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::NavigateDown:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::Confirm:
+            if (!action_screen_) {
+                action_screen_ = true;
+                selected_action_ = 0;
+            }
+            // Game launching is intentionally not implemented yet.
+            break;
+
+        case Action::Back:
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
+            break;
+
+        case Action::None:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    if (action_screen_) {
+        // Game 1 is a temporary checkpoint demonstration fixture.
+        platform_.draw_game_actions(
+            selected_game_, selected_game_ == 1, selected_action_);
+    } else {
+        platform_.draw_carousel(selected_game_);
+    }
+    platform_.present();
+}
+
+} // namespace kiddos
+#include "kiddos/app/application.hpp"
+#include "kiddos/platform/sdl_platform.hpp"
+
+int main() {
+    kiddos::SDLPlatform platform;
+    kiddos::Application application(platform);
+    return application.run();
+}
+=== SDL INITIALIZATION AND SHUTDOWN ===
+351:SDLPlatform::~SDLPlatform() {
+355:bool SDLPlatform::initialize() {
+611:void SDLPlatform::begin_frame() {
+766:void SDLPlatform::present() {
+770:void SDLPlatform::shutdown() {
+                 {rect.x - 5, rect.y - 5, rect.w + 10, rect.h + 10},
+                 30, {7, 13, 32, static_cast<Uint8>(selected ? 255 : 170)});
+
+    rounded_fill(r, rect, 25, {20, 34, 65, alpha});
+
+    SDL_Rect art{
+        rect.x + 9,
+        rect.y + 9,
+        rect.w - 18,
+        rect.h - 18
+    };
+
+    SDL_RenderSetClipRect(r, &art);
+    draw_art(r, index, art, alpha);
+    SDL_RenderSetClipRect(r, nullptr);
+    mask_artwork_corners(r, art, 18, {20, 34, 65, alpha});
+
+    rounded_outline(r, rect, 25,
+            selected
+                ? Color{69, 151, 255, 255}
+                : Color{80, 117, 170, 110});
+
+    if (selected) {
+        rounded_outline(r,
+                        {rect.x - 2, rect.y - 2, rect.w + 4, rect.h + 4},
+                        27, {43, 105, 210, 170});
+    }
+}
+
+void draw_status(SDL_Renderer* r) {
+    const Color white{205, 222, 255, 220};
+    color(r, white);
+
+    // Sound status: speaker and sound waves.
+    triangle(r, 31, 34, 43, 25, 43, 51, white);
+    rectangle(r, {25, 33, 10, 12}, white);
+
+    color(r, {80, 157, 255, 220});
+    SDL_RenderDrawLine(r, 49, 29, 54, 34);
+    SDL_RenderDrawLine(r, 54, 34, 54, 42);
+    SDL_RenderDrawLine(r, 54, 42, 49, 47);
+
+    // Battery status: outline, terminal, charge fill.
+    outline(r, {657, 27, 34, 19}, white);
+    rectangle(r, {691, 33, 4, 7}, white);
+    rectangle(r, {661, 31, 22, 11},
+              {67, 157, 255, 240});
+}
+
+} // namespace
+
+SDLPlatform::~SDLPlatform() {
+    shutdown();
+}
+
+bool SDLPlatform::initialize() {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+        std::cerr << "SDL initialization failed: "
+                  << SDL_GetError() << '\n';
+        return false;
+    }
+
+    initialized_ = true;
+
+    window_ = SDL_CreateWindow(
+        "Retro KiddOS - Kid Mode",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        720,
+        720,
+        SDL_WINDOW_SHOWN
+    );
+
+    if (!window_) {
+        std::cerr << "Window creation failed: "
+                  << SDL_GetError() << '\n';
+        shutdown();
+        return false;
+    }
+
+    renderer_ = SDL_CreateRenderer(
+        window_, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
+
+    if (!renderer_) {
+        renderer_ = SDL_CreateRenderer(
+            window_, -1, SDL_RENDERER_SOFTWARE
+        );
+    }
+
+    if (!renderer_) {
+        std::cerr << "Renderer creation failed: "
+                  << SDL_GetError() << '\n';
+        shutdown();
+        return false;
+    }
+
+    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+
+    const char* artwork_paths[] = {
+        "assets/artwork/generated/carousel-star.bmp",
+        "assets/artwork/generated/carousel-mushroom.bmp",
+        "assets/artwork/generated/carousel-car.bmp"
+    };
+    const char* label_paths[] = {
+        "assets/artwork/generated/label-play.bmp",
+        "assets/artwork/generated/label-resume.bmp",
+        "assets/artwork/generated/label-start-over.bmp"
+    };
+
+    for (std::size_t i = 0; i < artwork_textures.size(); ++i) {
+        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i], true);
+        if (!artwork_textures[i]) {
+            shutdown();
+            return false;
+        }
+    }
+
+    for (std::size_t i = 0; i < action_label_textures.size(); ++i) {
+        action_label_textures[i] =
+            load_bitmap_texture(renderer_, label_paths[i], true);
+        if (!action_label_textures[i]) {
+            shutdown();
+            return false;
+        }
+    }
+
+    carousel_title_texture =
+        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-title.bmp", true);
+    carousel_selected_texture =
+        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-selected.bmp", true);
+    if (!carousel_title_texture || !carousel_selected_texture) {
+        shutdown();
+        return false;
+    }
+    SDL_SetTextureBlendMode(carousel_title_texture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(carousel_selected_texture, SDL_BLENDMODE_BLEND);
+
+
+    for (int index = 0; index < SDL_NumJoysticks(); ++index) {
+        if (SDL_IsGameController(index)) {
+            open_controller(index);
+            if (controller_) {
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
+void SDLPlatform::open_controller(int device_index) {
+    if (controller_) return;
+
+    controller_ = SDL_GameControllerOpen(device_index);
+
+    if (controller_) {
+        controller_instance_ = SDL_JoystickInstanceID(
+            SDL_GameControllerGetJoystick(controller_)
+        );
+    }
+}
+
+void SDLPlatform::close_controller() {
+    if (controller_) {
+        SDL_GameControllerClose(controller_);
+        controller_ = nullptr;
+    }
+
+    controller_instance_ = -1;
+}
+
+Action SDLPlatform::map_key(SDL_Keycode key) {
+    switch (key) {
+        case SDLK_LEFT: return Action::NavigateLeft;
+        case SDLK_RIGHT: return Action::NavigateRight;
+        case SDLK_UP: return Action::NavigateUp;
+        case SDLK_DOWN: return Action::NavigateDown;
+        case SDLK_RETURN:
+        case SDLK_SPACE: return Action::Confirm;
+        case SDLK_ESCAPE: return Action::Back;
+        case SDLK_q: return Action::Quit;
+        default: return Action::None;
+    }
+}
+
+Action SDLPlatform::map_controller_button(Uint8 button) {
+    switch (button) {
+        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+            return Action::NavigateLeft;
+        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+            return Action::NavigateRight;
+        case SDL_CONTROLLER_BUTTON_DPAD_UP:
+            return Action::NavigateUp;
+        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+            return Action::NavigateDown;
+        case SDL_CONTROLLER_BUTTON_A:
+            return Action::Confirm;
+        case SDL_CONTROLLER_BUTTON_B:
+            return Action::Back;
+        default:
+            return Action::None;
+    }
+}
+
+bool SDLPlatform::pump_events() {
+    SDL_Event event;
+    bool received = false;
+
+    while (SDL_PollEvent(&event)) {
+        received = true;
+
+        switch (event.type) {
+            case SDL_QUIT:
+                pending_actions_.push_back(Action::Quit);
+                break;
+
+            case SDL_KEYDOWN: {
+                if (!should_process_keydown(
+                        event.key.keysym.sym, event.key.repeat,
+                        text_input_active_)) break;
+
+                const auto text_event =
+                    SDLTextInputTranslator::translate(event, text_input_active_);
+                if (text_event) {
+                    pending_text_events_.push_back(*text_event);
+                } else {
+                    const Action action = map_key(event.key.keysym.sym);
+                    if (action != Action::None) {
+                        pending_actions_.push_back(action);
+                    }
+                }
+                break;
+            }
+
+            case SDL_TEXTINPUT: {
+                const auto text_event =
+                    SDLTextInputTranslator::translate(event, text_input_active_);
+                if (text_event) pending_text_events_.push_back(*text_event);
+                break;
+            }
+
+            case SDL_CONTROLLERBUTTONDOWN:
+                if (event.cbutton.which == controller_instance_) {
+                    const Action action =
+                        map_controller_button(event.cbutton.button);
+                    if (action != Action::None) {
+                        pending_actions_.push_back(action);
+                    }
+                }
+                break;
+
+            case SDL_CONTROLLERDEVICEADDED:
+                open_controller(event.cdevice.which);
+                break;
+
+            case SDL_CONTROLLERDEVICEREMOVED:
+                if (event.cdevice.which == controller_instance_) {
+                    close_controller();
+                }
+=== ASSET AND FONT INVENTORY ===
+assets/artwork/generated/carousel-car.bmp
+assets/artwork/generated/carousel-mushroom.bmp
+assets/artwork/generated/carousel-selected.bmp
+assets/artwork/generated/carousel-star.bmp
+assets/artwork/generated/carousel-title.bmp
+assets/artwork/generated/forest.bmp
+assets/artwork/generated/label-play.bmp
+assets/artwork/generated/label-resume.bmp
+assets/artwork/generated/label-start-over.bmp
+assets/artwork/generated/ocean.bmp
+assets/artwork/generated/space.bmp
+assets/artwork/source/forest.svg
+assets/artwork/source/ocean.svg
+assets/artwork/source/space.svg
+=== BUILD TARGETS ===
+18:add_library(kiddos_ui STATIC
+44:add_library(KiddOS::UI ALIAS kiddos_ui)
+45:target_include_directories(kiddos_ui PUBLIC
+49:target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
+57:add_executable(kiddos
+63:target_include_directories(kiddos PRIVATE include)
+64:target_link_libraries(kiddos PRIVATE kiddos_ui)
+75:    add_executable(kiddos_platform_sdl_text_input_translator_test
+77:    target_include_directories(kiddos_platform_sdl_text_input_translator_test PRIVATE include)
+78:    target_link_libraries(kiddos_platform_sdl_text_input_translator_test PRIVATE PkgConfig::SDL2)
+82:    add_executable(kiddos_platform_text_input_interface_test
+84:    target_include_directories(kiddos_platform_text_input_interface_test PRIVATE include)
+88:    add_executable(kiddos_platform_sdl_keyboard_policy_test
+90:    target_include_directories(kiddos_platform_sdl_keyboard_policy_test PRIVATE include)
+91:    target_link_libraries(kiddos_platform_sdl_keyboard_policy_test PRIVATE PkgConfig::SDL2)
+95:    add_executable(kiddos_platform_text_input_event_test
+97:    target_include_directories(kiddos_platform_text_input_event_test PRIVATE include)
+101:    add_executable(kiddos_ui_geometry_test
+105:    target_include_directories(kiddos_ui_geometry_test PRIVATE include)
+107:    add_executable(kiddos_ui_layout_test
+112:    target_include_directories(kiddos_ui_layout_test PRIVATE include)
+113:    target_link_libraries(kiddos_ui_layout_test PRIVATE kiddos_ui)
+125:    add_executable(kiddos_ui_focus_test
+129:    target_include_directories(kiddos_ui_focus_test PRIVATE include)
+130:    target_link_libraries(kiddos_ui_focus_test PRIVATE kiddos_ui)
+137:    add_executable(kiddos_ui_button_test
+141:    target_include_directories(kiddos_ui_button_test PRIVATE include)
+142:    target_link_libraries(kiddos_ui_button_test PRIVATE kiddos_ui)
+149:    add_executable(kiddos_ui_controller_test
+153:    target_include_directories(kiddos_ui_controller_test PRIVATE include)
+154:    target_link_libraries(kiddos_ui_controller_test PRIVATE kiddos_ui)
+161:    add_executable(kiddos_ui_renderer_test tests/ui_renderer_test.cpp)
+162:    target_include_directories(kiddos_ui_renderer_test PRIVATE include)
+163:    target_link_libraries(kiddos_ui_renderer_test PRIVATE kiddos_ui)
+166:    add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
+167:    target_include_directories(kiddos_ui_image_test PRIVATE include)
+168:    target_link_libraries(kiddos_ui_image_test PRIVATE kiddos_ui)
+171:    add_executable(kiddos_ui_label_test tests/ui_label_test.cpp)
+172:    target_include_directories(kiddos_ui_label_test PRIVATE include)
+173:    target_link_libraries(kiddos_ui_label_test PRIVATE kiddos_ui)
+176:    add_executable(kiddos_ui_panel_test tests/ui_panel_test.cpp)
+177:    target_include_directories(kiddos_ui_panel_test PRIVATE include)
+178:    target_link_libraries(kiddos_ui_panel_test PRIVATE kiddos_ui)
+181:    add_executable(kiddos_ui_progress_bar_test tests/ui_progress_bar_test.cpp)
+182:    target_include_directories(kiddos_ui_progress_bar_test PRIVATE include)
+183:    target_link_libraries(kiddos_ui_progress_bar_test PRIVATE kiddos_ui)
+186:    add_executable(kiddos_ui_toggle_test tests/ui_toggle_test.cpp)
+187:    target_include_directories(kiddos_ui_toggle_test PRIVATE include)
+188:    target_link_libraries(kiddos_ui_toggle_test PRIVATE kiddos_ui)
+191:    add_executable(kiddos_ui_slider_test tests/ui_slider_test.cpp)
+192:    target_include_directories(kiddos_ui_slider_test PRIVATE include)
+193:    target_link_libraries(kiddos_ui_slider_test PRIVATE kiddos_ui)
+196:    add_executable(kiddos_ui_theme_test tests/ui_theme_test.cpp)
+197:    target_include_directories(kiddos_ui_theme_test PRIVATE include)
+198:    target_link_libraries(kiddos_ui_theme_test PRIVATE kiddos_ui)
+200:    add_executable(kiddos_ui_list_view_test tests/ui_list_view_test.cpp)
+201:    target_include_directories(kiddos_ui_list_view_test PRIVATE include)
+202:    target_link_libraries(kiddos_ui_list_view_test PRIVATE kiddos_ui)
+205:    add_executable(kiddos_ui_checkbox_test tests/ui_checkbox_test.cpp)
+206:    target_include_directories(kiddos_ui_checkbox_test PRIVATE include)
+207:    target_link_libraries(kiddos_ui_checkbox_test PRIVATE kiddos_ui)
+210:    add_executable(kiddos_ui_radio_group_test tests/ui_radio_group_test.cpp)
+211:    target_include_directories(kiddos_ui_radio_group_test PRIVATE include)
+212:    target_link_libraries(kiddos_ui_radio_group_test PRIVATE kiddos_ui)
+215:    add_executable(kiddos_ui_select_test tests/ui_select_test.cpp)
+216:    target_include_directories(kiddos_ui_select_test PRIVATE include)
+217:    target_link_libraries(kiddos_ui_select_test PRIVATE kiddos_ui)
+220:    add_executable(kiddos_ui_text_input_test tests/ui_text_input_test.cpp)
+221:    target_include_directories(kiddos_ui_text_input_test PRIVATE include)
+222:    target_link_libraries(kiddos_ui_text_input_test PRIVATE kiddos_ui)
+225:    add_executable(kiddos_ui_text_input_interaction_test
+227:    target_include_directories(kiddos_ui_text_input_interaction_test PRIVATE include)
+228:    target_link_libraries(kiddos_ui_text_input_interaction_test PRIVATE kiddos_ui)
+242:    add_executable(kiddos_ui_screen_manager_test
+244:    target_include_directories(kiddos_ui_screen_manager_test PRIVATE include)
+245:    target_link_libraries(kiddos_ui_screen_manager_test PRIVATE kiddos_ui)
