@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T190943Z-add-retro-pixel-pocket-visual-reference
+research/milestones/visual-fidelity-pass/runs/20261111T191353Z-inspect-home-screen-for-complete-visual-redesign
