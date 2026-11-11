@@ -158,6 +158,11 @@ if(BUILD_TESTING)
         COMMAND kiddos_ui_controller_test
     )
 
+    add_executable(kiddos_ui_renderer_test tests/ui_renderer_test.cpp)
+    target_include_directories(kiddos_ui_renderer_test PRIVATE include)
+    target_link_libraries(kiddos_ui_renderer_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_renderer COMMAND kiddos_ui_renderer_test)
+
     add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
     target_include_directories(kiddos_ui_image_test PRIVATE include)
     target_link_libraries(kiddos_ui_image_test PRIVATE kiddos_ui)

@@ -41,5 +41,12 @@ int main() {
     assert(!calculate_image_geometry(0, 100, bounds, ImageFit::contain).valid);
     assert(!calculate_image_geometry(100, 100, {}, ImageFit::cover).valid);
 
+    Image image;
+    assert(image.opacity() == 255);
+    image.set_opacity(128);
+    assert(image.opacity() == 128);
+    image.set_opacity(0);
+    assert(image.opacity() == 0);
+
     return 0;
 }

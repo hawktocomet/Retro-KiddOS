@@ -38,8 +38,8 @@ foundation. It currently includes:
 - Text-input interaction support.
 - Screen lifecycle and a stack-based ScreenManager.
 - Public umbrella headers, the `KiddOS::UI` CMake alias, and install rules.
-- Automated tests covering library components and screen-manager
-  lifecycle/navigation.
+- Automated tests covering library components, image opacity, rounded-panel
+  rendering, and screen-manager lifecycle/navigation.
 
 See [KiddOS UI Library](KIDDOS_UI_LIBRARY.md) for build instructions and
 integration examples.

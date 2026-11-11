@@ -11,6 +11,7 @@ int main() {
     assert(panel.style().background.g == 30);
     assert(panel.style().background.b == 55);
     assert(panel.style().border_thickness == 2);
+    assert(panel.style().corner_radius == 0);
 
     const Color background{10, 20, 30, 255};
     const Color border{100, 150, 200, 255};
@@ -18,28 +19,36 @@ int main() {
     panel.set_background(background);
     panel.set_border(border);
     panel.set_border_thickness(4);
+    panel.set_corner_radius(12);
 
     assert(panel.style().background.r == 10);
     assert(panel.style().border.r == 100);
     assert(panel.style().border_thickness == 4);
+    assert(panel.style().corner_radius == 12);
 
     panel.set_border_thickness(-5);
     assert(panel.style().border_thickness == 0);
+    panel.set_corner_radius(-8);
+    assert(panel.style().corner_radius == 0);
 
     PanelStyle custom;
     custom.background = {1, 2, 3, 255};
     custom.border = {4, 5, 6, 255};
     custom.border_thickness = 3;
+    custom.corner_radius = 7;
 
     panel.set_style(custom);
 
     assert(panel.style().background.r == 1);
     assert(panel.style().border.g == 5);
     assert(panel.style().border_thickness == 3);
+    assert(panel.style().corner_radius == 7);
 
     custom.border_thickness = -1;
+    custom.corner_radius = -1;
     Panel second(custom);
     assert(second.style().border_thickness == 0);
+    assert(second.style().corner_radius == 0);
 
     panel.set_bounds({0, 0, 200, 100});
     assert(panel.bounds().w == 200);

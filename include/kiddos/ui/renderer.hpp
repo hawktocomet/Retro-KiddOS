@@ -4,6 +4,7 @@
 #include "kiddos/ui/geometry.hpp"
 
 #include <SDL.h>
+#include <cstdint>
 
 namespace kiddos::ui {
 
@@ -21,7 +22,10 @@ public:
     bool outline_rect(Rect rect, Color color) const;
     bool draw_line(Point from, Point to, Color color) const;
     bool draw_point(Point point, Color color) const;
-    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination) const;
+    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination,
+                      std::uint8_t opacity = 255) const;
+    bool fill_rounded_rect(Rect rect, int radius, Color color) const;
+    bool outline_rounded_rect(Rect rect, int radius, Color color) const;
 
     bool set_clip(Rect rect) const;
     bool clear_clip() const;

@@ -61,6 +61,9 @@ Texture* Image::texture() const noexcept { return texture_; }
 void Image::set_fit(ImageFit fit) noexcept { fit_ = fit; }
 ImageFit Image::fit() const noexcept { return fit_; }
 
+void Image::set_opacity(std::uint8_t opacity) noexcept { opacity_ = opacity; }
+std::uint8_t Image::opacity() const noexcept { return opacity_; }
+
 ImageGeometry Image::geometry() const noexcept {
     if (!texture_ || !texture_->valid()) return {};
     return calculate_image_geometry(
@@ -75,10 +78,10 @@ void Image::draw(Renderer& renderer) {
 
     if (fit_ == ImageFit::cover) {
         renderer.set_clip(bounds());
-        renderer.draw_texture(texture_->native(), g.source, g.destination);
+        renderer.draw_texture(texture_->native(), g.source, g.destination, opacity_);
         renderer.clear_clip();
     } else {
-        renderer.draw_texture(texture_->native(), g.source, g.destination);
+        renderer.draw_texture(texture_->native(), g.source, g.destination, opacity_);
     }
 }
 

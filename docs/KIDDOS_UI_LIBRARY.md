@@ -58,6 +58,10 @@ Widgets expose their own configuration and rendering behavior. Use
 application-level code to decide what a widget means or what action it
 performs.
 
+`Image` supports per-instance opacity from 0 (transparent) to 255 (opaque).
+`PanelStyle::corner_radius` controls rounded panel corners; zero preserves
+square corners. Negative radii are clamped to zero.
+
 ### Focus and controller actions
 
 `FocusManager` manages focus among eligible elements in a screen's root
@@ -165,8 +169,8 @@ Run the full suite after changes:
     cmake --build build
     ctest --test-dir build --output-on-failure
 
-The tests cover UI components, focus/controller behavior, text input, and
-screen-manager lifecycle/navigation.
+The tests cover UI components, image opacity, rounded-panel rendering,
+focus/controller behavior, text input, and screen-manager lifecycle/navigation.
 
 ## Scope and limitations
 

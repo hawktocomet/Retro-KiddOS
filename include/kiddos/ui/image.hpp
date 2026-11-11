@@ -3,6 +3,8 @@
 #include "kiddos/ui/element.hpp"
 #include "kiddos/ui/texture.hpp"
 
+#include <cstdint>
+
 namespace kiddos::ui {
 
 enum class ImageFit {
@@ -34,11 +36,15 @@ public:
     void set_fit(ImageFit fit) noexcept;
     ImageFit fit() const noexcept;
 
+    void set_opacity(std::uint8_t opacity) noexcept;
+    std::uint8_t opacity() const noexcept;
+
     ImageGeometry geometry() const noexcept;
 
 private:
     Texture* texture_ = nullptr;
     ImageFit fit_ = ImageFit::contain;
+    std::uint8_t opacity_ = 255;
 
     void draw(Renderer& renderer) override;
 };
