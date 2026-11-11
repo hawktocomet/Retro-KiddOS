@@ -1,0 +1,17 @@
+=== Binary size ===
+/tmp/kiddos-lvgl-sdl-adapter-build/kiddos_lvgl_sdl_adapter: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=3090c021c333abb4208acbb970e023c6452776f2, for GNU/Linux 4.4.0, not stripped
+   text	   data	    bss	    dec	    hex	filename
+1159691	   5696	 124264	1289651	 13adb3	/tmp/kiddos-lvgl-sdl-adapter-build/kiddos_lvgl_sdl_adapter
+
+=== Dynamic dependencies ===
+	linux-vdso.so.1 (0x00007f8dc4c84000)
+	libSDL2-2.0.so.0 => /usr/lib/libSDL2-2.0.so.0 (0x00007f8dc4ab7000)
+	libm.so.6 => /usr/lib/libm.so.6 (0x00007f8dc4980000)
+	libc.so.6 => /usr/lib/libc.so.6 (0x00007f8dc4600000)
+	/lib64/ld-linux-x86-64.so.2 => /usr/lib64/ld-linux-x86-64.so.2 (0x00007f8dc4c86000)
+
+=== Runtime measurement (3 seconds) ===
+/tmp/tmp.4buIz5jiyA: line 16: /usr/bin/time: No such file or directory
+RUNTIME_EXIT=127
+
+=== Footprint summary ===
