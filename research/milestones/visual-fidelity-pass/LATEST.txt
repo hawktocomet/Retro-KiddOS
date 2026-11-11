@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T222909Z-remove-carousel-highlight-completely
+research/milestones/visual-fidelity-pass/runs/20261111T222928Z-update-carousel-structure-test-after-highlight-removal
