@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T002726Z-lvgl-feasibility-diagnose-adapter-crash
+research/milestone-runs/20261111T002753Z-lvgl-feasibility-correct-custom-renderer-configuration
