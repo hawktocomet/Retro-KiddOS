@@ -1,0 +1,68 @@
+===== CHECK SDL TTF =====
+2.24.0
+===== CONFIGURE =====
+-- Checking for module 'SDL2_ttf'
+--   Found SDL2_ttf, version 2.24.0
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+===== BUILD =====
+[1/21] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/renderer.cpp.o
+[2/21] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/layout.cpp.o
+[3/21] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/focus.cpp.o
+[4/21] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/button.cpp.o
+[5/21] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/controller.cpp.o
+[6/21] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/font.cpp.o
+[7/21] Building CXX object CMakeFiles/kiddos.dir/src/main.cpp.o
+[8/21] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/text.cpp.o
+[9/21] Linking CXX static library libkiddos_ui.a
+[10/21] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+[11/21] Building CXX object CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:27:40: warning: multi-character character constant [-Wmultichar]
+   27 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:43:40: warning: multi-character character constant [-Wmultichar]
+   43 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:250:6: warning: ‘void kiddos::{anonymous}::draw_ocean_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  250 | void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:218:6: warning: ‘void kiddos::{anonymous}::draw_forest_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  218 | void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:188:6: warning: ‘void kiddos::{anonymous}::draw_space_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  188 | void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+[12/21] Building CXX object CMakeFiles/kiddos_ui_layout_test.dir/tests/ui_layout_test.cpp.o
+[13/21] Building CXX object CMakeFiles/kiddos_ui_layout_test.dir/src/ui/layout.cpp.o
+[14/21] Building CXX object CMakeFiles/kiddos_ui_focus_test.dir/tests/ui_focus_test.cpp.o
+[15/21] Building CXX object CMakeFiles/kiddos_ui_button_test.dir/tests/ui_button_test.cpp.o
+[16/21] Linking CXX executable kiddos
+[17/21] Linking CXX executable kiddos_ui_layout_test
+[18/21] Linking CXX executable kiddos_ui_focus_test
+[19/21] Linking CXX executable kiddos_ui_button_test
+[20/21] Building CXX object CMakeFiles/kiddos_ui_controller_test.dir/tests/ui_controller_test.cpp.o
+[21/21] Linking CXX executable kiddos_ui_controller_test
+===== TESTS =====
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_ui_layout
+1/5 Test #1: kiddos_ui_layout .................   Passed    0.00 sec
+    Start 2: kiddos_ui_geometry
+2/5 Test #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+    Start 3: kiddos_ui_focus
+3/5 Test #3: kiddos_ui_focus ..................   Passed    0.00 sec
+    Start 4: kiddos_ui_button
+4/5 Test #4: kiddos_ui_button .................   Passed    0.00 sec
+    Start 5: kiddos_ui_controller
+5/5 Test #5: kiddos_ui_controller .............   Passed    0.00 sec
+
+100% tests passed out of 5
+
+Total Test time (real) =   0.01 sec
+ CMakeLists.txt             |  5 ++++-
+ docs/KIDDOS_UI_LIBRARY.md  |  7 +++++++
+ include/kiddos/ui/font.hpp | 21 +++++++++++++++++++++
+ include/kiddos/ui/text.hpp | 19 +++++++++++++++++++
+ src/ui/font.cpp            | 29 +++++++++++++++++++++++++++++
+ src/ui/text.cpp            | 39 +++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 119 insertions(+), 1 deletion(-)

@@ -83,3 +83,10 @@ and button activation. It supports four directional actions and Confirm.
 Back is reserved for application-level navigation and currently performs
 no action. SDL-specific controller event mapping remains the platform
 adapter's responsibility.
+
+## Text and fonts
+
+Text rendering uses SDL_ttf. `Font` owns an SDL_ttf font resource and
+supports move-only ownership. `TextRenderer` renders UTF-8 text and can
+center text inside a rectangle. SDL_ttf initialization and shutdown remain
+the responsibility of the application/platform lifecycle.

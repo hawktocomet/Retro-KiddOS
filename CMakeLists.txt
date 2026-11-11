@@ -12,6 +12,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
 
 add_library(kiddos_ui STATIC
     src/ui/renderer.cpp
@@ -19,10 +20,12 @@ add_library(kiddos_ui STATIC
     src/ui/focus.cpp
     src/ui/button.cpp
     src/ui/controller.cpp
+    src/ui/font.cpp
+    src/ui/text.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
-target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2)
+target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF)
 
 target_compile_options(kiddos_ui PRIVATE
     -Wall
