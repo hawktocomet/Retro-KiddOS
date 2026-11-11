@@ -1,0 +1,9 @@
+Event loop timer section not found.
+[ 10%] Built target lvgl_thorvg
+[100%] Built target lvgl
+[100%] Built target kiddos_lvgl_sdl_adapter
+BUILD_EXIT=0
+No SDL game controller detected; keyboard arrows remain available.\nAdapter running: LVGL -> custom flush callback -> existing SDL_Renderer
+Press Escape or close the window to exit.
+RUNTIME_EXIT=124
+LVGL_KEYPAD_NAVIGATION=FAIL
