@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T211719Z-inspect-carousel-animation-patch-boundaries
+research/milestones/visual-fidelity-pass/runs/20261111T212127Z-default-option-2-and-smooth-slower-cartridge-carousel
