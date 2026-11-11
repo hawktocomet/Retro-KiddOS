@@ -1,0 +1,36 @@
+=== CMake lines 145-180 ===
+   145	    target_include_directories(kiddos_ui_toggle_test PRIVATE include)
+   146	    target_link_libraries(kiddos_ui_toggle_test PRIVATE kiddos_ui)
+   147	    add_test(NAME kiddos_ui_toggle COMMAND kiddos_ui_toggle_test)
+   148	
+   149	    add_executable(kiddos_ui_slider_test tests/ui_slider_test.cpp)
+   150	    target_include_directories(kiddos_ui_slider_test PRIVATE include)
+   151	    target_link_libraries(kiddos_ui_slider_test PRIVATE kiddos_ui)
+   152	    add_test(NAME kiddos_ui_slider COMMAND kiddos_ui_slider_test)
+   153	
+   154	    add_executable(kiddos_ui_theme_test tests/ui_theme_test.cpp)
+   155	    target_include_directories(kiddos_ui_theme_test PRIVATE include)
+   156	    target_link_libraries(kiddos_ui_theme_test PRIVATE kiddos_ui)
+   157	    add_test(NAME kiddos_ui_theme COMMAND kiddos_ui_theme_test)
+   158	endif()
+   159	
+   160	
+   161	
+   162	    add_executable(kiddos_ui_list_view_test tests/ui_list_view_test.cpp)
+   163	    target_include_directories(kiddos_ui_list_view_test PRIVATE include)
+   164	    target_link_libraries(kiddos_ui_list_view_test PRIVATE kiddos_ui)
+   165	    add_test(NAME kiddos_ui_list_view COMMAND kiddos_ui_list_view_test)
+   166	endif()
+
+=== All conditional boundaries ===
+63:if(BUILD_TESTING)
+158:endif()
+166:endif()
+
+=== ListView test target occurrences ===
+161-
+162:    add_executable(kiddos_ui_list_view_test tests/ui_list_view_test.cpp)
+163:    target_include_directories(kiddos_ui_list_view_test PRIVATE include)
+164:    target_link_libraries(kiddos_ui_list_view_test PRIVATE kiddos_ui)
+165:    add_test(NAME kiddos_ui_list_view COMMAND kiddos_ui_list_view_test)
+166-endif()
