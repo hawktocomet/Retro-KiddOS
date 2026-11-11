@@ -1,0 +1,109 @@
+=== Existing application build configuration ===
+cmake_minimum_required(VERSION 3.20)
+
+project(KiddOS
+    VERSION 0.2.0
+    DESCRIPTION "A child-friendly gaming environment for the Retro Pixel Pocket"
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+
+add_executable(kiddos
+    src/main.cpp
+    src/app/application.cpp
+    src/platform/sdl_platform.cpp
+)
+
+target_include_directories(kiddos PRIVATE include)
+target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
+
+target_compile_options(kiddos PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+=== Existing SDL platform renderer ownership ===
+include/kiddos/platform/sdl_platform.hpp:24:    SDL_Renderer* renderer_ = nullptr;
+src/platform/sdl_platform.cpp:21:SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+src/platform/sdl_platform.cpp:36:    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+src/platform/sdl_platform.cpp:48:void color(SDL_Renderer* r, Color c) {
+src/platform/sdl_platform.cpp:52:void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+src/platform/sdl_platform.cpp:57:void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+src/platform/sdl_platform.cpp:62:void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+src/platform/sdl_platform.cpp:83:void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+src/platform/sdl_platform.cpp:114:void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+src/platform/sdl_platform.cpp:136:void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+src/platform/sdl_platform.cpp:149:void triangle(SDL_Renderer* r, int x1, int y1,
+src/platform/sdl_platform.cpp:188:void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:218:void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:250:void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:282:void draw_art(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:289:    SDL_RenderCopy(r, texture, nullptr, &area);
+src/platform/sdl_platform.cpp:293:void draw_card(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:327:void draw_status(SDL_Renderer* r) {
+src/platform/sdl_platform.cpp:362:    window_ = SDL_CreateWindow(
+src/platform/sdl_platform.cpp:378:    renderer_ = SDL_CreateRenderer(
+src/platform/sdl_platform.cpp:384:        renderer_ = SDL_CreateRenderer(
+src/platform/sdl_platform.cpp:604:        SDL_RenderCopy(renderer_, carousel_title_texture,
+src/platform/sdl_platform.cpp:614:void draw_action_label(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:621:    SDL_RenderCopy(r, texture, nullptr, &destination);
+src/platform/sdl_platform.cpp:624:void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:629:void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:638:void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:710:    if (renderer_) SDL_RenderPresent(renderer_);
+=== Target build and toolchain references ===
+=== LVGL SDL backend renderer implementation ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:303:    dsc->window = SDL_CreateWindow("LVGL Simulator",
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:69:    ddata->renderer = SDL_CreateRenderer(lv_sdl_window_get_window(display), -1,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:114:        SDL_RenderPresent(ddata->renderer);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:130:    SDL_RenderPresent(ddata->renderer);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:98:    ddata->renderer = SDL_CreateRenderer(lv_sdl_window_get_window(display), -1,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:188:    ddata->texture = SDL_CreateTexture(ddata->renderer, px_format,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:348:    SDL_RenderCopy(ddata->renderer, ddata->texture, NULL, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:349:    SDL_RenderPresent(ddata->renderer);
+=== LVGL SDL backend configuration ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:15:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:357:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:12:#if LV_USE_SDL && !LV_SDL_USE_EGL && LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:70:                                         LV_SDL_ACCELERATED ? SDL_RENDERER_ACCELERATED : SDL_RENDERER_SOFTWARE);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:134:#endif /*LV_USE_SDL && !LV_SDL_USE_EGL && LV_USE_DRAW_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:17:#if LV_USE_SDL && !LV_SDL_USE_EGL && !LV_USE_DRAW_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:99:                                         LV_SDL_ACCELERATED ? SDL_RENDERER_ACCELERATED : SDL_RENDERER_SOFTWARE);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:353:#endif /*LV_USE_SDL && !LV_SDL_USE_EGL && !LV_USE_DRAW_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_private.h:19:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_private.h:76:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mousewheel.c:12:#if LV_USE_SDL && LV_SDL_MOUSEWHEEL_MODE == LV_SDL_MOUSEWHEEL_MODE_ENCODER
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mousewheel.c:143:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mouse.c:12:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_mouse.c:203:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c:12:#if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_keyboard.c:224:#endif /*LV_USE_SDL*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:1:config LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:7:if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:15:	default LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:19:	config LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:24:	config LV_SDL_BACKEND_TEXTURE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:30:	config LV_SDL_BACKEND_EGL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:41:	default 0 if LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:42:	default 1 if LV_SDL_BACKEND_TEXTURE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:43:	default 2 if LV_SDL_BACKEND_EGL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/Kconfig:107:endif #LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2758:config LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2764:if LV_USE_SDL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2772:	default LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2776:	config LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2781:	config LV_SDL_BACKEND_TEXTURE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2787:	config LV_SDL_BACKEND_EGL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2798:	default 0 if LV_SDL_BACKEND_SW
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2799:	default 1 if LV_SDL_BACKEND_TEXTURE
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2800:	default 2 if LV_SDL_BACKEND_EGL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/Kconfig:2864:endif #LV_USE_SDL
+=== Existing target SDL development packages ===
+2.32.74
+-I/usr/include/SDL2 -D_GNU_SOURCE=1 -D_REENTRANT -lSDL2
