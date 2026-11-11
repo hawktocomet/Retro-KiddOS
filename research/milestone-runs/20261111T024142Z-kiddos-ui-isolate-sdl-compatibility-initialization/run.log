@@ -1,0 +1,119 @@
+=== SDL_INIT_EVENTS ===
+init flags=16384
+init result=0 error=
+/tmp/tmp.ItCtzyU7RO: line 40: 325498 Segmentation fault         (core dumped) SDL_VIDEODRIVER=dummy /tmp/kiddos_sdl_init_matrix 16384
+Events exit: 139
+=== SDL_INIT_TIMER ===
+init flags=1
+init result=0 error=
+/tmp/tmp.ItCtzyU7RO: line 44: 325503 Segmentation fault         (core dumped) SDL_VIDEODRIVER=dummy /tmp/kiddos_sdl_init_matrix 1
+Timer exit: 139
+=== SDL_INIT_VIDEO ===
+init flags=32
+init result=0 error=
+/tmp/tmp.ItCtzyU7RO: line 48: 325514 Segmentation fault         (core dumped) SDL_VIDEODRIVER=dummy /tmp/kiddos_sdl_init_matrix 32
+Video exit: 139
+=== SDL_INIT_VIDEO | SDL_INIT_EVENTS ===
+init flags=16416
+init result=0 error=
+/tmp/tmp.ItCtzyU7RO: line 52: 325524 Segmentation fault         (core dumped) SDL_VIDEODRIVER=dummy /tmp/kiddos_sdl_init_matrix 16416
+Video+events exit: 139
+=== Actual translator test under debugger ===
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ffff7454710 in ?? () from /usr/lib/libSDL3.so.0
+#0  0x00007ffff7454710 in ?? () from /usr/lib/libSDL3.so.0
+#1  0x00007ffff7f44c85 in ?? () from /usr/lib/libSDL2-2.0.so.0
+#2  0x00005555555567e8 in main () at /home/hawk/KiddOS/tests/platform_sdl_text_input_translator_test.cpp:60
+=== Current test source ===
+     1	#include "kiddos/platform/sdl_text_input_translator.hpp"
+     2	
+     3	#include <cassert>
+     4	#include <cstring>
+     5	
+     6	int main() {
+     7	    using kiddos::SDLTextInputTranslator;
+     8	    using kiddos::TextInputEventType;
+     9	
+    10	    SDL_Event event{};
+    11	
+    12	    event.type = SDL_TEXTINPUT;
+    13	    std::strcpy(event.text.text, "hello");
+    14	    auto translated = SDLTextInputTranslator::translate(event, true);
+    15	    assert(translated);
+    16	    assert(translated->type == TextInputEventType::Text);
+    17	    assert(translated->text == "hello");
+    18	    assert(!SDLTextInputTranslator::translate(event, false));
+    19	
+    20	    const SDL_Keycode keys[] = {
+    21	        SDLK_BACKSPACE, SDLK_DELETE, SDLK_LEFT,
+    22	        SDLK_RIGHT, SDLK_HOME, SDLK_END
+    23	    };
+    24	    const TextInputEventType types[] = {
+    25	        TextInputEventType::Backspace, TextInputEventType::Delete,
+    26	        TextInputEventType::Left, TextInputEventType::Right,
+    27	        TextInputEventType::Home, TextInputEventType::End
+    28	    };
+    29	
+    30	    for (int i = 0; i < 6; ++i) {
+    31	        event = {};
+    32	        event.type = SDL_KEYDOWN;
+    33	        event.key.keysym.sym = keys[i];
+    34	        translated = SDLTextInputTranslator::translate(event, true);
+    35	        assert(translated);
+    36	        assert(translated->type == types[i]);
+    37	        assert(!SDLTextInputTranslator::translate(event, false));
+    38	    }
+    39	
+    40	    event = {};
+    41	    event.type = SDL_KEYDOWN;
+    42	    event.key.keysym.sym = SDLK_BACKSPACE;
+    43	    event.key.repeat = 1;
+    44	    assert(SDLTextInputTranslator::translate(event, true));
+    45	
+    46	    event.key.keysym.sym = SDLK_UP;
+    47	    assert(!SDLTextInputTranslator::translate(event, true));
+    48	
+    49	    event.type = SDL_KEYUP;
+    50	    event.key.keysym.sym = SDLK_LEFT;
+    51	    assert(!SDLTextInputTranslator::translate(event, true));
+    52	
+    53	    assert(SDL_Init(SDL_INIT_EVENTS) == 0);
+    54	    SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
+    55	    SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
+    56	
+    57	    SDL_Event queued{};
+    58	    queued.type = SDL_TEXTINPUT;
+    59	    std::strcpy(queued.text.text, "queue");
+    60	    assert(SDL_PushEvent(&queued) == 1);
+    61	
+    62	    queued = {};
+    63	    queued.type = SDL_KEYDOWN;
+    64	    queued.key.keysym.sym = SDLK_BACKSPACE;
+    65	    assert(SDL_PushEvent(&queued) == 1);
+    66	
+    67	    SDL_Event received{};
+    68	    assert(SDL_PollEvent(&received) == 1);
+    69	    translated = SDLTextInputTranslator::translate(received, true);
+    70	    assert(translated);
+    71	    assert(translated->type == TextInputEventType::Text);
+    72	    assert(translated->text == "queue");
+    73	
+    74	    assert(SDL_PollEvent(&received) == 1);
+    75	    translated = SDLTextInputTranslator::translate(received, true);
+    76	    assert(translated);
+    77	    assert(translated->type == TextInputEventType::Backspace);
+    78	
+    79	    assert(SDL_PollEvent(&received) == 0);
+    80	    SDL_Quit();
+    81	
+    82	    return 0;
+    83	}
