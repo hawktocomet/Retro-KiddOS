@@ -1,0 +1,215 @@
+=== All software renderer definitions in config ===
+224-#endif /*LV_USE_THORVG*/
+225-
+226-/** Required to draw anything on the screen. */
+227:#define LV_USE_DRAW_SW 0
+228-
+229:#if LV_USE_DRAW_SW
+230-/** RGB565 */
+231-#define LV_DRAW_SW_SUPPORT_RGB565 1
+232-
+233-/** RGB565 swapped */
+--
+287-#define LV_GRADIENT_MAX_STOPS 2
+288-
+289-/** Adds linear gradients at an angle, plus radial and conical gradients. */
+290:#define LV_USE_DRAW_SW 0
+291-
+292-#if LV_DRAW_SW_COMPLEX
+293-/** Maximum shadow size to buffer, where shadow size is `shadow_width + radius`.
+294- *  Costs this value squared in RAM; 0 disables caching.
+--
+311- *  - LV_DRAW_SW_ASM_SVE2
+312- *  - LV_DRAW_SW_ASM_CUSTOM
+313- */
+314:#define LV_USE_DRAW_SW 0
+315-
+316:#if LV_USE_DRAW_SW_ASM == LV_DRAW_SW_ASM_CUSTOM
+317-/** Custom assembly include file */
+318-#define LV_DRAW_SW_ASM_CUSTOM_INCLUDE ""
+319-
+320:#endif /*LV_USE_DRAW_SW_ASM == LV_DRAW_SW_ASM_CUSTOM*/
+321:#endif /*LV_USE_DRAW_SW*/
+322-
+323-/** Renders with a VG-Lite GPU. Requires a VG-Lite driver, or the VG-Lite simulator below.
+324- *
+325- *  Enable: LV_USE_MATRIX
+--
+524-/** Accelerate blends, fills and transforms with the PPA (Pixel Processing
+525- *  Accelerator) peripheral of Espressif SoCs.
+526- *
+527: *  Enable: LV_USE_DRAW_SW
+528- */
+529-#define LV_USE_PPA 0
+530-
+531-#if LV_USE_PPA
+--
+556- *  Pixel Image Compositor) engine of SiFli BF0 SoCs. Unsupported
+557- *  operations fall back to software rendering.
+558- *
+559: *  Enable: LV_USE_DRAW_SW
+560- */
+561-#define LV_USE_SIFLI_EPIC 0
+562-
+563-#if LV_USE_OS != LV_OS_NONE
+--
+600-/** Accelerate blends, fills and image blits with the NXP G2D API (i.MX 2D GPU).
+601- *  Requires the g2d library and its headers.
+602- *
+603: *  Enable: LV_USE_DRAW_SW
+604- */
+605-#define LV_USE_DRAW_G2D 0
+606-
+607-#if LV_USE_DRAW_G2D
+--
+686-
+687-/** Render with the SDL renderer API, caching widgets and images as SDL textures.
+688- *
+689: *  Enable: LV_USE_DRAW_SW
+690- */
+691-#define LV_USE_DRAW_SDL 0
+692-
+693-
+
+=== Active preprocessor values from LVGL translation unit ===
+#define LV_USE_BUTTON 1
+#define LV_COLOR_FORMAT_DEFAULT LV_COLOR_FORMAT_RGB565
+#define LV_USE_LABEL 1
+#define LV_USE_DRAW_SW 0
+#define LV_USE_IMAGE 1
+#define LV_USE_FLEX 0
+#define LV_USE_GRID 0
+
+=== Renderer source inclusion in build ===
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.o: lvgl/CMakeFiles/lvgl.dir/flags.make
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.o: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/helium/lv_draw_buf_convert_helium.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.o: lvgl/CMakeFiles/lvgl.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/tmp/kiddos-lvgl-minimal-build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building C object lvgl/CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.o"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT lvgl/CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.o -MF CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.o.d -o CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.o -c /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/helium/lv_draw_buf_convert_helium.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.i"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/helium/lv_draw_buf_convert_helium.c > CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.i
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.s"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/helium/lv_draw_buf_convert_helium.c -o CMakeFiles/lvgl.dir/src/draw/convert/helium/lv_draw_buf_convert_helium.c.s
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.o: lvgl/CMakeFiles/lvgl.dir/flags.make
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.o: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/lv_draw_buf_convert.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.o: lvgl/CMakeFiles/lvgl.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/tmp/kiddos-lvgl-minimal-build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Building C object lvgl/CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.o"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT lvgl/CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.o -MF CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.o.d -o CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.o -c /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/lv_draw_buf_convert.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.i"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/lv_draw_buf_convert.c > CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.i
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.s"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/lv_draw_buf_convert.c -o CMakeFiles/lvgl.dir/src/draw/convert/lv_draw_buf_convert.c.s
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.o: lvgl/CMakeFiles/lvgl.dir/flags.make
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.o: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/neon/lv_draw_buf_convert_neon.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.o: lvgl/CMakeFiles/lvgl.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/tmp/kiddos-lvgl-minimal-build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_31) "Building C object lvgl/CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.o"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT lvgl/CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.o -MF CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.o.d -o CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.o -c /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/neon/lv_draw_buf_convert_neon.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.i"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/neon/lv_draw_buf_convert_neon.c > CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.i
+lvgl/CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.s"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/neon/lv_draw_buf_convert_neon.c -o CMakeFiles/lvgl.dir/src/draw/convert/neon/lv_draw_buf_convert_neon.c.s
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.o: lvgl/CMakeFiles/lvgl.dir/flags.make
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.o: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.o: lvgl/CMakeFiles/lvgl.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/tmp/kiddos-lvgl-minimal-build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_32) "Building C object lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.o"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.o -MF CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.o.d -o CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.o -c /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.i"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c > CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.i
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.s"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c -o CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d.c.s
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.o: lvgl/CMakeFiles/lvgl.dir/flags.make
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.o: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_fill.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.o: lvgl/CMakeFiles/lvgl.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/tmp/kiddos-lvgl-minimal-build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_33) "Building C object lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.o"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.o -MF CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.o.d -o CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.o -c /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_fill.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.i"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_fill.c > CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.i
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.s"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_fill.c -o CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_fill.c.s
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.o: lvgl/CMakeFiles/lvgl.dir/flags.make
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.o: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_img.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.o: lvgl/CMakeFiles/lvgl.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/tmp/kiddos-lvgl-minimal-build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_34) "Building C object lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.o"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.o -MF CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.o.d -o CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.o -c /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_img.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.i"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_img.c > CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.i
+lvgl/CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.s"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_img.c -o CMakeFiles/lvgl.dir/src/draw/dma2d/lv_draw_dma2d_img.c.s
+lvgl/CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.o: lvgl/CMakeFiles/lvgl.dir/flags.make
+lvgl/CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.o: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.o: lvgl/CMakeFiles/lvgl.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/tmp/kiddos-lvgl-minimal-build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_35) "Building C object lvgl/CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.o"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT lvgl/CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.o -MF CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.o.d -o CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.o -c /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.i"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa.c > CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.i
+lvgl/CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.s"
+	cd /tmp/kiddos-lvgl-minimal-build/lvgl && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa.c -o CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa.c.s
+lvgl/CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa_buf.c.o: lvgl/CMakeFiles/lvgl.dir/flags.make
+lvgl/CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa_buf.c.o: /tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_buf.c
+lvgl/CMakeFiles/lvgl.dir/src/draw/espressif/ppa/lv_draw_ppa_buf.c.o: lvgl/CMakeFiles/lvgl.dir/compiler_depend.ts
+
+=== Device profile architecture ===
+5:  # The TARGET_CPU variable controls which processor should be targeted for
+7:   case $TARGET_ARCH in
+9:        TARGET_KERNEL_ARCH="arm64"
+10:        TARGET_PATCH_ARCH="aarch64"
+12:        TARGET_CPU="cortex-a35"
+13:        TARGET_CPU_FLAGS="+crc+fp+simd+crypto"
+18:        TARGET_KERNEL_ARCH="arm64"
+19:        TARGET_PATCH_ARCH="aarch64"
+21:        TARGET_CPU="cortex-a35"
+22:        TARGET_CPU_FLAGS="+crc"
+
+=== Device kernel configuration ===
+5:CONFIG_ARM64=y
+13:CONFIG_ARM64_PAGE_SHIFT=12
+14:CONFIG_ARM64_CONT_SHIFT=4
+324:CONFIG_ARCH_ROCKCHIP=y
+325:CONFIG_ARCH_ROCKCHIP_ODROIDGOA=y
+350:# CONFIG_ARM64_ERRATUM_826319 is not set
+351:# CONFIG_ARM64_ERRATUM_827319 is not set
+352:# CONFIG_ARM64_ERRATUM_824069 is not set
+353:# CONFIG_ARM64_ERRATUM_819472 is not set
+354:# CONFIG_ARM64_ERRATUM_832075 is not set
+355:CONFIG_ARM64_ERRATUM_834220=y
+356:CONFIG_ARM64_ERRATUM_845719=y
+357:CONFIG_ARM64_ERRATUM_843419=y
+358:# CONFIG_ARM64_ERRATUM_1024718 is not set
+362:CONFIG_ARM64_4K_PAGES=y
+363:# CONFIG_ARM64_16K_PAGES is not set
+364:# CONFIG_ARM64_64K_PAGES is not set
+365:CONFIG_ARM64_VA_BITS_39=y
+366:# CONFIG_ARM64_VA_BITS_48 is not set
+367:CONFIG_ARM64_VA_BITS=39
+430:# CONFIG_ARM64_SW_TTBR0_PAN is not set
+435:CONFIG_ARM64_HW_AFDBM=y
+436:CONFIG_ARM64_PAN=y
+437:# CONFIG_ARM64_LSE_ATOMICS is not set
+438:CONFIG_ARM64_UAO=y
+439:CONFIG_ARM64_MODULE_CMODEL_LARGE=y
+4374:# CONFIG_ARM64_PTDUMP is not set
+4377:# CONFIG_ARM64_RANDOMIZE_TEXT_OFFSET is not set
+4551:CONFIG_ARM64_CRYPTO=y
+
+=== SDL target backend settings ===
+44:                         -DSDL_WAYLAND=OFF \
+45:                         -DSDL_WAYLAND_QT_TOUCH=OFF \
+46:                         -DSDL_WAYLAND_SHARED=OFF \
+59:                         -DSDL_RENDER_D3D=OFF \
+60:                         -DSDL_X11=OFF \
+61:                         -DSDL_OPENGLES=ON \
+63:                         -DSDL_KMSDRM=ON \
