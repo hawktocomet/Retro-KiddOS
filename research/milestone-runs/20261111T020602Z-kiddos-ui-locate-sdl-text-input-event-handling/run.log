@@ -1,0 +1,159 @@
+=== SDL event and keyboard handling locations ===
+src/platform/sdl_platform.cpp:477:        case SDLK_RETURN:
+src/platform/sdl_platform.cpp:487:        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+src/platform/sdl_platform.cpp:489:        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+src/platform/sdl_platform.cpp:491:        case SDL_CONTROLLER_BUTTON_DPAD_UP:
+src/platform/sdl_platform.cpp:493:        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+src/platform/sdl_platform.cpp:495:        case SDL_CONTROLLER_BUTTON_A:
+src/platform/sdl_platform.cpp:497:        case SDL_CONTROLLER_BUTTON_B:
+src/platform/sdl_platform.cpp:507:    while (SDL_PollEvent(&event)) {
+src/platform/sdl_platform.cpp:515:            case SDL_KEYDOWN:
+src/platform/sdl_platform.cpp:521:            case SDL_CONTROLLERBUTTONDOWN:
+src/platform/sdl_platform.cpp:527:            case SDL_CONTROLLERDEVICEADDED:
+src/platform/sdl_platform.cpp:531:            case SDL_CONTROLLERDEVICEREMOVED:
+
+=== SDL platform public interface ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+
+#include <SDL.h>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+
+=== Application input/event interface ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+
+namespace kiddos {
+
+class Application {
+public:
+    explicit Application(Platform& platform);
+
+    int run();
+
+private:
+    Platform& platform_;
+    bool running_ = true;
+    int selected_game_ = 1;
+    bool action_screen_ = false;
+    int selected_action_ = 0;
+    static constexpr int game_count_ = 3;
+
+    void handle_action(Action action);
+    void render();
+};
+
+} // namespace kiddos
+
+=== Text renderer implementation ===
+#include "kiddos/ui/text.hpp"
+
+namespace kiddos::ui {
+TextRenderer::TextRenderer(Renderer& renderer) noexcept
+    : renderer_(renderer) {}
+
+bool TextRenderer::draw(const std::string& text, const Font& font,
+                        Point position, Color color) {
+    if (!renderer_.valid() || !font.valid() || text.empty()) return false;
+    SDL_Color tint{color.r, color.g, color.b, color.a};
+    SDL_Surface* surface =
+        TTF_RenderUTF8_Blended(font.native(), text.c_str(), tint);
+    if (!surface) return false;
+    SDL_Texture* texture =
+        SDL_CreateTextureFromSurface(renderer_.native(), surface);
+    if (!texture) {
+        SDL_FreeSurface(surface);
+        return false;
+    }
+    SDL_Rect destination{position.x, position.y, surface->w, surface->h};
+    const int result =
+        SDL_RenderCopy(renderer_.native(), texture, nullptr, &destination);
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+    return result == 0;
+}
+
+bool TextRenderer::draw_centered(const std::string& text, const Font& font,
+                                 Rect area, Color color) {
+    if (!font.valid() || text.empty() || area.empty()) return false;
+    int width = 0;
+    int height = 0;
+    if (TTF_SizeUTF8(font.native(), text.c_str(), &width, &height) != 0)
+        return false;
+    return draw(text, font,
+        {area.x + (area.w - width) / 2,
+         area.y + (area.h - height) / 2}, color);
+}
+}
+
+=== Renderer drawing primitives ===
+#pragma once
+
+#include "kiddos/ui/color.hpp"
+#include "kiddos/ui/geometry.hpp"
+
+#include <SDL.h>
+
+namespace kiddos::ui {
+
+// Non-owning SDL2 renderer adapter.
+// The SDLPlatform remains responsible for creating and destroying SDL_Renderer.
+class Renderer final {
+public:
+    explicit Renderer(SDL_Renderer* renderer = nullptr) noexcept;
+
+    void attach(SDL_Renderer* renderer) noexcept;
+    bool valid() const noexcept;
+
+    bool clear(Color color) const;
+    bool fill_rect(Rect rect, Color color) const;
+    bool outline_rect(Rect rect, Color color) const;
+    bool draw_line(Point from, Point to, Color color) const;
+    bool draw_point(Point point, Color color) const;
+    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination) const;
+
+    bool set_clip(Rect rect) const;
+    bool clear_clip() const;
+
+    void present() const;
+
+    SDL_Renderer* native() const noexcept;
+
+private:
+    SDL_Renderer* renderer_ = nullptr;
+
+    bool set_color(Color color) const;
+};
+
+} // namespace kiddos::ui
