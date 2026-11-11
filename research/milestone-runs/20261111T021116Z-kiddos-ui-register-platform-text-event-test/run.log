@@ -1,0 +1,205 @@
+=== Locate test registration ===
+66:include(CTest)
+68:if(BUILD_TESTING)
+83:    add_test(
+88:    add_test(
+100:    add_test(
+112:    add_test(
+124:    add_test(
+132:    add_test(NAME kiddos_ui_image COMMAND kiddos_ui_image_test)
+137:    add_test(NAME kiddos_ui_label COMMAND kiddos_ui_label_test)
+142:    add_test(NAME kiddos_ui_panel COMMAND kiddos_ui_panel_test)
+147:    add_test(NAME kiddos_ui_progress_bar COMMAND kiddos_ui_progress_bar_test)
+152:    add_test(NAME kiddos_ui_toggle COMMAND kiddos_ui_toggle_test)
+157:    add_test(NAME kiddos_ui_slider COMMAND kiddos_ui_slider_test)
+162:    add_test(NAME kiddos_ui_theme COMMAND kiddos_ui_theme_test)
+166:    add_test(NAME kiddos_ui_list_view COMMAND kiddos_ui_list_view_test)
+171:    add_test(NAME kiddos_ui_checkbox COMMAND kiddos_ui_checkbox_test)
+176:    add_test(NAME kiddos_ui_radio_group COMMAND kiddos_ui_radio_group_test)
+181:    add_test(NAME kiddos_ui_select COMMAND kiddos_ui_select_test)
+186:    add_test(NAME kiddos_ui_text_input COMMAND kiddos_ui_text_input_test)
+192:    add_test(NAME kiddos_ui_text_input_interaction
+=== Inspect CMake test section ===
+add_library(kiddos_ui STATIC
+    src/ui/renderer.cpp
+    src/ui/layout.cpp
+    src/ui/focus.cpp
+    src/ui/button.cpp
+    src/ui/controller.cpp
+    src/ui/font.cpp
+    src/ui/text.cpp
+    src/ui/texture.cpp
+    src/ui/image.cpp
+    src/ui/label.cpp
+    src/ui/panel.cpp
+    src/ui/progress_bar.cpp
+    src/ui/toggle.cpp
+    src/ui/slider.cpp
+    src/ui/theme.cpp
+    src/ui/list_view.cpp
+    src/ui/checkbox.cpp
+    src/ui/radio_group.cpp
+    src/ui/select.cpp
+    src/ui/text_input.cpp
+    src/ui/text_input_interaction.cpp
+)
+
+target_include_directories(kiddos_ui PUBLIC include)
+target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
+
+target_compile_options(kiddos_ui PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+add_executable(kiddos
+    src/main.cpp
+    src/app/application.cpp
+    src/platform/sdl_platform.cpp
+)
+
+target_include_directories(kiddos PRIVATE include)
+target_link_libraries(kiddos PRIVATE kiddos_ui)
+
+target_compile_options(kiddos PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+include(CTest)
+
+if(BUILD_TESTING)
+    add_executable(kiddos_ui_geometry_test
+        tests/ui_geometry_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_geometry_test PRIVATE include)
+
+    add_executable(kiddos_ui_layout_test
+        tests/ui_layout_test.cpp
+        src/ui/layout.cpp
+    )
+
+    target_include_directories(kiddos_ui_layout_test PRIVATE include)
+    target_link_libraries(kiddos_ui_layout_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_layout
+        COMMAND kiddos_ui_layout_test
+    )
+
+    add_test(
+        NAME kiddos_ui_geometry
+        COMMAND kiddos_ui_geometry_test
+    )
+
+    add_executable(kiddos_ui_focus_test
+        tests/ui_focus_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_focus_test PRIVATE include)
+    target_link_libraries(kiddos_ui_focus_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_focus
+        COMMAND kiddos_ui_focus_test
+    )
+
+    add_executable(kiddos_ui_button_test
+        tests/ui_button_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_button_test PRIVATE include)
+    target_link_libraries(kiddos_ui_button_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_button
+        COMMAND kiddos_ui_button_test
+    )
+
+    add_executable(kiddos_ui_controller_test
+        tests/ui_controller_test.cpp
+    )
+
+    target_include_directories(kiddos_ui_controller_test PRIVATE include)
+    target_link_libraries(kiddos_ui_controller_test PRIVATE kiddos_ui)
+
+    add_test(
+        NAME kiddos_ui_controller
+        COMMAND kiddos_ui_controller_test
+    )
+
+    add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
+    target_include_directories(kiddos_ui_image_test PRIVATE include)
+    target_link_libraries(kiddos_ui_image_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_image COMMAND kiddos_ui_image_test)
+
+    add_executable(kiddos_ui_label_test tests/ui_label_test.cpp)
+    target_include_directories(kiddos_ui_label_test PRIVATE include)
+    target_link_libraries(kiddos_ui_label_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_label COMMAND kiddos_ui_label_test)
+
+    add_executable(kiddos_ui_panel_test tests/ui_panel_test.cpp)
+    target_include_directories(kiddos_ui_panel_test PRIVATE include)
+    target_link_libraries(kiddos_ui_panel_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_panel COMMAND kiddos_ui_panel_test)
+
+    add_executable(kiddos_ui_progress_bar_test tests/ui_progress_bar_test.cpp)
+    target_include_directories(kiddos_ui_progress_bar_test PRIVATE include)
+    target_link_libraries(kiddos_ui_progress_bar_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_progress_bar COMMAND kiddos_ui_progress_bar_test)
+
+    add_executable(kiddos_ui_toggle_test tests/ui_toggle_test.cpp)
+    target_include_directories(kiddos_ui_toggle_test PRIVATE include)
+    target_link_libraries(kiddos_ui_toggle_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_toggle COMMAND kiddos_ui_toggle_test)
+
+    add_executable(kiddos_ui_slider_test tests/ui_slider_test.cpp)
+    target_include_directories(kiddos_ui_slider_test PRIVATE include)
+    target_link_libraries(kiddos_ui_slider_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_slider COMMAND kiddos_ui_slider_test)
+
+    add_executable(kiddos_ui_theme_test tests/ui_theme_test.cpp)
+    target_include_directories(kiddos_ui_theme_test PRIVATE include)
+    target_link_libraries(kiddos_ui_theme_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_theme COMMAND kiddos_ui_theme_test)
+    add_executable(kiddos_ui_list_view_test tests/ui_list_view_test.cpp)
+    target_include_directories(kiddos_ui_list_view_test PRIVATE include)
+    target_link_libraries(kiddos_ui_list_view_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_list_view COMMAND kiddos_ui_list_view_test)
+
+    add_executable(kiddos_ui_checkbox_test tests/ui_checkbox_test.cpp)
+    target_include_directories(kiddos_ui_checkbox_test PRIVATE include)
+    target_link_libraries(kiddos_ui_checkbox_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_checkbox COMMAND kiddos_ui_checkbox_test)
+
+    add_executable(kiddos_ui_radio_group_test tests/ui_radio_group_test.cpp)
+    target_include_directories(kiddos_ui_radio_group_test PRIVATE include)
+    target_link_libraries(kiddos_ui_radio_group_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_radio_group COMMAND kiddos_ui_radio_group_test)
+
+    add_executable(kiddos_ui_select_test tests/ui_select_test.cpp)
+    target_include_directories(kiddos_ui_select_test PRIVATE include)
+    target_link_libraries(kiddos_ui_select_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_select COMMAND kiddos_ui_select_test)
+
+    add_executable(kiddos_ui_text_input_test tests/ui_text_input_test.cpp)
+    target_include_directories(kiddos_ui_text_input_test PRIVATE include)
+    target_link_libraries(kiddos_ui_text_input_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_text_input COMMAND kiddos_ui_text_input_test)
+
+    add_executable(kiddos_ui_text_input_interaction_test
+        tests/ui_text_input_interaction_test.cpp)
+    target_include_directories(kiddos_ui_text_input_interaction_test PRIVATE include)
+    target_link_libraries(kiddos_ui_text_input_interaction_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_text_input_interaction
+        COMMAND kiddos_ui_text_input_interaction_test)
+endif()
+
+
+
+=== Check event files ===
+-rw-r--r-- 1 hawk hawk 293 Nov 10 21:10 include/kiddos/platform/text_input_event.hpp
+-rw-r--r-- 1 hawk hawk 730 Nov 10 21:10 tests/platform_text_input_event_test.cpp
