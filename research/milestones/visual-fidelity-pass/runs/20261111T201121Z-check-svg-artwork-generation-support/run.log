@@ -1,0 +1,42 @@
+=== SVG RENDERERS ===
+/usr/bin/rsvg-convert
+/usr/bin/convert
+/usr/bin/magick
+
+=== PYTHON SVG SUPPORT ===
+cairosvg: unavailable
+PIL: available
+svglib: unavailable
+
+=== CURRENT CAROUSEL GEOMETRY ===
+namespace {
+
+constexpr ui::Color background{1, 1, 1, 255};
+
+constexpr ui::Rect left_art{24, 258, 148, 148};
+constexpr ui::Rect center_art{220, 158, 280, 280};
+constexpr ui::Rect right_art{548, 258, 148, 148};
+
+constexpr ui::Rect title_rect{145, 465, 430, 54};
+constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+constexpr ui::Rect hints_rect{0, 662, 720, 42};
+
+constexpr std::array<const char*, HomeCarouselScreen::game_count>
+artwork_paths{
+    "assets/artwork/generated/carousel-star.png",
+    "assets/artwork/generated/carousel-mushroom.png",
+    "assets/artwork/generated/carousel-car.png"
+};
+
+constexpr std::array<const char*, HomeCarouselScreen::game_count>
+title_paths{
+    "assets/artwork/generated/carousel-title-star.png",
+    "assets/artwork/generated/carousel-title.png",
+    "assets/artwork/generated/carousel-title-car.png"
+};
+
+constexpr const char* wordmark_path =
+    "assets/artwork/generated/kiddos-wordmark.png";
+
+constexpr const char* hints_path =
+    "assets/artwork/generated/navigation-hints.png";

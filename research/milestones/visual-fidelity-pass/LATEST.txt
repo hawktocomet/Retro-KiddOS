@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T201053Z-emphasize-selected-game-and-clarify-parent-menu-shortcu
+research/milestones/visual-fidelity-pass/runs/20261111T201121Z-check-svg-artwork-generation-support
