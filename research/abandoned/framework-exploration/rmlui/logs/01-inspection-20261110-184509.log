@@ -1,0 +1,222 @@
+===== RETRO KIDDOS RMLUI INSPECTION =====
+Tue Nov 10 06:45:09 PM EST 2026
+
+===== MILESTONE WORKFLOW =====
+bash: type: kiddos-milestone: not found
+
+===== GIT STATUS =====
+origin	https://github.com/hawktocomet/Retro-KiddOS.git (fetch)
+origin	https://github.com/hawktocomet/Retro-KiddOS.git (push)
+main
+e40d4a0 chore: record milestone run - ui-framework-feasibility-framework-source-audit
+## main...origin/main
+ M include/kiddos/app/application.hpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+
+===== REPOSITORY STRUCTURE =====
+total 16
+drwxr-xr-x 1 hawk hawk  256 Nov 10 14:40 .
+drwx------ 1 hawk hawk  724 Nov 10 13:42 ..
+drwxr-xr-x 1 hawk hawk   36 Nov  9 14:16 assets
+drwxr-xr-x 1 hawk hawk  162 Nov 10 18:27 build
+-rw-r--r-- 1 hawk hawk  642 Nov 10 14:29 CMakeLists.txt
+drwxr-xr-x 1 hawk hawk    0 Nov  9 14:16 config
+-rw-r--r-- 1 hawk hawk 1344 Nov 10 11:50 CONTRIBUTING.md
+drwxr-xr-x 1 hawk hawk  516 Nov 10 14:43 docs
+drwxr-xr-x 1 hawk hawk  166 Nov 10 18:45 .git
+-rw-r--r-- 1 hawk hawk   84 Nov  9 14:16 .gitignore
+drwxr-xr-x 1 hawk hawk   12 Nov 10 14:01 include
+drwxr-xr-x 1 hawk hawk   82 Nov 10 14:40 logs
+drwxr-xr-x 1 hawk hawk   28 Nov  9 14:16 platform
+-rw-r--r-- 1 hawk hawk 2508 Nov 10 11:50 README.md
+drwxr-xr-x 1 hawk hawk   54 Nov 10 18:45 research
+drwxr-xr-x 1 hawk hawk   38 Nov 10 14:31 src
+drwxr-xr-x 1 hawk hawk   30 Nov 10 14:07 tasks
+drwxr-xr-x 1 hawk hawk    0 Nov  9 14:16 tests
+drwxr-xr-x 1 hawk hawk   32 Nov 10 14:20 tools
+drwxr-xr-x 1 hawk hawk   58 Nov 10 14:01 .workbench
+
+./CMakeLists.txt
+./docs/DEVELOPMENT_LOG.md
+./README.md
+
+===== DEVELOPMENT LOG =====
+
+## 2026-11-10 — Consolidated product baseline
+
+### Product scope
+
+- Confirmed the FunnyPlaying Retro Pixel Pocket as the sole initial target.
+- Clarified that KiddOS is a handheld product, not a general desktop OS.
+- Clarified that the Arch Linux build is a temporary development and testing
+  harness, not a supported desktop edition.
+- Confirmed the 720 × 720 logical interface and physical-control-first design.
+- Reaffirmed that KiddOS is separate from DualOS.
+
+### Product specification
+
+- Added `docs/PRODUCT_SPECIFICATION.md` as the consolidated product baseline.
+- Documented Kid Mode and the PIN-protected Parent Center.
+- Consolidated game carousel, game actions, previews, and navigation behavior.
+- Consolidated game visibility, save/checkpoint, and media-management rules.
+- Recorded low-battery thresholds as provisional and hardware-dependent.
+- Recorded the hardware inspection gate and non-destructive development rules.
+
+### Architecture and documentation
+
+- Clarified the separation between shared application logic and
+  device-specific integration.
+- Clarified that desktop simulation does not establish handheld compatibility.
+- Updated README, project vision, architecture, and contribution guidance.
+- Retained the detailed UI, input, game library, save, media, battery, and
+  hardware documents as supporting references.
+
+### Not yet implemented
+
+The product specification records intended behavior, not completed features.
+The existing SDL2 prototype remains a basic development harness. Hardware
+integration and the planned product components remain future work.
+
+## 2026-11-10 — Manufacturer firmware source audit
+
+- Cloned the public `FRetroPixel/RetroPixel_Pocket` repository for local,
+  read-only source inspection.
+- Audited revision
+  `13e1c48d86c95ae2b8a99d6baf02e4e394629cb3` (2025-12-02).
+- Confirmed the `RPPOCKET` build target selects an RK3326 v6.0 device tree,
+  ARM64/Cortex-A35 settings, Mali G31/libmali, and the inherited RG351MP
+  Linux/U-Boot platform identifiers.
+- Identified configured Linux graphics, input, RK817 battery/charger, and
+  Rockchip thermal support.
+- Inspected inherited battery, ADC key, volume, headphone, joystick LED,
+  and suspend/resume utilities.
+- Confirmed the inspected headphone script only handles D007 Plus and
+  PowKiddy XU10, while the joystick LED script only handles D007 Plus.
+  Neither contains an RPPOCKET-specific implementation.
+- Confirmed the kernel and U-Boot package definitions refer to external
+  source directories not present in the inspected checkout.
+- No firmware was built or flashed. No device storage or boot configuration
+  was changed.
+- Added `docs/FIRMWARE_AUDIT.md` with findings, confidence levels, and the
+  runtime verification plan.
+- Next: continue source audit of boot flow, package startup, frontend/game
+  launching, and external kernel/U-Boot source availability. After the
+  handheld arrives, verify actual hardware interfaces before implementing
+  device-specific adapters.
+
+## 2026-11-10 — Application foundation restored
+
+- Restored the application lifecycle and SDL platform implementation.
+- Corrected malformed project include directives.
+- Configured and compiled the C++20 SDL2 application.
+- Ran a headless SDL runtime smoke test using SDL's dummy video driver.
+- No device firmware, storage, or boot configuration was changed.
+
+## 2026-11-10 — First visible Kid Mode carousel
+
+- Added the first three-game Kid Mode carousel to the SDL2 desktop harness.
+- Implemented a centered selected game with smaller neighboring previews.
+- Added procedural placeholder artwork and the approved navy/blue visual
+  treatment.
+- Added left/right keyboard and controller navigation with wrapping
+  selection.
+- Added visual sound-status and battery-status indicators.
+- Kept rendering behind the platform interface and selection state in the
+  application layer.
+- Replaced an SDL-specific delay call in application logic with a
+  platform-independent C++ thread sleep.
+- Built the application successfully and completed a desktop preview run.
+- Added `docs/KID_MODE_CAROUSEL_PROTOTYPE.md` documenting scope and limits.
+- No device firmware, storage, or boot configuration was changed.
+
+## 2026-11-10 — Game selection and action screen
+
+- Added a separate game action screen to the application state.
+- Added large horizontal Play, Resume, and Start Over selections.
+- Added static selected-game artwork to the action screen.
+- Implemented Confirm to enter and Back to return to the carousel.
+- Implemented Up/Down action selection for the checkpoint demonstration.
+- Preserved the selected game when returning to the carousel.
+- Used a temporary sample checkpoint fixture; no real save-state detection
+  or emulator launch is implemented.
+- Built the SDL2 application and ran a headless runtime smoke test.
+- No device firmware, storage, or boot configuration was changed.
+
+===== EXISTING SDL2 / RENDERER REFERENCES =====
+CMakeLists.txt:14:pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+CMakeLists.txt:23:target_link_libraries(kiddos PRIVATE PkgConfig::SDL2)
+include/kiddos/platform/sdl_platform.hpp:24:    SDL_Renderer* renderer_ = nullptr;
+include/kiddos/platform/sdl_platform.hpp:25:    SDL_GameController* controller_ = nullptr;
+include/kiddos/platform/sdl_platform.hpp:26:    SDL_JoystickID controller_instance_ = -1;
+include/kiddos/platform/sdl_platform.hpp:29:    void open_controller(int device_index);
+include/kiddos/platform/sdl_platform.hpp:30:    void close_controller();
+include/kiddos/platform/sdl_platform.hpp:32:    static Action map_controller_button(Uint8 button);
+src/platform/sdl_platform.cpp:21:SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+src/platform/sdl_platform.cpp:48:void color(SDL_Renderer* r, Color c) {
+src/platform/sdl_platform.cpp:52:void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+src/platform/sdl_platform.cpp:57:void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+src/platform/sdl_platform.cpp:62:void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+src/platform/sdl_platform.cpp:83:void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+src/platform/sdl_platform.cpp:114:void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+src/platform/sdl_platform.cpp:136:void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+src/platform/sdl_platform.cpp:149:void triangle(SDL_Renderer* r, int x1, int y1,
+src/platform/sdl_platform.cpp:188:void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:218:void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:250:void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:282:void draw_art(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:293:void draw_card(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:327:void draw_status(SDL_Renderer* r) {
+src/platform/sdl_platform.cpp:354:    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+src/platform/sdl_platform.cpp:380:        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+src/platform/sdl_platform.cpp:385:            window_, -1, SDL_RENDERER_SOFTWARE
+src/platform/sdl_platform.cpp:439:        if (SDL_IsGameController(index)) {
+src/platform/sdl_platform.cpp:440:            open_controller(index);
+src/platform/sdl_platform.cpp:441:            if (controller_) {
+src/platform/sdl_platform.cpp:450:void SDLPlatform::open_controller(int device_index) {
+src/platform/sdl_platform.cpp:451:    if (controller_) return;
+src/platform/sdl_platform.cpp:453:    controller_ = SDL_GameControllerOpen(device_index);
+src/platform/sdl_platform.cpp:455:    if (controller_) {
+src/platform/sdl_platform.cpp:456:        controller_instance_ = SDL_JoystickInstanceID(
+src/platform/sdl_platform.cpp:457:            SDL_GameControllerGetJoystick(controller_)
+src/platform/sdl_platform.cpp:462:void SDLPlatform::close_controller() {
+src/platform/sdl_platform.cpp:463:    if (controller_) {
+src/platform/sdl_platform.cpp:464:        SDL_GameControllerClose(controller_);
+src/platform/sdl_platform.cpp:465:        controller_ = nullptr;
+src/platform/sdl_platform.cpp:468:    controller_instance_ = -1;
+src/platform/sdl_platform.cpp:485:Action SDLPlatform::map_controller_button(Uint8 button) {
+src/platform/sdl_platform.cpp:487:        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+src/platform/sdl_platform.cpp:489:        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+src/platform/sdl_platform.cpp:491:        case SDL_CONTROLLER_BUTTON_DPAD_UP:
+src/platform/sdl_platform.cpp:493:        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+src/platform/sdl_platform.cpp:495:        case SDL_CONTROLLER_BUTTON_A:
+src/platform/sdl_platform.cpp:497:        case SDL_CONTROLLER_BUTTON_B:
+src/platform/sdl_platform.cpp:521:            case SDL_CONTROLLERBUTTONDOWN:
+src/platform/sdl_platform.cpp:522:                if (event.cbutton.which == controller_instance_) {
+src/platform/sdl_platform.cpp:523:                    action = map_controller_button(event.cbutton.button);
+src/platform/sdl_platform.cpp:527:            case SDL_CONTROLLERDEVICEADDED:
+src/platform/sdl_platform.cpp:528:                open_controller(event.cdevice.which);
+src/platform/sdl_platform.cpp:531:            case SDL_CONTROLLERDEVICEREMOVED:
+src/platform/sdl_platform.cpp:532:                if (event.cdevice.which == controller_instance_) {
+src/platform/sdl_platform.cpp:533:                    close_controller();
+src/platform/sdl_platform.cpp:614:void draw_action_label(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:624:void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:629:void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:638:void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:714:    close_controller();
+
+===== AVAILABLE BUILD TOOLS =====
+cmake          /usr/bin/cmake
+ninja          /usr/bin/ninja
+g++            /usr/bin/g++
+clang++        pkg-config     /usr/bin/pkg-config
+git            /usr/bin/git
+
+2.32.74
+
+===== END INSPECTION =====
