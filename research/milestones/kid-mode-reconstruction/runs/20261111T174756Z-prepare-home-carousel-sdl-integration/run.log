@@ -1,0 +1,468 @@
+=== CURRENT COMMIT ===
+81a883e chore: record milestone run - add-image-opacity-and-rounded-panel-support
+=== SDL UI IMAGE AND PANEL API ===
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/texture.hpp"
+
+#include <cstdint>
+
+namespace kiddos::ui {
+
+enum class ImageFit {
+    contain,
+    cover,
+    stretch
+};
+
+struct ImageGeometry {
+    Rect source{};
+    Rect destination{};
+    bool valid = false;
+};
+
+ImageGeometry calculate_image_geometry(
+    int texture_width,
+    int texture_height,
+    Rect bounds,
+    ImageFit fit
+) noexcept;
+
+class Image final : public Element {
+public:
+    explicit Image(Texture* texture = nullptr) noexcept;
+
+    void set_texture(Texture* texture) noexcept;
+    Texture* texture() const noexcept;
+
+    void set_fit(ImageFit fit) noexcept;
+    ImageFit fit() const noexcept;
+
+    void set_opacity(std::uint8_t opacity) noexcept;
+    std::uint8_t opacity() const noexcept;
+
+    ImageGeometry geometry() const noexcept;
+
+private:
+    Texture* texture_ = nullptr;
+    ImageFit fit_ = ImageFit::contain;
+    std::uint8_t opacity_ = 255;
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+
+namespace kiddos::ui {
+
+struct PanelStyle {
+    Color background{20, 30, 55, 255};
+    Color border{55, 110, 190, 255};
+    int border_thickness = 2;
+    int corner_radius = 0;
+};
+
+class Panel final : public Element {
+public:
+    Panel() = default;
+    explicit Panel(PanelStyle style);
+
+    void set_style(PanelStyle style) noexcept;
+    const PanelStyle& style() const noexcept;
+
+    void set_background(Color color) noexcept;
+    void set_border(Color color) noexcept;
+    void set_border_thickness(int thickness) noexcept;
+    void set_corner_radius(int radius) noexcept;
+
+private:
+    PanelStyle style_{};
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+#pragma once
+#include "kiddos/ui/container.hpp"
+#include "kiddos/ui/controller.hpp"
+#include "kiddos/ui/text_input_interaction.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+namespace kiddos::ui {
+class Screen {
+public:
+    Screen() noexcept;
+    virtual ~Screen() = default;
+    Screen(const Screen&) = delete;
+    Screen& operator=(const Screen&) = delete;
+    Container& root() noexcept;
+    FocusManager& focus() noexcept;
+    virtual void on_enter() {}
+    virtual void on_exit() {}
+    virtual void on_suspend() {}
+    virtual void on_resume() {}
+    virtual void update(float) {}
+    virtual void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    Container root_;
+    FocusManager focus_;
+    ControllerInteraction controller_;
+    TextInputInteraction text_input_;
+};
+}
+#pragma once
+#include "kiddos/ui/screen.hpp"
+#include <memory>
+#include <vector>
+namespace kiddos::ui {
+class ScreenManager final {
+public:
+    ~ScreenManager();
+    ScreenManager() = default;
+    ScreenManager(const ScreenManager&) = delete;
+    ScreenManager& operator=(const ScreenManager&) = delete;
+    bool push(std::unique_ptr<Screen> screen);
+    bool pop();
+    bool replace(std::unique_ptr<Screen> screen);
+    void clear() noexcept;
+    Screen* current() noexcept;
+    const Screen* current() const noexcept;
+    std::size_t depth() const noexcept;
+    void update(float delta_seconds);
+    void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    std::vector<std::unique_ptr<Screen>> stack_;
+};
+}
+=== APPLICATION INTEGRATION ===
+sed: can't read src/app/application.hpp: No such file or directory
+#include "kiddos/app/application.hpp"
+
+#include <chrono>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+            if (!running_) {
+                break;
+            }
+        }
+
+        if (running_) {
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::NavigateLeft:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + game_count_ - 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateRight:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateUp:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::NavigateDown:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::Confirm:
+            if (!action_screen_) {
+                action_screen_ = true;
+                selected_action_ = 0;
+            }
+            // Game launching is intentionally not implemented yet.
+            break;
+
+        case Action::Back:
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
+            break;
+
+        case Action::None:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    if (action_screen_) {
+        // Game 1 is a temporary checkpoint demonstration fixture.
+        platform_.draw_game_actions(
+            selected_game_, selected_game_ == 1, selected_action_);
+    } else {
+        platform_.draw_carousel(selected_game_);
+    }
+    platform_.present();
+}
+
+} // namespace kiddos
+=== SDL PLATFORM INTERFACES ===
+sed: can't read src/platform/sdl_platform.hpp: No such file or directory
+    if (pending_actions_.empty()) {
+        action = Action::None;
+        return false;
+    }
+
+    action = pending_actions_.front();
+    pending_actions_.pop_front();
+    return true;
+}
+
+bool SDLPlatform::poll_text_input_event(TextInputEvent& text_event) {
+    if (pending_text_events_.empty()) pump_events();
+
+    if (pending_text_events_.empty()) return false;
+
+    text_event = std::move(pending_text_events_.front());
+    pending_text_events_.pop_front();
+    return true;
+}
+
+void SDLPlatform::set_text_input_active(bool active) {
+    if (text_input_active_ == active) return;
+
+    text_input_active_ = active;
+    if (active) {
+        SDL_StartTextInput();
+    } else {
+        SDL_StopTextInput();
+    }
+}
+
+void SDLPlatform::begin_frame() {
+    if (!renderer_) return;
+
+    color(renderer_, {8, 15, 35, 255});
+    SDL_RenderClear(renderer_);
+}
+
+
+void SDLPlatform::draw_carousel(int selected_index) {
+    if (!renderer_) return;
+
+    const int left = (selected_index + 2) % 3;
+    const int right = (selected_index + 1) % 3;
+
+    const Color side_fill{16, 41, 75, 255};
+    const Color center_fill{18, 63, 117, 255};
+    const Color center_border{36, 164, 255, 255};
+
+    // Draw the smaller neighboring cards first, behind the main card.
+    const SDL_Rect side_left{25, 250, 190, 175};
+    const SDL_Rect side_right{505, 250, 190, 175};
+
+    rounded_fill(renderer_, side_left, 24, side_fill);
+    rounded_outline(renderer_, side_left, 24,
+                    {55, 105, 165, 190});
+    draw_art(renderer_, left,
+             {side_left.x + 55, side_left.y + 42, 80, 90}, 180);
+
+    rounded_fill(renderer_, side_right, 24, side_fill);
+    rounded_outline(renderer_, side_right, 24,
+                    {55, 105, 165, 190});
+    draw_art(renderer_, right,
+             {side_right.x + 55, side_right.y + 42, 80, 90}, 180);
+
+    // Main card is larger and drawn last so it overlaps both neighbors.
+    const SDL_Rect center{145, 135, 430, 370};
+    rounded_fill(renderer_, center, 30, center_fill);
+    rounded_outline(renderer_, center, 30, center_border);
+    rounded_outline(renderer_,
+                    {center.x - 3, center.y - 3,
+                     center.w + 6, center.h + 6},
+                    32, {36, 164, 255, 150});
+
+    // Artwork always follows the actual selected game.
+    draw_art(renderer_, selected_index,
+             {center.x + 115, center.y + 70, 200, 205}, 255);
+
+    // Game title belongs below the main card; no SELECTED badge.
+    if (carousel_title_texture && selected_index == 1) {
+        SDL_Rect title{220, 525, 280, 42};
+        SDL_RenderCopy(renderer_, carousel_title_texture,
+                       nullptr, &title);
+    }
+
+    draw_status(renderer_);
+}
+
+
+namespace {
+
+void draw_action_label(SDL_Renderer* r, int index,
+                       int x, int y) {
+    if (index < 0 || index >= static_cast<int>(action_label_textures.size())) return;
+    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+    if (!texture) return;
+
+    SDL_Rect destination{x, y, 350, 72};
+    SDL_RenderCopy(r, texture, nullptr, &destination);
+}
+
+void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+    triangle(r, x, y - 34, x, y + 34,
+             x + 58, y, {220, 237, 255, 255});
+}
+
+void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+    circle(r, x, y, 30, {220, 237, 255, 255});
+    circle(r, x, y, 19, {15, 29, 62, 255});
+    triangle(r, x + 10, y - 36,
+             x + 42, y - 12,
+             x + 7, y - 8,
+             {220, 237, 255, 255});
+}
+
+void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+    circle(r, x, y, 29, {220, 237, 255, 255});
+    circle(r, x, y, 18, {15, 29, 62, 255});
+    triangle(r, x - 27, y - 30,
+             x + 10, y - 31,
+             x - 14, y + 2,
+             {220, 237, 255, 255});
+}
+
+} // namespace
+
+void SDLPlatform::draw_game_actions(
+    int selected_index, bool has_checkpoint, int selected_action) {
+
+    if (!renderer_) return;
+
+    draw_status(renderer_);
+
+    // Keep the selected game's artwork prominent.
+    draw_card(renderer_, selected_index,
+              {235, 48, 250, 310}, true);
+
+    const int action_count = has_checkpoint ? 2 : 1;
+    const int box_height = 112;
+    const int gap = 17;
+    const int total_height =
+        action_count * box_height + (action_count - 1) * gap;
+    const int start_y = 405 + (210 - total_height) / 2;
+
+    for (int i = 0; i < action_count; ++i) {
+        const int y = start_y + i * (box_height + gap);
+        const bool selected = i == selected_action;
+
+        SDL_Rect box{65, y, 590, box_height};
+
+        rounded_fill(renderer_, box, 22,
+                     selected
+                       ? Color{24, 69, 139, 255}
+                       : Color{16, 30, 65, 255});
+
+        rounded_outline(renderer_, box, 22,
+                        selected
+                          ? Color{75, 165, 255, 255}
+                          : Color{65, 93, 145, 190});
+
+        const int symbol_x = 145;
+=== UI LIBRARY FILES ===
+include/kiddos/ui/button.hpp
+include/kiddos/ui/checkbox.hpp
+include/kiddos/ui/color.hpp
+include/kiddos/ui/container.hpp
+include/kiddos/ui/controller.hpp
+include/kiddos/ui/element.hpp
+include/kiddos/ui/focus.hpp
+include/kiddos/ui/font.hpp
+include/kiddos/ui/geometry.hpp
+include/kiddos/ui/image.hpp
+include/kiddos/ui/label.hpp
+include/kiddos/ui/layout.hpp
+include/kiddos/ui/list_view.hpp
+include/kiddos/ui/panel.hpp
+include/kiddos/ui/progress_bar.hpp
+include/kiddos/ui/radio_group.hpp
+include/kiddos/ui/renderer.hpp
+include/kiddos/ui/screen.hpp
+include/kiddos/ui/screen_manager.hpp
+include/kiddos/ui/select.hpp
+include/kiddos/ui/slider.hpp
+include/kiddos/ui/text.hpp
+include/kiddos/ui/text_input.hpp
+include/kiddos/ui/text_input_interaction.hpp
+include/kiddos/ui/texture.hpp
+include/kiddos/ui/theme.hpp
+include/kiddos/ui/toggle.hpp
+include/kiddos/ui/ui.hpp
+src/ui/button.cpp
+src/ui/checkbox.cpp
+src/ui/controller.cpp
+src/ui/focus.cpp
+src/ui/font.cpp
+src/ui/image.cpp
+src/ui/label.cpp
+src/ui/layout.cpp
+src/ui/list_view.cpp
+src/ui/panel.cpp
+src/ui/progress_bar.cpp
+src/ui/radio_group.cpp
+src/ui/renderer.cpp
+src/ui/screen.cpp
+src/ui/screen_manager.cpp
+src/ui/select.cpp
+src/ui/slider.cpp
+src/ui/text.cpp
+src/ui/text_input.cpp
+src/ui/text_input_interaction.cpp
+src/ui/texture.cpp
+src/ui/theme.cpp
+src/ui/toggle.cpp
