@@ -1,0 +1,368 @@
+
+--- main.c:52-68 ---
+  52:     }
+  53: 
+  54:     lv_display_flush_ready(display);
+  55: }
+  56: 
+  57: static void make_ui(void)
+  58: {
+  59:     lv_obj_t *screen = lv_screen_active();
+  60:     lv_obj_set_style_bg_color(screen, lv_color_hex(0x071426), 0);
+  61:     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+  62: 
+  63:     lv_obj_t *header = lv_obj_create(screen);
+  64:     lv_obj_set_size(header, 680, 76);
+  65:     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 18);
+  66:     lv_obj_set_style_bg_color(header, lv_color_hex(0x102B4A), 0);
+  67:     lv_obj_set_style_border_width(header, 0, 0);
+  68:     lv_obj_set_style_radius(header, 18, 0);
+
+--- main.c:55-71 ---
+  55: }
+  56: 
+  57: static void make_ui(void)
+  58: {
+  59:     lv_obj_t *screen = lv_screen_active();
+  60:     lv_obj_set_style_bg_color(screen, lv_color_hex(0x071426), 0);
+  61:     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+  62: 
+  63:     lv_obj_t *header = lv_obj_create(screen);
+  64:     lv_obj_set_size(header, 680, 76);
+  65:     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 18);
+  66:     lv_obj_set_style_bg_color(header, lv_color_hex(0x102B4A), 0);
+  67:     lv_obj_set_style_border_width(header, 0, 0);
+  68:     lv_obj_set_style_radius(header, 18, 0);
+  69: 
+  70:     lv_obj_t *title = lv_label_create(header);
+  71:     lv_label_set_text(title, "KiddOS");
+
+--- main.c:56-72 ---
+  56: 
+  57: static void make_ui(void)
+  58: {
+  59:     lv_obj_t *screen = lv_screen_active();
+  60:     lv_obj_set_style_bg_color(screen, lv_color_hex(0x071426), 0);
+  61:     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+  62: 
+  63:     lv_obj_t *header = lv_obj_create(screen);
+  64:     lv_obj_set_size(header, 680, 76);
+  65:     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 18);
+  66:     lv_obj_set_style_bg_color(header, lv_color_hex(0x102B4A), 0);
+  67:     lv_obj_set_style_border_width(header, 0, 0);
+  68:     lv_obj_set_style_radius(header, 18, 0);
+  69: 
+  70:     lv_obj_t *title = lv_label_create(header);
+  71:     lv_label_set_text(title, "KiddOS");
+  72:     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
+
+--- main.c:61-77 ---
+  61:     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+  62: 
+  63:     lv_obj_t *header = lv_obj_create(screen);
+  64:     lv_obj_set_size(header, 680, 76);
+  65:     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 18);
+  66:     lv_obj_set_style_bg_color(header, lv_color_hex(0x102B4A), 0);
+  67:     lv_obj_set_style_border_width(header, 0, 0);
+  68:     lv_obj_set_style_radius(header, 18, 0);
+  69: 
+  70:     lv_obj_t *title = lv_label_create(header);
+  71:     lv_label_set_text(title, "KiddOS");
+  72:     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
+  73:     lv_obj_center(title);
+  74: 
+  75:     focus_group = lv_group_create();
+  76:     const char *names[] = {"GAME ONE", "GAME TWO", "GAME THREE"};
+  77:     const int widths[] = {170, 230, 170};
+
+--- main.c:62-78 ---
+  62: 
+  63:     lv_obj_t *header = lv_obj_create(screen);
+  64:     lv_obj_set_size(header, 680, 76);
+  65:     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 18);
+  66:     lv_obj_set_style_bg_color(header, lv_color_hex(0x102B4A), 0);
+  67:     lv_obj_set_style_border_width(header, 0, 0);
+  68:     lv_obj_set_style_radius(header, 18, 0);
+  69: 
+  70:     lv_obj_t *title = lv_label_create(header);
+  71:     lv_label_set_text(title, "KiddOS");
+  72:     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
+  73:     lv_obj_center(title);
+  74: 
+  75:     focus_group = lv_group_create();
+  76:     const char *names[] = {"GAME ONE", "GAME TWO", "GAME THREE"};
+  77:     const int widths[] = {170, 230, 170};
+  78: 
+
+--- main.c:63-79 ---
+  63:     lv_obj_t *header = lv_obj_create(screen);
+  64:     lv_obj_set_size(header, 680, 76);
+  65:     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 18);
+  66:     lv_obj_set_style_bg_color(header, lv_color_hex(0x102B4A), 0);
+  67:     lv_obj_set_style_border_width(header, 0, 0);
+  68:     lv_obj_set_style_radius(header, 18, 0);
+  69: 
+  70:     lv_obj_t *title = lv_label_create(header);
+  71:     lv_label_set_text(title, "KiddOS");
+  72:     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
+  73:     lv_obj_center(title);
+  74: 
+  75:     focus_group = lv_group_create();
+  76:     const char *names[] = {"GAME ONE", "GAME TWO", "GAME THREE"};
+  77:     const int widths[] = {170, 230, 170};
+  78: 
+  79:     for (int i = 0; i < 3; i++) {
+
+--- main.c:67-83 ---
+  67:     lv_obj_set_style_border_width(header, 0, 0);
+  68:     lv_obj_set_style_radius(header, 18, 0);
+  69: 
+  70:     lv_obj_t *title = lv_label_create(header);
+  71:     lv_label_set_text(title, "KiddOS");
+  72:     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
+  73:     lv_obj_center(title);
+  74: 
+  75:     focus_group = lv_group_create();
+  76:     const char *names[] = {"GAME ONE", "GAME TWO", "GAME THREE"};
+  77:     const int widths[] = {170, 230, 170};
+  78: 
+  79:     for (int i = 0; i < 3; i++) {
+  80:         lv_obj_t *card = lv_obj_create(screen);
+  81:         lv_obj_set_size(card, widths[i], i == 1 ? 330 : 270);
+  82:         lv_obj_align(card, LV_ALIGN_CENTER, (i - 1) * 205, 25);
+  83:         lv_obj_set_style_bg_color(card,
+
+--- main.c:70-86 ---
+  70:     lv_obj_t *title = lv_label_create(header);
+  71:     lv_label_set_text(title, "KiddOS");
+  72:     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), 0);
+  73:     lv_obj_center(title);
+  74: 
+  75:     focus_group = lv_group_create();
+  76:     const char *names[] = {"GAME ONE", "GAME TWO", "GAME THREE"};
+  77:     const int widths[] = {170, 230, 170};
+  78: 
+  79:     for (int i = 0; i < 3; i++) {
+  80:         lv_obj_t *card = lv_obj_create(screen);
+  81:         lv_obj_set_size(card, widths[i], i == 1 ? 330 : 270);
+  82:         lv_obj_align(card, LV_ALIGN_CENTER, (i - 1) * 205, 25);
+  83:         lv_obj_set_style_bg_color(card,
+  84:             i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+  85:         lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+  86:         lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+
+--- main.c:78-94 ---
+  78: 
+  79:     for (int i = 0; i < 3; i++) {
+  80:         lv_obj_t *card = lv_obj_create(screen);
+  81:         lv_obj_set_size(card, widths[i], i == 1 ? 330 : 270);
+  82:         lv_obj_align(card, LV_ALIGN_CENTER, (i - 1) * 205, 25);
+  83:         lv_obj_set_style_bg_color(card,
+  84:             i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+  85:         lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+  86:         lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+  87:         lv_obj_set_style_radius(card, 22, 0);
+  88:         lv_obj_set_style_border_width(card, 5, LV_STATE_FOCUSED);
+  89:         lv_obj_set_style_border_color(card, lv_color_hex(0xFFFFFF), LV_STATE_FOCUSED);
+  90:         lv_group_add_obj(focus_group, card);
+  91: 
+  92:         lv_obj_t *label = lv_label_create(card);
+  93:         lv_label_set_text(label, names[i]);
+  94:         lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+
+--- main.c:80-96 ---
+  80:         lv_obj_t *card = lv_obj_create(screen);
+  81:         lv_obj_set_size(card, widths[i], i == 1 ? 330 : 270);
+  82:         lv_obj_align(card, LV_ALIGN_CENTER, (i - 1) * 205, 25);
+  83:         lv_obj_set_style_bg_color(card,
+  84:             i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+  85:         lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+  86:         lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+  87:         lv_obj_set_style_radius(card, 22, 0);
+  88:         lv_obj_set_style_border_width(card, 5, LV_STATE_FOCUSED);
+  89:         lv_obj_set_style_border_color(card, lv_color_hex(0xFFFFFF), LV_STATE_FOCUSED);
+  90:         lv_group_add_obj(focus_group, card);
+  91: 
+  92:         lv_obj_t *label = lv_label_create(card);
+  93:         lv_label_set_text(label, names[i]);
+  94:         lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+  95:         lv_obj_center(label);
+  96:     }
+
+--- main.c:81-97 ---
+  81:         lv_obj_set_size(card, widths[i], i == 1 ? 330 : 270);
+  82:         lv_obj_align(card, LV_ALIGN_CENTER, (i - 1) * 205, 25);
+  83:         lv_obj_set_style_bg_color(card,
+  84:             i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+  85:         lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+  86:         lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+  87:         lv_obj_set_style_radius(card, 22, 0);
+  88:         lv_obj_set_style_border_width(card, 5, LV_STATE_FOCUSED);
+  89:         lv_obj_set_style_border_color(card, lv_color_hex(0xFFFFFF), LV_STATE_FOCUSED);
+  90:         lv_group_add_obj(focus_group, card);
+  91: 
+  92:         lv_obj_t *label = lv_label_create(card);
+  93:         lv_label_set_text(label, names[i]);
+  94:         lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+  95:         lv_obj_center(label);
+  96:     }
+  97: 
+
+--- main.c:82-98 ---
+  82:         lv_obj_align(card, LV_ALIGN_CENTER, (i - 1) * 205, 25);
+  83:         lv_obj_set_style_bg_color(card,
+  84:             i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+  85:         lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+  86:         lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+  87:         lv_obj_set_style_radius(card, 22, 0);
+  88:         lv_obj_set_style_border_width(card, 5, LV_STATE_FOCUSED);
+  89:         lv_obj_set_style_border_color(card, lv_color_hex(0xFFFFFF), LV_STATE_FOCUSED);
+  90:         lv_group_add_obj(focus_group, card);
+  91: 
+  92:         lv_obj_t *label = lv_label_create(card);
+  93:         lv_label_set_text(label, names[i]);
+  94:         lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+  95:         lv_obj_center(label);
+  96:     }
+  97: 
+  98:     lv_obj_t *footer = lv_label_create(screen);
+
+--- main.c:83-99 ---
+  83:         lv_obj_set_style_bg_color(card,
+  84:             i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+  85:         lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+  86:         lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+  87:         lv_obj_set_style_radius(card, 22, 0);
+  88:         lv_obj_set_style_border_width(card, 5, LV_STATE_FOCUSED);
+  89:         lv_obj_set_style_border_color(card, lv_color_hex(0xFFFFFF), LV_STATE_FOCUSED);
+  90:         lv_group_add_obj(focus_group, card);
+  91: 
+  92:         lv_obj_t *label = lv_label_create(card);
+  93:         lv_label_set_text(label, names[i]);
+  94:         lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+  95:         lv_obj_center(label);
+  96:     }
+  97: 
+  98:     lv_obj_t *footer = lv_label_create(screen);
+  99:     lv_label_set_text(footer, "SDL2 renderer adapter prototype");
+
+--- main.c:84-100 ---
+  84:             i == 1 ? lv_color_hex(0x1769AA) : lv_color_hex(0x19334F), 0);
+  85:         lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+  86:         lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+  87:         lv_obj_set_style_radius(card, 22, 0);
+  88:         lv_obj_set_style_border_width(card, 5, LV_STATE_FOCUSED);
+  89:         lv_obj_set_style_border_color(card, lv_color_hex(0xFFFFFF), LV_STATE_FOCUSED);
+  90:         lv_group_add_obj(focus_group, card);
+  91: 
+  92:         lv_obj_t *label = lv_label_create(card);
+  93:         lv_label_set_text(label, names[i]);
+  94:         lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+  95:         lv_obj_center(label);
+  96:     }
+  97: 
+  98:     lv_obj_t *footer = lv_label_create(screen);
+  99:     lv_label_set_text(footer, "SDL2 renderer adapter prototype");
+ 100:     lv_obj_set_style_text_color(footer, lv_color_hex(0x8FAAC5), 0);
+
+--- main.c:85-101 ---
+  85:         lv_obj_set_style_border_width(card, i == 1 ? 4 : 0, 0);
+  86:         lv_obj_set_style_border_color(card, lv_color_hex(0x48B4FF), 0);
+  87:         lv_obj_set_style_radius(card, 22, 0);
+  88:         lv_obj_set_style_border_width(card, 5, LV_STATE_FOCUSED);
+  89:         lv_obj_set_style_border_color(card, lv_color_hex(0xFFFFFF), LV_STATE_FOCUSED);
+  90:         lv_group_add_obj(focus_group, card);
+  91: 
+  92:         lv_obj_t *label = lv_label_create(card);
+  93:         lv_label_set_text(label, names[i]);
+  94:         lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+  95:         lv_obj_center(label);
+  96:     }
+  97: 
+  98:     lv_obj_t *footer = lv_label_create(screen);
+  99:     lv_label_set_text(footer, "SDL2 renderer adapter prototype");
+ 100:     lv_obj_set_style_text_color(footer, lv_color_hex(0x8FAAC5), 0);
+ 101:     lv_obj_align(footer, LV_ALIGN_BOTTOM_MID, 0, -24);
+
+--- main.c:89-105 ---
+  89:         lv_obj_set_style_border_color(card, lv_color_hex(0xFFFFFF), LV_STATE_FOCUSED);
+  90:         lv_group_add_obj(focus_group, card);
+  91: 
+  92:         lv_obj_t *label = lv_label_create(card);
+  93:         lv_label_set_text(label, names[i]);
+  94:         lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+  95:         lv_obj_center(label);
+  96:     }
+  97: 
+  98:     lv_obj_t *footer = lv_label_create(screen);
+  99:     lv_label_set_text(footer, "SDL2 renderer adapter prototype");
+ 100:     lv_obj_set_style_text_color(footer, lv_color_hex(0x8FAAC5), 0);
+ 101:     lv_obj_align(footer, LV_ALIGN_BOTTOM_MID, 0, -24);
+ 102: }
+ 103: 
+ 104: int main(void)
+ 105: {
+
+--- main.c:95-111 ---
+  95:         lv_obj_center(label);
+  96:     }
+  97: 
+  98:     lv_obj_t *footer = lv_label_create(screen);
+  99:     lv_label_set_text(footer, "SDL2 renderer adapter prototype");
+ 100:     lv_obj_set_style_text_color(footer, lv_color_hex(0x8FAAC5), 0);
+ 101:     lv_obj_align(footer, LV_ALIGN_BOTTOM_MID, 0, -24);
+ 102: }
+ 103: 
+ 104: int main(void)
+ 105: {
+ 106:     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+ 107:         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
+ 108:         return 1;
+ 109:     }
+ 110: 
+ 111:     window = SDL_CreateWindow("KiddOS LVGL SDL Renderer Adapter",
+
+--- main.c:164-180 ---
+ 164: 
+ 165:     keypad = lv_indev_create();
+ 166:     lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+ 167:     lv_indev_set_read_cb(keypad, read_controller);
+ 168:     lv_indev_set_group(keypad, focus_group);
+ 169:     lv_group_focus_obj(lv_obj_get_child(lv_screen_active(), 1));
+ 170:     lv_obj_t *test_initial_focus = lv_group_get_focused(focus_group);
+ 171:     bool test_release_sent = false;
+ 172:     bool test_result_reported = false;
+ 173:     uint32_t test_started = SDL_GetTicks();
+ 174: 
+ 175:     SDL_Event test_press = {0};
+ 176:     test_press.type = SDL_KEYDOWN;
+ 177:     test_press.key.keysym.sym = SDLK_RIGHT;
+ 178:     SDL_PushEvent(&test_press);
+ 179: 
+ 180: 
+
+=== LVGL keypad/group behavior ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:179:    else if(indev->type == LV_INDEV_TYPE_KEYPAD || indev->type == LV_INDEV_TYPE_ENCODER) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:251:        else if(indev->type == LV_INDEV_TYPE_KEYPAD) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:478:    if(indev->type == LV_INDEV_TYPE_KEYPAD || indev->type == LV_INDEV_TYPE_ENCODER) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:522:    if(indev->type == LV_INDEV_TYPE_KEYPAD)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:814: * Process a new point from LV_INDEV_TYPE_KEYPAD input device
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:876:            lv_group_focus_next(g);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:938:                lv_group_focus_next(g);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1036:        else if(data->key == LV_KEY_RIGHT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1105:            else if(data->key == LV_KEY_RIGHT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1184:                    lv_group_send_data(g, LV_KEY_RIGHT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1201:                    lv_group_focus_next(g);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_indev.c:1943:    if(indev->type == LV_INDEV_TYPE_POINTER || indev->type == LV_INDEV_TYPE_KEYPAD) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_gridnav.c:152:        if(key == LV_KEY_RIGHT && !(dsc->ctrl & LV_GRIDNAV_CTRL_VERTICAL_MOVE_ONLY)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_gridnav.c:167:                        lv_group_focus_next(lv_obj_get_group(obj));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_gridnav.c:206:                        lv_group_focus_next(lv_obj_get_group(obj));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/indev/lv_gridnav.c:290:            if(t == LV_INDEV_TYPE_ENCODER || t == LV_INDEV_TYPE_KEYPAD) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:411:            lv_group_focus_next(group);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1650:            if(c == LV_KEY_RIGHT || c == LV_KEY_UP) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1682:            else if(c == LV_KEY_RIGHT) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:1714:        if(indev_type == LV_INDEV_TYPE_KEYPAD || indev_type == LV_INDEV_TYPE_ENCODER) state |= LV_STATE_FOCUS_KEY;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:2051:    if(f & LV_OBJ_FLAG_CLICK_FOCUSABLE)       lv_obj_set_click_focusable(obj, v);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_obj.c:2107:    if((f & LV_OBJ_FLAG_CLICK_FOCUSABLE) && obj->click_focusable) return true;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_group.c:273:void lv_group_focus_next(lv_group_t * group)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_group.c:466:        lv_group_focus_next(g);
