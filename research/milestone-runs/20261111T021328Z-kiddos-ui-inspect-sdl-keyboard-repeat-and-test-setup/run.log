@@ -1,0 +1,659 @@
+=== SDL initialization and shutdown ===
+343-    rectangle(r, {661, 31, 22, 11},
+344-              {67, 157, 255, 240});
+345-}
+346-
+347-} // namespace
+348-
+349-SDLPlatform::~SDLPlatform() {
+350-    shutdown();
+351-}
+352-
+353:bool SDLPlatform::initialize() {
+354-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+355-        std::cerr << "SDL initialization failed: "
+356-                  << SDL_GetError() << '\n';
+357-        return false;
+358-    }
+359-
+360-    initialized_ = true;
+361-
+362-    window_ = SDL_CreateWindow(
+363-        "Retro KiddOS - Kid Mode",
+364-        SDL_WINDOWPOS_CENTERED,
+365-        SDL_WINDOWPOS_CENTERED,
+366-        720,
+367-        720,
+368-        SDL_WINDOW_SHOWN
+369-    );
+370-
+371-    if (!window_) {
+372-        std::cerr << "Window creation failed: "
+373-                  << SDL_GetError() << '\n';
+374-        shutdown();
+375-        return false;
+376-    }
+377-
+378-    renderer_ = SDL_CreateRenderer(
+379-        window_, -1,
+380-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+381-    );
+382-
+383-    if (!renderer_) {
+384-        renderer_ = SDL_CreateRenderer(
+385-            window_, -1, SDL_RENDERER_SOFTWARE
+386-        );
+387-    }
+388-
+389-    if (!renderer_) {
+390-        std::cerr << "Renderer creation failed: "
+391-                  << SDL_GetError() << '\n';
+392-        shutdown();
+393-        return false;
+394-    }
+395-
+396-    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+397-
+398-    const char* artwork_paths[] = {
+399-        "assets/artwork/generated/carousel-star.bmp",
+400-        "assets/artwork/generated/carousel-mushroom.bmp",
+401-        "assets/artwork/generated/carousel-car.bmp"
+402-    };
+403-    const char* label_paths[] = {
+404-        "assets/artwork/generated/label-play.bmp",
+405-        "assets/artwork/generated/label-resume.bmp",
+406-        "assets/artwork/generated/label-start-over.bmp"
+407-    };
+408-
+409-    for (std::size_t i = 0; i < artwork_textures.size(); ++i) {
+410-        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i], true);
+411-        if (!artwork_textures[i]) {
+412-            shutdown();
+413-            return false;
+414-        }
+415-    }
+416-
+417-    for (std::size_t i = 0; i < action_label_textures.size(); ++i) {
+418-        action_label_textures[i] =
+419-            load_bitmap_texture(renderer_, label_paths[i], true);
+420-        if (!action_label_textures[i]) {
+421-            shutdown();
+422-            return false;
+423-        }
+424-    }
+425-
+426-    carousel_title_texture =
+427-        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-title.bmp", true);
+428-    carousel_selected_texture =
+429-        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-selected.bmp", true);
+430-    if (!carousel_title_texture || !carousel_selected_texture) {
+431-        shutdown();
+432-        return false;
+433-    }
+434-    SDL_SetTextureBlendMode(carousel_title_texture, SDL_BLENDMODE_BLEND);
+435-    SDL_SetTextureBlendMode(carousel_selected_texture, SDL_BLENDMODE_BLEND);
+436-
+437-
+438-    for (int index = 0; index < SDL_NumJoysticks(); ++index) {
+439-        if (SDL_IsGameController(index)) {
+440-            open_controller(index);
+441-            if (controller_) {
+442-                break;
+443-            }
+--
+619-bool SDLPlatform::poll_text_input_event(TextInputEvent& text_event) {
+620-    if (pending_text_events_.empty()) pump_events();
+621-
+622-    if (pending_text_events_.empty()) return false;
+623-
+624-    text_event = std::move(pending_text_events_.front());
+625-    pending_text_events_.pop_front();
+626-    return true;
+627-}
+628-
+629:void SDLPlatform::set_text_input_active(bool active) {
+630-    if (text_input_active_ == active) return;
+631-
+632-    text_input_active_ = active;
+633-    if (active) {
+634-        SDL_StartTextInput();
+635-    } else {
+636-        SDL_StopTextInput();
+637-    }
+638-}
+639-
+640-void SDLPlatform::begin_frame() {
+641-    if (!renderer_) return;
+642-
+643-    color(renderer_, {8, 15, 35, 255});
+644-    SDL_RenderClear(renderer_);
+645-}
+646-
+647-
+648-void SDLPlatform::draw_carousel(int selected_index) {
+649-    if (!renderer_) return;
+650-
+651-    const int left = (selected_index + 2) % 3;
+652-    const int right = (selected_index + 1) % 3;
+653-
+654-    const Color side_fill{16, 41, 75, 255};
+655-    const Color center_fill{18, 63, 117, 255};
+656-    const Color center_border{36, 164, 255, 255};
+657-
+658-    // Draw the smaller neighboring cards first, behind the main card.
+659-    const SDL_Rect side_left{25, 250, 190, 175};
+660-    const SDL_Rect side_right{505, 250, 190, 175};
+661-
+662-    rounded_fill(renderer_, side_left, 24, side_fill);
+663-    rounded_outline(renderer_, side_left, 24,
+664-                    {55, 105, 165, 190});
+665-    draw_art(renderer_, left,
+666-             {side_left.x + 55, side_left.y + 42, 80, 90}, 180);
+667-
+668-    rounded_fill(renderer_, side_right, 24, side_fill);
+669-    rounded_outline(renderer_, side_right, 24,
+670-                    {55, 105, 165, 190});
+671-    draw_art(renderer_, right,
+672-             {side_right.x + 55, side_right.y + 42, 80, 90}, 180);
+673-
+674-    // Main card is larger and drawn last so it overlaps both neighbors.
+675-    const SDL_Rect center{145, 135, 430, 370};
+676-    rounded_fill(renderer_, center, 30, center_fill);
+677-    rounded_outline(renderer_, center, 30, center_border);
+678-    rounded_outline(renderer_,
+679-                    {center.x - 3, center.y - 3,
+680-                     center.w + 6, center.h + 6},
+681-                    32, {36, 164, 255, 150});
+682-
+683-    // Artwork always follows the actual selected game.
+684-    draw_art(renderer_, selected_index,
+685-             {center.x + 115, center.y + 70, 200, 205}, 255);
+686-
+687-    // Game title belongs below the main card; no SELECTED badge.
+688-    if (carousel_title_texture && selected_index == 1) {
+689-        SDL_Rect title{220, 525, 280, 42};
+690-        SDL_RenderCopy(renderer_, carousel_title_texture,
+691-                       nullptr, &title);
+692-    }
+693-
+694-    draw_status(renderer_);
+695-}
+696-
+697-
+698-namespace {
+699-
+700-void draw_action_label(SDL_Renderer* r, int index,
+701-                       int x, int y) {
+702-    if (index < 0 || index >= static_cast<int>(action_label_textures.size())) return;
+703-    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+704-    if (!texture) return;
+705-
+706-    SDL_Rect destination{x, y, 350, 72};
+707-    SDL_RenderCopy(r, texture, nullptr, &destination);
+708-}
+709-
+710-void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+711-    triangle(r, x, y - 34, x, y + 34,
+712-             x + 58, y, {220, 237, 255, 255});
+713-}
+714-
+715-void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+716-    circle(r, x, y, 30, {220, 237, 255, 255});
+717-    circle(r, x, y, 19, {15, 29, 62, 255});
+718-    triangle(r, x + 10, y - 36,
+719-             x + 42, y - 12,
+--
+789-                            26, {43, 126, 231, 180});
+790-        }
+791-    }
+792-}
+793-
+794-
+795-void SDLPlatform::present() {
+796-    if (renderer_) SDL_RenderPresent(renderer_);
+797-}
+798-
+799:void SDLPlatform::shutdown() {
+800-    close_controller();
+801-
+802-    for (auto& texture : artwork_textures) {
+803-        if (texture) {
+804-            SDL_DestroyTexture(texture);
+805-            texture = nullptr;
+806-        }
+807-    }
+808-    for (auto& texture : action_label_textures) {
+809-        if (texture) {
+810-            SDL_DestroyTexture(texture);
+811-            texture = nullptr;
+812-        }
+813-    }
+814-    if (carousel_title_texture) {
+815-        SDL_DestroyTexture(carousel_title_texture);
+816-        carousel_title_texture = nullptr;
+817-    }
+818-    if (carousel_selected_texture) {
+819-        SDL_DestroyTexture(carousel_selected_texture);
+820-        carousel_selected_texture = nullptr;
+821-    }
+822-
+823-    if (renderer_) {
+824-        SDL_DestroyRenderer(renderer_);
+825-        renderer_ = nullptr;
+826-    }
+827-
+828-    if (window_) {
+829-        SDL_DestroyWindow(window_);
+830-        window_ = nullptr;
+831-    }
+832-
+833-    if (initialized_) {
+834-        SDL_Quit();
+835-        initialized_ = false;
+836-    }
+837-}
+838-
+839-} // namespace kiddos
+=== SDL event dispatcher ===
+            return Action::NavigateRight;
+        case SDL_CONTROLLER_BUTTON_DPAD_UP:
+            return Action::NavigateUp;
+        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+            return Action::NavigateDown;
+        case SDL_CONTROLLER_BUTTON_A:
+            return Action::Confirm;
+        case SDL_CONTROLLER_BUTTON_B:
+            return Action::Back;
+        default:
+            return Action::None;
+    }
+}
+
+bool SDLPlatform::pump_events() {
+    SDL_Event event;
+    bool received = false;
+
+    while (SDL_PollEvent(&event)) {
+        received = true;
+
+        switch (event.type) {
+            case SDL_QUIT:
+                pending_actions_.push_back(Action::Quit);
+                break;
+
+            case SDL_KEYDOWN:
+                if (event.key.repeat != 0) break;
+
+                switch (event.key.keysym.sym) {
+                    case SDLK_BACKSPACE:
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::Backspace, {}});
+                        }
+                        break;
+                    case SDLK_DELETE:
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::Delete, {}});
+                        }
+                        break;
+                    case SDLK_HOME:
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::Home, {}});
+                        }
+                        break;
+                    case SDLK_END:
+                        if (text_input_active_) {
+                            pending_text_events_.push_back(
+                                {TextInputEventType::End, {}});
+                        }
+                        break;
+                    case SDLK_LEFT:
+                    case SDLK_RIGHT:
+                        if (text_input_active_) {
+                            pending_text_events_.push_back({
+                                event.key.keysym.sym == SDLK_LEFT
+                                    ? TextInputEventType::Left
+                                    : TextInputEventType::Right, {}});
+                        } else {
+                            pending_actions_.push_back(
+                                map_key(event.key.keysym.sym));
+                        }
+                        break;
+                    default: {
+                        const Action action =
+                            map_key(event.key.keysym.sym);
+                        if (action != Action::None) {
+                            pending_actions_.push_back(action);
+                        }
+                        break;
+                    }
+                }
+                break;
+
+            case SDL_TEXTINPUT:
+                pending_text_events_.push_back(
+                    {TextInputEventType::Text, event.text.text});
+                break;
+
+            case SDL_CONTROLLERBUTTONDOWN:
+                if (event.cbutton.which == controller_instance_) {
+                    const Action action =
+                        map_controller_button(event.cbutton.button);
+                    if (action != Action::None) {
+                        pending_actions_.push_back(action);
+                    }
+                }
+                break;
+
+            case SDL_CONTROLLERDEVICEADDED:
+                open_controller(event.cdevice.which);
+                break;
+
+            case SDL_CONTROLLERDEVICEREMOVED:
+                if (event.cdevice.which == controller_instance_) {
+                    close_controller();
+                }
+                break;
+
+            case SDL_WINDOWEVENT:
+                if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
+                    pending_actions_.push_back(Action::Quit);
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return received;
+}
+
+bool SDLPlatform::poll_action(Action& action) {
+    if (pending_actions_.empty()) pump_events();
+
+    if (pending_actions_.empty()) {
+        action = Action::None;
+        return false;
+    }
+
+    action = pending_actions_.front();
+    pending_actions_.pop_front();
+    return true;
+}
+
+bool SDLPlatform::poll_text_input_event(TextInputEvent& text_event) {
+    if (pending_text_events_.empty()) pump_events();
+
+    if (pending_text_events_.empty()) return false;
+
+    text_event = std::move(pending_text_events_.front());
+    pending_text_events_.pop_front();
+    return true;
+}
+
+void SDLPlatform::set_text_input_active(bool active) {
+    if (text_input_active_ == active) return;
+
+    text_input_active_ = active;
+    if (active) {
+        SDL_StartTextInput();
+    } else {
+        SDL_StopTextInput();
+    }
+}
+
+void SDLPlatform::begin_frame() {
+=== SDL platform header ===
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+#include <SDL.h>
+
+#include <deque>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    bool poll_text_input_event(TextInputEvent& event);
+    void set_text_input_active(bool active);
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+    bool text_input_active_ = false;
+    std::deque<Action> pending_actions_;
+    std::deque<TextInputEvent> pending_text_events_;
+    bool pump_events();
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+=== Test registration and SDL linkage ===
+10-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+11-set(CMAKE_CXX_EXTENSIONS OFF)
+12-
+13-find_package(PkgConfig REQUIRED)
+14:pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+15:pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
+16:pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
+17-
+18-add_library(kiddos_ui STATIC
+19-    src/ui/renderer.cpp
+20-    src/ui/layout.cpp
+21-    src/ui/focus.cpp
+22-    src/ui/button.cpp
+23-    src/ui/controller.cpp
+24-    src/ui/font.cpp
+--
+39-    src/ui/text_input_interaction.cpp
+40-)
+41-
+42-target_include_directories(kiddos_ui PUBLIC include)
+43:target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
+44-
+45-target_compile_options(kiddos_ui PRIVATE
+46-    -Wall
+47-    -Wextra
+48-    -Wpedantic
+49-)
+50-
+51:add_executable(kiddos
+52-    src/main.cpp
+53-    src/app/application.cpp
+54-    src/platform/sdl_platform.cpp
+55-)
+56-
+57-target_include_directories(kiddos PRIVATE include)
+58-target_link_libraries(kiddos PRIVATE kiddos_ui)
+59-
+--
+65-
+66-include(CTest)
+67-
+68-if(BUILD_TESTING)
+69:    add_executable(kiddos_platform_text_input_event_test
+70-        tests/platform_text_input_event_test.cpp)
+71-    target_include_directories(kiddos_platform_text_input_event_test PRIVATE include)
+72:    add_test(NAME kiddos_platform_text_input_event
+73-        COMMAND kiddos_platform_text_input_event_test)
+74-
+75:    add_executable(kiddos_ui_geometry_test
+76-        tests/ui_geometry_test.cpp
+77-    )
+78-
+79-    target_include_directories(kiddos_ui_geometry_test PRIVATE include)
+80-
+81:    add_executable(kiddos_ui_layout_test
+82-        tests/ui_layout_test.cpp
+83-        src/ui/layout.cpp
+84-    )
+85-
+86-    target_include_directories(kiddos_ui_layout_test PRIVATE include)
+87-    target_link_libraries(kiddos_ui_layout_test PRIVATE kiddos_ui)
+88-
+89:    add_test(
+90-        NAME kiddos_ui_layout
+91-        COMMAND kiddos_ui_layout_test
+92-    )
+93-
+94:    add_test(
+95-        NAME kiddos_ui_geometry
+96-        COMMAND kiddos_ui_geometry_test
+97-    )
+98-
+99:    add_executable(kiddos_ui_focus_test
+100-        tests/ui_focus_test.cpp
+101-    )
+102-
+103-    target_include_directories(kiddos_ui_focus_test PRIVATE include)
+104-    target_link_libraries(kiddos_ui_focus_test PRIVATE kiddos_ui)
+105-
+106:    add_test(
+107-        NAME kiddos_ui_focus
+108-        COMMAND kiddos_ui_focus_test
+109-    )
+110-
+111:    add_executable(kiddos_ui_button_test
+112-        tests/ui_button_test.cpp
+113-    )
+114-
+115-    target_include_directories(kiddos_ui_button_test PRIVATE include)
+116-    target_link_libraries(kiddos_ui_button_test PRIVATE kiddos_ui)
+117-
+118:    add_test(
+119-        NAME kiddos_ui_button
+120-        COMMAND kiddos_ui_button_test
+121-    )
+122-
+123:    add_executable(kiddos_ui_controller_test
+124-        tests/ui_controller_test.cpp
+125-    )
+126-
+127-    target_include_directories(kiddos_ui_controller_test PRIVATE include)
+128-    target_link_libraries(kiddos_ui_controller_test PRIVATE kiddos_ui)
+129-
+130:    add_test(
+131-        NAME kiddos_ui_controller
+132-        COMMAND kiddos_ui_controller_test
+133-    )
+134-
+135:    add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
+136-    target_include_directories(kiddos_ui_image_test PRIVATE include)
+137-    target_link_libraries(kiddos_ui_image_test PRIVATE kiddos_ui)
+138:    add_test(NAME kiddos_ui_image COMMAND kiddos_ui_image_test)
+139-
+140:    add_executable(kiddos_ui_label_test tests/ui_label_test.cpp)
+141-    target_include_directories(kiddos_ui_label_test PRIVATE include)
+142-    target_link_libraries(kiddos_ui_label_test PRIVATE kiddos_ui)
+143:    add_test(NAME kiddos_ui_label COMMAND kiddos_ui_label_test)
+144-
+145:    add_executable(kiddos_ui_panel_test tests/ui_panel_test.cpp)
+146-    target_include_directories(kiddos_ui_panel_test PRIVATE include)
+147-    target_link_libraries(kiddos_ui_panel_test PRIVATE kiddos_ui)
+148:    add_test(NAME kiddos_ui_panel COMMAND kiddos_ui_panel_test)
+149-
+150:    add_executable(kiddos_ui_progress_bar_test tests/ui_progress_bar_test.cpp)
+151-    target_include_directories(kiddos_ui_progress_bar_test PRIVATE include)
+152-    target_link_libraries(kiddos_ui_progress_bar_test PRIVATE kiddos_ui)
+153:    add_test(NAME kiddos_ui_progress_bar COMMAND kiddos_ui_progress_bar_test)
+154-
+155:    add_executable(kiddos_ui_toggle_test tests/ui_toggle_test.cpp)
+156-    target_include_directories(kiddos_ui_toggle_test PRIVATE include)
+157-    target_link_libraries(kiddos_ui_toggle_test PRIVATE kiddos_ui)
+158:    add_test(NAME kiddos_ui_toggle COMMAND kiddos_ui_toggle_test)
+159-
+160:    add_executable(kiddos_ui_slider_test tests/ui_slider_test.cpp)
+161-    target_include_directories(kiddos_ui_slider_test PRIVATE include)
+162-    target_link_libraries(kiddos_ui_slider_test PRIVATE kiddos_ui)
+163:    add_test(NAME kiddos_ui_slider COMMAND kiddos_ui_slider_test)
+164-
+165:    add_executable(kiddos_ui_theme_test tests/ui_theme_test.cpp)
+166-    target_include_directories(kiddos_ui_theme_test PRIVATE include)
+167-    target_link_libraries(kiddos_ui_theme_test PRIVATE kiddos_ui)
+168:    add_test(NAME kiddos_ui_theme COMMAND kiddos_ui_theme_test)
+169:    add_executable(kiddos_ui_list_view_test tests/ui_list_view_test.cpp)
+170-    target_include_directories(kiddos_ui_list_view_test PRIVATE include)
+171-    target_link_libraries(kiddos_ui_list_view_test PRIVATE kiddos_ui)
+172:    add_test(NAME kiddos_ui_list_view COMMAND kiddos_ui_list_view_test)
+173-
+174:    add_executable(kiddos_ui_checkbox_test tests/ui_checkbox_test.cpp)
+175-    target_include_directories(kiddos_ui_checkbox_test PRIVATE include)
+176-    target_link_libraries(kiddos_ui_checkbox_test PRIVATE kiddos_ui)
+177:    add_test(NAME kiddos_ui_checkbox COMMAND kiddos_ui_checkbox_test)
+178-
+179:    add_executable(kiddos_ui_radio_group_test tests/ui_radio_group_test.cpp)
+180-    target_include_directories(kiddos_ui_radio_group_test PRIVATE include)
+181-    target_link_libraries(kiddos_ui_radio_group_test PRIVATE kiddos_ui)
+182:    add_test(NAME kiddos_ui_radio_group COMMAND kiddos_ui_radio_group_test)
+183-
+184:    add_executable(kiddos_ui_select_test tests/ui_select_test.cpp)
+185-    target_include_directories(kiddos_ui_select_test PRIVATE include)
+186-    target_link_libraries(kiddos_ui_select_test PRIVATE kiddos_ui)
+187:    add_test(NAME kiddos_ui_select COMMAND kiddos_ui_select_test)
+188-
+189:    add_executable(kiddos_ui_text_input_test tests/ui_text_input_test.cpp)
+190-    target_include_directories(kiddos_ui_text_input_test PRIVATE include)
+191-    target_link_libraries(kiddos_ui_text_input_test PRIVATE kiddos_ui)
+192:    add_test(NAME kiddos_ui_text_input COMMAND kiddos_ui_text_input_test)
+193-
+194:    add_executable(kiddos_ui_text_input_interaction_test
+195-        tests/ui_text_input_interaction_test.cpp)
+196-    target_include_directories(kiddos_ui_text_input_interaction_test PRIVATE include)
+197-    target_link_libraries(kiddos_ui_text_input_interaction_test PRIVATE kiddos_ui)
+198:    add_test(NAME kiddos_ui_text_input_interaction
+199-        COMMAND kiddos_ui_text_input_interaction_test)
+200-endif()
+201-
+202-
+203-
+=== Existing platform tests ===
+tests/platform_text_input_event_test.cpp
+tests/ui_button_test.cpp
+tests/ui_checkbox_test.cpp
+tests/ui_controller_test.cpp
+tests/ui_focus_test.cpp
+tests/ui_geometry_test.cpp
+tests/ui_image_test.cpp
+tests/ui_label_test.cpp
+tests/ui_layout_test.cpp
+tests/ui_list_view_test.cpp
+tests/ui_panel_test.cpp
+tests/ui_progress_bar_test.cpp
+tests/ui_radio_group_test.cpp
+tests/ui_select_test.cpp
+tests/ui_slider_test.cpp
+tests/ui_text_input_interaction_test.cpp
+tests/ui_text_input_test.cpp
+tests/ui_theme_test.cpp
+tests/ui_toggle_test.cpp
+=== Working tree ===
+ M include/kiddos/app/application.hpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
