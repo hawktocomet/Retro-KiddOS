@@ -76,7 +76,7 @@ void Slider::draw(Renderer& renderer) {
     const Rect area = bounds();
     if (area.empty()) return;
 
-    const int track_height = std::max(2, area.h / 5);
+    const int track_height = std::min(area.h, std::max(1, area.h / 5));
     const int track_y = area.y + (area.h - track_height) / 2;
     const Rect track{area.x, track_y, area.w, track_height};
 
@@ -98,7 +98,10 @@ void Slider::draw(Renderer& renderer) {
         );
     }
 
-    const int knob_size = std::min(area.h, std::max(6, area.h / 2));
+    const int knob_size = std::min(
+        area.w,
+        std::min(area.h, std::max(6, area.h / 2))
+    );
     const int knob_x = std::clamp(
         area.x + position - knob_size / 2,
         area.x,
