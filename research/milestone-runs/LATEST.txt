@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T005200Z-lvgl-feasibility-identify-firmware-cross-compile-target
+research/milestone-runs/20261111T005220Z-lvgl-feasibility-verify-device-architecture-and-minimal
