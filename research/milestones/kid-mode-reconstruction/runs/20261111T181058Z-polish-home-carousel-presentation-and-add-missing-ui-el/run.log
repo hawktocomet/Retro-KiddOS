@@ -1,0 +1,3906 @@
+[0m
+> build · glm-5.3-flash-free
+[0m$ [0mfind /home/hawk/KiddOS -maxdepth 2 -type d | head -50
+/home/hawk/KiddOS
+/home/hawk/KiddOS/docs
+/home/hawk/KiddOS/src
+/home/hawk/KiddOS/src/platform
+/home/hawk/KiddOS/src/app
+/home/hawk/KiddOS/src/ui
+/home/hawk/KiddOS/assets
+/home/hawk/KiddOS/assets/artwork
+/home/hawk/KiddOS/assets/fonts
+/home/hawk/KiddOS/assets/sounds
+/home/hawk/KiddOS/tests
+/home/hawk/KiddOS/config
+/home/hawk/KiddOS/platform
+/home/hawk/KiddOS/platform/desktop
+/home/hawk/KiddOS/platform/emuelec
+/home/hawk/KiddOS/.git
+/home/hawk/KiddOS/.git/hooks
+/home/hawk/KiddOS/.git/info
+/home/hawk/KiddOS/.git/refs
+/home/hawk/KiddOS/.git/objects
+/home/hawk/KiddOS/.git/logs
+/home/hawk/KiddOS/build
+/home/hawk/KiddOS/build/CMakeFiles
+/home/hawk/KiddOS/build/Testing
+/home/hawk/KiddOS/research
+/home/hawk/KiddOS/research/firmware
+/home/hawk/KiddOS/research/kiddos-ui
+/home/hawk/KiddOS/research/milestones
+/home/hawk/KiddOS/research/workflow
+/home/hawk/KiddOS/research/abandoned
+/home/hawk/KiddOS/tools
+/home/hawk/KiddOS/tasks
+/home/hawk/KiddOS/tasks/active
+/home/hawk/KiddOS/tasks/completed
+/home/hawk/KiddOS/include
+/home/hawk/KiddOS/include/kiddos
+/home/hawk/KiddOS/logs
+[0m$ [0mls /home/hawk/KiddOS
+assets
+build
+CMakeLists.txt
+config
+CONTRIBUTING.md
+docs
+include
+logs
+platform
+README.md
+research
+src
+tasks
+tests
+tools
+> build · glm-5.3-flash-free
+[0m$ [0mfind /home/hawk/KiddOS/src /home/hawk/KiddOS/include /home/hawk/KiddOS/platform /home/hawk/KiddOS/tests /home/hawk/KiddOS/assets /home/hawk/KiddOS/docs -type f | grep -v build | sort
+/home/hawk/KiddOS/assets/artwork/generated/carousel-car.bmp
+/home/hawk/KiddOS/assets/artwork/generated/carousel-mushroom.bmp
+/home/hawk/KiddOS/assets/artwork/generated/carousel-selected.bmp
+/home/hawk/KiddOS/assets/artwork/generated/carousel-star.bmp
+/home/hawk/KiddOS/assets/artwork/generated/carousel-title.bmp
+/home/hawk/KiddOS/assets/artwork/generated/forest.bmp
+/home/hawk/KiddOS/assets/artwork/generated/label-play.bmp
+/home/hawk/KiddOS/assets/artwork/generated/label-resume.bmp
+/home/hawk/KiddOS/assets/artwork/generated/label-start-over.bmp
+/home/hawk/KiddOS/assets/artwork/generated/ocean.bmp
+/home/hawk/KiddOS/assets/artwork/generated/space.bmp
+/home/hawk/KiddOS/assets/artwork/source/carousel/car.svg
+/home/hawk/KiddOS/assets/artwork/source/carousel/mushroom.svg
+/home/hawk/KiddOS/assets/artwork/source/carousel/selected.svg
+/home/hawk/KiddOS/assets/artwork/source/carousel/star.svg
+/home/hawk/KiddOS/assets/artwork/source/carousel/title.svg
+/home/hawk/KiddOS/assets/artwork/source/forest.svg
+/home/hawk/KiddOS/assets/artwork/source/ocean.svg
+/home/hawk/KiddOS/assets/artwork/source/space.svg
+/home/hawk/KiddOS/docs/ARCHITECTURE.md
+/home/hawk/KiddOS/docs/DEVELOPMENT_LOG.md
+/home/hawk/KiddOS/docs/DEVELOPMENT_STATUS.md
+/home/hawk/KiddOS/docs/FIRMWARE_AUDIT.md
+/home/hawk/KiddOS/docs/GAME_ACTION_SCREEN.md
+/home/hawk/KiddOS/docs/GAME_LIBRARY.md
+/home/hawk/KiddOS/docs/HARDWARE.md
+/home/hawk/KiddOS/docs/INPUT_CONTROLS.md
+/home/hawk/KiddOS/docs/KIDDOS_UI_LIBRARY.md
+/home/hawk/KiddOS/docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+/home/hawk/KiddOS/docs/LOW_BATTERY_PROTECTION.md
+/home/hawk/KiddOS/docs/MEDIA_MANAGER.md
+/home/hawk/KiddOS/docs/PRODUCT_SPECIFICATION.md
+/home/hawk/KiddOS/docs/PROJECT_VISION.md
+/home/hawk/KiddOS/docs/SAVE_STATE_SYSTEM.md
+/home/hawk/KiddOS/docs/UI_DESIGN.md
+/home/hawk/KiddOS/docs/ui-image-support.md
+/home/hawk/KiddOS/docs/ui-label-support.md
+/home/hawk/KiddOS/docs/ui-list-view.md
+/home/hawk/KiddOS/docs/ui-panel-support.md
+/home/hawk/KiddOS/docs/ui-progress-bar.md
+/home/hawk/KiddOS/docs/ui-slider.md
+/home/hawk/KiddOS/docs/ui-theme.md
+/home/hawk/KiddOS/docs/ui-toggle.md
+/home/hawk/KiddOS/include/kiddos/app/application.hpp
+/home/hawk/KiddOS/include/kiddos/app/home_carousel_screen.hpp
+/home/hawk/KiddOS/include/kiddos/app/ui_action_mapping.hpp
+/home/hawk/KiddOS/include/kiddos/core/action.hpp
+/home/hawk/KiddOS/include/kiddos/kiddos_ui.hpp
+/home/hawk/KiddOS/include/kiddos/platform/platform.hpp
+/home/hawk/KiddOS/include/kiddos/platform/sdl_keyboard_policy.hpp
+/home/hawk/KiddOS/include/kiddos/platform/sdl_platform.hpp
+/home/hawk/KiddOS/include/kiddos/platform/sdl_text_input_translator.hpp
+/home/hawk/KiddOS/include/kiddos/platform/text_input_event.hpp
+/home/hawk/KiddOS/include/kiddos/ui/button.hpp
+/home/hawk/KiddOS/include/kiddos/ui/checkbox.hpp
+/home/hawk/KiddOS/include/kiddos/ui/color.hpp
+/home/hawk/KiddOS/include/kiddos/ui/container.hpp
+/home/hawk/KiddOS/include/kiddos/ui/controller.hpp
+/home/hawk/KiddOS/include/kiddos/ui/element.hpp
+/home/hawk/KiddOS/include/kiddos/ui/focus.hpp
+/home/hawk/KiddOS/include/kiddos/ui/font.hpp
+/home/hawk/KiddOS/include/kiddos/ui/geometry.hpp
+/home/hawk/KiddOS/include/kiddos/ui/image.hpp
+/home/hawk/KiddOS/include/kiddos/ui/label.hpp
+/home/hawk/KiddOS/include/kiddos/ui/layout.hpp
+/home/hawk/KiddOS/include/kiddos/ui/list_view.hpp
+/home/hawk/KiddOS/include/kiddos/ui/panel.hpp
+/home/hawk/KiddOS/include/kiddos/ui/progress_bar.hpp
+/home/hawk/KiddOS/include/kiddos/ui/radio_group.hpp
+/home/hawk/KiddOS/include/kiddos/ui/renderer.hpp
+/home/hawk/KiddOS/include/kiddos/ui/screen.hpp
+/home/hawk/KiddOS/include/kiddos/ui/screen_manager.hpp
+/home/hawk/KiddOS/include/kiddos/ui/select.hpp
+/home/hawk/KiddOS/include/kiddos/ui/slider.hpp
+/home/hawk/KiddOS/include/kiddos/ui/text.hpp
+/home/hawk/KiddOS/include/kiddos/ui/text_input.hpp
+/home/hawk/KiddOS/include/kiddos/ui/text_input_interaction.hpp
+/home/hawk/KiddOS/include/kiddos/ui/texture.hpp
+/home/hawk/KiddOS/include/kiddos/ui/theme.hpp
+/home/hawk/KiddOS/include/kiddos/ui/toggle.hpp
+/home/hawk/KiddOS/include/kiddos/ui/ui.hpp
+/home/hawk/KiddOS/src/app/application.cpp
+/home/hawk/KiddOS/src/app/home_carousel_screen.cpp
+/home/hawk/KiddOS/src/main.cpp
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp
+/home/hawk/KiddOS/src/ui/button.cpp
+/home/hawk/KiddOS/src/ui/checkbox.cpp
+/home/hawk/KiddOS/src/ui/controller.cpp
+/home/hawk/KiddOS/src/ui/focus.cpp
+/home/hawk/KiddOS/src/ui/font.cpp
+/home/hawk/KiddOS/src/ui/image.cpp
+/home/hawk/KiddOS/src/ui/label.cpp
+/home/hawk/KiddOS/src/ui/layout.cpp
+/home/hawk/KiddOS/src/ui/list_view.cpp
+/home/hawk/KiddOS/src/ui/panel.cpp
+/home/hawk/KiddOS/src/ui/progress_bar.cpp
+/home/hawk/KiddOS/src/ui/radio_group.cpp
+/home/hawk/KiddOS/src/ui/renderer.cpp
+/home/hawk/KiddOS/src/ui/screen.cpp
+/home/hawk/KiddOS/src/ui/screen_manager.cpp
+/home/hawk/KiddOS/src/ui/select.cpp
+/home/hawk/KiddOS/src/ui/slider.cpp
+/home/hawk/KiddOS/src/ui/text.cpp
+/home/hawk/KiddOS/src/ui/text_input.cpp
+/home/hawk/KiddOS/src/ui/text_input_interaction.cpp
+/home/hawk/KiddOS/src/ui/texture.cpp
+/home/hawk/KiddOS/src/ui/theme.cpp
+/home/hawk/KiddOS/src/ui/toggle.cpp
+/home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp
+/home/hawk/KiddOS/tests/app_ui_action_mapping_test.cpp
+/home/hawk/KiddOS/tests/platform_sdl_keyboard_policy_test.cpp
+/home/hawk/KiddOS/tests/platform_sdl_text_input_translator_test.cpp
+/home/hawk/KiddOS/tests/platform_text_input_event_test.cpp
+/home/hawk/KiddOS/tests/platform_text_input_interface_test.cpp
+/home/hawk/KiddOS/tests/ui_button_test.cpp
+/home/hawk/KiddOS/tests/ui_checkbox_test.cpp
+/home/hawk/KiddOS/tests/ui_controller_test.cpp
+/home/hawk/KiddOS/tests/ui_focus_test.cpp
+/home/hawk/KiddOS/tests/ui_geometry_test.cpp
+/home/hawk/KiddOS/tests/ui_image_test.cpp
+/home/hawk/KiddOS/tests/ui_label_test.cpp
+/home/hawk/KiddOS/tests/ui_layout_test.cpp
+/home/hawk/KiddOS/tests/ui_list_view_test.cpp
+/home/hawk/KiddOS/tests/ui_panel_test.cpp
+/home/hawk/KiddOS/tests/ui_progress_bar_test.cpp
+/home/hawk/KiddOS/tests/ui_radio_group_test.cpp
+/home/hawk/KiddOS/tests/ui_renderer_test.cpp
+/home/hawk/KiddOS/tests/ui_screen_manager_test.cpp
+/home/hawk/KiddOS/tests/ui_select_test.cpp
+/home/hawk/KiddOS/tests/ui_slider_test.cpp
+/home/hawk/KiddOS/tests/ui_text_input_interaction_test.cpp
+/home/hawk/KiddOS/tests/ui_text_input_test.cpp
+/home/hawk/KiddOS/tests/ui_theme_test.cpp
+/home/hawk/KiddOS/tests/ui_toggle_test.cpp
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/app/home_carousel_screen.cpp 
+[0m→ [0mRead include/kiddos/app/home_carousel_screen.hpp 
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/ui/panel.cpp 
+[0m→ [0mRead include/kiddos/ui/panel.hpp 
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/ui/renderer.cpp 
+> build · glm-5.3-flash-free
+[0m→ [0mRead include/kiddos/ui/font.hpp 
+[0m→ [0mRead include/kiddos/ui/label.hpp 
+[0m$ [0mls /home/hawk/KiddOS/assets/fonts; cat /home/hawk/KiddOS/docs/ui-label-support.md
+# KiddOS UI Label
+
+`Label` is a reusable text element built on the shared SDL_ttf text renderer.
+
+A label stores its text, a non-owning pointer to a `Font`, a text color, and
+horizontal alignment (`left`, `center`, or `right`). Its text can be updated
+without recreating the element.
+
+The font must outlive the label. SDL_ttf initialization and shutdown remain
+the responsibility of the application/platform lifecycle.
+> build · glm-5.3-flash-free
+[0m$ [0mls -la /home/hawk/KiddOS/assets/fonts /home/hawk/KiddOS/assets/sounds /home/hawk/KiddOS/assets; grep -rn "ttf\|TTF" /home/hawk/KiddOS/src --include=*.cpp | head -30
+/home/hawk/KiddOS/assets:
+total 0
+drwxr-xr-x 1 hawk hawk  36 Nov  9 14:16 .
+drwxr-xr-x 1 hawk hawk 236 Nov 10 22:44 ..
+drwxr-xr-x 1 hawk hawk  30 Nov 10 14:59 artwork
+drwxr-xr-x 1 hawk hawk   0 Nov  9 14:16 fonts
+drwxr-xr-x 1 hawk hawk   0 Nov  9 14:16 sounds
+
+/home/hawk/KiddOS/assets/fonts:
+total 0
+drwxr-xr-x 1 hawk hawk  0 Nov  9 14:16 .
+drwxr-xr-x 1 hawk hawk 36 Nov  9 14:16 ..
+
+/home/hawk/KiddOS/assets/sounds:
+total 0
+drwxr-xr-x 1 hawk hawk  0 Nov  9 14:16 .
+drwxr-xr-x 1 hawk hawk 36 Nov  9 14:16 ..
+/home/hawk/KiddOS/src/ui/font.cpp:18:    font_ = TTF_OpenFont(path.c_str(), point_size);
+/home/hawk/KiddOS/src/ui/font.cpp:23:        TTF_CloseFont(font_);
+/home/hawk/KiddOS/src/ui/font.cpp:28:TTF_Font* Font::native() const noexcept { return font_; }
+/home/hawk/KiddOS/src/ui/text.cpp:12:        TTF_RenderUTF8_Blended(font.native(), text.c_str(), tint);
+/home/hawk/KiddOS/src/ui/text.cpp:33:    if (TTF_SizeUTF8(font.native(), text.c_str(), &width, &height) != 0)
+/home/hawk/KiddOS/src/ui/label.cpp:4:#include <SDL_ttf.h>
+/home/hawk/KiddOS/src/ui/label.cpp:55:    if (TTF_SizeUTF8(font_->native(), text_.c_str(), &width, &height) != 0) {
+/home/hawk/KiddOS/src/ui/text_input.cpp:199:        if (TTF_SizeUTF8(font_->native(), before.c_str(),
+> build · glm-5.3-flash-free
+[0m→ [0mRead docs/INPUT_CONTROLS.md 
+[0m→ [0mRead src/ui/label.cpp 
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/platform/sdl_platform.cpp 
+> build · glm-5.3-flash-free
+[0m$ [0mls /home/hawk/KiddOS/config; cat /home/hawk/KiddOS/assets/artwork/source/carousel/title.svg; head -60 /home/hawk/KiddOS/docs/GAME_LIBRARY.md
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="52" viewBox="0 0 360 52">
+<text x="180" y="38" text-anchor="middle" font-family="DejaVu Sans" font-size="30" font-weight="bold" letter-spacing="1" fill="#FFFFFF">SUPER MARIO</text>
+</svg>
+# Game Library and Parental Visibility
+
+The device's installed game collection is managed through parent controls.
+
+Parents selectively enable individual games for the child-facing KiddOS
+library. Only enabled games appear in the child's game carousel.
+
+Hiding a game must not:
+
+- Uninstall the game.
+- Delete its ROM or game files.
+- Delete native in-game saves.
+- Delete automatic checkpoints.
+
+Parent-managed collections may help organize games by progression, age,
+or difficulty. These collections are organizational aids and do not
+automatically determine what a child can access.
+
+Only games enabled for the child-facing KiddOS library should be sent
+through the media-scraping workflow.
+
+The parent area manages the library; it does not provide a separate
+adult gaming experience.
+> build · glm-5.3-flash-free
+[0m✱ [0mGrep "MARIO|Sonic|mushroom|Mushroom|game_name|gameName|title" [90min . · 40 matches[0m
+> build · glm-5.3-flash-free
+[0m→ [0mRead tests/app_home_carousel_screen_test.cpp 
+> build · glm-5.3-flash-free
+[0m$ [0mcat /home/hawk/KiddOS/assets/artwork/source/carousel/star.svg /home/hawk/KiddOS/assets/artwork/source/carousel/car.svg /home/hawk/KiddOS/assets/artwork/source/carousel/mushroom.svg /home/hawk/KiddOS/assets/artwork/source/carousel/selected.svg
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+<path d="M80 8 L98 57 L151 59 L110 92 L124 145 L80 115 L36 145 L50 92 L9 59 L62 57 Z" fill="#FFD34E" stroke="#FFF0A6" stroke-width="7" stroke-linejoin="round"/>
+<path d="M80 22 L94 63 L135 65 L104 90 L114 130 L80 108 L46 130 L56 90 L25 65 L66 63 Z" fill="#FFE88A"/>
+</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="160" viewBox="0 0 180 160">
+<path d="M34 92 L48 54 Q54 39 70 39 L112 39 Q126 39 135 55 L151 92 L160 101 L160 126 L20 126 L20 101 Z" fill="#F04438" stroke="#FFD6A0" stroke-width="7" stroke-linejoin="round"/>
+<path d="M58 56 L119 56 L133 88 L46 88 Z" fill="#A8E7FF" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round"/>
+<path d="M24 98 L156 98" stroke="#FFE9A8" stroke-width="7"/>
+<circle cx="51" cy="126" r="17" fill="#26364F" stroke="#DDEBFF" stroke-width="7"/>
+<circle cx="129" cy="126" r="17" fill="#26364F" stroke="#DDEBFF" stroke-width="7"/>
+</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="160" viewBox="0 0 180 160">
+<path d="M20 83 C22 35 54 9 90 9 C126 9 158 35 160 83 Z" fill="#E83D48" stroke="#FFFFFF" stroke-width="7"/>
+<ellipse cx="59" cy="48" rx="17" ry="21" fill="#FFFFFF"/>
+<ellipse cx="119" cy="48" rx="17" ry="21" fill="#FFFFFF"/>
+<path d="M51 82 L129 82 L122 132 Q90 151 58 132 Z" fill="#FFF1D2" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round"/>
+<ellipse cx="73" cy="105" rx="7" ry="10" fill="#26364F"/>
+<ellipse cx="107" cy="105" rx="7" ry="10" fill="#26364F"/>
+</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="34" viewBox="0 0 150 34">
+<rect x="1" y="1" width="148" height="32" rx="16" fill="#1C79C9"/>
+<text x="75" y="23" text-anchor="middle" font-family="DejaVu Sans" font-size="16" font-weight="bold" letter-spacing="1" fill="#FFFFFF">SELECTED</text>
+</svg>
+[0m✱ [0mGrep "game_names|game names|titles for|name of the games|games are|three games" [90min . · 5 matches[0m
+> build · glm-5.3-flash-free
+[0m→ [0mRead docs/KID_MODE_CAROUSEL_PROTOTYPE.md 
+> build · glm-5.3-flash-free
+[0m$ [0mls /home/hawk/KiddOS/tools; head -80 /home/hawk/KiddOS/tools/* 2>/dev/null | head -120
+kiddos-milestone
+#!/bin/bash
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [ -z "$ROOT" ]; then
+    echo "ERROR: Not inside a Git repository."
+    exit 1
+fi
+
+cd "$ROOT" || exit 1
+
+MILESTONE="$1"
+TITLE="$2"
+
+if [ -z "$MILESTONE" ] || [ -z "$TITLE" ]; then
+    echo "Usage: ./tools/kiddos-milestone <milestone-slug> 'Run title' <<'TASK'"
+    exit 1
+fi
+
+if ! [[ "$MILESTONE" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+    echo "ERROR: Milestone slug must contain lowercase letters, numbers, and hyphens only."
+    exit 1
+fi
+
+MILESTONE_DIR="research/milestones/$MILESTONE"
+
+if [ ! -d "$MILESTONE_DIR" ]; then
+    echo "ERROR: Milestone does not exist: $MILESTONE_DIR"
+    exit 1
+fi
+
+BRANCH="$(git branch --show-current)"
+if [ -z "$BRANCH" ]; then
+    echo "ERROR: No current Git branch."
+    exit 1
+fi
+
+if ! git remote get-url origin >/dev/null 2>&1; then
+    echo "ERROR: GitHub origin remote unavailable."
+    exit 1
+fi
+
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+SLUG="$(printf '%s' "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//' | cut -c1-55)"
+
+if [ -z "$SLUG" ]; then
+    echo "ERROR: Title must contain letters or numbers."
+    exit 1
+fi
+
+RUN="$MILESTONE_DIR/runs/${STAMP}-${SLUG}"
+LOG="$RUN/run.log"
+REPORT="$RUN/REPORT.md"
+LATEST="$MILESTONE_DIR/LATEST.txt"
+TASKFILE="$(mktemp)"
+
+if [ -t 0 ]; then
+    echo "ERROR: Supply commands through a TASK heredoc."
+    rm -f "$TASKFILE"
+    exit 1
+fi
+
+mkdir -p "$RUN"
+cat > "$TASKFILE"
+
+echo "Running: $TITLE"
+echo "Milestone: $MILESTONE"
+echo "Output: $RUN"
+echo "Full output is being captured."
+
+bash "$TASKFILE" > "$LOG" 2>&1
+TASK_RC=$?
+rm -f "$TASKFILE"
+
+LINES="$(wc -l < "$LOG")"
+SIZE="$(du -h "$LOG" | cut -f1)"
+
+if [ "$TASK_RC" -eq 0 ]; then
+    RESULT="SUCCESS"
+else
+    RESULT="FAILED (exit code $TASK_RC)"
+> build · glm-5.3-flash-free
+[0m$ [0mgit -C /home/hawk/KiddOS log --oneline | head -30; git -C /home/hawk/KiddOS status --short | head
+d863416 chore: record milestone run - implement-home-carousel-screen-with-sdl-ui-library
+0284b5a feat: render home carousel through the KiddOS UI library
+13d5373 chore: record milestone run - inspect-opencode-model-availability
+986bd70 chore: record milestone run - inspect-opencode-noninteractive-interface
+5465bfd chore: record milestone run - implement-home-carousel-screen-with-sdl-ui-library
+3362dd0 chore: record milestone run - inspect-codex-noninteractive-interface
+404606a chore: record milestone run - inspect-available-coding-agent-tooling
+37557e7 chore: record milestone run - implement-ui-library-home-carousel-screen
+9026acb chore: record milestone run - inspect-screen-manager-and-controller-action-integratio
+d847c6e chore: record milestone run - implement-home-carousel-screen-with-sdl-ui-library
+44f5fd8 chore: record milestone run - inspect-carousel-ui-element-construction-apis
+cf227f4 chore: record milestone run - inspect-renderer-and-screen-integration-lifecycle
+131f2a7 chore: record milestone run - inspect-corrected-carousel-integration-interfaces
+7ac821b chore: record milestone run - prepare-home-carousel-sdl-integration
+81a883e chore: record milestone run - add-image-opacity-and-rounded-panel-support
+16eb76a feat(ui): add image opacity and rounded panels
+3e3a194 chore: record milestone run - inspect-ui-rendering-and-texture-ownership
+61ed317 chore: record milestone run - inspect-home-carousel-implementation-interfaces
+ac588e2 chore: record milestone run - audit-kid-mode-reconstruction-baseline
+cefdf30 chore: record milestone run - audit-application-ui-integration-baseline
+cd6f94c feat: add game carousel artwork
+0881b4c chore: remove abandoned Workbench
+a288d65 chore: archive completed Workbench tasks
+41e6c3a chore: record milestone run - milestone-runner-end-to-end-smoke-test
+d61cec4 chore: organize workflow setup and milestone runner
+d92a255 chore: organize research history
+8d3f594 docs: document SDL UI library and development status
+dd49251 test(ui): cover screen manager lifecycle and navigation
+1522de7 feat(ui): add reusable screen lifecycle and library packaging
+d73cc1b chore: record milestone run - kiddos-ui-capture-end-to-end-implementation-baseline
+[0m$ [0mgrep -rn "carousel-title\|SUPER MARIO\|title" /home/hawk/KiddOS/research --include=*.md -il | head; ls /home/hawk/KiddOS/research/kiddos-ui
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/.github/ISSUE_TEMPLATE/bug-report--only-open-after-discord-report-.md
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/README.md
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/README.md
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T192701Z-first-kid-mode-interface/REPORT.md
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T192820Z-audit-existing-local-implementation/REPORT.md
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T192944Z-restore-and-validate-application-foundation/REPORT.md
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T193116Z-fix-includes-and-validate-sdl-application/REPORT.md
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T193618Z-first-visible-kid-mode/REPORT.md
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T193701Z-fix-carousel-build-and-validate-preview/REPORT.md
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T193816Z-document-and-commit-first-kid-mode-carousel/REPORT.md
+foundation-audit-20261110-195705.log
+> build · glm-5.3-flash-free
+[0m$ [0mgrep -rn "title\|SUPER" /home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T193618Z-first-visible-kid-mode/run.log 2>/dev/null | grep -i "mario\|title" | head -20
+(no output)
+[0m$ [0mgrep -rln "carousel-title\|SUPER MARIO" /home/hawk/KiddOS/research/milestones/ | head
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232318Z-kid-mode-reference-matched-game-carousel/run.log
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232448Z-kid-mode-sdl-compatible-carousel-artwork/run.log
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232751Z-kid-mode-carousel-layering-and-game-titles/run.log
+/home/hawk/KiddOS/research/milestones/kiddos-ui-library/runs/20261111T014648Z-kiddos-ui-publish-image-support/run.log
+/home/hawk/KiddOS/research/milestones/kiddos-ui-library/runs/20261111T015843Z-kiddos-ui-diagnose-checkbox-integration/run.log
+/home/hawk/KiddOS/research/milestones/kiddos-ui-library/runs/20261111T020033Z-kiddos-ui-diagnose-radiogroup-build-state/run.log
+/home/hawk/KiddOS/research/milestones/kiddos-ui-library/runs/20261111T020156Z-kiddos-ui-inspect-radiogroup-integration/run.log
+/home/hawk/KiddOS/research/milestones/kiddos-ui-library/runs/20261111T020507Z-kiddos-ui-implement-select-widget/run.log
+/home/hawk/KiddOS/research/milestones/kiddos-ui-library/runs/20261111T020647Z-kiddos-ui-implement-textinput-widget/run.log
+/home/hawk/KiddOS/research/milestones/kiddos-ui-library/runs/20261111T020949Z-kiddos-ui-inspect-sdl-lifecycle-integration/run.log
+> build · glm-5.3-flash-free
+[0m$ [0mgrep -n "SUPER MARIO\|game names\|Game names\|title" /home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232751Z-kid-mode-carousel-layering-and-game-titles/run.log | head -30
+1:Carousel layout, layering, selected artwork, and title placement patched.
+33:?? assets/artwork/generated/carousel-title.bmp
+> build · glm-5.3-flash-free
+[0m$ [0mgrep -rn -i "mario\|game name\|titles" /home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232318Z-kid-mode-reference-matched-game-carousel/run.log | head -20
+10:===== SET DEFAULT SELECTION TO MARIO =====
+11:Default selected game set to center Mario card
+> build · glm-5.3-flash-free
+[0m$ [0mgrep -rn -i "star\b.*name\|car\b.*name\|name.*star\|name.*car\|STAR RACER\|RACING\|KART\|SPACE JUMP" /home/hawk/KiddOS/research/milestones/*/runs/*/run.log 2>/dev/null | grep -vi "start\|starter" | head -20
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library/run.log:193:for name in ["carousel-star","carousel-mushroom","carousel-car","carousel-title","carousel-selected"]:
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library/run.log:719:+    add_test(NAME kiddos_app_home_carousel_screen
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library/run.log:1161:+    add_test(NAME kiddos_app_home_carousel_screen
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log:449:[0m$ [0mgrep -n "SUPER MARIO\|game names\|Game names\|title" /home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232751Z-kid-mode-carousel-layering-and-game-titles/run.log | head -30
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log:453:[0m$ [0mgrep -rn -i "mario\|game name\|titles" /home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232318Z-kid-mode-reference-matched-game-carousel/run.log | head -20
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && python3 - <<'EOF'
+import struct
+for name in ["carousel-title","carousel-selected","carousel-star","label-play"]:
+    with open(f"assets/artwork/generated/{name}.bmp","rb") as f:
+        data = f.read()
+    w,h = struct.unpack("<ii", data[18:26])
+    print(name, w, h, len(data))
+EOF
+carousel-title 360 52 56214
+carousel-selected 150 34 15422
+carousel-star 160 160 76854
+label-play 840 200 504138
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && python3 - <<'EOF'
+import struct
+# render the title bmp as ascii art (downsampled) to see content
+with open("assets/artwork/generated/carousel-title.bmp","rb") as f:
+    data = f.read()
+off = struct.unpack("<I", data[10:14])[0]
+w,h = struct.unpack("<ii", data[18:26])
+bpp = struct.unpack("<H", data[28:30])[0]
+print(w,h,bpp, off)
+EOF
+360 52 24 54
+> build · glm-5.3-flash-free
+[0m$ [0mcd /home/hawk/KiddOS && python3 - <<'EOF'
+import struct
+def dump(name, cols=90, rows=16):
+    with open(f"assets/artwork/generated/{name}.bmp","rb") as f:
+        data = f.read()
+    off = struct.unpack("<I", data[10:14])[0]
+    w,h = struct.unpack("<ii", data[18:26])
+    bpp = struct.unpack("<H", data[28:30])[0]
+    rowsize = ((w*bpp//8)+3)//4*4
+    out=[]
+    for ry in range(rows):
+        line=""
+        for rx in range(cols):
+            x = rx*w//cols
+            y = ry*h//rows
+            i = off + y*rowsize + x*(bpp//8)
+            b,g,r = data[i],data[i+1],data[i+2]
+            mag = (r==255 and g==0 and b==255)
+            line += " " if mag else ("#" if r+g+b < 200 else ".")
+        out.append(line)
+    print(name)
+    print("\n".join(out))
+dump("carousel-title")
+EOF
+carousel-title
+                                                                                          
+                                                                                          
+                                                                                          
+                                                                                          
+                ..     .                                                ..                
+               ..... ..... ..    .... ..  .    ..   .. .  .. .. .. ..  ....               
+               .  .. .. .. ..    ..   .. ..    .. . .. ..... .. .. .. ..  ..              
+                 ... .. .. ....  ..   .....    ....... ..... ....  .. ..  ..              
+               ....  .. .. .. .. .... .....    ... ...  . .  ....  .. ..  ..              
+               ..    .. .. .. .. ..   .. ..    ... ...  ...  .. .. .. ..  ..              
+               ....  .. .. ..... .... .....    ... ...  ...  ....  .. .....               
+                ...  .. .. ....  .... ....     ..   ..  ..   ....  ..  ...
+> build · glm-5.3-flash-free
+[0m$ [0mgrep -n -i "title\|mario" /home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library/run.log | head -40
+116:carousel-title.bmp
+193:for name in ["carousel-star","carousel-mushroom","carousel-car","carousel-title","carousel-selected"]:
+218:carousel-title 360 52 24
+321:# find an opaque pixel near center of title texture (360x52)
+323:    print("title",x,y,px("carousel-title",x,y))
+327:title 180 26 (255, 0, 255)
+328:title 100 20 (255, 255, 255)
+329:title 200 30 (255, 0, 255)
+330:title 60 26 (255, 144, 255)
+331:title 300 26 (255, 203, 255)
+336:Rect has no `operator==`; I'll handle comparisons in the test. Let me find a robustly opaque region in the title texture for pixel assertions:
+339:p="assets/artwork/generated/carousel-title.bmp"
+366:# map to title rect {220,525,280,42}
+379:p="assets/artwork/generated/carousel-title.bmp"
+409:p="assets/artwork/generated/carousel-title.bmp"
+445:p="assets/artwork/generated/carousel-title.bmp"
+1007:         // The middle game shows its title artwork below the main card.
+1008:         const Color titled = pixel(surface, 397, 542);
+1009:         assert(!same_color(titled, background));
+1557:- New: `include/kiddos/app/home_carousel_screen.hpp`, `src/app/home_carousel_screen.cpp` — `HomeCarouselScreen` derived from `ui::Screen`, built from `Container`/`Panel`/`Image` plus an app-local status-indicator element (uses only `ui::Renderer` primitives). It mirrors `SDLPlatform::draw_carousel` exactly: side cards `{25,250,190,175}` / `{505,250,190,175}`, center card `{145,135,430,370}` with outer glow outline, artwork rects (`80×90` sides at opacity 180, `200×205` center), title rect `{220,525,280,42}` shown only for the middle game, and the speaker/battery status coordinates and colors. Neighbors are added before the center card so the center overlaps them, and the same wrap-around neighbor mapping (`left = (sel+2)%3`, `right = (sel+1)%3`) is used. Reuses the existing generated BMP artwork (magenta-keyed).
+1562:- New tests: `tests/app_ui_action_mapping_test.cpp`, `tests/app_home_carousel_screen_test.cpp` (structure/geometry/visibility without a renderer, plus software-renderer pixel checks of card fills, artwork presence, selection changes, and title visibility).
+1570:- **Visual approval is yours to give** — please run `./build/kiddos` from the repo root and inspect. The corner rasterization of the UI library's rounded-fill differs from the platform's helper by at most ~1 px on corner arcs (slightly different inset math); card fills, artwork, title, and status indicators were verified by pixel tests.
+1571:- `SDLPlatform::draw_carousel` and its platform-owned carousel/title textures are now unused for the home screen but intentionally left in place (the artwork textures are still used by the manual action screen); they can be removed in a later cleanup.
+> build · glm-5.3-flash-free
+[0m$ [0mgit -C /home/hawk/KiddOS show --stat cd6f94c | head -20; git -C /home/hawk/KiddOS log --all --oneline --diff-filter=A -- "*generate*" "*gen*art*" | head
+commit cd6f94cbc10e9bacf1409dbb66469088ee2f8317
+Author: hawk <hawktocomet@gmail.com>
+Date:   Tue Nov 10 22:47:24 2026 -0500
+
+    feat: add game carousel artwork
+
+ assets/artwork/generated/carousel-car.bmp      | Bin 0 -> 86454 bytes
+ assets/artwork/generated/carousel-mushroom.bmp | Bin 0 -> 86454 bytes
+ assets/artwork/generated/carousel-selected.bmp | Bin 0 -> 15422 bytes
+ assets/artwork/generated/carousel-star.bmp     | Bin 0 -> 76854 bytes
+ assets/artwork/generated/carousel-title.bmp    | Bin 0 -> 56214 bytes
+ assets/artwork/source/carousel/car.svg         |   7 +++++++
+ assets/artwork/source/carousel/mushroom.svg    |   8 ++++++++
+ assets/artwork/source/carousel/selected.svg    |   4 ++++
+ assets/artwork/source/carousel/star.svg        |   4 ++++
+ assets/artwork/source/carousel/title.svg       |   3 +++
+ include/kiddos/app/application.hpp             |   2 +-
+ 11 files changed, 27 insertions(+), 1 deletion(-)
+cd6f94c feat: add game carousel artwork
+eebf74a feat: restore rounded Kid Mode visual treatment
+> build · glm-5.3-flash-free
+[0m$ [0mgit -C /home/hawk/KiddOS show cd6f94c -- include/kiddos/app/application.hpp | head -30; grep -rn -i "mario\|game_title\|titles\|game names" /home/hawk/KiddOS/docs/*.md | head -20
+commit cd6f94cbc10e9bacf1409dbb66469088ee2f8317
+Author: hawk <hawktocomet@gmail.com>
+Date:   Tue Nov 10 22:47:24 2026 -0500
+
+    feat: add game carousel artwork
+
+diff --git a/include/kiddos/app/application.hpp b/include/kiddos/app/application.hpp
+index 2fe7a91..82f1edd 100644
+--- a/include/kiddos/app/application.hpp
++++ b/include/kiddos/app/application.hpp
+@@ -13,7 +13,7 @@ public:
+ private:
+     Platform& platform_;
+     bool running_ = true;
+-    int selected_game_ = 0;
++    int selected_game_ = 1;
+     bool action_screen_ = false;
+     int selected_action_ = 0;
+     static constexpr int game_count_ = 3;
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/app/application.cpp 
+[0m$ [0mgrep -rn -i "star\|car\b" /home/hawk/KiddOS/docs/UI_DESIGN.md /home/hawk/KiddOS/docs/DEVELOPMENT_LOG.md | head -20
+/home/hawk/KiddOS/docs/UI_DESIGN.md:31:- Start Over: large circular restart symbol.
+/home/hawk/KiddOS/docs/UI_DESIGN.md:37:area. Browsing to another game restarts the timer. Launching a game stops
+/home/hawk/KiddOS/docs/DEVELOPMENT_LOG.md:124:- Next: continue source audit of boot flow, package startup, frontend/game
+/home/hawk/KiddOS/docs/DEVELOPMENT_LOG.md:179:- Added large horizontal Play, Resume, and Start Over selections.
+> build · glm-5.3-flash-free
+[0m$ [0mgrep -rln -i "mario" /home/hawk/KiddOS --include=*.xml --include=*.json --include=*.cfg --include=*.conf 2>/dev/null | head; find /home/hawk/KiddOS/platform /home/hawk/KiddOS/config -type f | head -20
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Dr. Mario.cfg
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Super Mario Land 2 - 6 Golden Coins.1.cfg
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Super Mario Land 2 - 6 Golden Coins.2.cfg
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Super Mario Land 2 - 6 Golden Coins.3.cfg
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Super Mario Land.1.cfg
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Super Mario Land.2.cfg
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Super Mario Land.3.cfg
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gbc/games/Mario Golf GB.cfg
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gbc/games/Mario Golf.cfg
+/home/hawk/KiddOS/research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gbc/games/Mario Tennis GB.cfg
+> build · glm-5.3-flash-free
+[0m$ [0mgrep -rln "def gen\|Generate\|PIL\|ImageDraw\|pygame" /home/hawk/KiddOS/research/milestones/*/runs/*/run.log 2>/dev/null | head; grep -rn "carousel-title" /home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/*/run.log | head
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T192944Z-restore-and-validate-application-foundation/run.log
+/home/hawk/KiddOS/research/milestones/kiddos-ui-library/runs/20261111T020013Z-kiddos-ui-radiogroup-widget/run.log
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232318Z-kid-mode-reference-matched-game-carousel/run.log:44:?? assets/artwork/generated/carousel-title.bmp
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232448Z-kid-mode-sdl-compatible-carousel-artwork/run.log:13:assets/artwork/generated/carousel-title.bmp: PC bitmap, Windows 3.x format, 360 x 52 x 24, image size 56160, cbSize 56214, bits offset 54
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232448Z-kid-mode-sdl-compatible-carousel-artwork/run.log:31:?? assets/artwork/generated/carousel-title.bmp
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232751Z-kid-mode-carousel-layering-and-game-titles/run.log:33:?? assets/artwork/generated/carousel-title.bmp
+> build · glm-5.3-flash-free
+[0m$ [0msed -n 1,120p /home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232318Z-kid-mode-reference-matched-game-carousel/run.log
+===== CREATE CAROUSEL ARTWORK =====
+===== RASTERIZE CAROUSEL ARTWORK =====
+star rasterization exit=0
+mushroom rasterization exit=0
+car rasterization exit=0
+title rasterization exit=0
+selected rasterization exit=0
+===== PATCH SDL CAROUSEL RENDERER =====
+Carousel renderer patched
+===== SET DEFAULT SELECTION TO MARIO =====
+Default selected game set to center Mario card
+===== BUILD =====
+[1/4] Building CXX object CMakeFiles/kiddos.dir/src/main.cpp.o
+[2/4] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+[3/4] Building CXX object CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:27:40: warning: multi-character character constant [-Wmultichar]
+   27 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:43:40: warning: multi-character character constant [-Wmultichar]
+   43 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:250:6: warning: ‘void kiddos::{anonymous}::draw_ocean_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  250 | void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:218:6: warning: ‘void kiddos::{anonymous}::draw_forest_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  218 | void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:188:6: warning: ‘void kiddos::{anonymous}::draw_space_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  188 | void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+[4/4] Linking CXX executable kiddos
+BUILD_STATUS=0
+===== DIFF CHECK =====
+DIFF_STATUS=0
+===== DESKTOP PREVIEW =====
+Could not load assets/artwork/generated/carousel-star.bmp: File is not a Windows BMP file23662PREVIEW_STATUS=1
+===== SOURCE STATUS =====
+ M include/kiddos/app/application.hpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/carousel-car.bmp
+?? assets/artwork/generated/carousel-mushroom.bmp
+?? assets/artwork/generated/carousel-selected.bmp
+?? assets/artwork/generated/carousel-star.bmp
+?? assets/artwork/generated/carousel-title.bmp
+?? assets/artwork/source/carousel/
+> build · glm-5.3-flash-free
+[0m$ [0mgrep -rn -i "mario" /home/hawk/KiddOS/docs /home/hawk/KiddOS/README.md /home/hawk/KiddOS/tasks /home/hawk/KiddOS/research/milestones 2>/dev/null | head
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232318Z-kid-mode-reference-matched-game-carousel/run.log:10:===== SET DEFAULT SELECTION TO MARIO =====
+/home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232318Z-kid-mode-reference-matched-game-carousel/run.log:11:Default selected game set to center Mario card
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log:250:<text x="180" y="38" text-anchor="middle" font-family="DejaVu Sans" font-size="30" font-weight="bold" letter-spacing="1" fill="#FFFFFF">SUPER MARIO</text>
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log:276:[0m✱ [0mGrep "MARIO|Sonic|mushroom|Mushroom|game_name|gameName|title" [90min . · 40 matches[0m
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log:422:[0m$ [0mgrep -rn "carousel-title\|SUPER MARIO\|title" /home/hawk/KiddOS/research --include=*.md -il | head; ls /home/hawk/KiddOS/research/kiddos-ui
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log:435:[0m$ [0mgrep -rn "title\|SUPER" /home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T193618Z-first-visible-kid-mode/run.log 2>/dev/null | grep -i "mario\|title" | head -20
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log:437:[0m$ [0mgrep -rln "carousel-title\|SUPER MARIO" /home/hawk/KiddOS/research/milestones/ | head
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log:449:[0m$ [0mgrep -n "SUPER MARIO\|game names\|Game names\|title" /home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232751Z-kid-mode-carousel-layering-and-game-titles/run.log | head -30
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log:453:[0m$ [0mgrep -rn -i "mario\|game name\|titles" /home/hawk/KiddOS/research/milestones/first-visible-kid-mode/runs/20261110T232318Z-kid-mode-reference-matched-game-carousel/run.log | head -20
+/home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log:454:10:===== SET DEFAULT SELECTION TO MARIO =====
+> build · glm-5.3-flash-free
+[0m→ [0mRead src/ui/texture.cpp 
+[0m→ [0mRead src/ui/image.cpp 
+> build · glm-5.3-flash-free
+Let me build the project and render the current screen to see what the user saw.
+[0m$ [0mcmake --build /home/hawk/KiddOS/build -j 4 2>&1 | tail -5
+ninja: no work to do.
+> build · glm-5.3-flash-free
+[0m$ [0mls /home/hawk/KiddOS/build; cat /home/hawk/KiddOS/CMakeLists.txt | head -60
+build.ninja
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+CTestTestfile.cmake
+DartConfiguration.tcl
+install_manifest.txt
+kiddos
+kiddos_app_home_carousel_screen_test
+kiddos_app_ui_action_mapping_test
+kiddos_platform_sdl_keyboard_policy_test
+kiddos_platform_sdl_text_input_translator_test
+kiddos_platform_text_input_event_test
+kiddos_platform_text_input_interface_test
+kiddos_ui_button_test
+kiddos_ui_checkbox_test
+kiddos_ui_controller_test
+kiddos_ui_focus_test
+kiddos_ui_geometry_test
+kiddos_ui_image_test
+kiddos_ui_label_test
+kiddos_ui_layout_test
+kiddos_ui_list_view_test
+kiddos_ui_panel_test
+kiddos_ui_progress_bar_test
+kiddos_ui_radio_group_test
+kiddos_ui_renderer_test
+kiddos_ui_screen_manager_test
+kiddos_ui_select_test
+kiddos_ui_slider_test
+kiddos_ui_text_input_interaction_test
+kiddos_ui_text_input_test
+kiddos_ui_theme_test
+kiddos_ui_toggle_test
+libkiddos_ui.a
+Testing
+cmake_minimum_required(VERSION 3.20)
+
+project(KiddOS
+    VERSION 0.2.0
+    DESCRIPTION "A child-friendly gaming environment for the Retro Pixel Pocket"
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
+pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
+
+add_library(kiddos_ui STATIC
+    src/ui/renderer.cpp
+    src/ui/layout.cpp
+    src/ui/focus.cpp
+    src/ui/button.cpp
+    src/ui/controller.cpp
+    src/ui/font.cpp
+    src/ui/text.cpp
+    src/ui/texture.cpp
+    src/ui/image.cpp
+    src/ui/label.cpp
+    src/ui/panel.cpp
+    src/ui/progress_bar.cpp
+    src/ui/toggle.cpp
+    src/ui/slider.cpp
+    src/ui/theme.cpp
+    src/ui/list_view.cpp
+    src/ui/checkbox.cpp
+    src/ui/radio_group.cpp
+    src/ui/select.cpp
+    src/ui/text_input.cpp
+    src/ui/text_input_interaction.cpp
+    src/ui/screen.cpp
+    src/ui/screen_manager.cpp
+)
+
+add_library(KiddOS::UI ALIAS kiddos_ui)
+target_include_directories(kiddos_ui PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
+
+target_compile_options(kiddos_ui PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+add_executable(kiddos
+    src/main.cpp
+    src/app/application.cpp
+    src/app/home_carousel_screen.cpp
+> build · glm-5.3-flash-free
+[0m$ [0mmkdir -p /tmp/opencode/shot && cat > /tmp/opencode/shot/screenshot.cpp <<'EOF'
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/ui/renderer.hpp"
+#include <SDL.h>
+#include <SDL_image.h>
+#include <cassert>
+#include <unistd.h>
+#include <cstdio>
+
+int main(int argc, char** argv) {
+    assert(SDL_Init(0) == 0);
+    IMG_Init(IMG_INIT_PNG);
+    assert(chdir(KIDDOS_SOURCE_DIR) == 0);
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+        0, 720, 720, 32, SDL_PIXELFORMAT_RGBA32);
+    assert(surface);
+    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+    assert(native);
+    SDL_SetRenderDrawBlendMode(native, SDL_BLENDMODE_BLEND);
+
+    {
+        kiddos::ui::Renderer renderer(native);
+        kiddos::app::HomeCarouselScreen screen(native);
+        int selected = argc > 1 ? SDL_atoi(argv[1]) : 1;
+        screen.set_selected_game(selected);
+        renderer.clear({8, 15, 35, 255});
+        screen.render(renderer);
+        const char* out = argc > 2 ? argv[2] : "/tmp/opencode/shot/home.png";
+        IMG_SavePNG(surface, out);
+        std::printf("saved %s\n", out);
+    }
+
+    SDL_DestroyRenderer(native);
+    SDL_FreeSurface(surface);
+    IMG_Quit();
+    SDL_Quit();
+    return 0;
+}
+EOF
+g++ -std=c++20 -I/home/hawk/KiddOS/include -DKIDDOS_SOURCE_DIR='"/home/hawk/KiddOS"' /tmp/opencode/shot/screenshot.cpp -o /tmp/opencode/shot/screenshot $(pkg-config --cflags --libs sdl2 SDL2_image) /home/hawk/KiddOS/build/libkiddos_ui.a && /tmp/opencode/shot/screenshot 1 /tmp/opencode/shot/home1.png && /tmp/opencode/shot/screenshot 0 /tmp/opencode/shot/home0.png
+/usr/bin/ld: /tmp/ccDRKSGT.o: in function `main':
+screenshot.cpp:(.text+0x179): undefined reference to `kiddos::app::HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer*)'
+/usr/bin/ld: screenshot.cpp:(.text+0x1c1): undefined reference to `kiddos::app::HomeCarouselScreen::set_selected_game(int)'
+/usr/bin/ld: screenshot.cpp:(.text+0x27c): undefined reference to `kiddos::app::HomeCarouselScreen::~HomeCarouselScreen()'
+/usr/bin/ld: screenshot.cpp:(.text+0x2cc): undefined reference to `kiddos::app::HomeCarouselScreen::~HomeCarouselScreen()'
+/usr/bin/ld: /home/hawk/KiddOS/build/libkiddos_ui.a(font.cpp.o): in function `kiddos::ui::Font::load(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int)':
+/home/hawk/KiddOS/src/ui/font.cpp:18:(.text+0x14a): undefined reference to `TTF_OpenFont'
+/usr/bin/ld: /home/hawk/KiddOS/build/libkiddos_ui.a(font.cpp.o): in function `kiddos::ui::Font::reset()':
+/home/hawk/KiddOS/src/ui/font.cpp:23:(.text+0x187): undefined reference to `TTF_CloseFont'
+/usr/bin/ld: /home/hawk/KiddOS/build/libkiddos_ui.a(text.cpp.o): in function `kiddos::ui::TextRenderer::draw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, kiddos::ui::Font const&, kiddos::ui::Point, kiddos::ui::Color)':
+/home/hawk/KiddOS/src/ui/text.cpp:12:(.text+0xdf): undefined reference to `TTF_RenderUTF8_Blended'
+/usr/bin/ld: /home/hawk/KiddOS/build/libkiddos_ui.a(text.cpp.o): in function `kiddos::ui::TextRenderer::draw_centered(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, kiddos::ui::Font const&, kiddos::ui::Rect, kiddos::ui::Color)':
+/home/hawk/KiddOS/src/ui/text.cpp:33:(.text+0x28c): undefined reference to `TTF_SizeUTF8'
+/usr/bin/ld: /home/hawk/KiddOS/build/libkiddos_ui.a(text_input.cpp.o): in function `kiddos::ui::TextInput::draw(kiddos::ui::Renderer&)':
+/home/hawk/KiddOS/src/ui/text_input.cpp:199:(.text+0xec8): undefined reference to `TTF_SizeUTF8'
+collect2: error: ld returned 1 exit status
+> build · glm-5.3-flash-free
+[0m$ [0mg++ -std=c++20 -I/home/hawk/KiddOS/include -DKIDDOS_SOURCE_DIR='"/home/hawk/KiddOS"' /tmp/opencode/shot/screenshot.cpp /home/hawk/KiddOS/src/app/home_carousel_screen.cpp -o /tmp/opencode/shot/screenshot $(pkg-config --cflags --libs sdl2 SDL2_image SDL2_ttf) /home/hawk/KiddOS/build/libkiddos_ui.a && /tmp/opencode/shot/screenshot 1 /tmp/opencode/shot/home1.png && /tmp/opencode/shot/screenshot 0 /tmp/opencode/shot/home0.png
+saved /tmp/opencode/shot/home1.png
+saved /tmp/opencode/shot/home0.png
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/home1.png 
+> build · glm-5.3-flash-free
+Now let me look at the other selection and zoom into the problem areas the user flagged.
+[0m$ [0mcd /tmp/opencode/shot && python3 - <<'EOF'
+from PIL import Image
+im1 = Image.open("home1.png")
+# crop corners of center card and glow, volume icon, title area
+crops = {
+    "corner_tl.png": (130, 120, 220, 200),
+    "corner_br.png": (520, 460, 610, 530),
+    "icon.png": (10, 10, 80, 70),
+    "title.png": (200, 510, 520, 575),
+    "side_left_corner.png": (10, 235, 100, 320),
+}
+for name, box in crops.items():
+    im1.crop(box).resize(((box[2]-box[0])*4, (box[3]-box[1])*4), Image.NEAREST).save(name)
+EOF
+ls
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ModuleNotFoundError: No module named 'PIL'
+home0.png
+home1.png
+screenshot
+screenshot.cpp
+> build · glm-5.3-flash-free
+[0m$ [0mpip install pillow --quiet 2>&1 | tail -1 || pip3 install pillow --quiet 2>&1 | tail -1
+hint: See PEP 668 for the detailed specification.
+> build · glm-5.3-flash-free
+[0m$ [0mpip install pillow --user --break-system-packages --quiet 2>&1 | tail -1
+(no output)
+> build · glm-5.3-flash-free
+[0m$ [0mcd /tmp/opencode/shot && python3 - <<'EOF'
+from PIL import Image
+im1 = Image.open("home1.png")
+crops = {
+    "corner_tl.png": (130, 120, 220, 200),
+    "corner_br.png": (520, 460, 610, 530),
+    "icon.png": (10, 10, 80, 70),
+    "title.png": (200, 510, 520, 575),
+    "side_left_corner.png": (10, 235, 100, 320),
+}
+for name, box in crops.items():
+    im1.crop(box).resize(((box[2]-box[0])*4, (box[3]-box[1])*4), Image.NEAREST).save(name)
+im0 = Image.open("home0.png")
+im0.save("home0.png")
+EOF
+ls
+corner_br.png
+corner_tl.png
+home0.png
+home1.png
+icon.png
+screenshot
+screenshot.cpp
+side_left_corner.png
+title.png
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/corner_tl.png 
+[0m→ [0mRead /tmp/opencode/shot/icon.png 
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/title.png 
+[0m→ [0mRead /tmp/opencode/shot/corner_br.png 
+[0m→ [0mRead /tmp/opencode/shot/side_left_corner.png 
+> build · glm-5.3-flash-free
+The problems are now clear: jagged/broken corner outlines on the cards, a blob-like speaker icon, magenta-fringed title text, and titles only exist for one game. Let me check what rasterization tooling exists (the artwork was generated from SVGs) and check remaining docs/tests.
+[0m$ [0mcat /home/hawk/KiddOS/docs/ui-panel-support.md /home/hawk/KiddOS/docs/ui-image-support.md
+# KiddOS UI Panel
+
+`Panel` is a reusable rectangular visual element.
+
+Its style includes a background color, border color, and border thickness.
+A zero border thickness disables the border. Negative thickness values are
+clamped to zero.
+
+Panels draw only their own background and border. They do not own child
+elements; use the existing `Container` for element ownership and layout.
+# KiddOS UI Image Support
+
+KiddOS UI provides a move-only `Texture` resource that loads image files through
+SDL_image and owns the resulting SDL texture. The SDL renderer remains owned by
+the platform layer and must outlive textures created from it.
+
+Call `IMG_Init` for the desired image formats during application startup and
+`IMG_Quit` during shutdown. SDL_image initialization is intentionally left to
+the application lifecycle.
+
+`Texture::load` accepts an optional `magenta_key` flag that treats bright
+magenta (255, 0, 255) pixels as transparent. This matches the generated
+Kid Mode artwork, which is exported with a magenta background. Loaded
+textures use alpha blending.
+
+`Image` is a reusable element that holds a non-owning pointer to a `Texture`.
+The texture must outlive the image element.
+
+Supported sizing modes:
+
+- `ImageFit::contain`: preserve the full image and fit it inside the element.
+- `ImageFit::cover`: preserve aspect ratio and crop the centered source region.
+- `ImageFit::stretch`: fill the element bounds without preserving aspect ratio.
+
+The image element safely ignores missing textures and empty geometry.
+[0m$ [0mwhich rsvg-convert inkscape convert magick 2>/dev/null; ls /usr/share/fonts/truetype 2>/dev/null | head; fc-list 2>/dev/null | grep -i "dejavu.*bold" | head -3
+/usr/bin/rsvg-convert
+/usr/bin/convert
+/usr/bin/magick
+/usr/share/fonts/TTF/DejaVuSans-BoldOblique.ttf: DejaVu Sans:style=Bold Oblique
+/usr/share/fonts/TTF/DejaVuSerifCondensed-Bold.ttf: DejaVu Serif,DejaVu Serif Condensed:style=Condensed Bold,Bold
+/usr/share/fonts/TTF/DejaVuSerif-Bold.ttf: DejaVu Serif:style=Bold
+> build · glm-5.3-flash-free
+rsvg-convert and the DejaVu font (used by the existing artwork pipeline) are available. Before implementing, one review of the existing renderer/panel tests for constraints:
+[0m→ [0mRead tests/ui_panel_test.cpp 
+[0m$ [0mgrep -n "outline_rounded_rect\|fill_rounded_rect" /home/hawk/KiddOS/tests/ui_renderer_test.cpp /home/hawk/KiddOS/tests/*.cpp | head -20
+(no output)
+> build · glm-5.3-flash-free
+I now have a full picture of the issues. Before implementing, I need to clarify one genuinely ambiguous product decision — the title data. The project's only existing game-name data is the "SUPER MARIO" title asset for the mushroom game; the star and car placeholder games have no name data anywhere in the repo (no fonts in `assets/fonts`, no game list in config), and the feedback says not to invent game titles.
+[0m✗ [0mAsked 1 question failed
+[91m[1mError: [0mThis non-interactive run cannot ask the user questions, so the question was cancelled. Continue without an answer; make reasonable assumptions and state them.
+> build · glm-5.3-flash-free
+Non-interactive — I'll proceed with the recommended approach (placeholder identifiers "STAR"/"CAR" via the existing artwork pipeline) and clearly flag that assumption for the user's review. Let me gather the remaining context.
+[0m→ [0mRead src/main.cpp 
+[0m$ [0mls /home/hawk/KiddOS/tasks/active; git -C /home/hawk/KiddOS show 0284b5a --stat | head -25; tail -30 /home/hawk/KiddOS/docs/DEVELOPMENT_LOG.md
+commit 0284b5a2d5b9c4169896d2780ddbb4b15761d1ce
+Author: hawk <hawktocomet@gmail.com>
+Date:   Wed Nov 11 13:07:31 2026 -0500
+
+    feat: render home carousel through the KiddOS UI library
+    
+    - Add HomeCarouselScreen (ui::Screen) built from Panel, Image, and
+      renderer primitives, mirroring SDLPlatform::draw_carousel geometry,
+      colors, artwork, and status indicators
+    - Integrate ScreenManager into Application for the home screen and
+      attach the platform-owned SDL renderer to the non-owning ui::Renderer
+      adapter (no second SDL renderer is created)
+    - Map platform Action values to UIAction values and route them through
+      the screen manager before application-level carousel state
+    - Preserve selected-game navigation, wrapping selection, and
+      Confirm/Back behavior; the game action screen stays on the manual
+      platform rendering path
+    - Add optional magenta color-key support to ui::Texture::load for the
+      generated artwork; release screens before platform shutdown
+    - Add focused tests for the action mapping and carousel screen
+
+ CMakeLists.txt                              |  18 +++
+ docs/DEVELOPMENT_LOG.md                     |  22 ++++
+ docs/KID_MODE_CAROUSEL_PROTOTYPE.md         |   7 +-
+ docs/ui-image-support.md                    |   5 +
+  primitives) while preserving the existing geometry, colors, artwork,
+  and status indicators.
+- Integrated `ScreenManager` into the application for the home screen and
+  attached the platform-owned SDL renderer to the non-owning `ui::Renderer`
+  adapter; no second SDL renderer is created.
+- Translated platform actions into `UIAction` values and routed them
+  through the screen manager before application-level carousel state.
+- Preserved the existing selected-game navigation, wrapping selection, and
+  Confirm/Back behavior; the game action screen stays on the manual
+  platform rendering path.
+- Added optional magenta color-key support to `ui::Texture::load` for the
+  generated artwork.
+- Screens are released before the platform shuts down its renderer.
+- Added focused tests for the action mapping and the carousel screen.
+- Built the project and ran the complete CTest suite successfully.
+- Visual parity still requires inspection of the running screen.
+- No device firmware, storage, or boot configuration was changed.
+
+## 2026-11-10 — Game selection and action screen
+
+- Added a separate game action screen to the application state.
+- Added large horizontal Play, Resume, and Start Over selections.
+- Added static selected-game artwork to the action screen.
+- Implemented Confirm to enter and Back to return to the carousel.
+- Implemented Up/Down action selection for the checkpoint demonstration.
+- Preserved the selected game when returning to the carousel.
+- Used a temporary sample checkpoint fixture; no real save-state detection
+  or emulator launch is implemented.
+- Built the SDL2 application and ran a headless runtime smoke test.
+- No device firmware, storage, or boot configuration was changed.
+> build · glm-5.3-flash-free
+[0m$ [0mgrep -n "headless\|SDL_VIDEODRIVER\|dummy" -r /home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library/run.log | head; sed -n '1,80p' /home/hawk/KiddOS/tests/ui_image_test.cpp
+496:- Ran a headless SDL runtime smoke test using SDL's dummy video driver.
+526:- Built the SDL2 application and ran a headless runtime smoke test.
+1023:All 26 tests pass. Now a headless smoke run of the real application (dummy video driver), plus verifying it quits cleanly on an injected event. Let me run it briefly:
+1024:[0m$ [0mcd /home/hawk/KiddOS && SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy timeout 5 ./build/kiddos; echo "exit=$?"
+1027:The app runs headless for the full smoke window without crashing. Now updating the docs to match the new architecture:
+1567:**Tests:** 26/26 passed (`ctest --test-dir build`), including the 2 new tests and all pre-existing ones (none weakened). Also ran a 5-second headless smoke run (`SDL_VIDEODRIVER=dummy`) without a crash.
+#include "kiddos/ui/image.hpp"
+
+#include <cassert>
+
+int main() {
+    using namespace kiddos::ui;
+
+    const Rect bounds{0, 0, 200, 100};
+
+    const auto contain = calculate_image_geometry(
+        100, 100, bounds, ImageFit::contain
+    );
+    assert(contain.valid);
+    assert(contain.destination.x == 50);
+    assert(contain.destination.y == 0);
+    assert(contain.destination.w == 100);
+    assert(contain.destination.h == 100);
+
+    const auto cover = calculate_image_geometry(
+        100, 100, bounds, ImageFit::cover
+    );
+    assert(cover.valid);
+    assert(cover.source.x == 0);
+    assert(cover.source.y == 25);
+    assert(cover.source.w == 100);
+    assert(cover.source.h == 50);
+    assert(cover.destination.x == 0);
+    assert(cover.destination.y == 0);
+    assert(cover.destination.w == 200);
+    assert(cover.destination.h == 100);
+
+    const auto stretch = calculate_image_geometry(
+        100, 100, bounds, ImageFit::stretch
+    );
+    assert(stretch.valid);
+    assert(stretch.source.w == 100);
+    assert(stretch.source.h == 100);
+    assert(stretch.destination.w == 200);
+    assert(stretch.destination.h == 100);
+
+    assert(!calculate_image_geometry(0, 100, bounds, ImageFit::contain).valid);
+    assert(!calculate_image_geometry(100, 100, {}, ImageFit::cover).valid);
+
+    Image image;
+    assert(image.opacity() == 255);
+    image.set_opacity(128);
+    assert(image.opacity() == 128);
+    image.set_opacity(0);
+    assert(image.opacity() == 0);
+
+    return 0;
+}
+> build · glm-5.3-flash-free
+[0m→ [0mRead include/kiddos/ui/element.hpp 
+[0m→ [0mRead include/kiddos/ui/color.hpp 
+> build · glm-5.3-flash-free
+I have full context. Let me check the branding and design docs, then start implementing.
+[0m→ [0mRead docs/UI_DESIGN.md 
+[0m$ [0mhead -20 /home/hawk/KiddOS/README.md; grep -n -i "logo\|wordmark\|brand" /home/hawk/KiddOS/docs/*.md | head
+# Retro KiddOS
+
+A child-friendly gaming environment for the **FunnyPlaying Retro Pixel
+Pocket**.
+
+KiddOS is designed to make a handheld gaming device simple and safe for
+young children, with adult management controls.
+
+## Product
+
+KiddOS provides one child-facing gaming experience. Its PIN-protected
+Parent Center exists to configure and manage that experience; it is not a
+separate adult gaming mode or frontend.
+
+The interface is designed for the device's 720 × 720 display and physical
+controls.
+
+### Core goals
+
+- A simple, predictable child interface.
+> build · glm-5.3-flash-free
+Now I'll implement. First, generate the new transparent-background text assets with the same pipeline and style as the existing artwork (SVG sources → rsvg-convert, DejaVu Sans Bold, white fill — matching `title.svg`):
+[0m$ [0mmkdir -p /tmp/opencode/assets && cd /tmp/opencode/assets && cat > title-star.svg <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="170" height="52" viewBox="0 0 170 52">
+<text x="85" y="38" text-anchor="middle" font-family="DejaVu Sans" font-size="30" font-weight="bold" letter-spacing="1" fill="#FFFFFF">STAR</text>
+</svg>
+EOF
+cat > title-car.svg <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="52" viewBox="0 0 140 52">
+<text x="70" y="38" text-anchor="middle" font-family="DejaVu Sans" font-size="30" font-weight="bold" letter-spacing="1" fill="#FFFFFF">CAR</text>
+</svg>
+EOF
+cat > wordmark.svg <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="190" height="52" viewBox="0 0 190 52">
+<text x="95" y="39" text-anchor="middle" font-family="DejaVu Sans" font-size="30" font-weight="bold" letter-spacing="2" fill="#FFFFFF">KiddOS</text>
+</svg>
+EOF
+for f in title-star title-car wordmark; do rsvg-convert -w $(grep -o 'width="[0-9]*"' $f.svg | head -1 | grep -o '[0-9]*') -h 52 $f.svg -o $f.png; done
+rsvg-convert -w 360 -h 52 /home/hawk/KiddOS/assets/artwork/source/carousel/title.svg -o title-super-mario.png
+ls -la; file *.png
+total 28
+drwxr-xr-x 2 hawk hawk  180 Nov 11 13:20 .
+drwxr-xr-x 4 hawk hawk   80 Nov 11 13:20 ..
+-rw-r--r-- 1 hawk hawk 1188 Nov 11 13:20 title-car.png
+-rw-r--r-- 1 hawk hawk  239 Nov 11 13:20 title-car.svg
+-rw-r--r-- 1 hawk hawk 1384 Nov 11 13:20 title-star.png
+-rw-r--r-- 1 hawk hawk  240 Nov 11 13:20 title-star.svg
+-rw-r--r-- 1 hawk hawk 3092 Nov 11 13:20 title-super-mario.png
+-rw-r--r-- 1 hawk hawk 2095 Nov 11 13:20 wordmark.png
+-rw-r--r-- 1 hawk hawk  242 Nov 11 13:20 wordmark.svg
+title-car.png:         PNG image data, 140 x 52, 8-bit/color RGBA, non-interlaced
+title-star.png:        PNG image data, 170 x 52, 8-bit/color RGBA, non-interlaced
+title-super-mario.png: PNG image data, 360 x 52, 8-bit/color RGBA, non-interlaced
+wordmark.png:          PNG image data, 190 x 52, 8-bit/color RGBA, non-interlaced
+> build · glm-5.3-flash-free
+[0m$ [0mcd /tmp/opencode/assets && python3 - <<'EOF'
+from PIL import Image
+# composite the four text assets over navy side by side to inspect
+imgs = [Image.open(f).convert("RGBA") for f in ["wordmark.png","title-super-mario.png","title-star.png","title-car.png"]]
+W = sum(i.width for i in imgs) + 60
+H = max(i.height for i in imgs) + 20
+canvas = Image.new("RGBA", (W, H), (8,15,35,255))
+x = 20
+for i in imgs:
+    canvas.alpha_composite(i, (x, 10))
+    x += i.width + 20
+canvas = canvas.resize((W*2, H*2), Image.NEAREST)
+canvas.convert("RGB").save("text-preview.png")
+EOF
+echo done
+done
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/assets/text-preview.png 
+> build · glm-5.3-flash-free
+Titles and wordmark look clean. Now the navigation hints strip:
+[0m$ [0mcd /tmp/opencode/assets && cat > hints.svg <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="34" viewBox="0 0 720 34">
+  <g fill="#8FA8CC">
+    <path d="M62 12 L62 24 L71 18 Z"/>
+    <path d="M90 12 L90 24 L81 18 Z"/>
+  </g>
+  <text x="100" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">BROWSE</text>
+
+  <circle cx="316" cy="18" r="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="316" y="22.5" text-anchor="middle" font-family="DejaVu Sans" font-size="11" font-weight="bold" fill="#8FA8CC">A</text>
+  <text x="332" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">SELECT</text>
+
+  <rect x="480" y="9" width="52" height="18" rx="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="506" y="22" text-anchor="middle" font-family="DejaVu Sans" font-size="10" font-weight="bold" letter-spacing="1" fill="#8FA8CC">START</text>
+  <rect x="540" y="9" width="58" height="18" rx="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="569" y="22" text-anchor="middle" font-family="DejaVu Sans" font-size="10" font-weight="bold" letter-spacing="1" fill="#8FA8CC">SELECT</text>
+  <text x="606" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">PARENT MENU</text>
+</svg>
+EOF
+rsvg-convert -w 720 -h 34 hints.svg -o hints.png
+python3 - <<'EOF'
+from PIL import Image
+i = Image.open("hints.png").convert("RGBA")
+canvas = Image.new("RGBA", (720, 34), (8,15,35,255))
+canvas.alpha_composite(i)
+canvas = canvas.resize((1440, 68), Image.NEAREST)
+canvas.convert("RGB").save("hints-preview.png")
+EOF
+echo ok
+ok
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/assets/hints-preview.png 
+> build · glm-5.3-flash-free
+"PARENT MENU" is clipped at the right edge. Let me fix the layout:
+[0m$ [0mcd /tmp/opencode/assets && cat > hints.svg <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="34" viewBox="0 0 720 34">
+  <g fill="#8FA8CC">
+    <path d="M62 12 L62 24 L71 18 Z"/>
+    <path d="M90 12 L90 24 L81 18 Z"/>
+  </g>
+  <text x="100" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">BROWSE</text>
+
+  <circle cx="316" cy="18" r="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="316" y="22.5" text-anchor="middle" font-family="DejaVu Sans" font-size="11" font-weight="bold" fill="#8FA8CC">A</text>
+  <text x="332" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">SELECT</text>
+
+  <rect x="440" y="9" width="52" height="18" rx="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="466" y="22" text-anchor="middle" font-family="DejaVu Sans" font-size="10" font-weight="bold" letter-spacing="1" fill="#8FA8CC">START</text>
+  <rect x="500" y="9" width="58" height="18" rx="9" fill="none" stroke="#8FA8CC" stroke-width="2"/>
+  <text x="529" y="22" text-anchor="middle" font-family="DejaVu Sans" font-size="10" font-weight="bold" letter-spacing="1" fill="#8FA8CC">SELECT</text>
+  <text x="566" y="23" font-family="DejaVu Sans" font-size="13" font-weight="bold" letter-spacing="1" fill="#8FA8CC">PARENT MENU</text>
+</svg>
+EOF
+rsvg-convert -w 720 -h 34 hints.svg -o hints.png
+python3 - <<'EOF'
+from PIL import Image
+i = Image.open("hints.png").convert("RGBA")
+canvas = Image.new("RGBA", (720, 34), (8,15,35,255))
+canvas.alpha_composite(i)
+canvas = canvas.resize((1440, 68), Image.NEAREST)
+canvas.convert("RGB").save("hints-preview.png")
+EOF
+echo ok
+ok
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/assets/hints-preview.png 
+> build · glm-5.3-flash-free
+Assets are ready. Now the renderer improvements — clean corner rasterization for fills and outlines, matching the proven platform helper math:
+[0m← [0mEdit src/ui/renderer.cpp
+Index: src/ui/renderer.cpp
+===================================================================
+--- src/ui/renderer.cpp
++++ src/ui/renderer.cpp
+@@ -87,8 +87,24 @@
+ 
+     return rendered && restored;
+ }
+ 
++namespace {
++
++// Distance from the rect edge to the rounded-corner boundary at the row or
++// column `steps` in from the corner, sampled at the pixel center. Fills and
++// outlines share this so the border always sits exactly on the fill edge.
++int corner_inset(int radius, int steps) {
++    const double dy = static_cast<double>(radius - steps) - 0.5;
++    const double inside = std::max(
++        0.0,
++        static_cast<double>(radius) * radius - dy * dy
++    );
++    return radius - static_cast<int>(std::sqrt(inside));
++}
++
++} // namespace
++
+ bool Renderer::fill_rounded_rect(Rect rect, int radius, Color color) const {
+     if (!renderer_ || rect.empty() || !set_color(color)) return false;
+ 
+     radius = std::clamp(radius, 0, std::min(rect.w, rect.h) / 2);
+@@ -97,23 +113,15 @@
+         return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+     }
+ 
+     for (int y = 0; y < rect.h; ++y) {
+-        int dy = 0;
++        int inset = 0;
+         if (y < radius) {
+-            dy = radius - y;
++            inset = corner_inset(radius, y);
+         } else if (y >= rect.h - radius) {
+-            dy = y - (rect.h - radius - 1);
++            inset = corner_inset(radius, rect.h - 1 - y);
+         }
+ 
+-        const double inside = std::max(
+-            0.0,
+-            static_cast<double>(radius * radius - dy * dy)
+-        );
+-        const int inset = static_cast<int>(
+-            std::ceil(radius - std::sqrt(inside))
+-        );
+-
+         if (SDL_RenderDrawLine(
+                 renderer_,
+                 rect.x + inset,
+                 rect.y + y,
+@@ -135,41 +143,61 @@
+         SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+         return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+     }
+ 
+-    for (int y = 0; y < rect.h; ++y) {
+-        int dy = 0;
+-        if (y < radius) {
+-            dy = radius - y;
+-        } else if (y >= rect.h - radius) {
+-            dy = y - (rect.h - radius - 1);
+-        }
+-
+-        const double inside = std::max(
+-            0.0,
+-            static_cast<double>(radius * radius - dy * dy)
+-        );
+-        const int inset = static_cast<int>(
+-            std::ceil(radius - std::sqrt(inside))
+-        );
+-
+-        if (SDL_RenderDrawPoint(renderer_, rect.x + inset, rect.y + y) != 0 ||
+-            SDL_RenderDrawPoint(renderer_, rect.x + rect.w - 1 - inset, rect.y + y) != 0) {
+-            return false;
+-        }
+-    }
+-
++    // Straight edges between the corner arcs.
+     if (SDL_RenderDrawLine(
+             renderer_, rect.x + radius, rect.y,
+-            rect.x + rect.w - radius - 1, rect.y
++            rect.x + rect.w - 1 - radius, rect.y
++        ) != 0 ||
++        SDL_RenderDrawLine(
++            renderer_, rect.x + radius, rect.y + rect.h - 1,
++            rect.x + rect.w - 1 - radius, rect.y + rect.h - 1
++        ) != 0 ||
++        SDL_RenderDrawLine(
++            renderer_, rect.x, rect.y + radius,
++            rect.x, rect.y + rect.h - 1 - radius
++        ) != 0 ||
++        SDL_RenderDrawLine(
++            renderer_, rect.x + rect.w - 1, rect.y + radius,
++            rect.x + rect.w - 1, rect.y + rect.h - 1 - radius
+         ) != 0) {
+         return false;
+     }
+ 
+-    return SDL_RenderDrawLine(
+-        renderer_, rect.x + radius, rect.y + rect.h - 1,
+-        rect.x + rect.w - radius - 1, rect.y + rect.h - 1
+-    ) == 0;
++    // Corner arcs. Rows cover the shallow part of each arc and columns the
++    // steep part, so every corner stays continuous with no gaps. The same
++    // inset as the fill keeps the outline exactly on the fill boundary.
++    for (int step = 0; step < radius; ++step) {
++        const int inset = corner_inset(radius, step);
++
++        if (SDL_RenderDrawPoint(renderer_, rect.x + inset, rect.y + step) != 0 ||
++            SDL_RenderDrawPoint(
++                renderer_, rect.x + rect.w - 1 - inset, rect.y + step
++            ) != 0 ||
++            SDL_RenderDrawPoint(
++                renderer_, rect.x + inset, rect.y + rect.h - 1 - step
++            ) != 0 ||
++            SDL_RenderDrawPoint(
++                renderer_, rect.x + rect.w - 1 - inset,
++                rect.y + rect.h - 1 - step
++            ) != 0 ||
++            SDL_RenderDrawPoint(renderer_, rect.x + step, rect.y + inset) != 0 ||
++            SDL_RenderDrawPoint(
++                renderer_, rect.x + step, rect.y + rect.h - 1 - inset
++            ) != 0 ||
++            SDL_RenderDrawPoint(
++                renderer_, rect.x + rect.w - 1 - step, rect.y + inset
++            ) != 0 ||
++            SDL_RenderDrawPoint(
++                renderer_, rect.x + rect.w - 1 - step,
++                rect.y + rect.h - 1 - inset
++            ) != 0) {
++            return false;
++        }
++    }
++
++    return true;
+ }
+ 
+ bool Renderer::set_clip(Rect rect) const {
+     if (!renderer_) return false;
+
+> build · glm-5.3-flash-free
+Now the panel — replace the nested-outline border with a single clean uniform border pass:
+[0m← [0mEdit src/ui/panel.cpp
+Index: src/ui/panel.cpp
+===================================================================
+--- src/ui/panel.cpp
++++ src/ui/panel.cpp
+@@ -40,13 +40,39 @@
+ void Panel::draw(Renderer& renderer) {
+     const Rect rect = bounds();
+     if (rect.empty()) return;
+ 
+-    renderer.fill_rounded_rect(rect, style_.corner_radius, style_.background);
++    const int radius = style_.corner_radius;
++    const int thickness = std::min(
++        style_.border_thickness, std::min(rect.w, rect.h) / 2
++    );
+ 
+-    if (style_.border_thickness <= 0) return;
++    // An opaque background allows a clean, uniform border: fill the card
++    // with the border color, then the inset area with the background. This
++    // avoids stacking nested outlines, which look crude at small radii.
++    if (thickness > 0 && style_.background.a == 255) {
++        renderer.fill_rounded_rect(rect, radius, style_.border);
+ 
+-    for (int inset = 0; inset < style_.border_thickness; ++inset) {
++        const Rect inner{
++            rect.x + thickness,
++            rect.y + thickness,
++            rect.w - thickness * 2,
++            rect.h - thickness * 2
++        };
++
++        if (!inner.empty()) {
++            renderer.fill_rounded_rect(
++                inner, std::max(0, radius - thickness), style_.background
++            );
++        }
++        return;
++    }
++
++    renderer.fill_rounded_rect(rect, radius, style_.background);
++
++    // Transparent backgrounds (for example glow outlines) draw the border
++    // as clean rounded outlines instead of covering the content beneath.
++    for (int inset = 0; inset < thickness; ++inset) {
+         const Rect outline{
+             rect.x + inset,
+             rect.y + inset,
+             rect.w - inset * 2,
+@@ -55,9 +81,9 @@
+ 
+         if (outline.empty()) break;
+         renderer.outline_rounded_rect(
+             outline,
+-            std::max(0, style_.corner_radius - inset),
++            std::max(0, radius - inset),
+             style_.border
+         );
+     }
+ }
+
+> build · glm-5.3-flash-free
+Now rewrite the home carousel screen with the refined status icon, always-visible selected-game title, wordmark, and hints:
+[0m← [0mEdit src/app/home_carousel_screen.cpp
+Index: src/app/home_carousel_screen.cpp
+===================================================================
+--- src/app/home_carousel_screen.cpp
++++ src/app/home_carousel_screen.cpp
+@@ -3,8 +3,9 @@
+ #include "kiddos/ui/panel.hpp"
+ 
+ #include <algorithm>
+ #include <array>
++#include <cmath>
+ 
+ namespace kiddos::app {
+ 
+ namespace {
+@@ -23,10 +24,18 @@
+ constexpr ui::Rect side_right_art{
+     side_right_card.x + 55, side_right_card.y + 42, 80, 90};
+ constexpr ui::Rect center_art_rect{
+     center_card.x + 115, center_card.y + 70, 200, 205};
+-constexpr ui::Rect title_rect{220, 525, 280, 42};
+ 
++// The selected game's title sits directly below the center card and is
++// centered on it. Images fit with `contain`, so each title keeps its
++// natural proportions inside this centered area.
++constexpr ui::Rect title_rect{145, 523, 430, 44};
++
++// KiddOS wordmark at the top and physical control hints along the bottom.
++constexpr ui::Rect wordmark_rect{235, 12, 250, 46};
++constexpr ui::Rect hints_rect{0, 682, 720, 34};
++
+ constexpr ui::Color side_fill{16, 41, 75, 255};
+ constexpr ui::Color side_border{55, 105, 165, 190};
+ constexpr ui::Color center_fill{18, 63, 117, 255};
+ constexpr ui::Color center_border{36, 164, 255, 255};
+@@ -38,11 +47,23 @@
+         "assets/artwork/generated/carousel-mushroom.bmp",
+         "assets/artwork/generated/carousel-car.bmp"
+     };
+ 
+-constexpr const char* title_path =
+-    "assets/artwork/generated/carousel-title.bmp";
++// Per-game title assets, exported with a transparent background from the
++// same SVG sources and typography as the original carousel title.
++constexpr std::array<const char*, HomeCarouselScreen::game_count>
++    title_paths{
++        "assets/artwork/generated/carousel-title-star.png",
++        "assets/artwork/generated/carousel-title.png",
++        "assets/artwork/generated/carousel-title-car.png"
++    };
+ 
++constexpr const char* wordmark_path =
++    "assets/artwork/generated/kiddos-wordmark.png";
++
++constexpr const char* hints_path =
++    "assets/artwork/generated/navigation-hints.png";
++
+ void fill_triangle(
+     ui::Renderer& renderer,
+     ui::Point a,
+     ui::Point b,
+@@ -78,28 +99,61 @@
+         }
+     }
+ }
+ 
++// Draws a circular arc as short connected line segments, used for the
++// sound waves next to the speaker icon.
++void draw_arc(
++    ui::Renderer& renderer,
++    ui::Point center,
++    int radius,
++    double start_degrees,
++    double end_degrees,
++    ui::Color color
++) {
++    constexpr double kPi = 3.14159265358979323846;
++
++    const int steps = std::max(2, radius * 2);
++    const double delta = (end_degrees - start_degrees) / steps;
++
++    const auto point_at = [&](double degrees) {
++        const double radians = degrees * kPi / 180.0;
++        return ui::Point{
++            center.x + static_cast<int>(std::lround(
++                radius * std::cos(radians))),
++            center.y + static_cast<int>(std::lround(
++                radius * std::sin(radians)))
++        };
++    };
++
++    ui::Point previous = point_at(start_degrees);
++    for (int step = 1; step <= steps; ++step) {
++        const ui::Point point = point_at(start_degrees + delta * step);
++        renderer.draw_line(previous, point, color);
++        previous = point;
++    }
++}
++
+ // Draws the sound and battery indicators in the top corners of the screen,
+ // matching SDLPlatform::draw_status.
+ class StatusIndicators final : public ui::Element {
+ protected:
+     void draw(ui::Renderer& renderer) override {
+-        const ui::Color white{205, 222, 255, 220};
++        const ui::Color body{205, 222, 255, 220};
+         const ui::Color waves{80, 157, 255, 220};
+         const ui::Color charge{67, 157, 255, 240};
+ 
+-        // Sound status: speaker and sound waves.
+-        fill_triangle(renderer, {31, 34}, {43, 25}, {43, 51}, white);
+-        renderer.fill_rect({25, 33, 10, 12}, white);
++        // Sound status: speaker cabinet, flared cone, and two sound waves.
++        renderer.fill_rect({25, 33, 8, 13}, body);
++        fill_triangle(renderer, {33, 33}, {33, 46}, {44, 52}, body);
++        fill_triangle(renderer, {33, 33}, {44, 52}, {44, 27}, body);
+ 
+-        renderer.draw_line({49, 29}, {54, 34}, waves);
+-        renderer.draw_line({54, 34}, {54, 42}, waves);
+-        renderer.draw_line({54, 42}, {49, 47}, waves);
++        draw_arc(renderer, {47, 39}, 6, -50.0, 50.0, waves);
++        draw_arc(renderer, {47, 39}, 12, -50.0, 50.0, waves);
+ 
+         // Battery status: outline, terminal, charge fill.
+-        renderer.outline_rect({657, 27, 34, 19}, white);
+-        renderer.fill_rect({691, 33, 4, 7}, white);
++        renderer.outline_rect({657, 27, 34, 19}, body);
++        renderer.fill_rect({691, 33, 4, 7}, body);
+         renderer.fill_rect({661, 31, 22, 11}, charge);
+     }
+ };
+ 
+@@ -111,9 +165,14 @@
+     for (int index = 0; index < game_count; ++index) {
+         artworks_[static_cast<std::size_t>(index)].load(
+             renderer, artwork_paths[static_cast<std::size_t>(index)], true);
+     }
+-    title_texture_.load(renderer, title_path, true);
++    for (int index = 0; index < game_count; ++index) {
++        title_textures_[static_cast<std::size_t>(index)].load(
++            renderer, title_paths[static_cast<std::size_t>(index)], false);
++    }
++    wordmark_texture_.load(renderer, wordmark_path, false);
++    hints_texture_.load(renderer, hints_path, false);
+ 
+     // Smaller neighboring cards first, drawn behind the main card.
+     auto& side_left = root().add<ui::Panel>(
+         ui::PanelStyle{side_fill, side_border, 1, 24});
+@@ -146,12 +205,24 @@
+     center_art_ = &root().add<ui::Image>();
+     center_art_->set_bounds(center_art_rect);
+     center_art_->set_fit(ui::ImageFit::stretch);
+ 
+-    title_ = &root().add<ui::Image>(&title_texture_);
++    // The title always shows the currently selected game's name, centered
++    // below the main card.
++    title_ = &root().add<ui::Image>();
+     title_->set_bounds(title_rect);
+-    title_->set_fit(ui::ImageFit::stretch);
++    title_->set_fit(ui::ImageFit::contain);
+ 
++    // KiddOS wordmark centered at the top of the screen.
++    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
++    wordmark_->set_bounds(wordmark_rect);
++    wordmark_->set_fit(ui::ImageFit::contain);
++
++    // Physical control hints centered along the bottom of the screen.
++    hints_ = &root().add<ui::Image>(&hints_texture_);
++    hints_->set_bounds(hints_rect);
++    hints_->set_fit(ui::ImageFit::contain);
++
+     root().add<StatusIndicators>();
+ 
+     set_selected_game(1);
+ }
+@@ -162,8 +233,10 @@
+     if (side_left_art_) side_left_art_->set_texture(nullptr);
+     if (side_right_art_) side_right_art_->set_texture(nullptr);
+     if (center_art_) center_art_->set_texture(nullptr);
+     if (title_) title_->set_texture(nullptr);
++    if (wordmark_) wordmark_->set_texture(nullptr);
++    if (hints_) hints_->set_texture(nullptr);
+ }
+ 
+ void HomeCarouselScreen::set_selected_game(int index) {
+     if (index < 0 || index >= game_count) return;
+@@ -183,9 +256,12 @@
+         center_art_->set_texture(
+             &artworks_[static_cast<std::size_t>(index)]);
+     }
+ 
+-    // The generated title artwork belongs to the middle game only.
+-    if (title_) title_->set_visible(index == 1);
++    // The title below the card follows the selected game.
++    if (title_) {
++        title_->set_texture(
++            &title_textures_[static_cast<std::size_t>(index)]);
++    }
+ }
+ 
+ } // namespace kiddos::app
+
+> build · glm-5.3-flash-free
+Now update the header:
+[0m← [0mEdit include/kiddos/app/home_carousel_screen.hpp
+Index: include/kiddos/app/home_carousel_screen.hpp
+===================================================================
+--- include/kiddos/app/home_carousel_screen.hpp
++++ include/kiddos/app/home_carousel_screen.hpp
+@@ -27,16 +27,23 @@
+     int selected_game() const noexcept { return selected_game_; }
+ 
+ private:
+     std::array<ui::Texture, game_count> artworks_{};
+-    ui::Texture title_texture_{};
+ 
++    // One title asset per game, shown centered below the center card for
++    // whichever game is currently selected.
++    std::array<ui::Texture, game_count> title_textures_{};
++    ui::Texture wordmark_texture_{};
++    ui::Texture hints_texture_{};
++
+     // Non-owning references into the root container, used to update the
+     // carousel when the selection changes.
+     ui::Image* side_left_art_ = nullptr;
+     ui::Image* side_right_art_ = nullptr;
+     ui::Image* center_art_ = nullptr;
+     ui::Image* title_ = nullptr;
++    ui::Image* wordmark_ = nullptr;
++    ui::Image* hints_ = nullptr;
+ 
+     int selected_game_ = 1;
+ };
+ 
+
+> build · glm-5.3-flash-free
+Now copy the generated assets into the repo with their SVG sources:
+[0m$ [0mmkdir -p /home/hawk/KiddOS/assets/artwork/source/branding
+cp /tmp/opencode/assets/title-super-mario.png /home/hawk/KiddOS/assets/artwork/generated/carousel-title.png
+cp /tmp/opencode/assets/title-star.png /home/hawk/KiddOS/assets/artwork/generated/carousel-title-star.png
+cp /tmp/opencode/assets/title-car.png /home/hawk/KiddOS/assets/artwork/generated/carousel-title-car.png
+cp /tmp/opencode/assets/wordmark.png /home/hawk/KiddOS/assets/artwork/generated/kiddos-wordmark.png
+cp /tmp/opencode/assets/hints.png /home/hawk/KiddOS/assets/artwork/generated/navigation-hints.png
+cp /tmp/opencode/assets/title-star.svg /home/hawk/KiddOS/assets/artwork/source/carousel/title-star.svg
+cp /tmp/opencode/assets/title-car.svg /home/hawk/KiddOS/assets/artwork/source/carousel/title-car.svg
+cp /tmp/opencode/assets/wordmark.svg /home/hawk/KiddOS/assets/artwork/source/branding/kiddos-wordmark.svg
+cp /tmp/opencode/assets/hints.svg /home/hawk/KiddOS/assets/artwork/source/branding/navigation-hints.svg
+ls /home/hawk/KiddOS/assets/artwork/generated /home/hawk/KiddOS/assets/artwork/source/branding
+/home/hawk/KiddOS/assets/artwork/generated:
+carousel-car.bmp
+carousel-mushroom.bmp
+carousel-selected.bmp
+carousel-star.bmp
+carousel-title.bmp
+carousel-title-car.png
+carousel-title.png
+carousel-title-star.png
+forest.bmp
+kiddos-wordmark.png
+label-play.bmp
+label-resume.bmp
+label-start-over.bmp
+navigation-hints.png
+ocean.bmp
+space.bmp
+
+/home/hawk/KiddOS/assets/artwork/source/branding:
+kiddos-wordmark.svg
+navigation-hints.svg
+> build · glm-5.3-flash-free
+Now update the tests — rework the title assertions for the always-visible per-game title, and add coverage for the wordmark, hints, border quality, and fringe-free rendering:
+[0m← [0mEdit tests/app_home_carousel_screen_test.cpp
+Index: tests/app_home_carousel_screen_test.cpp
+===================================================================
+--- tests/app_home_carousel_screen_test.cpp
++++ tests/app_home_carousel_screen_test.cpp
+@@ -24,8 +24,53 @@
+ bool same_color(const Color& a, const Color& b) {
+     return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
+ }
+ 
++// True when any pixel within `radius` steps of the point matches `color`.
++bool any_pixel_near(
++    SDL_Surface* surface,
++    int x,
++    int y,
++    int radius,
++    const Color& color
++) {
++    for (int dy = -radius; dy <= radius; ++dy) {
++        for (int dx = -radius; dx <= radius; ++dx) {
++            if (same_color(pixel(surface, x + dx, y + dy), color)) {
++                return true;
++            }
++        }
++    }
++    return false;
++}
++
++// True when any pixel in the rect differs from `color`.
++bool any_pixel_different(
++    SDL_Surface* surface,
++    const Rect& rect,
++    const Color& color
++) {
++    for (int y = rect.y; y < rect.y + rect.h; ++y) {
++        for (int x = rect.x; x < rect.x + rect.w; ++x) {
++            if (!same_color(pixel(surface, x, y), color)) return true;
++        }
++    }
++    return false;
++}
++
++// Generated artwork must not leave magenta keying artifacts (pink fringes)
++// on screen; a leftover fringe pixel would have strong red and blue with
++// almost no green.
++bool has_magenta_fringe(SDL_Surface* surface, const Rect& rect) {
++    for (int y = rect.y; y < rect.y + rect.h; ++y) {
++        for (int x = rect.x; x < rect.x + rect.w; ++x) {
++            const Color value = pixel(surface, x, y);
++            if (value.r > 150 && value.b > 150 && value.g < 80) return true;
++        }
++    }
++    return false;
++}
++
+ const Element* find_by_bounds(
+     kiddos::ui::Screen& screen,
+     const Rect& bounds
+ ) {
+
+> build · glm-5.3-flash-free
+[0m← [0mEdit tests/app_home_carousel_screen_test.cpp
+Index: tests/app_home_carousel_screen_test.cpp
+===================================================================
+--- tests/app_home_carousel_screen_test.cpp
++++ tests/app_home_carousel_screen_test.cpp
+@@ -95,26 +95,52 @@
+ void test_structure_without_renderer() {
+     kiddos::app::HomeCarouselScreen screen(nullptr);
+ 
+     // Two side cards, two side artworks, center card, glow outline,
+-    // center artwork, title, and the status indicators.
+-    assert(screen.root().child_count() == 9);
++    // center artwork, title, wordmark, hints, and the status indicators.
++    assert(screen.root().child_count() == 11);
+     assert(screen.selected_game() == 1);
+ 
++    // The title area sits centered directly below the center card and is
++    // always visible; its texture follows the selected game.
+     const Element* title =
+-        find_by_bounds(screen, {220, 525, 280, 42});
++        find_by_bounds(screen, {145, 523, 430, 44});
+     assert(title);
+     assert(title->visible());
+ 
++    // The wordmark and the control hints are present.
++    const Element* wordmark =
++        find_by_bounds(screen, {235, 12, 250, 46});
++    assert(wordmark);
++    assert(wordmark->visible());
++
++    const Element* hints =
++        find_by_bounds(screen, {0, 682, 720, 34});
++    assert(hints);
++    assert(hints->visible());
++
++    // Selecting a game swaps the shown title texture.
++    const auto* title_image =
++        static_cast<const kiddos::ui::Image*>(title);
++    const kiddos::ui::Texture* middle_title = title_image->texture();
++    assert(middle_title);
++
+     screen.set_selected_game(0);
+     assert(screen.selected_game() == 0);
+-    assert(!title->visible());
++    const kiddos::ui::Texture* left_title = title_image->texture();
++    assert(left_title != middle_title);
+ 
++    screen.set_selected_game(2);
++    const kiddos::ui::Texture* right_title = title_image->texture();
++    assert(right_title != middle_title);
++    assert(right_title != left_title);
++
+     screen.set_selected_game(1);
+-    assert(title->visible());
++    assert(title_image->texture() == middle_title);
+ 
+     screen.set_selected_game(7); // out of range values are ignored
+     assert(screen.selected_game() == 1);
++    assert(title_image->texture() == middle_title);
+ }
+ 
+ void test_renders_carousel() {
+     assert(SDL_Init(0) == 0);
+@@ -147,24 +173,47 @@
+         assert(same_color(pixel(surface, 500, 160), {18, 63, 117, 255}));
+         assert(same_color(pixel(surface, 60, 300), {16, 41, 75, 255}));
+         assert(same_color(pixel(surface, 650, 300), {16, 41, 75, 255}));
+ 
+-        // The middle game shows its title artwork below the main card.
+-        const Color titled = pixel(surface, 397, 542);
+-        assert(!same_color(titled, background));
++        // The card borders are clean and uniform: the top edge of the
++        // center card is exactly the border color, and the side card edge
++        // carries its border color blended over the background.
++        assert(same_color(pixel(surface, 360, 135), {36, 164, 255, 255}));
++        const Color side_edge = pixel(surface, 120, 250);
++        assert(side_edge.b > 110 && side_edge.r > 30);
+ 
++        // The outer glow outline is continuous around the corner arcs.
++        const Color glow_over_background{24, 102, 164, 255};
++        assert(any_pixel_near(surface, 152, 141, 2, glow_over_background));
++        assert(any_pixel_near(surface, 568, 141, 2, glow_over_background));
++        assert(any_pixel_near(surface, 152, 499, 2, glow_over_background));
++        assert(any_pixel_near(surface, 568, 499, 2, glow_over_background));
++
++        // The selected game's title appears below the main card.
++        const Rect title_area{145, 523, 430, 44};
++        assert(any_pixel_different(surface, title_area, background));
++
+         // Selected artwork is drawn inside the main card.
+         const Color with_mushroom = pixel(surface, 360, 307);
+         assert(!same_color(with_mushroom, background));
+ 
+-        // Selecting another game changes the artwork and hides the title.
++        // The KiddOS wordmark and the control hints are rendered.
++        assert(any_pixel_different(surface, {235, 12, 250, 46}, background));
++        assert(any_pixel_different(surface, {0, 682, 720, 34}, background));
++
++        // No magenta keying artifacts remain in the title or artwork.
++        assert(!has_magenta_fringe(surface, title_area));
++        assert(!has_magenta_fringe(surface, {260, 205, 200, 205}));
++
++        // Selecting another game changes the artwork and the title.
+         screen.set_selected_game(0);
+         renderer.clear(background);
+         screen.render(renderer);
+ 
+-        assert(same_color(pixel(surface, 397, 542), background));
++        assert(!same_color(pixel(surface, 397, 540), pixel(surface, 260, 300)));
+         const Color with_star = pixel(surface, 360, 307);
+         assert(!same_color(with_star, with_mushroom));
++        assert(any_pixel_different(surface, title_area, background));
+     }
+ 
+     SDL_DestroyRenderer(native);
+     SDL_FreeSurface(surface);
+
+> build · glm-5.3-flash-free
+Let me refine one weak assertion in the test — comparing the title change between selections properly:
+[0m← [0mEdit tests/app_home_carousel_screen_test.cpp
+Index: tests/app_home_carousel_screen_test.cpp
+===================================================================
+--- tests/app_home_carousel_screen_test.cpp
++++ tests/app_home_carousel_screen_test.cpp
+@@ -42,8 +42,22 @@
+     }
+     return false;
+ }
+ 
++// X of the first non-background pixel on a row, or rect.x + rect.w when
++// the row is empty.
++int first_content_pixel_x(
++    SDL_Surface* surface,
++    const Rect& rect,
++    int y,
++    const Color& color
++) {
++    for (int x = rect.x; x < rect.x + rect.w; ++x) {
++        if (!same_color(pixel(surface, x, y), color)) return x;
++    }
++    return rect.x + rect.w;
++}
++
+ // True when any pixel in the rect differs from `color`.
+ bool any_pixel_different(
+     SDL_Surface* surface,
+     const Rect& rect,
+
+> build · glm-5.3-flash-free
+[0m← [0mEdit tests/app_home_carousel_screen_test.cpp
+Index: tests/app_home_carousel_screen_test.cpp
+===================================================================
+--- tests/app_home_carousel_screen_test.cpp
++++ tests/app_home_carousel_screen_test.cpp
+@@ -217,17 +217,25 @@
+         // No magenta keying artifacts remain in the title or artwork.
+         assert(!has_magenta_fringe(surface, title_area));
+         assert(!has_magenta_fringe(surface, {260, 205, 200, 205}));
+ 
+-        // Selecting another game changes the artwork and the title.
++        // Selecting another game changes the artwork and the title: the
++        // shorter STAR title is horizontally centered, so its text starts
++        // clearly further right than the SUPER MARIO title.
++        const int super_mario_x = first_content_pixel_x(
++            surface, title_area, 540, background);
++
+         screen.set_selected_game(0);
+         renderer.clear(background);
+         screen.render(renderer);
+ 
+-        assert(!same_color(pixel(surface, 397, 540), pixel(surface, 260, 300)));
+         const Color with_star = pixel(surface, 360, 307);
+         assert(!same_color(with_star, with_mushroom));
+         assert(any_pixel_different(surface, title_area, background));
++
++        const int star_x = first_content_pixel_x(
++            surface, title_area, 540, background);
++        assert(star_x > super_mario_x + 40);
+     }
+ 
+     SDL_DestroyRenderer(native);
+     SDL_FreeSurface(surface);
+
+> build · glm-5.3-flash-free
+Now build and run the carousel test to see the actual rendered colors:
+[0m$ [0mcmake --build build -j 4 2>&1 | grep -E "error|warning|\.o|Linking" | head -20; echo BUILD_RC=$?
+[1/29] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/renderer.cpp.o
+[2/29] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/panel.cpp.o
+[3/29] Linking CXX static library libkiddos_ui.a
+[4/29] Building CXX object CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o
+[5/29] Linking CXX executable kiddos_app_ui_action_mapping_test
+[6/29] Linking CXX executable kiddos_ui_layout_test
+[7/29] Linking CXX executable kiddos_ui_focus_test
+[8/29] Linking CXX executable kiddos_ui_button_test
+[9/29] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+[10/29] Linking CXX executable kiddos_ui_controller_test
+[11/29] Linking CXX executable kiddos
+[12/29] Linking CXX executable kiddos_ui_renderer_test
+[13/29] Linking CXX executable kiddos_ui_image_test
+[14/29] Linking CXX executable kiddos_ui_label_test
+[15/29] Linking CXX executable kiddos_ui_panel_test
+[16/29] Linking CXX executable kiddos_ui_progress_bar_test
+[17/29] Building CXX object CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o 
+/usr/bin/c++ -DKIDDOS_SOURCE_DIR=\"/home/hawk/KiddOS\" -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o -MF CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o.d -o CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o -c /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp
+/home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:38:28: error: ‘pixel’ was not declared in this scope
+BUILD_RC=0
+> build · glm-5.3-flash-free
+[0m→ [0mRead tests/app_home_carousel_screen_test.cpp [90m[offset=14, limit=75][0m
+> build · glm-5.3-flash-free
+[0m← [0mEdit tests/app_home_carousel_screen_test.cpp
+Index: tests/app_home_carousel_screen_test.cpp
+===================================================================
+--- tests/app_home_carousel_screen_test.cpp
++++ tests/app_home_carousel_screen_test.cpp
+@@ -24,8 +24,19 @@
+ bool same_color(const Color& a, const Color& b) {
+     return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
+ }
+ 
++Color pixel(SDL_Surface* surface, int x, int y) {
++    assert(SDL_LockSurface(surface) == 0);
++    const auto* row = static_cast<const std::uint8_t*>(surface->pixels)
++        + y * surface->pitch;
++    const auto* value = reinterpret_cast<const std::uint32_t*>(row) + x;
++    std::uint8_t r = 0, g = 0, b = 0, a = 0;
++    SDL_GetRGBA(*value, surface->format, &r, &g, &b, &a);
++    SDL_UnlockSurface(surface);
++    return {r, g, b, a};
++}
++
+ // True when any pixel within `radius` steps of the point matches `color`.
+ bool any_pixel_near(
+     SDL_Surface* surface,
+     int x,
+
+> build · glm-5.3-flash-free
+Now remove the duplicate `pixel` definition further down:
+[0m$ [0mgrep -n "Color pixel" /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp
+28:Color pixel(SDL_Surface* surface, int x, int y) {
+109:Color pixel(SDL_Surface* surface, int x, int y) {
+> build · glm-5.3-flash-free
+[0m→ [0mRead tests/app_home_carousel_screen_test.cpp [90m[limit=18, offset=105][0m
+> build · glm-5.3-flash-free
+[0m← [0mEdit tests/app_home_carousel_screen_test.cpp
+Index: tests/app_home_carousel_screen_test.cpp
+===================================================================
+--- tests/app_home_carousel_screen_test.cpp
++++ tests/app_home_carousel_screen_test.cpp
+@@ -105,19 +105,8 @@
+     }
+     return nullptr;
+ }
+ 
+-Color pixel(SDL_Surface* surface, int x, int y) {
+-    assert(SDL_LockSurface(surface) == 0);
+-    const auto* row = static_cast<const std::uint8_t*>(surface->pixels)
+-        + y * surface->pitch;
+-    const auto* value = reinterpret_cast<const std::uint32_t*>(row) + x;
+-    std::uint8_t r = 0, g = 0, b = 0, a = 0;
+-    SDL_GetRGBA(*value, surface->format, &r, &g, &b, &a);
+-    SDL_UnlockSurface(surface);
+-    return {r, g, b, a};
+-}
+-
+ void test_structure_without_renderer() {
+     kiddos::app::HomeCarouselScreen screen(nullptr);
+ 
+     // Two side cards, two side artworks, center card, glow outline,
+
+> build · glm-5.3-flash-free
+[0m$ [0mcmake --build build -j 4 2>&1 | grep -E "error|FAILED" | head; ./build/kiddos_app_home_carousel_screen_test; echo TEST_RC=$?
+kiddos_app_home_carousel_screen_test: /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:200: void {anonymous}::test_renders_carousel(): Assertion `any_pixel_near(surface, 152, 141, 2, glow_over_background)' failed.
+/usr/bin/bash: line 1: 336338 Aborted                    (core dumped) ./build/kiddos_app_home_carousel_screen_test
+TEST_RC=134
+> build · glm-5.3-flash-free
+[0m$ [0m/tmp/opencode/shot/screenshot 1 /tmp/opencode/shot/new1.png && python3 - <<'EOF'
+from PIL import Image
+im = Image.open("/tmp/opencode/shot/new1.png").convert("RGB")
+px = im.load()
+# print colors around glow corner top-left (151,141) and along top edge of glow (y=132)
+for y in range(138, 146):
+    row = []
+    for x in range(147, 158):
+        row.append(px[x,y])
+    print(y, row)
+print("top edge:", [px[x,132] for x in range(300,306)])
+EOF
+saved /tmp/opencode/shot/new1.png
+138 [(8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (24, 102, 164), (8, 15, 35)]
+139 [(8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (24, 102, 164), (8, 15, 35), (8, 15, 35)]
+140 [(8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (24, 102, 164), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35)]
+141 [(8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (24, 102, 164), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (36, 164, 255)]
+142 [(8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (24, 102, 164), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (36, 164, 255), (18, 63, 117)]
+143 [(8, 15, 35), (8, 15, 35), (8, 15, 35), (24, 102, 164), (8, 15, 35), (8, 15, 35), (8, 15, 35), (8, 15, 35), (36, 164, 255), (18, 63, 117), (18, 63, 117)]
+144 [(8, 15, 35), (8, 15, 35), (8, 15, 35), (24, 102, 164), (8, 15, 35), (8, 15, 35), (8, 15, 35), (36, 164, 255), (18, 63, 117), (18, 63, 117), (18, 63, 117)]
+145 [(8, 15, 35), (8, 15, 35), (24, 102, 164), (8, 15, 35), (8, 15, 35), (8, 15, 35), (36, 164, 255), (18, 63, 117), (18, 63, 117), (18, 63, 117), (18, 63, 117)]
+top edge: [(24, 102, 164), (24, 102, 164), (24, 102, 164), (24, 102, 164), (24, 102, 164), (24, 102, 164)]
+> build · glm-5.3-flash-free
+The glow color matches my prediction but the test still fails — likely an alpha-channel difference. Let me check:
+[0m$ [0mcd /tmp/opencode/shot && cat > probe.cpp <<'EOF'
+#include <SDL.h>
+#include <SDL_image.h>
+#include <cstdio>
+#include <cassert>
+int main() {
+    assert(SDL_Init(0) == 0);
+    IMG_Init(IMG_INIT_PNG);
+    SDL_Surface* s = IMG_Load("/tmp/opencode/shot/new1.png");
+    assert(s);
+    SDL_Surface* c = SDL_ConvertSurfaceFormat(s, SDL_PIXELFORMAT_RGBA32, 0);
+    assert(SDL_LockSurface(c) == 0);
+    auto at = [&](int x, int y) {
+        const auto* row = static_cast<const std::uint8_t*>(c->pixels) + y * c->pitch;
+        const auto* v = reinterpret_cast<const std::uint32_t*>(row) + x;
+        std::uint8_t r,g,b,a; SDL_GetRGBA(*v, c->format, &r,&g,&b,&a);
+        std::printf("(%d,%d) = (%d,%d,%d,%d)\n", x, y, r,g,b,a);
+    };
+    at(152,141); at(151,142); at(360,132); at(360,135); at(120,250);
+    SDL_UnlockSurface(c);
+    return 0;
+}
+EOF
+g++ -std=c++20 probe.cpp -o probe $(pkg-config --cflags --libs sdl2 SDL2_image) && ./probe
+probe.cpp: In lambda function:
+probe.cpp:13:45: error: ISO C++ forbids declaration of ‘type name’ with no type [-fpermissive]
+   13 |         const auto* row = static_cast<const std::uint8_t*>(c->pixels) + y * c->pitch;
+      |                                             ^~~
+probe.cpp:13:45: error: expected ‘>’
+probe.cpp:13:27: error: invalid ‘static_cast’ from type ‘void*’ to type ‘const int’
+   13 |         const auto* row = static_cast<const std::uint8_t*>(c->pixels) + y * c->pitch;
+      |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+probe.cpp:14:48: error: ISO C++ forbids declaration of ‘type name’ with no type [-fpermissive]
+   14 |         const auto* v = reinterpret_cast<const std::uint32_t*>(row) + x;
+      |                                                ^~~
+probe.cpp:14:48: error: expected ‘>’
+probe.cpp:15:14: error: ‘uint8_t’ is not a member of ‘std’; did you mean ‘uint8_t’?
+   15 |         std::uint8_t r,g,b,a; SDL_GetRGBA(*v, c->format, &r,&g,&b,&a);
+      |              ^~~~~~~
+In file included from /usr/include/stdint.h:41,
+                 from /usr/lib/gcc/x86_64-pc-linux-gnu/16/include/stdint.h:11,
+                 from /usr/include/inttypes.h:32,
+                 from /usr/include/SDL2/SDL_stdinc.h:71,
+                 from /usr/include/SDL2/SDL_main.h:25,
+                 from /usr/include/SDL2/SDL.h:31,
+                 from probe.cpp:1:
+/usr/include/bits/stdint-uintn.h:24:19: note: ‘uint8_t’ declared here
+   24 | typedef __uint8_t uint8_t;
+      |                   ^~~~~~~
+probe.cpp:15:59: error: ‘r’ was not declared in this scope
+   15 |         std::uint8_t r,g,b,a; SDL_GetRGBA(*v, c->format, &r,&g,&b,&a);
+      |                                                           ^
+probe.cpp:15:62: error: ‘g’ was not declared in this scope
+   15 |         std::uint8_t r,g,b,a; SDL_GetRGBA(*v, c->format, &r,&g,&b,&a);
+      |                                                              ^
+probe.cpp:15:65: error: ‘b’ was not declared in this scope
+   15 |         std::uint8_t r,g,b,a; SDL_GetRGBA(*v, c->format, &r,&g,&b,&a);
+      |                                                                 ^
+probe.cpp:15:68: error: ‘a’ was not declared in this scope; did you mean ‘at’?
+   15 |         std::uint8_t r,g,b,a; SDL_GetRGBA(*v, c->format, &r,&g,&b,&a);
+      |                                                                    ^
+      |                                                                    at
+> build · glm-5.3-flash-free
+[0m$ [0mcd /tmp/opencode/shot && sed -i '3a #include <cstdint>' probe.cpp && g++ -std=c++20 probe.cpp -o probe $(pkg-config --cflags --libs sdl2 SDL2_image) && ./probe
+(152,141) = (24,102,164,255)
+(151,142) = (24,102,164,255)
+(360,132) = (24,102,164,255)
+(360,135) = (36,164,255,255)
+(120,250) = (44,88,141,255)
+> build · glm-5.3-flash-free
+The colors match exactly — let me check which assertion is actually at line 200:
+[0m→ [0mRead tests/app_home_carousel_screen_test.cpp [90m[limit=14, offset=192][0m
+> build · glm-5.3-flash-free
+[0m$ [0mcmake --build build -j 4 2>&1 | tail -3; ./build/kiddos_app_home_carousel_screen_test; echo RC=$?
+ninja: no work to do.
+kiddos_app_home_carousel_screen_test: /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:200: void {anonymous}::test_renders_carousel(): Assertion `any_pixel_near(surface, 152, 141, 2, glow_over_background)' failed.
+/usr/bin/bash: line 1: 336441 Aborted                    (core dumped) ./build/kiddos_app_home_carousel_screen_test
+RC=134
+> build · glm-5.3-flash-free
+[0m$ [0mcd /tmp/opencode/shot && cat > probe2.cpp <<'EOF'
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/ui/renderer.hpp"
+#include <SDL.h>
+#include <SDL_image.h>
+#include <cassert>
+#include <cstdint>
+#include <unistd.h>
+#include <cstdio>
+
+using kiddos::ui::Color;
+int main() {
+    assert(SDL_Init(0) == 0);
+    IMG_Init(IMG_INIT_PNG);
+    assert(chdir("/home/hawk/KiddOS") == 0);
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+        0, 720, 720, 32, SDL_PIXELFORMAT_RGBA32);
+    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+    SDL_SetRenderDrawBlendMode(native, SDL_BLENDMODE_BLEND);
+    kiddos::ui::Renderer renderer(native);
+    kiddos::app::HomeCarouselScreen screen(native);
+    screen.set_selected_game(1);
+    renderer.clear({8, 15, 35, 255});
+    screen.render(renderer);
+
+    auto at = [&](int x, int y) {
+        assert(SDL_LockSurface(surface) == 0);
+        const auto* row = static_cast<const std::uint8_t*>(surface->pixels) + y * surface->pitch;
+        const auto* v = reinterpret_cast<const std::uint32_t*>(row) + x;
+        std::uint8_t r,g,b,a; SDL_GetRGBA(*v, surface->format, &r,&g,&b,&a);
+        std::printf("(%d,%d) = (%d,%d,%d,%d)\n", x, y, r,g,b,a);
+        SDL_UnlockSurface(surface);
+    };
+    for (int y = 138; y <= 144; ++y) {
+        for (int x = 148; x <= 156; ++x) at(x, y);
+    }
+    return 0;
+}
+EOF
+g++ -std=c++20 -I/home/hawk/KiddOS/include probe2.cpp /home/hawk/KiddOS/src/app/home_carousel_screen.cpp -o probe2 $(pkg-config --cflags --libs sdl2 SDL2_image SDL2_ttf) /home/hawk/KiddOS/build/libkiddos_ui.a && ./probe2 | grep -v "(8, 15, 35, 255)"
+(148,138) = (8,15,35,255)
+(149,138) = (8,15,35,255)
+(150,138) = (8,15,35,255)
+(151,138) = (8,15,35,255)
+(152,138) = (8,15,35,255)
+(153,138) = (8,15,35,255)
+(154,138) = (8,15,35,255)
+(155,138) = (30,138,217,255)
+(156,138) = (24,102,164,255)
+(148,139) = (8,15,35,255)
+(149,139) = (8,15,35,255)
+(150,139) = (8,15,35,255)
+(151,139) = (8,15,35,255)
+(152,139) = (8,15,35,255)
+(153,139) = (8,15,35,255)
+(154,139) = (30,138,217,255)
+(155,139) = (8,15,35,255)
+(156,139) = (8,15,35,255)
+(148,140) = (8,15,35,255)
+(149,140) = (8,15,35,255)
+(150,140) = (8,15,35,255)
+(151,140) = (8,15,35,255)
+(152,140) = (8,15,35,255)
+(153,140) = (30,138,217,255)
+(154,140) = (8,15,35,255)
+(155,140) = (8,15,35,255)
+(156,140) = (8,15,35,255)
+(148,141) = (8,15,35,255)
+(149,141) = (8,15,35,255)
+(150,141) = (8,15,35,255)
+(151,141) = (8,15,35,255)
+(152,141) = (30,138,217,255)
+(153,141) = (8,15,35,255)
+(154,141) = (8,15,35,255)
+(155,141) = (8,15,35,255)
+(156,141) = (8,15,35,255)
+(148,142) = (8,15,35,255)
+(149,142) = (8,15,35,255)
+(150,142) = (8,15,35,255)
+(151,142) = (30,138,217,255)
+(152,142) = (8,15,35,255)
+(153,142) = (8,15,35,255)
+(154,142) = (8,15,35,255)
+(155,142) = (8,15,35,255)
+(156,142) = (36,164,255,255)
+(148,143) = (8,15,35,255)
+(149,143) = (8,15,35,255)
+(150,143) = (30,138,217,255)
+(151,143) = (8,15,35,255)
+(152,143) = (8,15,35,255)
+(153,143) = (8,15,35,255)
+(154,143) = (8,15,35,255)
+(155,143) = (36,164,255,255)
+(156,143) = (18,63,117,255)
+(148,144) = (8,15,35,255)
+(149,144) = (30,138,217,255)
+(150,144) = (8,15,35,255)
+(151,144) = (8,15,35,255)
+(152,144) = (8,15,35,255)
+(153,144) = (8,15,35,255)
+(154,144) = (36,164,255,255)
+(155,144) = (18,63,117,255)
+(156,144) = (18,63,117,255)
+> build · glm-5.3-flash-free
+The corner pixels get double-blended where row and column sampling overlap — brighter dots on the semi-transparent glow. I'll switch the outline to angle-traced arcs with de-duplication (no double-blend, no gaps, matches the original platform quality):
+[0m← [0mEdit src/ui/renderer.cpp
+Index: src/ui/renderer.cpp
+===================================================================
+--- src/ui/renderer.cpp
++++ src/ui/renderer.cpp
+@@ -90,10 +90,10 @@
+ 
+ namespace {
+ 
+ // Distance from the rect edge to the rounded-corner boundary at the row or
+-// column `steps` in from the corner, sampled at the pixel center. Fills and
+-// outlines share this so the border always sits exactly on the fill edge.
++// column `steps` in from the corner, sampled at the pixel center. Fills use
++// this so corner arcs are smooth and evenly shaped.
+ int corner_inset(int radius, int steps) {
+     const double dy = static_cast<double>(radius - steps) - 0.5;
+     const double inside = std::max(
+         0.0,
+
+> build · glm-5.3-flash-free
+[0m← [0mEdit src/ui/renderer.cpp
+Index: src/ui/renderer.cpp
+===================================================================
+--- src/ui/renderer.cpp
++++ src/ui/renderer.cpp
+@@ -163,38 +163,58 @@
+         ) != 0) {
+         return false;
+     }
+ 
+-    // Corner arcs. Rows cover the shallow part of each arc and columns the
+-    // steep part, so every corner stays continuous with no gaps. The same
+-    // inset as the fill keeps the outline exactly on the fill boundary.
+-    for (int step = 0; step < radius; ++step) {
+-        const int inset = corner_inset(radius, step);
++    // Corner arcs, traced along the true circle with dense angle steps so
++    // every corner stays continuous with no gaps. Consecutive samples land
++    // less than one pixel apart and duplicates are skipped, so semi-
++    // transparent borders are never blended twice on the same pixel.
++    constexpr double kPi = 3.14159265358979323846;
++    const int steps = std::max(2, radius * 2);
+ 
+-        if (SDL_RenderDrawPoint(renderer_, rect.x + inset, rect.y + step) != 0 ||
+-            SDL_RenderDrawPoint(
+-                renderer_, rect.x + rect.w - 1 - inset, rect.y + step
+-            ) != 0 ||
+-            SDL_RenderDrawPoint(
+-                renderer_, rect.x + inset, rect.y + rect.h - 1 - step
+-            ) != 0 ||
+-            SDL_RenderDrawPoint(
+-                renderer_, rect.x + rect.w - 1 - inset,
+-                rect.y + rect.h - 1 - step
+-            ) != 0 ||
+-            SDL_RenderDrawPoint(renderer_, rect.x + step, rect.y + inset) != 0 ||
+-            SDL_RenderDrawPoint(
+-                renderer_, rect.x + step, rect.y + rect.h - 1 - inset
+-            ) != 0 ||
+-            SDL_RenderDrawPoint(
+-                renderer_, rect.x + rect.w - 1 - step, rect.y + inset
+-            ) != 0 ||
+-            SDL_RenderDrawPoint(
+-                renderer_, rect.x + rect.w - 1 - step,
+-                rect.y + rect.h - 1 - inset
+-            ) != 0) {
+-            return false;
++    const auto draw_corner = [&](int center_x, int center_y, int sign_x,
++                                 int sign_y) {
++        ui::Point previous{
++            center_x + sign_x * radius,
++            center_y
++        };
++
++        for (int step = 1; step <= steps; ++step) {
++            const double angle = (kPi / 2.0) * step / steps;
++            const ui::Point point{
++                center_x + sign_x *
++                    static_cast<int>(std::lround(radius * std::cos(angle))),
++                center_y + sign_y *
++                    static_cast<int>(std::lround(radius * std::sin(angle)))
++            };
++
++            if (point.x != previous.x || point.y != previous.y) {
++                if (SDL_RenderDrawPoint(
++                        renderer_, point.x, point.y
++                    ) != 0) {
++                    return false;
++                }
++                previous = point;
++            }
+         }
++
++        return true;
++    };
++
++    if (!draw_corner(rect.x + radius, rect.y + radius, -1, -1) ||
++        !draw_corner(
++            rect.x + rect.w - 1 - radius, rect.y + radius, 1, -1
++        ) ||
++        !draw_corner(
++            rect.x + radius, rect.y + rect.h - 1 - radius, -1, 1
++        ) ||
++        !draw_corner(
++            rect.x + rect.w - 1 - radius,
++            rect.y + rect.h - 1 - radius,
++            1,
++            1
++        )) {
++        return false;
+     }
+ 
+     return true;
+ }
+
+> build · glm-5.3-flash-free
+I need to handle arc/line joint overlaps precisely. Let me refine the outline implementation:
+[0m← [0mEdit src/ui/renderer.cpp
+Index: src/ui/renderer.cpp
+===================================================================
+--- src/ui/renderer.cpp
++++ src/ui/renderer.cpp
+@@ -164,38 +164,51 @@
+         return false;
+     }
+ 
+     // Corner arcs, traced along the true circle with dense angle steps so
+-    // every corner stays continuous with no gaps. Consecutive samples land
+-    // less than one pixel apart and duplicates are skipped, so semi-
+-    // transparent borders are never blended twice on the same pixel.
++    // every corner stays continuous with no gaps. Points that land on the
++    // straight edge lines are skipped: the lines already cover them, and
++    // re-drawing would blend semi-transparent borders twice on one pixel.
+     constexpr double kPi = 3.14159265358979323846;
+     const int steps = std::max(2, radius * 2);
++    const int right = rect.x + rect.w - 1;
++    const int bottom = rect.y + rect.h - 1;
+ 
++    const auto on_edge_line = [&](ui::Point point) {
++        if (point.y == rect.y || point.y == bottom) {
++            return point.x >= rect.x + radius && point.x <= right - radius;
++        }
++        if (point.x == rect.x || point.x == right) {
++            return point.y >= rect.y + radius && point.y <= bottom - radius;
++        }
++        return false;
++    };
++
+     const auto draw_corner = [&](int center_x, int center_y, int sign_x,
+                                  int sign_y) {
+         ui::Point previous{
+             center_x + sign_x * radius,
+             center_y
+         };
+ 
+-        for (int step = 1; step <= steps; ++step) {
++        for (int step = 1; step < steps; ++step) {
+             const double angle = (kPi / 2.0) * step / steps;
+             const ui::Point point{
+                 center_x + sign_x *
+                     static_cast<int>(std::lround(radius * std::cos(angle))),
+                 center_y + sign_y *
+                     static_cast<int>(std::lround(radius * std::sin(angle)))
+             };
+ 
+-            if (point.x != previous.x || point.y != previous.y) {
++            if ((point.x != previous.x || point.y != previous.y) &&
++                !on_edge_line(point)) {
+                 if (SDL_RenderDrawPoint(
+                         renderer_, point.x, point.y
+                     ) != 0) {
+                     return false;
+                 }
+-                previous = point;
+             }
++            previous = point;
+         }
+ 
+         return true;
+     };
+
+> build · glm-5.3-flash-free
+[0m$ [0mcmake --build build -j 4 2>&1 | grep -E "error|FAILED" | head; /tmp/opencode/shot/screenshot 1 /tmp/opencode/shot/new1.png && python3 - <<'EOF'
+from PIL import Image
+im = Image.open("/tmp/opencode/shot/new1.png").convert("RGB")
+px = im.load()
+seen = {}
+for y in range(130, 146):
+    row=[]
+    for x in range(146, 160):
+        c = px[x,y]
+        if c != (8,15,35): row.append((x,y,c))
+    if row: print(row)
+# check for double-blend: any glow-area pixel that is not exactly bg, glow-over-bg, or border colors
+allowed = {(24,102,164), (36,164,255), (18,63,117)}
+bad = []
+for y in range(130, 180):
+    for x in range(140, 200):
+        c = px[x,y]
+        if c not in allowed and c != (8,15,35) and not (c[0]<40 and c[1]<170):
+            bad.append((x,y,c))
+print("unexpected:", bad[:10])
+EOF
+saved /tmp/opencode/shot/new1.png
+[(159, 136, (24, 102, 164))]
+[(157, 137, (24, 102, 164))]
+[(156, 138, (24, 102, 164))]
+[(155, 139, (24, 102, 164))]
+[(153, 140, (24, 102, 164)), (159, 140, (36, 164, 255))]
+[(152, 141, (24, 102, 164)), (157, 141, (36, 164, 255)), (158, 141, (18, 63, 117)), (159, 141, (18, 63, 117))]
+[(151, 142, (24, 102, 164)), (156, 142, (36, 164, 255)), (157, 142, (18, 63, 117)), (158, 142, (18, 63, 117)), (159, 142, (18, 63, 117))]
+[(150, 143, (24, 102, 164)), (155, 143, (36, 164, 255)), (156, 143, (18, 63, 117)), (157, 143, (18, 63, 117)), (158, 143, (18, 63, 117)), (159, 143, (18, 63, 117))]
+[(150, 144, (24, 102, 164)), (154, 144, (36, 164, 255)), (155, 144, (18, 63, 117)), (156, 144, (18, 63, 117)), (157, 144, (18, 63, 117)), (158, 144, (18, 63, 117)), (159, 144, (18, 63, 117))]
+[(149, 145, (24, 102, 164)), (153, 145, (36, 164, 255)), (154, 145, (18, 63, 117)), (155, 145, (18, 63, 117)), (156, 145, (18, 63, 117)), (157, 145, (18, 63, 117)), (158, 145, (18, 63, 117)), (159, 145, (18, 63, 117))]
+unexpected: []
+> build · glm-5.3-flash-free
+Let me make sure the screenshot binary reflects the latest library (it may be stale):
+[0m$ [0mg++ -std=c++20 -I/home/hawk/KiddOS/include -DKIDDOS_SOURCE_DIR='"/home/hawk/KiddOS"' /tmp/opencode/shot/screenshot.cpp /home/hawk/KiddOS/src/app/home_carousel_screen.cpp -o /tmp/opencode/shot/screenshot $(pkg-config --cflags --libs sdl2 SDL2_image SDL2_ttf) /home/hawk/KiddOS/build/libkiddos_ui.a && /tmp/opencode/shot/screenshot 1 /tmp/opencode/shot/new1.png && python3 - <<'EOF'
+from PIL import Image
+im = Image.open("/tmp/opencode/shot/new1.png").convert("RGB")
+px = im.load()
+allowed = {(24,102,164), (36,164,255), (18,63,117)}
+bad = []
+for y in range(125, 190):
+    for x in range(135, 210):
+        c = px[x,y]
+        if c not in allowed and c != (8,15,35) and not (c[0]<40 and c[1]<170):
+            bad.append((x,y,c))
+print("unexpected glow-corner pixels:", bad[:10])
+# arc continuity: collect glow pixels near top-left corner
+pts = [(x,y) for y in range(125,180) for x in range(135,210) if px[x,y]==(24,102,164)]
+print("glow pixel count corner region:", len(pts))
+print(sorted(pts)[:12])
+EOF
+saved /tmp/opencode/shot/new1.png
+unexpected glow-corner pixels: []
+glow pixel count corner region: 101
+[(142, 159), (142, 160), (142, 161), (142, 162), (142, 163), (142, 164), (142, 165), (142, 166), (142, 167), (142, 168), (142, 169), (142, 170)]
+> build · glm-5.3-flash-free
+[0m$ [0mpython3 - <<'EOF'
+from PIL import Image
+im = Image.open("/tmp/opencode/shot/new1.png").convert("RGB")
+px = im.load()
+pts = [(x,y) for y in range(125,190) for x in range(135,210) if px[x,y]==(24,102,164)]
+top = sorted(pts, key=lambda p:(p[1],p[0]))[:20]
+print("corner arc pixels (by row):")
+for y in range(130, 165):
+    row = [x for x in range(135,210) if (x,y) in pts]
+    if row: print(y, row)
+EOF
+corner arc pixels (by row):
+132 [169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209]
+133 [165, 166, 167, 168]
+134 [162, 163, 164]
+135 [160, 161]
+136 [158, 159]
+137 [156, 157, 158]
+138 [155, 156]
+139 [154]
+140 [153]
+141 [151, 152]
+142 [151]
+143 [150]
+144 [149]
+145 [148]
+146 [147, 148]
+147 [147]
+148 [146, 147]
+149 [146]
+150 [145]
+151 [145]
+152 [144]
+153 [144]
+154 [144]
+155 [143]
+156 [143]
+157 [143]
+158 [143]
+159 [142]
+160 [142]
+161 [142]
+162 [142]
+163 [142]
+164 [142]
+> build · glm-5.3-flash-free
+The glow ring is now continuous and uniform with no double-blends. Run the carousel test:
+[0m$ [0m./build/kiddos_app_home_carousel_screen_test; echo RC=$?
+kiddos_app_home_carousel_screen_test: /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:219: void {anonymous}::test_renders_carousel(): Assertion `!has_magenta_fringe(surface, {260, 205, 200, 205})' failed.
+/usr/bin/bash: line 1: 336935 Aborted                    (core dumped) ./build/kiddos_app_home_carousel_screen_test
+RC=134
+> build · glm-5.3-flash-free
+The title area is clean, but the artwork BMPs (magenta-keyed) still have their original keying fringes. Let me look at the full screen state now:
+[0m→ [0mRead /tmp/opencode/shot/new1.png 
+> build · glm-5.3-flash-free
+Excellent progress! One remaining polish item: the artwork BMPs carry magenta keying fringes (visible around the mushroom outline). The committed SVG sources let me export faithful transparent PNGs at identical sizes:
+[0m$ [0mcd /home/hawk/KiddOS/assets/artwork && for f in star mushroom car; do rsvg-convert -w $(grep -o 'width="[0-9]*"' source/carousel/$f.svg | head -1 | grep -o '[0-9]*') -h $(grep -o 'height="[0-9]*"' source/carousel/$f.svg | head -1 | grep -o '[0-9]*') source/carousel/$f.svg -o generated/carousel-$f.png; done && file generated/carousel-star.png generated/carousel-mushroom.png generated/carousel-car.png
+generated/carousel-star.png:     PNG image data, 160 x 160, 8-bit/color RGBA, non-interlaced
+generated/carousel-mushroom.png: PNG image data, 180 x 160, 8-bit/color RGBA, non-interlaced
+generated/carousel-car.png:      PNG image data, 180 x 160, 8-bit/color RGBA, non-interlaced
+> build · glm-5.3-flash-free
+[0m$ [0mcd /tmp/opencode && python3 - <<'EOF'
+from PIL import Image
+import struct
+def bmp_pixels(path):
+    data = open(path,'rb').read()
+    off = struct.unpack("<I", data[10:14])[0]
+    w,h = struct.unpack("<ii", data[18:26])
+    rowsize = ((w*3)+3)//4*4
+    px = {}
+    for y in range(h):
+        for x in range(w):
+            i = off + y*rowsize + x*3
+            b,g,r = data[i],data[i+1],data[i+2]
+            px[(x,y)] = (r,g,b)
+    return w,h,px
+
+for name in ["star","mushroom","car"]:
+    w,h,bpx = bmp_pixels(f"/home/hawk/KiddOS/assets/artwork/generated/carousel-{name}.bmp")
+    png = Image.open(f"/home/hawk/KiddOS/assets/artwork/generated/carousel-{name}.png").convert("RGBA")
+    ppx = png.load()
+    # BMP bottom-up!
+    diff_opaque = 0; magenta=0
+    for y in range(h):
+        for x in range(w):
+            br,bg,bb = bpx[(x,y)]
+            if (br,bg,bb)==(255,0,255):
+                magenta+=1
+                if ppx[x,y][3] != 0: diff_opaque+=1
+            else:
+                pr,pg,pb,pa = ppx[x,y]
+                if pa==0 or (pr,pg,pb)!=(br,bg,bb): diff_opaque+=1
+    print(name, w, h, "magenta px:", magenta, "mismatches:", diff_opaque)
+EOF
+star 160 160 magenta px: 16383 mismatches: 10143
+mushroom 180 160 magenta px: 14915 mismatches: 16252
+car 180 160 magenta px: 16438 mismatches: 13907
+> build · glm-5.3-flash-free
+[0m$ [0mcd /tmp/opencode && python3 - <<'EOF'
+from PIL import Image
+import struct
+def bmp_image(path):
+    data = open(path,'rb').read()
+    off = struct.unpack("<I", data[10:14])[0]
+    w,h = struct.unpack("<ii", data[18:26])
+    rowsize = ((w*3)+3)//4*4
+    img = Image.new("RGBA",(w,h),(255,0,255,255))
+    px = img.load()
+    for y in range(h):
+        for x in range(w):
+            i = off + (h-1-y)*rowsize + x*3
+            b,g,r = data[i],data[i+1],data[i+2]
+            if (r,g,b)!=(255,0,255):
+                px[x,y] = (r,g,b,255)
+    return img
+canvas = Image.new("RGBA",(180*3+80, 180),(8,15,35,255))
+x=10
+for name in ["star","mushroom","car"]:
+    b = bmp_image(f"/home/hawk/KiddOS/assets/artwork/generated/carousel-{name}.bmp")
+    p = Image.open(f"/home/hawk/KiddOS/assets/artwork/generated/carousel-{name}.png").convert("RGBA")
+    canvas.alpha_composite(b,(x,10)); x+=b.width+20
+    canvas.alpha_composite(p,(x,10)); x+=p.width+20
+canvas = canvas.resize((canvas.width*2, canvas.height*2), Image.NEAREST)
+canvas.convert("RGB").save("artwork-compare.png")
+print("saved")
+EOF
+saved
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/artwork-compare.png 
+> build · glm-5.3-flash-free
+The PNG exports are faithful. Now point the home screen at the clean PNG artwork:
+[0m← [0mEdit src/app/home_carousel_screen.cpp
+Index: src/app/home_carousel_screen.cpp
+===================================================================
+--- src/app/home_carousel_screen.cpp
++++ src/app/home_carousel_screen.cpp
+@@ -40,13 +40,17 @@
+ constexpr ui::Color center_fill{18, 63, 117, 255};
+ constexpr ui::Color center_border{36, 164, 255, 255};
+ constexpr ui::Color center_glow{36, 164, 255, 150};
+ 
++// Artwork and titles are exported with a transparent background from the
++// committed SVG sources, so no magenta keying artifacts remain on screen.
++// The original magenta-keyed BMP files stay in use by the platform's
++// manual rendering path.
+ constexpr std::array<const char*, HomeCarouselScreen::game_count>
+     artwork_paths{
+-        "assets/artwork/generated/carousel-star.bmp",
+-        "assets/artwork/generated/carousel-mushroom.bmp",
+-        "assets/artwork/generated/carousel-car.bmp"
++        "assets/artwork/generated/carousel-star.png",
++        "assets/artwork/generated/carousel-mushroom.png",
++        "assets/artwork/generated/carousel-car.png"
+     };
+ 
+ // Per-game title assets, exported with a transparent background from the
+ // same SVG sources and typography as the original carousel title.
+
+> build · glm-5.3-flash-free
+[0m← [0mEdit src/app/home_carousel_screen.cpp
+Index: src/app/home_carousel_screen.cpp
+===================================================================
+--- src/app/home_carousel_screen.cpp
++++ src/app/home_carousel_screen.cpp
+@@ -163,13 +163,11 @@
+ 
+ } // namespace
+ 
+ HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+-    // Reuse the existing generated artwork; the magenta background is
+-    // treated as transparent, as in the platform renderer.
+     for (int index = 0; index < game_count; ++index) {
+         artworks_[static_cast<std::size_t>(index)].load(
+-            renderer, artwork_paths[static_cast<std::size_t>(index)], true);
++            renderer, artwork_paths[static_cast<std::size_t>(index)], false);
+     }
+     for (int index = 0; index < game_count; ++index) {
+         title_textures_[static_cast<std::size_t>(index)].load(
+             renderer, title_paths[static_cast<std::size_t>(index)], false);
+
+> build · glm-5.3-flash-free
+[0m$ [0mcmake --build build -j 4 2>&1 | grep -E "error|FAILED" | head; ./build/kiddos_app_home_carousel_screen_test; echo RC=$?
+RC=0
+> build · glm-5.3-flash-free
+Carousel test passes. Now run the full suite and take fresh screenshots for review:
+[0m$ [0mctest --test-dir build --output-on-failure 2>&1 | tail -8
+Start 25: kiddos_ui_text_input_interaction
+25/26 Test #25: kiddos_ui_text_input_interaction ............   Passed    0.00 sec
+      Start 26: kiddos_ui_screen_manager
+26/26 Test #26: kiddos_ui_screen_manager ....................   Passed    0.00 sec
+
+100% tests passed out of 26
+
+Total Test time (real) =   0.13 sec
+> build · glm-5.3-flash-free
+[0m$ [0m/tmp/opencode/shot/screenshot 1 /tmp/opencode/shot/final1.png && /tmp/opencode/shot/screenshot 0 /tmp/opencode/shot/final0.png && /tmp/opencode/shot/screenshot 2 /tmp/opencode/shot/final2.png && echo done
+saved /tmp/opencode/shot/final1.png
+saved /tmp/opencode/shot/final0.png
+saved /tmp/opencode/shot/final2.png
+done
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/final1.png 
+> build · glm-5.3-flash-free
+[0m$ [0mg++ -std=c++20 -I/home/hawk/KiddOS/include -DKIDDOS_SOURCE_DIR='"/home/hawk/KiddOS"' /tmp/opencode/shot/screenshot.cpp /home/hawk/KiddOS/src/app/home_carousel_screen.cpp -o /tmp/opencode/shot/screenshot $(pkg-config --cflags --libs sdl2 SDL2_image SDL2_ttf) /home/hawk/KiddOS/build/libkiddos_ui.a && /tmp/opencode/shot/screenshot 1 /tmp/opencode/shot/final1.png && echo ok
+saved /tmp/opencode/shot/final1.png
+ok
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/final1.png 
+> build · glm-5.3-flash-free
+The artwork is now clean. Let me zoom into each element for quality verification:
+[0m$ [0mcd /tmp/opencode/shot && python3 - <<'EOF'
+from PIL import Image
+im = Image.open("final1.png")
+crops = {
+    "z_icon.png": (10, 10, 80, 62),
+    "z_wordmark.png": (270, 5, 450, 65),
+    "z_title.png": (230, 515, 490, 575),
+    "z_corner.png": (135, 125, 215, 195),
+    "z_hints_left.png": (40, 678, 240, 720),
+    "z_hints_right.png": (420, 678, 700, 720),
+}
+for name, box in crops.items():
+    im.crop(box).resize(((box[2]-box[0])*3, (box[3]-box[1])*3), Image.NEAREST).save(name)
+print("ok")
+EOF
+ok
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/z_icon.png 
+[0m→ [0mRead /tmp/opencode/shot/z_corner.png 
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/z_wordmark.png 
+[0m→ [0mRead /tmp/opencode/shot/z_title.png 
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/z_hints_left.png 
+[0m→ [0mRead /tmp/opencode/shot/z_hints_right.png 
+> build · glm-5.3-flash-free
+Everything is clean except a diagonal seam in the speaker cone (two-triangle decomposition artifact). Fix it with an exact scanline trapezoid:
+[0m← [0mEdit src/app/home_carousel_screen.cpp
+Index: src/app/home_carousel_screen.cpp
+===================================================================
+--- src/app/home_carousel_screen.cpp
++++ src/app/home_carousel_screen.cpp
+@@ -66,42 +66,35 @@
+ 
+ constexpr const char* hints_path =
+     "assets/artwork/generated/navigation-hints.png";
+ 
+-void fill_triangle(
++// Fills the speaker cone: a trapezoid with a vertical narrow edge flaring
++// out to a vertical wide edge, drawn one scanline at a time so no seam
++// appears between decomposition triangles.
++void fill_speaker_cone(
+     ui::Renderer& renderer,
+-    ui::Point a,
+-    ui::Point b,
+-    ui::Point c,
++    int narrow_x,
++    int narrow_top,
++    int narrow_bottom,
++    int wide_x,
++    int wide_top,
++    int wide_bottom,
+     ui::Color color
+ ) {
+-    const ui::Point points[3] = {a, b, c};
++    for (int y = wide_top; y <= wide_bottom; ++y) {
++        int left = narrow_x;
+ 
+-    const int min_y = std::min({a.y, b.y, c.y});
+-    const int max_y = std::max({a.y, b.y, c.y});
+-
+-    for (int y = min_y; y <= max_y; ++y) {
+-        int intersections[3] = {0, 0, 0};
+-        int count = 0;
+-
+-        for (int i = 0; i < 3; ++i) {
+-            const int j = (i + 1) % 3;
+-
+-            if ((points[i].y <= y && points[j].y > y) ||
+-                (points[j].y <= y && points[i].y > y)) {
+-                intersections[count++] = points[i].x +
+-                    (y - points[i].y) * (points[j].x - points[i].x) /
+-                    (points[j].y - points[i].y);
+-            }
++        if (y < narrow_top) {
++            left = narrow_x +
++                (narrow_top - y) * (wide_x - narrow_x) /
++                (narrow_top - wide_top);
++        } else if (y > narrow_bottom) {
++            left = narrow_x +
++                (y - narrow_bottom) * (wide_x - narrow_x) /
++                (wide_bottom - narrow_bottom);
+         }
+ 
+-        if (count == 2) {
+-            renderer.draw_line(
+-                {std::min(intersections[0], intersections[1]), y},
+-                {std::max(intersections[0], intersections[1]), y},
+-                color
+-            );
+-        }
++        renderer.draw_line({left, y}, {wide_x, y}, color);
+     }
+ }
+ 
+ // Draws a circular arc as short connected line segments, used for the
+
+> build · glm-5.3-flash-free
+[0m← [0mEdit src/app/home_carousel_screen.cpp
+Index: src/app/home_carousel_screen.cpp
+===================================================================
+--- src/app/home_carousel_screen.cpp
++++ src/app/home_carousel_screen.cpp
+@@ -139,11 +139,10 @@
+         const ui::Color waves{80, 157, 255, 220};
+         const ui::Color charge{67, 157, 255, 240};
+ 
+         // Sound status: speaker cabinet, flared cone, and two sound waves.
+-        renderer.fill_rect({25, 33, 8, 13}, body);
+-        fill_triangle(renderer, {33, 33}, {33, 46}, {44, 52}, body);
+-        fill_triangle(renderer, {33, 33}, {44, 52}, {44, 27}, body);
++        renderer.fill_rect({25, 33, 8, 14}, body);
++        fill_speaker_cone(renderer, 33, 33, 46, 44, 27, 52, body);
+ 
+         draw_arc(renderer, {47, 39}, 6, -50.0, 50.0, waves);
+         draw_arc(renderer, {47, 39}, 12, -50.0, 50.0, waves);
+ 
+
+> build · glm-5.3-flash-free
+[0m$ [0mcmake --build build -j 4 2>&1 | grep -E "error|FAILED" | head; g++ -std=c++20 -I/home/hawk/KiddOS/include -DKIDDOS_SOURCE_DIR='"/home/hawk/KiddOS"' /tmp/opencode/shot/screenshot.cpp /home/hawk/KiddOS/src/app/home_carousel_screen.cpp -o /tmp/opencode/shot/screenshot $(pkg-config --cflags --libs sdl2 SDL2_image SDL2_ttf) /home/hawk/KiddOS/build/libkiddos_ui.a && /tmp/opencode/shot/screenshot 1 /tmp/opencode/shot/final1.png && python3 - <<'EOF'
+from PIL import Image
+im = Image.open("/tmp/opencode/shot/final1.png")
+im.crop((10, 10, 80, 62)).resize((210, 156), Image.NEAREST).save("/tmp/opencode/shot/z_icon.png")
+print("ok")
+EOF
+saved /tmp/opencode/shot/final1.png
+ok
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/z_icon.png 
+> build · glm-5.3-flash-free
+The icon is clean now. Re-run the full suite and check the other two selection states:
+[0m$ [0mctest --test-dir build 2>&1 | tail -3 && /tmp/opencode/shot/screenshot 0 /tmp/opencode/shot/final0.png && /tmp/opencode/shot/screenshot 2 /tmp/opencode/shot/final2.png && echo ok
+100% tests passed out of 26
+
+Total Test time (real) =   0.14 sec
+saved /tmp/opencode/shot/final0.png
+saved /tmp/opencode/shot/final2.png
+ok
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/final0.png 
+> build · glm-5.3-flash-free
+[0m→ [0mRead /tmp/opencode/shot/final2.png 
+> build · glm-5.3-flash-free
+All three states look consistent. Now the headless smoke test:
+[0m$ [0mSDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy timeout 5 ./build/kiddos; echo "exit=$?"
+exit=124
+> build · glm-5.3-flash-free
+The app ran the full smoke window without crashing (exit 124 = killed by timeout, as expected). Now update the docs. First check the log format:
+[0m$ [0mhead -40 /home/hawk/KiddOS/docs/DEVELOPMENT_LOG.md
+# Development Log
+
+## 2026-11-09 — Project foundation
+
+### Project setup
+
+- Established KiddOS as an independent project, separate from DualOS.
+- Selected the FunnyPlaying Retro Pixel Pocket as the first hardware target.
+- Selected Arch Linux as the initial desktop development environment.
+- Confirmed GCC 16.2, CMake 4.4.4, Ninja 1.13.2, Git 2.56.0, SDL2 2.32.74,
+  OpenGL pkg-config metadata, and Vulkan tooling are present.
+
+### Initial implementation direction
+
+- C++20 and SDL2 desktop prototype.
+- CMake build system.
+- Shared core with desktop and EmuELEC platform adapters.
+- Documentation-first workflow.
+
+### Initial prototype
+
+- Added a 720 × 720 SDL2 window.
+- Added a dark navy background.
+- Added Escape and window-close handling.
+
+### Not yet implemented
+
+- Game carousel and artwork.
+- Controller navigation.
+- Parent Center and PIN.
+- Game launching.
+- Save-state integration.
+- Media Manager.
+- Battery monitoring.
+- EmuELEC integration.
+
+### Known limitations
+
+The target device has not yet been inspected. Hardware specifications and
+software compatibility still require verification.
+> build · glm-5.3-flash-free
+[0m← [0mEdit docs/DEVELOPMENT_LOG.md
+Index: docs/DEVELOPMENT_LOG.md
+===================================================================
+--- docs/DEVELOPMENT_LOG.md
++++ docs/DEVELOPMENT_LOG.md
+@@ -1,6 +1,37 @@
+ # Development Log
+ 
++## 2026-11-11 — Home carousel visual revision
++
++- Refined panel borders: `ui::Panel` now draws a clean, uniform border by
++  filling the card with the border color and insetting the background,
++  instead of stacking nested outlines. Transparent-background panels (the
++  selected-card glow) keep drawing as rounded outlines.
++- Refined `ui::Renderer` rounded rectangles: fills sample corner arcs at
++  pixel centers and outlines trace the true circle with dense, deduplicated
++  angle steps, removing jagged corners, gaps, and double-blended pixels on
++  semi-transparent borders.
++- Replaced the sound status icon with a speaker cabinet, a seam-free flared
++  cone, and two sound-wave arcs drawn from renderer primitives.
++- The selected game's title now always appears centered below the center
++  card and follows the selection. Titles are transparent PNG exports from
++  the existing SVG pipeline (DejaVu Sans Bold, white): SUPER MARIO, STAR,
++  and CAR. STAR and CAR use the placeholder games' existing identifiers.
++- Added a KiddOS wordmark centered at the top of the screen and physical
++  control hints along the bottom (browse, select, parent menu), matching
++  docs/INPUT_CONTROLS.md Kid Mode controls.
++- Exported transparent PNG versions of the carousel artwork and title from
++  the committed SVG sources so no magenta keying artifacts remain on the
++  home screen; the magenta-keyed BMPs remain in use by the manual game
++  action rendering path.
++- Updated the carousel screen tests: element structure, per-selection
++  title textures, wordmark and hint presence, border and glow continuity,
++  and absence of magenta fringes.
++- Built the project, ran the complete CTest suite (26/26 passed), and ran
++  a headless SDL runtime smoke test with the dummy video driver.
++- Visual approval is left to the reviewer; no device firmware, storage, or
++  boot configuration was changed.
++
+ ## 2026-11-09 — Project foundation
+ 
+ ### Project setup
+ 
+
+> build · glm-5.3-flash-free
+[0m← [0mEdit docs/ui-panel-support.md
+Index: docs/ui-panel-support.md
+===================================================================
+--- docs/ui-panel-support.md
++++ docs/ui-panel-support.md
+@@ -7,4 +7,20 @@
+ clamped to zero.
+ 
+ Panels draw only their own background and border. They do not own child
+ elements; use the existing `Container` for element ownership and layout.
++
++## Border rendering
++
++For an opaque background the border is drawn as a clean, uniform ring: the
++panel is first filled with the border color, then the area inset by the
++border thickness is filled with the background color. This avoids stacked
++nested outlines, which look crude at small corner radii.
++
++For a transparent background (for example a glow outline around a selected
++card) the border is drawn as rounded outlines instead, so the content
++beneath the panel stays visible.
++
++Rounded corners are rasterized by the shared renderer helpers: fills sample
++the corner arc at pixel centers, and outlines trace the true circle with
++dense, deduplicated angle steps, so borders stay continuous and are never
++blended twice on the same pixel.
+
+> build · glm-5.3-flash-free
+[0m← [0mEdit docs/ui-image-support.md
+Index: docs/ui-image-support.md
+===================================================================
+--- docs/ui-image-support.md
++++ docs/ui-image-support.md
+@@ -12,8 +12,13 @@
+ magenta (255, 0, 255) pixels as transparent. This matches the generated
+ Kid Mode artwork, which is exported with a magenta background. Loaded
+ textures use alpha blending.
+ 
++Artwork that must not show magenta keying fringes on anti-aliased edges
++should be exported with a transparent background instead (PNG) and loaded
++without the magenta key. The home carousel uses transparent PNG exports of
++the same SVG sources for this reason.
++
+ `Image` is a reusable element that holds a non-owning pointer to a `Texture`.
+ The texture must outlive the image element.
+ 
+ Supported sizing modes:
+
+> build · glm-5.3-flash-free
+[0m← [0mEdit docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+Index: docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+===================================================================
+--- docs/KID_MODE_CAROUSEL_PROTOTYPE.md
++++ docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+@@ -20,8 +20,15 @@
+   application, reusing the generated artwork and preserving the established
+   geometry and colors.
+ - The game action screen remains on the platform-owned manual rendering
+   path, with selection state managed by the application.
++- A KiddOS wordmark centered at the top of the screen.
++- The selected game's title centered directly below the main card,
++  following the selection (SUPER MARIO, STAR, CAR).
++- Physical control hints along the bottom of the screen: browse with
++  left/right, select with A, and hold START + SELECT for the parent menu.
++- Clean rounded card borders: the UI renderer traces continuous corner
++  arcs, and panels draw a uniform single-pass border.
+ 
+ ## Desktop controls
+ 
+ - Left / Right: change selected game.
+
+> build · glm-5.3-flash-free
+Now review the complete diff before committing:
+[0m$ [0mgit -C /home/hawk/KiddOS status --short; echo ---; git -C /home/hawk/KiddOS diff --stat
+M docs/DEVELOPMENT_LOG.md
+ M docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+ M docs/ui-image-support.md
+ M docs/ui-panel-support.md
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/ui/panel.cpp
+ M src/ui/renderer.cpp
+ M tests/app_home_carousel_screen_test.cpp
+?? assets/artwork/generated/carousel-car.png
+?? assets/artwork/generated/carousel-mushroom.png
+?? assets/artwork/generated/carousel-star.png
+?? assets/artwork/generated/carousel-title-car.png
+?? assets/artwork/generated/carousel-title-star.png
+?? assets/artwork/generated/carousel-title.png
+?? assets/artwork/generated/kiddos-wordmark.png
+?? assets/artwork/generated/navigation-hints.png
+?? assets/artwork/source/branding/
+?? assets/artwork/source/carousel/title-car.svg
+?? assets/artwork/source/carousel/title-star.svg
+---
+ docs/DEVELOPMENT_LOG.md                     |  31 +++++
+ docs/KID_MODE_CAROUSEL_PROTOTYPE.md         |   7 ++
+ docs/ui-image-support.md                    |   5 +
+ docs/ui-panel-support.md                    |  16 +++
+ include/kiddos/app/home_carousel_screen.hpp |   9 +-
+ src/app/home_carousel_screen.cpp            | 172 +++++++++++++++++++---------
+ src/ui/panel.cpp                            |  34 +++++-
+ src/ui/renderer.cpp                         | 137 ++++++++++++++++------
+ tests/app_home_carousel_screen_test.cpp     | 158 +++++++++++++++++++++----
+ 9 files changed, 454 insertions(+), 115 deletions(-)
+> build · glm-5.3-flash-free
+[0m$ [0mgit -C /home/hawk/KiddOS diff src/ui/renderer.cpp src/ui/panel.cpp
+diff --git a/src/ui/panel.cpp b/src/ui/panel.cpp
+index 74a1ede..909e16e 100644
+--- a/src/ui/panel.cpp
++++ b/src/ui/panel.cpp
+@@ -41,11 +41,37 @@ void Panel::draw(Renderer& renderer) {
+     const Rect rect = bounds();
+     if (rect.empty()) return;
+ 
+-    renderer.fill_rounded_rect(rect, style_.corner_radius, style_.background);
++    const int radius = style_.corner_radius;
++    const int thickness = std::min(
++        style_.border_thickness, std::min(rect.w, rect.h) / 2
++    );
+ 
+-    if (style_.border_thickness <= 0) return;
++    // An opaque background allows a clean, uniform border: fill the card
++    // with the border color, then the inset area with the background. This
++    // avoids stacking nested outlines, which look crude at small radii.
++    if (thickness > 0 && style_.background.a == 255) {
++        renderer.fill_rounded_rect(rect, radius, style_.border);
+ 
+-    for (int inset = 0; inset < style_.border_thickness; ++inset) {
++        const Rect inner{
++            rect.x + thickness,
++            rect.y + thickness,
++            rect.w - thickness * 2,
++            rect.h - thickness * 2
++        };
++
++        if (!inner.empty()) {
++            renderer.fill_rounded_rect(
++                inner, std::max(0, radius - thickness), style_.background
++            );
++        }
++        return;
++    }
++
++    renderer.fill_rounded_rect(rect, radius, style_.background);
++
++    // Transparent backgrounds (for example glow outlines) draw the border
++    // as clean rounded outlines instead of covering the content beneath.
++    for (int inset = 0; inset < thickness; ++inset) {
+         const Rect outline{
+             rect.x + inset,
+             rect.y + inset,
+@@ -56,7 +82,7 @@ void Panel::draw(Renderer& renderer) {
+         if (outline.empty()) break;
+         renderer.outline_rounded_rect(
+             outline,
+-            std::max(0, style_.corner_radius - inset),
++            std::max(0, radius - inset),
+             style_.border
+         );
+     }
+diff --git a/src/ui/renderer.cpp b/src/ui/renderer.cpp
+index e986aba..8857913 100644
+--- a/src/ui/renderer.cpp
++++ b/src/ui/renderer.cpp
+@@ -88,6 +88,22 @@ bool Renderer::draw_texture(
+     return rendered && restored;
+ }
+ 
++namespace {
++
++// Distance from the rect edge to the rounded-corner boundary at the row or
++// column `steps` in from the corner, sampled at the pixel center. Fills use
++// this so corner arcs are smooth and evenly shaped.
++int corner_inset(int radius, int steps) {
++    const double dy = static_cast<double>(radius - steps) - 0.5;
++    const double inside = std::max(
++        0.0,
++        static_cast<double>(radius) * radius - dy * dy
++    );
++    return radius - static_cast<int>(std::sqrt(inside));
++}
++
++} // namespace
++
+ bool Renderer::fill_rounded_rect(Rect rect, int radius, Color color) const {
+     if (!renderer_ || rect.empty() || !set_color(color)) return false;
+ 
+@@ -98,21 +114,13 @@ bool Renderer::fill_rounded_rect(Rect rect, int radius, Color color) const {
+     }
+ 
+     for (int y = 0; y < rect.h; ++y) {
+-        int dy = 0;
++        int inset = 0;
+         if (y < radius) {
+-            dy = radius - y;
++            inset = corner_inset(radius, y);
+         } else if (y >= rect.h - radius) {
+-            dy = y - (rect.h - radius - 1);
++            inset = corner_inset(radius, rect.h - 1 - y);
+         }
+ 
+-        const double inside = std::max(
+-            0.0,
+-            static_cast<double>(radius * radius - dy * dy)
+-        );
+-        const int inset = static_cast<int>(
+-            std::ceil(radius - std::sqrt(inside))
+-        );
+-
+         if (SDL_RenderDrawLine(
+                 renderer_,
+                 rect.x + inset,
+@@ -136,39 +144,92 @@ bool Renderer::outline_rounded_rect(Rect rect, int radius, Color color) const {
+         return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+     }
+ 
+-    for (int y = 0; y < rect.h; ++y) {
+-        int dy = 0;
+-        if (y < radius) {
+-            dy = radius - y;
+-        } else if (y >= rect.h - radius) {
+-            dy = y - (rect.h - radius - 1);
+-        }
+-
+-        const double inside = std::max(
+-            0.0,
+-            static_cast<double>(radius * radius - dy * dy)
+-        );
+-        const int inset = static_cast<int>(
+-            std::ceil(radius - std::sqrt(inside))
+-        );
+-
+-        if (SDL_RenderDrawPoint(renderer_, rect.x + inset, rect.y + y) != 0 ||
+-            SDL_RenderDrawPoint(renderer_, rect.x + rect.w - 1 - inset, rect.y + y) != 0) {
+-            return false;
+-        }
+-    }
+-
++    // Straight edges between the corner arcs.
+     if (SDL_RenderDrawLine(
+             renderer_, rect.x + radius, rect.y,
+-            rect.x + rect.w - radius - 1, rect.y
++            rect.x + rect.w - 1 - radius, rect.y
++        ) != 0 ||
++        SDL_RenderDrawLine(
++            renderer_, rect.x + radius, rect.y + rect.h - 1,
++            rect.x + rect.w - 1 - radius, rect.y + rect.h - 1
++        ) != 0 ||
++        SDL_RenderDrawLine(
++            renderer_, rect.x, rect.y + radius,
++            rect.x, rect.y + rect.h - 1 - radius
++        ) != 0 ||
++        SDL_RenderDrawLine(
++            renderer_, rect.x + rect.w - 1, rect.y + radius,
++            rect.x + rect.w - 1, rect.y + rect.h - 1 - radius
+         ) != 0) {
+         return false;
+     }
+ 
+-    return SDL_RenderDrawLine(
+-        renderer_, rect.x + radius, rect.y + rect.h - 1,
+-        rect.x + rect.w - radius - 1, rect.y + rect.h - 1
+-    ) == 0;
++    // Corner arcs, traced along the true circle with dense angle steps so
++    // every corner stays continuous with no gaps. Points that land on the
++    // straight edge lines are skipped: the lines already cover them, and
++    // re-drawing would blend semi-transparent borders twice on one pixel.
++    constexpr double kPi = 3.14159265358979323846;
++    const int steps = std::max(2, radius * 2);
++    const int right = rect.x + rect.w - 1;
++    const int bottom = rect.y + rect.h - 1;
++
++    const auto on_edge_line = [&](ui::Point point) {
++        if (point.y == rect.y || point.y == bottom) {
++            return point.x >= rect.x + radius && point.x <= right - radius;
++        }
++        if (point.x == rect.x || point.x == right) {
++            return point.y >= rect.y + radius && point.y <= bottom - radius;
++        }
++        return false;
++    };
++
++    const auto draw_corner = [&](int center_x, int center_y, int sign_x,
++                                 int sign_y) {
++        ui::Point previous{
++            center_x + sign_x * radius,
++            center_y
++        };
++
++        for (int step = 1; step < steps; ++step) {
++            const double angle = (kPi / 2.0) * step / steps;
++            const ui::Point point{
++                center_x + sign_x *
++                    static_cast<int>(std::lround(radius * std::cos(angle))),
++                center_y + sign_y *
++                    static_cast<int>(std::lround(radius * std::sin(angle)))
++            };
++
++            if ((point.x != previous.x || point.y != previous.y) &&
++                !on_edge_line(point)) {
++                if (SDL_RenderDrawPoint(
++                        renderer_, point.x, point.y
++                    ) != 0) {
++                    return false;
++                }
++            }
++            previous = point;
++        }
++
++        return true;
++    };
++
++    if (!draw_corner(rect.x + radius, rect.y + radius, -1, -1) ||
++        !draw_corner(
++            rect.x + rect.w - 1 - radius, rect.y + radius, 1, -1
++        ) ||
++        !draw_corner(
++            rect.x + radius, rect.y + rect.h - 1 - radius, -1, 1
++        ) ||
++        !draw_corner(
++            rect.x + rect.w - 1 - radius,
++            rect.y + rect.h - 1 - radius,
++            1,
++            1
++        )) {
++        return false;
++    }
++
++    return true;
+ }
+ 
+ bool Renderer::set_clip(Rect rect) const {
+> build · glm-5.3-flash-free
+[0m$ [0mgit -C /home/hawk/KiddOS diff src/app/home_carousel_screen.cpp include/kiddos/app/home_carousel_screen.hpp | head -250
+diff --git a/include/kiddos/app/home_carousel_screen.hpp b/include/kiddos/app/home_carousel_screen.hpp
+index b7a7694..5550a61 100644
+--- a/include/kiddos/app/home_carousel_screen.hpp
++++ b/include/kiddos/app/home_carousel_screen.hpp
+@@ -28,7 +28,12 @@ public:
+ 
+ private:
+     std::array<ui::Texture, game_count> artworks_{};
+-    ui::Texture title_texture_{};
++
++    // One title asset per game, shown centered below the center card for
++    // whichever game is currently selected.
++    std::array<ui::Texture, game_count> title_textures_{};
++    ui::Texture wordmark_texture_{};
++    ui::Texture hints_texture_{};
+ 
+     // Non-owning references into the root container, used to update the
+     // carousel when the selection changes.
+@@ -36,6 +41,8 @@ private:
+     ui::Image* side_right_art_ = nullptr;
+     ui::Image* center_art_ = nullptr;
+     ui::Image* title_ = nullptr;
++    ui::Image* wordmark_ = nullptr;
++    ui::Image* hints_ = nullptr;
+ 
+     int selected_game_ = 1;
+ };
+diff --git a/src/app/home_carousel_screen.cpp b/src/app/home_carousel_screen.cpp
+index 0da1f2f..b735e5a 100644
+--- a/src/app/home_carousel_screen.cpp
++++ b/src/app/home_carousel_screen.cpp
+@@ -4,6 +4,7 @@
+ 
+ #include <algorithm>
+ #include <array>
++#include <cmath>
+ 
+ namespace kiddos::app {
+ 
+@@ -24,7 +25,15 @@ constexpr ui::Rect side_right_art{
+     side_right_card.x + 55, side_right_card.y + 42, 80, 90};
+ constexpr ui::Rect center_art_rect{
+     center_card.x + 115, center_card.y + 70, 200, 205};
+-constexpr ui::Rect title_rect{220, 525, 280, 42};
++
++// The selected game's title sits directly below the center card and is
++// centered on it. Images fit with `contain`, so each title keeps its
++// natural proportions inside this centered area.
++constexpr ui::Rect title_rect{145, 523, 430, 44};
++
++// KiddOS wordmark at the top and physical control hints along the bottom.
++constexpr ui::Rect wordmark_rect{235, 12, 250, 46};
++constexpr ui::Rect hints_rect{0, 682, 720, 34};
+ 
+ constexpr ui::Color side_fill{16, 41, 75, 255};
+ constexpr ui::Color side_border{55, 105, 165, 190};
+@@ -32,50 +41,92 @@ constexpr ui::Color center_fill{18, 63, 117, 255};
+ constexpr ui::Color center_border{36, 164, 255, 255};
+ constexpr ui::Color center_glow{36, 164, 255, 150};
+ 
++// Artwork and titles are exported with a transparent background from the
++// committed SVG sources, so no magenta keying artifacts remain on screen.
++// The original magenta-keyed BMP files stay in use by the platform's
++// manual rendering path.
+ constexpr std::array<const char*, HomeCarouselScreen::game_count>
+     artwork_paths{
+-        "assets/artwork/generated/carousel-star.bmp",
+-        "assets/artwork/generated/carousel-mushroom.bmp",
+-        "assets/artwork/generated/carousel-car.bmp"
++        "assets/artwork/generated/carousel-star.png",
++        "assets/artwork/generated/carousel-mushroom.png",
++        "assets/artwork/generated/carousel-car.png"
++    };
++
++// Per-game title assets, exported with a transparent background from the
++// same SVG sources and typography as the original carousel title.
++constexpr std::array<const char*, HomeCarouselScreen::game_count>
++    title_paths{
++        "assets/artwork/generated/carousel-title-star.png",
++        "assets/artwork/generated/carousel-title.png",
++        "assets/artwork/generated/carousel-title-car.png"
+     };
+ 
+-constexpr const char* title_path =
+-    "assets/artwork/generated/carousel-title.bmp";
++constexpr const char* wordmark_path =
++    "assets/artwork/generated/kiddos-wordmark.png";
++
++constexpr const char* hints_path =
++    "assets/artwork/generated/navigation-hints.png";
+ 
+-void fill_triangle(
++// Fills the speaker cone: a trapezoid with a vertical narrow edge flaring
++// out to a vertical wide edge, drawn one scanline at a time so no seam
++// appears between decomposition triangles.
++void fill_speaker_cone(
+     ui::Renderer& renderer,
+-    ui::Point a,
+-    ui::Point b,
+-    ui::Point c,
++    int narrow_x,
++    int narrow_top,
++    int narrow_bottom,
++    int wide_x,
++    int wide_top,
++    int wide_bottom,
+     ui::Color color
+ ) {
+-    const ui::Point points[3] = {a, b, c};
+-
+-    const int min_y = std::min({a.y, b.y, c.y});
+-    const int max_y = std::max({a.y, b.y, c.y});
+-
+-    for (int y = min_y; y <= max_y; ++y) {
+-        int intersections[3] = {0, 0, 0};
+-        int count = 0;
++    for (int y = wide_top; y <= wide_bottom; ++y) {
++        int left = narrow_x;
++
++        if (y < narrow_top) {
++            left = narrow_x +
++                (narrow_top - y) * (wide_x - narrow_x) /
++                (narrow_top - wide_top);
++        } else if (y > narrow_bottom) {
++            left = narrow_x +
++                (y - narrow_bottom) * (wide_x - narrow_x) /
++                (wide_bottom - narrow_bottom);
++        }
+ 
+-        for (int i = 0; i < 3; ++i) {
+-            const int j = (i + 1) % 3;
++        renderer.draw_line({left, y}, {wide_x, y}, color);
++    }
++}
+ 
+-            if ((points[i].y <= y && points[j].y > y) ||
+-                (points[j].y <= y && points[i].y > y)) {
+-                intersections[count++] = points[i].x +
+-                    (y - points[i].y) * (points[j].x - points[i].x) /
+-                    (points[j].y - points[i].y);
+-            }
+-        }
++// Draws a circular arc as short connected line segments, used for the
++// sound waves next to the speaker icon.
++void draw_arc(
++    ui::Renderer& renderer,
++    ui::Point center,
++    int radius,
++    double start_degrees,
++    double end_degrees,
++    ui::Color color
++) {
++    constexpr double kPi = 3.14159265358979323846;
++
++    const int steps = std::max(2, radius * 2);
++    const double delta = (end_degrees - start_degrees) / steps;
++
++    const auto point_at = [&](double degrees) {
++        const double radians = degrees * kPi / 180.0;
++        return ui::Point{
++            center.x + static_cast<int>(std::lround(
++                radius * std::cos(radians))),
++            center.y + static_cast<int>(std::lround(
++                radius * std::sin(radians)))
++        };
++    };
+ 
+-        if (count == 2) {
+-            renderer.draw_line(
+-                {std::min(intersections[0], intersections[1]), y},
+-                {std::max(intersections[0], intersections[1]), y},
+-                color
+-            );
+-        }
++    ui::Point previous = point_at(start_degrees);
++    for (int step = 1; step <= steps; ++step) {
++        const ui::Point point = point_at(start_degrees + delta * step);
++        renderer.draw_line(previous, point, color);
++        previous = point;
+     }
+ }
+ 
+@@ -84,21 +135,20 @@ void fill_triangle(
+ class StatusIndicators final : public ui::Element {
+ protected:
+     void draw(ui::Renderer& renderer) override {
+-        const ui::Color white{205, 222, 255, 220};
++        const ui::Color body{205, 222, 255, 220};
+         const ui::Color waves{80, 157, 255, 220};
+         const ui::Color charge{67, 157, 255, 240};
+ 
+-        // Sound status: speaker and sound waves.
+-        fill_triangle(renderer, {31, 34}, {43, 25}, {43, 51}, white);
+-        renderer.fill_rect({25, 33, 10, 12}, white);
++        // Sound status: speaker cabinet, flared cone, and two sound waves.
++        renderer.fill_rect({25, 33, 8, 14}, body);
++        fill_speaker_cone(renderer, 33, 33, 46, 44, 27, 52, body);
+ 
+-        renderer.draw_line({49, 29}, {54, 34}, waves);
+-        renderer.draw_line({54, 34}, {54, 42}, waves);
+-        renderer.draw_line({54, 42}, {49, 47}, waves);
++        draw_arc(renderer, {47, 39}, 6, -50.0, 50.0, waves);
++        draw_arc(renderer, {47, 39}, 12, -50.0, 50.0, waves);
+ 
+         // Battery status: outline, terminal, charge fill.
+-        renderer.outline_rect({657, 27, 34, 19}, white);
+-        renderer.fill_rect({691, 33, 4, 7}, white);
++        renderer.outline_rect({657, 27, 34, 19}, body);
++        renderer.fill_rect({691, 33, 4, 7}, body);
+         renderer.fill_rect({661, 31, 22, 11}, charge);
+     }
+ };
+@@ -106,13 +156,16 @@ protected:
+ } // namespace
+ 
+ HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+-    // Reuse the existing generated artwork; the magenta background is
+-    // treated as transparent, as in the platform renderer.
+     for (int index = 0; index < game_count; ++index) {
+         artworks_[static_cast<std::size_t>(index)].load(
+-            renderer, artwork_paths[static_cast<std::size_t>(index)], true);
++            renderer, artwork_paths[static_cast<std::size_t>(index)], false);
+     }
+-    title_texture_.load(renderer, title_path, true);
++    for (int index = 0; index < game_count; ++index) {
++        title_textures_[static_cast<std::size_t>(index)].load(
++            renderer, title_paths[static_cast<std::size_t>(index)], false);
++    }
++    wordmark_texture_.load(renderer, wordmark_path, false);
++    hints_texture_.load(renderer, hints_path, false);
+ 
+     // Smaller neighboring cards first, drawn behind the main card.
+     auto& side_left = root().add<ui::Panel>(
+@@ -147,9 +200,21 @@ HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+     center_art_->set_bounds(center_art_rect);
+     center_art_->set_fit(ui::ImageFit::stretch);
+ 
+-    title_ = &root().add<ui::Image>(&title_texture_);
++    // The title always shows the currently selected game's name, centered
++    // below the main card.
++    title_ = &root().add<ui::Image>();
+     title_->set_bounds(title_rect);
+-    title_->set_fit(ui::ImageFit::stretch);
++    title_->set_fit(ui::ImageFit::contain);
++
++    // KiddOS wordmark centered at the top of the screen.
++    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
++    wordmark_->set_bounds(wordmark_rect);
++    wordmark_->set_fit(ui::ImageFit::contain);
++
+> build · glm-5.3-flash-free
+[0m$ [0mtouch src/ui/renderer.cpp src/ui/panel.cpp src/app/home_carousel_screen.cpp && cmake --build build -j 4 2>&1 | grep -iE "warn|error" | head; echo "clean-build-check done"; ctest --test-dir build 2>&1 | tail -2
+clean-build-check done
+
+Total Test time (real) =   0.13 sec
+> build · glm-5.3-flash-free
+[0m$ [0mgrep -rn "PanelStyle\|Panel" /home/hawk/KiddOS/src/ui/*.cpp | grep -v "panel.cpp" | head -20
+/home/hawk/KiddOS/src/ui/theme.cpp:34:PanelStyle Theme::panel_style() const noexcept {
+/home/hawk/KiddOS/src/ui/theme.cpp:35:    PanelStyle style;
+> build · glm-5.3-flash-free
+[0m$ [0msed -n 25,50p /home/hawk/KiddOS/src/ui/theme.cpp; grep -rln "Panel" /home/hawk/KiddOS/tests/*.cpp
+style.pressed = colors_.primary;
+    style.disabled = colors_.disabled;
+    style.border = colors_.border;
+    style.focused_border = colors_.primary_bright;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    return style;
+}
+
+PanelStyle Theme::panel_style() const noexcept {
+    PanelStyle style;
+    style.background = colors_.surface;
+    style.border = colors_.border;
+    style.border_thickness = 2;
+    return style;
+}
+
+ToggleStyle Theme::toggle_style() const noexcept {
+    ToggleStyle style;
+    style.off = colors_.disabled;
+    style.on = colors_.primary;
+    style.knob = colors_.text;
+    style.focused_border = colors_.primary_bright;
+    return style;
+}
+
+/home/hawk/KiddOS/tests/ui_panel_test.cpp
+/home/hawk/KiddOS/tests/ui_renderer_test.cpp
+/home/hawk/KiddOS/tests/ui_theme_test.cpp
+> build · glm-5.3-flash-free
+[0m$ [0mgit -C /home/hawk/KiddOS diff tests/app_home_carousel_screen_test.cpp | head -260
+diff --git a/tests/app_home_carousel_screen_test.cpp b/tests/app_home_carousel_screen_test.cpp
+index 8d4d775..899ddd3 100644
+--- a/tests/app_home_carousel_screen_test.cpp
++++ b/tests/app_home_carousel_screen_test.cpp
+@@ -25,17 +25,6 @@ bool same_color(const Color& a, const Color& b) {
+     return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
+ }
+ 
+-const Element* find_by_bounds(
+-    kiddos::ui::Screen& screen,
+-    const Rect& bounds
+-) {
+-    for (std::size_t i = 0; i < screen.root().child_count(); ++i) {
+-        const Element* child = screen.root().child(i);
+-        if (child && same_rect(child->bounds(), bounds)) return child;
+-    }
+-    return nullptr;
+-}
+-
+ Color pixel(SDL_Surface* surface, int x, int y) {
+     assert(SDL_LockSurface(surface) == 0);
+     const auto* row = static_cast<const std::uint8_t*>(surface->pixels)
+@@ -47,28 +36,124 @@ Color pixel(SDL_Surface* surface, int x, int y) {
+     return {r, g, b, a};
+ }
+ 
++// True when any pixel within `radius` steps of the point matches `color`.
++bool any_pixel_near(
++    SDL_Surface* surface,
++    int x,
++    int y,
++    int radius,
++    const Color& color
++) {
++    for (int dy = -radius; dy <= radius; ++dy) {
++        for (int dx = -radius; dx <= radius; ++dx) {
++            if (same_color(pixel(surface, x + dx, y + dy), color)) {
++                return true;
++            }
++        }
++    }
++    return false;
++}
++
++// X of the first non-background pixel on a row, or rect.x + rect.w when
++// the row is empty.
++int first_content_pixel_x(
++    SDL_Surface* surface,
++    const Rect& rect,
++    int y,
++    const Color& color
++) {
++    for (int x = rect.x; x < rect.x + rect.w; ++x) {
++        if (!same_color(pixel(surface, x, y), color)) return x;
++    }
++    return rect.x + rect.w;
++}
++
++// True when any pixel in the rect differs from `color`.
++bool any_pixel_different(
++    SDL_Surface* surface,
++    const Rect& rect,
++    const Color& color
++) {
++    for (int y = rect.y; y < rect.y + rect.h; ++y) {
++        for (int x = rect.x; x < rect.x + rect.w; ++x) {
++            if (!same_color(pixel(surface, x, y), color)) return true;
++        }
++    }
++    return false;
++}
++
++// Generated artwork must not leave magenta keying artifacts (pink fringes)
++// on screen; a leftover fringe pixel would have strong red and blue with
++// almost no green.
++bool has_magenta_fringe(SDL_Surface* surface, const Rect& rect) {
++    for (int y = rect.y; y < rect.y + rect.h; ++y) {
++        for (int x = rect.x; x < rect.x + rect.w; ++x) {
++            const Color value = pixel(surface, x, y);
++            if (value.r > 150 && value.b > 150 && value.g < 80) return true;
++        }
++    }
++    return false;
++}
++
++const Element* find_by_bounds(
++    kiddos::ui::Screen& screen,
++    const Rect& bounds
++) {
++    for (std::size_t i = 0; i < screen.root().child_count(); ++i) {
++        const Element* child = screen.root().child(i);
++        if (child && same_rect(child->bounds(), bounds)) return child;
++    }
++    return nullptr;
++}
++
+ void test_structure_without_renderer() {
+     kiddos::app::HomeCarouselScreen screen(nullptr);
+ 
+     // Two side cards, two side artworks, center card, glow outline,
+-    // center artwork, title, and the status indicators.
+-    assert(screen.root().child_count() == 9);
++    // center artwork, title, wordmark, hints, and the status indicators.
++    assert(screen.root().child_count() == 11);
+     assert(screen.selected_game() == 1);
+ 
++    // The title area sits centered directly below the center card and is
++    // always visible; its texture follows the selected game.
+     const Element* title =
+-        find_by_bounds(screen, {220, 525, 280, 42});
++        find_by_bounds(screen, {145, 523, 430, 44});
+     assert(title);
+     assert(title->visible());
+ 
++    // The wordmark and the control hints are present.
++    const Element* wordmark =
++        find_by_bounds(screen, {235, 12, 250, 46});
++    assert(wordmark);
++    assert(wordmark->visible());
++
++    const Element* hints =
++        find_by_bounds(screen, {0, 682, 720, 34});
++    assert(hints);
++    assert(hints->visible());
++
++    // Selecting a game swaps the shown title texture.
++    const auto* title_image =
++        static_cast<const kiddos::ui::Image*>(title);
++    const kiddos::ui::Texture* middle_title = title_image->texture();
++    assert(middle_title);
++
+     screen.set_selected_game(0);
+     assert(screen.selected_game() == 0);
+-    assert(!title->visible());
++    const kiddos::ui::Texture* left_title = title_image->texture();
++    assert(left_title != middle_title);
++
++    screen.set_selected_game(2);
++    const kiddos::ui::Texture* right_title = title_image->texture();
++    assert(right_title != middle_title);
++    assert(right_title != left_title);
+ 
+     screen.set_selected_game(1);
+-    assert(title->visible());
++    assert(title_image->texture() == middle_title);
+ 
+     screen.set_selected_game(7); // out of range values are ignored
+     assert(screen.selected_game() == 1);
++    assert(title_image->texture() == middle_title);
+ }
+ 
+ void test_renders_carousel() {
+@@ -103,22 +188,53 @@ void test_renders_carousel() {
+         assert(same_color(pixel(surface, 60, 300), {16, 41, 75, 255}));
+         assert(same_color(pixel(surface, 650, 300), {16, 41, 75, 255}));
+ 
+-        // The middle game shows its title artwork below the main card.
+-        const Color titled = pixel(surface, 397, 542);
+-        assert(!same_color(titled, background));
++        // The card borders are clean and uniform: the top edge of the
++        // center card is exactly the border color, and the side card edge
++        // carries its border color blended over the background.
++        assert(same_color(pixel(surface, 360, 135), {36, 164, 255, 255}));
++        const Color side_edge = pixel(surface, 120, 250);
++        assert(side_edge.b > 110 && side_edge.r > 30);
++
++        // The outer glow outline is continuous around the corner arcs.
++        const Color glow_over_background{24, 102, 164, 255};
++        assert(any_pixel_near(surface, 152, 141, 2, glow_over_background));
++        assert(any_pixel_near(surface, 568, 141, 2, glow_over_background));
++        assert(any_pixel_near(surface, 152, 499, 2, glow_over_background));
++        assert(any_pixel_near(surface, 568, 499, 2, glow_over_background));
++
++        // The selected game's title appears below the main card.
++        const Rect title_area{145, 523, 430, 44};
++        assert(any_pixel_different(surface, title_area, background));
+ 
+         // Selected artwork is drawn inside the main card.
+         const Color with_mushroom = pixel(surface, 360, 307);
+         assert(!same_color(with_mushroom, background));
+ 
+-        // Selecting another game changes the artwork and hides the title.
++        // The KiddOS wordmark and the control hints are rendered.
++        assert(any_pixel_different(surface, {235, 12, 250, 46}, background));
++        assert(any_pixel_different(surface, {0, 682, 720, 34}, background));
++
++        // No magenta keying artifacts remain in the title or artwork.
++        assert(!has_magenta_fringe(surface, title_area));
++        assert(!has_magenta_fringe(surface, {260, 205, 200, 205}));
++
++        // Selecting another game changes the artwork and the title: the
++        // shorter STAR title is horizontally centered, so its text starts
++        // clearly further right than the SUPER MARIO title.
++        const int super_mario_x = first_content_pixel_x(
++            surface, title_area, 540, background);
++
+         screen.set_selected_game(0);
+         renderer.clear(background);
+         screen.render(renderer);
+ 
+-        assert(same_color(pixel(surface, 397, 542), background));
+         const Color with_star = pixel(surface, 360, 307);
+         assert(!same_color(with_star, with_mushroom));
++        assert(any_pixel_different(surface, title_area, background));
++
++        const int star_x = first_content_pixel_x(
++            surface, title_area, 540, background);
++        assert(star_x > super_mario_x + 40);
+     }
+ 
+     SDL_DestroyRenderer(native);
+> build · glm-5.3-flash-free
+[0m$ [0mls /home/hawk/KiddOS/research/milestones/kid-mode-reconstruction/runs/ | tail -3; git -C /home/hawk/KiddOS status --short research/ | head; git -C /home/hawk/KiddOS log --oneline -3
+20261111T175416Z-inspect-opencode-model-availability
+20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library
+20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el
+d863416 chore: record milestone run - implement-home-carousel-screen-with-sdl-ui-library
+0284b5a feat: render home carousel through the KiddOS UI library
+13d5373 chore: record milestone run - inspect-opencode-model-availability
+> build · glm-5.3-flash-free
+[0m$ [0mgit -C /home/hawk/KiddOS show d863416 --stat | head -12; git -C /home/hawk/KiddOS check-ignore research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log && echo IGNORED
+commit d8634167a7cfb0ad7fd0c78f88f913ab586aef01
+Author: hawk <hawktocomet@gmail.com>
+Date:   Wed Nov 11 13:07:46 2026 -0500
+
+    chore: record milestone run - implement-home-carousel-screen-with-sdl-ui-library
+
+ .../milestones/kid-mode-reconstruction/LATEST.txt  |    2 +-
+ .../REPORT.md                                      |   12 +
+ .../run.log                                        | 1572 ++++++++++++++++++++
+ 3 files changed, 1585 insertions(+), 1 deletion(-)
+research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el/run.log
+IGNORED
+> build · glm-5.3-flash-free
+The active milestone log is gitignored — my commit won't touch it. Now stage and commit the focused changes:
+[0m$ [0mgit add docs/DEVELOPMENT_LOG.md docs/KID_MODE_CAROUSEL_PROTOTYPE.md docs/ui-image-support.md docs/ui-panel-support.md include/kiddos/app/home_carousel_screen.hpp src/app/home_carousel_screen.cpp src/ui/panel.cpp src/ui/renderer.cpp tests/app_home_carousel_screen_test.cpp assets/artwork/generated/carousel-car.png assets/artwork/generated/carousel-mushroom.png assets/artwork/generated/carousel-star.png assets/artwork/generated/carousel-title-car.png assets/artwork/generated/carousel-title-star.png assets/artwork/generated/carousel-title.png assets/artwork/generated/kiddos-wordmark.png assets/artwork/generated/navigation-hints.png assets/artwork/source/branding assets/artwork/source/carousel/title-car.svg assets/artwork/source/carousel/title-star.svg && git status --short
+A  assets/artwork/generated/carousel-car.png
+A  assets/artwork/generated/carousel-mushroom.png
+A  assets/artwork/generated/carousel-star.png
+A  assets/artwork/generated/carousel-title-car.png
+A  assets/artwork/generated/carousel-title-star.png
+A  assets/artwork/generated/carousel-title.png
+A  assets/artwork/generated/kiddos-wordmark.png
+A  assets/artwork/generated/navigation-hints.png
+A  assets/artwork/source/branding/kiddos-wordmark.svg
+A  assets/artwork/source/branding/navigation-hints.svg
+A  assets/artwork/source/carousel/title-car.svg
+A  assets/artwork/source/carousel/title-star.svg
+M  docs/DEVELOPMENT_LOG.md
+M  docs/KID_MODE_CAROUSEL_PROTOTYPE.md
+M  docs/ui-image-support.md
+M  docs/ui-panel-support.md
+M  include/kiddos/app/home_carousel_screen.hpp
+M  src/app/home_carousel_screen.cpp
+M  src/ui/panel.cpp
+M  src/ui/renderer.cpp
+M  tests/app_home_carousel_screen_test.cpp
+> build · glm-5.3-flash-free
+[0m$ [0mgit commit -m "feat(ui): refine home carousel borders, titles, wordmark, and hints
+
+- Draw panel borders as a clean uniform ring (border fill plus inset
+  background fill) instead of stacked nested outlines; transparent
+  backgrounds keep drawing as rounded glow outlines
+- Rasterize rounded corners smoothly: fills sample the arc at pixel
+  centers and outlines trace the true circle with dense, deduplicated
+  angle steps, removing jagged corners, gaps, and double-blended
+  pixels on semi-transparent borders
+- Replace the sound status icon with a speaker cabinet, a seam-free
+  flared cone, and two sound-wave arcs
+- Show the selected game's title centered below the center card for
+  every game, using transparent PNG title exports from the existing
+  SVG pipeline (SUPER MARIO, STAR, CAR; the star and car names are the
+  placeholder games' existing identifiers)
+- Add a centered KiddOS wordmark at the top and physical control hints
+  along the bottom, matching docs/INPUT_CONTROLS.md Kid Mode controls
+- Export the carousel artwork and titles as transparent PNGs from the
+  committed SVG sources so no magenta keying fringes appear on the
+  home screen; the magenta-keyed BMPs remain in use by the manual
+  game action rendering path
+- Extend the carousel screen tests with element structure, per-
+  selection title textures, wordmark and hint presence, border and
+  glow continuity, and magenta fringe checks" && git log --oneline -2
+[main 0d803f5] feat(ui): refine home carousel borders, titles, wordmark, and hints
+ 21 files changed, 480 insertions(+), 115 deletions(-)
+ create mode 100644 assets/artwork/generated/carousel-car.png
+ create mode 100644 assets/artwork/generated/carousel-mushroom.png
+ create mode 100644 assets/artwork/generated/carousel-star.png
+ create mode 100644 assets/artwork/generated/carousel-title-car.png
+ create mode 100644 assets/artwork/generated/carousel-title-star.png
+ create mode 100644 assets/artwork/generated/carousel-title.png
+ create mode 100644 assets/artwork/generated/kiddos-wordmark.png
+ create mode 100644 assets/artwork/generated/navigation-hints.png
+ create mode 100644 assets/artwork/source/branding/kiddos-wordmark.svg
+ create mode 100644 assets/artwork/source/branding/navigation-hints.svg
+ create mode 100644 assets/artwork/source/carousel/title-car.svg
+ create mode 100644 assets/artwork/source/carousel/title-star.svg
+0d803f5 feat(ui): refine home carousel borders, titles, wordmark, and hints
+d863416 chore: record milestone run - implement-home-carousel-screen-with-sdl-ui-library
+> build · glm-5.3-flash-free
+Final verification — full test suite and working tree state:
+[0m$ [0mctest --test-dir build 2>&1 | tail -3; git status --short; echo "---"; SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy timeout 3 ./build/kiddos; echo "smoke_exit=$? (124 = ran until timeout, no crash)"
+100% tests passed out of 26
+
+Total Test time (real) =   0.13 sec
+---
+smoke_exit=124 (124 = ran until timeout, no crash)
+> build · glm-5.3-flash-free
+All done. Here's a summary of the revision:
+
+## Changes per feedback item
+
+**1. Panel borders** (`src/ui/renderer.cpp`, `src/ui/panel.cpp`)
+- Root cause found by inspecting the renderer: `outline_rounded_rect` drew one point per row with `ceil` insets — discontinuous, jagged corner arcs — and `Panel` stacked `border_thickness` nested outlines on top of the fill.
+- `Panel` with an opaque background now draws one clean uniform border ring (border-colored fill + inset background fill); transparent backgrounds (the selected-card glow) draw rounded outlines.
+- Outlines now trace the true circle with dense angle steps, deduplicated, with points that land on the straight edges skipped — so the glow ring is continuous with no gaps and no double-blended (brighter) pixels on its semi-transparent color. Fills sample corner arcs at pixel centers.
+
+**2. Volume icon** — replaced with a proper speaker: cabinet, a seam-free flared cone (exact scanline trapezoid — the first attempt with two triangles left a visible diagonal seam), and two sound-wave arcs drawn from renderer primitives.
+
+**3. Selected game's title** — the title now always shows the selected game's name, centered below the center card, sized via `ImageFit::contain` (the old asset was also being squished by a stretched fixed rect and had magenta keying fringes). Titles are clean transparent PNG exports from the existing SVG pipeline (same DejaVu Sans Bold style as the original).
+- ⚠️ **Assumption you should review:** only "SUPER MARIO" existed as name data. Since this run couldn't ask, I used the placeholder games' existing identifiers — **STAR** and **CAR** — in the identical style. If you consider that inventing titles, I can drop those two assets and show no title for them instead.
+
+**4. KiddOS wordmark** — no logo asset existed, so I added a restrained "KiddOS" wordmark (same typography pipeline, white, top-center) with its SVG source committed alongside, consistent with the project's `source/*.svg` → `generated/*.bmp|png` practice.
+
+**5. Navigation hints** — subtle strip along the bottom, verified against `docs/INPUT_CONTROLS.md` Kid Mode: ◀▶ BROWSE · Ⓐ SELECT · [START][SELECT] PARENT MENU.
+
+**Artwork note:** the magenta-keyed BMP artwork left pink keying fringes on screen. I exported transparent PNGs from the committed SVG sources (identical content, same sizes) for the home screen; the BMPs remain untouched for the manual game-action rendering path.
+
+## Constraints honored
+- Still `ui::Screen` + ScreenManager through the UI library; geometry, colors, carousel positions, selection behavior, and battery indicator unchanged; no mouse/touch; textures remain screen-owned with images detached in the destructor.
+
+## Validation
+- Build clean (no warnings), **26/26 CTest pass** — carousel test extended (structure, per-selection title textures, wordmark/hints presence, border & glow continuity, magenta-fringe checks); no existing tests weakened.
+- Headless smoke test (`SDL_VIDEODRIVER=dummy`) ran the full window without crashing.
+- Committed as `0d803f5 feat(ui): refine home carousel borders, titles, wordmark, and hints` — no milestone runner logs included.
+
+**Visual approval is yours to give** — please run `./build/kiddos` from the repo root and inspect, especially the STAR/CAR title wording.

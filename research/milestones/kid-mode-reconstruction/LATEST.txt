@@ -1,1 +1,1 @@
-research/milestones/kid-mode-reconstruction/runs/20261111T175440Z-implement-home-carousel-screen-with-sdl-ui-library
+research/milestones/kid-mode-reconstruction/runs/20261111T181058Z-polish-home-carousel-presentation-and-add-missing-ui-el
