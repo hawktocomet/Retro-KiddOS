@@ -232,3 +232,12 @@ include(GNUInstallDirs)
 install(TARGETS kiddos_ui ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY include/kiddos DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.hpp")
+
+if(BUILD_TESTING)
+    add_executable(kiddos_ui_screen_manager_test
+        tests/ui_screen_manager_test.cpp)
+    target_include_directories(kiddos_ui_screen_manager_test PRIVATE include)
+    target_link_libraries(kiddos_ui_screen_manager_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_screen_manager
+        COMMAND kiddos_ui_screen_manager_test)
+endif()
