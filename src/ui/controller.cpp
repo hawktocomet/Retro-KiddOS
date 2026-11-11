@@ -1,5 +1,6 @@
 #include "kiddos/ui/controller.hpp"
 #include "kiddos/ui/toggle.hpp"
+#include "kiddos/ui/checkbox.hpp"
 #include "kiddos/ui/slider.hpp"
 #include "kiddos/ui/list_view.hpp"
 
@@ -42,6 +43,9 @@ bool ControllerInteraction::handle(UIAction action) {
             }
             if (auto* toggle = dynamic_cast<Toggle*>(focused)) {
                 return toggle->toggle();
+            }
+            if (auto* checkbox = dynamic_cast<Checkbox*>(focused)) {
+                return checkbox->toggle();
             }
             if (auto* list = dynamic_cast<ListView*>(focused)) {
                 return list->activate_selected();

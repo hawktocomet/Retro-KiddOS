@@ -32,6 +32,7 @@ add_library(kiddos_ui STATIC
     src/ui/slider.cpp
     src/ui/theme.cpp
     src/ui/list_view.cpp
+    src/ui/checkbox.cpp
 )
 
 target_include_directories(kiddos_ui PUBLIC include)
@@ -159,6 +160,11 @@ if(BUILD_TESTING)
     target_include_directories(kiddos_ui_list_view_test PRIVATE include)
     target_link_libraries(kiddos_ui_list_view_test PRIVATE kiddos_ui)
     add_test(NAME kiddos_ui_list_view COMMAND kiddos_ui_list_view_test)
+
+    add_executable(kiddos_ui_checkbox_test tests/ui_checkbox_test.cpp)
+    target_include_directories(kiddos_ui_checkbox_test PRIVATE include)
+    target_link_libraries(kiddos_ui_checkbox_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_ui_checkbox COMMAND kiddos_ui_checkbox_test)
 endif()
 
 

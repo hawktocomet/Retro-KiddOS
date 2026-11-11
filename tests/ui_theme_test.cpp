@@ -50,5 +50,10 @@ int main() {
     assert(list_style.background.r == theme.colors().surface.r);
     assert(list_style.text.r == theme.colors().text.r);
 
+    const CheckboxStyle checkbox = theme.checkbox_style();
+    assert(checkbox.background.r == theme.colors().surface.r);
+    assert(checkbox.checked.r == theme.colors().primary.r);
+    assert(checkbox.text.r == theme.colors().text.r);
+
     return 0;
 }

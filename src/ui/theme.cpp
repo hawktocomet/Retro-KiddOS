@@ -76,4 +76,16 @@ ListViewStyle Theme::list_view_style() const noexcept {
     return style;
 }
 
+CheckboxStyle Theme::checkbox_style() const noexcept {
+    CheckboxStyle style;
+    style.background = colors_.surface;
+    style.checked = colors_.primary;
+    style.checkmark = colors_.text;
+    style.border = colors_.border;
+    style.focused_border = colors_.primary_bright;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    return style;
+}
+
 }
