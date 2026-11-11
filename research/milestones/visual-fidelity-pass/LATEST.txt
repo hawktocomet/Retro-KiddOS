@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T202409Z-verify-cartridge-toggle-behavior-and-action-mapping
+research/milestones/visual-fidelity-pass/runs/20261111T203718Z-complete-cartridge-toggle-action-mapping-coverage
