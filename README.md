@@ -71,6 +71,8 @@ Additional requirements and design references:
 - [Hardware Verification](docs/HARDWARE.md)
 - [Development Log](docs/DEVELOPMENT_LOG.md)
 - [Contributing](CONTRIBUTING.md)
+- [KiddOS UI Library](docs/KIDDOS_UI_LIBRARY.md)
+- [Development Status](docs/DEVELOPMENT_STATUS.md)
 
 ## License
 
