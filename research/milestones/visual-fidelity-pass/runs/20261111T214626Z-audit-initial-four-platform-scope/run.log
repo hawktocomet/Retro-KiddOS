@@ -1,0 +1,33 @@
+--- Platform definitions and counts ---
+include/kiddos/app/application.hpp:23:    static constexpr int game_count_ = 9;
+include/kiddos/app/home_carousel_screen.hpp:16:    static constexpr int game_count = 9;
+include/kiddos/app/home_carousel_screen.hpp:28:    std::array<std::array<ui::Texture, game_count>, 2> cartridge_textures_{};
+src/app/application.cpp:110:                        (selected_game_ + game_count_ - 1) % game_count_;
+src/app/application.cpp:115:                        (selected_game_ + 1) % game_count_;
+src/app/home_carousel_screen.cpp:129:        for (int cartridge = 0; cartridge < game_count; ++cartridge) {
+src/app/home_carousel_screen.cpp:174:        (selected_game_ + game_count - 1) % game_count,
+src/app/home_carousel_screen.cpp:176:        (selected_game_ + 1) % game_count
+src/app/home_carousel_screen.cpp:196:    if (index < 0 || index >= game_count) return;
+src/app/home_carousel_screen.cpp:201:        previous >= 0 && index == (previous + 1) % game_count;
+src/app/home_carousel_screen.cpp:203:        previous >= 0 && index == (previous + game_count - 1) % game_count;
+src/app/home_carousel_screen.cpp:222:        (index + game_count - 1) % game_count,
+src/app/home_carousel_screen.cpp:224:        (index + 1) % game_count
+tests/ui_renderer_test.cpp:14:    SDL_GetRGBA(*value, surface->format, &r, &g, &b, &a);
+tests/ui_renderer_test.cpp:24:        0, 32, 24, 32, SDL_PIXELFORMAT_RGBA32
+tests/ui_renderer_test.cpp:35:        native, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, 1, 1
+tests/app_home_carousel_screen_test.cpp:24:    SDL_GetRGBA(*value, surface->format, &r, &g, &b, &a);
+tests/app_home_carousel_screen_test.cpp:109:        0, 720, 720, 32, SDL_PIXELFORMAT_RGBA32);
+
+--- Repository status ---
+ M assets/artwork/generated/navigation-hints.png
+ M assets/artwork/source/branding/navigation-hints.svg
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M include/kiddos/app/ui_action_mapping.hpp
+ M include/kiddos/core/action.hpp
+ M src/app/application.cpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+ M tests/app_ui_action_mapping_test.cpp
+?? assets/artwork/generated/cartridges/
