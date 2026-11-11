@@ -1,0 +1,15 @@
+=== DOWNLOAD REFERENCE IMAGE ===
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100 127.2k 100 127.2k   0      0 190.1k      0                              0100 127.2k 100 127.2k   0      0 190.0k      0                              0100 127.2k 100 127.2k   0      0 190.0k      0                              0
+
+=== VERIFY IMAGE ===
+docs/reference/retro-pixel-pocket.jpg: JPEG image data, Exif standard: [TIFF image data, little-endian, direntries=6, orientation=upper-left, xresolution=86, yresolution=94, resolutionunit=2, hostcomputer=imagery4], progressive, precision 8, 1000x1000, components 3
+
+=== COMMIT REFERENCE ===
+[main a846cf2] docs: add Retro Pixel Pocket visual reference
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 docs/reference/retro-pixel-pocket.jpg
+
+=== REFERENCE COMMIT ===
+a846cf2 docs: add Retro Pixel Pocket visual reference
