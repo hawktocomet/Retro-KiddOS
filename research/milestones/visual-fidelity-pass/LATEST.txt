@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T221318Z-download-four-prototype-game-box-covers
+research/milestones/visual-fidelity-pass/runs/20261111T221345Z-inspect-carousel-box-art-integration-points
