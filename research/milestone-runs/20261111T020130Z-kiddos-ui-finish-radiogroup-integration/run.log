@@ -1,0 +1,20 @@
+CMakeLists.txt:36:    src/ui/radio_group.cpp
+CMakeLists.txt:170:    add_executable(kiddos_ui_radio_group_test tests/ui_radio_group_test.cpp)
+CMakeLists.txt:171:    target_include_directories(kiddos_ui_radio_group_test PRIVATE include)
+CMakeLists.txt:172:    target_link_libraries(kiddos_ui_radio_group_test PRIVATE kiddos_ui)
+CMakeLists.txt:173:    add_test(NAME kiddos_ui_radio_group COMMAND kiddos_ui_radio_group_test)
+include/kiddos/ui/theme.hpp:10:#include "kiddos/ui/radio_group.hpp"
+include/kiddos/ui/theme.hpp:44:    RadioGroupStyle radio_group_style() const noexcept;
+src/ui/controller.cpp:4:#include "kiddos/ui/radio_group.hpp"
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/19] Building CXX object CMakeFiles/kiddos_ui_theme_test.dir/tests/ui_theme_test.cpp.o
+[2/19] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o
+FAILED: [code=1] CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o 
+/usr/bin/c++  -I/home/hawk/KiddOS/include -isystem /usr/include/SDL2 -isystem /usr/include/harfbuzz -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -isystem /usr/include/sysprof-6 -isystem /usr/include/freetype2 -isystem /usr/include/libpng16 -isystem /usr/include/rav1e -isystem /usr/include/svt-av1 -isystem /usr/include/webp -g -std=c++20 -Wall -Wextra -Wpedantic -D_GNU_SOURCE=1 -D_REENTRANT -pthread -DHWY_SHARED_DEFINE -DAVIF_DLL -DEB_DLL -DRTC_BUILD=0 -MD -MT CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o -MF CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o.d -o CMakeFiles/kiddos_ui.dir/src/ui/theme.cpp.o -c /home/hawk/KiddOS/src/ui/theme.cpp
+/home/hawk/KiddOS/src/ui/theme.cpp:92:1: error: ‘RadioGroupStyle’ does not name a type
+   92 | RadioGroupStyle Theme::radio_group_style() const noexcept {
+      | ^~~~~~~~~~~~~~~
+[3/19] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/controller.cpp.o
+ninja: build stopped: subcommand failed.
