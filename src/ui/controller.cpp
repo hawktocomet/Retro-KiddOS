@@ -1,5 +1,6 @@
 #include "kiddos/ui/controller.hpp"
 #include "kiddos/ui/toggle.hpp"
+#include "kiddos/ui/slider.hpp"
 
 namespace kiddos::ui {
 
@@ -9,10 +10,18 @@ ControllerInteraction::ControllerInteraction(FocusManager& focus) noexcept
 
 bool ControllerInteraction::handle(UIAction action) {
     switch (action) {
-        case UIAction::Left:
+        case UIAction::Left: {
+            if (auto* slider = dynamic_cast<Slider*>(focus_.focused())) {
+                return slider->adjust(-1);
+            }
             return focus_.move(Direction::Left);
-        case UIAction::Right:
+        }
+        case UIAction::Right: {
+            if (auto* slider = dynamic_cast<Slider*>(focus_.focused())) {
+                return slider->adjust(1);
+            }
             return focus_.move(Direction::Right);
+        }
         case UIAction::Up:
             return focus_.move(Direction::Up);
         case UIAction::Down:
