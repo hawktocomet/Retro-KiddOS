@@ -1,0 +1,24 @@
+=== Public display API header location ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/display/lv_display.h
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/include/lvgl/core/lv_area.h
+=== Public display API declarations ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h:73:    /** MANDATORY: Write the internal buffer (draw_buf) to the display. 'lv_display_flush_ready()' has to be
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h:80:     * If not set `flushing` flag is used which can be cleared with `lv_display_flush_ready()` */
+=== Flush callback signature ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h-72-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h-73-    /** MANDATORY: Write the internal buffer (draw_buf) to the display. 'lv_display_flush_ready()' has to be
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h-74-     * called when finished*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h:75:    lv_display_flush_cb_t flush_cb;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h-76-
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h-77-    /**
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h-78-     * Used to wait while flushing is ready.
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h-79-     * It can do any complex logic to wait, including semaphores, mutexes, polling flags, etc.
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h-80-     * If not set `flushing` flag is used which can be cleared with `lv_display_flush_ready()` */
+=== LVGL display buffer example ===
+grep: Unmatched ( or \(
+=== Public area type ===
+=== SDL update texture ===
+599:extern DECLSPEC int SDLCALL SDL_UpdateTexture(SDL_Texture * texture,
+600-                                              const SDL_Rect * rect,
+601-                                              const void *pixels, int pitch);
+602-
