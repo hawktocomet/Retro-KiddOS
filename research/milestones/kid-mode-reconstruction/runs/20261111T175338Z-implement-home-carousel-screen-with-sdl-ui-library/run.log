@@ -1,0 +1,48 @@
+OpenAI Codex v0.166.0
+--------
+workdir: /home/hawk/KiddOS
+model: gpt-6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 01a1cbbe-755e-7063-8863-d9e4fc860b32
+--------
+user
+Implement the first visible Kid Mode home carousel using the existing KiddOS SDL UI library.
+
+Read the project and relevant source files before editing. Follow existing project conventions and architecture.
+
+SCOPE
+- Add a HomeCarouselScreen derived from ui::Screen.
+- Construct the home carousel from the existing UI library elements (Container, Panel, Image, etc.).
+- Integrate ScreenManager into Application for the home screen.
+- Attach the existing native SDL renderer to the non-owning ui::Renderer adapter. Do not create a second SDL renderer.
+- Map existing platform Action values to UIAction values.
+- Preserve current selected-game navigation and existing confirm/back behavior. The existing game-action screen can remain on its current manual rendering path.
+- Keep SDL textures owned by the screen alive for as long as its Image elements reference them.
+- Clear/destroy screens before SDLPlatform shuts down and destroys its native renderer.
+- Preserve the current home carousel appearance and geometry, including overlapping neighboring cards, center card, artwork, title, status indicators, colors, and opacity. Reuse existing artwork assets; do not redesign or generate replacement art.
+- Keep changes limited to what is needed for this integration.
+
+DESIGN REFERENCE
+The existing SDLPlatform::draw_carousel implementation is the visual source of truth. Inspect it and preserve its current dimensions and positioning. The UI library now supports image opacity and rounded panels.
+
+QUALITY REQUIREMENTS
+- Add or update focused tests where practical.
+- Build the project and run the complete CTest suite.
+- Do not claim visual approval; the user must inspect the running screen.
+- Do not modify unrelated features or assets.
+- Do not weaken or remove existing tests.
+- If a design or API uncertainty blocks a safe implementation, stop and report the specific issue instead of guessing.
+
+GIT
+- If implementation and tests succeed, create one focused source commit with a conventional commit message.
+- Do not commit milestone runner files or generated run logs; the outer milestone runner handles its own report commit.
+- If implementation or validation fails, do not create a source commit. Leave the worktree in a state that clearly shows what needs attention.
+
+At the end, report the implementation commit (if any), files changed, build result, test result, and any limitations.
+
+ERROR: You’ve hit your usage limit. Upgrade to Plus to continue using Codex (https://chatgpt.com/explore/plus), or try again at Dec 1st, 2026 2:39 PM.
+ERROR: You’ve hit your usage limit. Upgrade to Plus to continue using Codex (https://chatgpt.com/explore/plus), or try again at Dec 1st, 2026 2:39 PM.
