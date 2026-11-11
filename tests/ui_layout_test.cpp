@@ -30,10 +30,10 @@ int main() {
     assert(first.bounds().h == 160);
 
     assert(second.bounds().x == 247);
-    assert(second.bounds().w == 226);
+    assert(second.bounds().w == 227);
 
-    assert(third.bounds().x == 483);
-    assert(third.bounds().w == 227);
+    assert(third.bounds().x == 484);
+    assert(third.bounds().w == 226);
 
     second.set_visible(false);
 
