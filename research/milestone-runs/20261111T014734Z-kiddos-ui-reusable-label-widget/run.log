@@ -1,0 +1,43 @@
+Building...
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/10] Building CXX object CMakeFiles/kiddos_ui_label_test.dir/tests/ui_label_test.cpp.o
+[2/10] Building CXX object CMakeFiles/kiddos_ui.dir/src/ui/label.cpp.o
+[3/10] Linking CXX static library libkiddos_ui.a
+[4/10] Linking CXX executable kiddos_ui_layout_test
+[5/10] Linking CXX executable kiddos
+[6/10] Linking CXX executable kiddos_ui_focus_test
+[7/10] Linking CXX executable kiddos_ui_button_test
+[8/10] Linking CXX executable kiddos_ui_controller_test
+[9/10] Linking CXX executable kiddos_ui_image_test
+[10/10] Linking CXX executable kiddos_ui_label_test
+Running tests...
+Test project /home/hawk/KiddOS/build
+    Start 1: kiddos_ui_layout
+1/7 Test #1: kiddos_ui_layout .................   Passed    0.01 sec
+    Start 2: kiddos_ui_geometry
+2/7 Test #2: kiddos_ui_geometry ...............   Passed    0.00 sec
+    Start 3: kiddos_ui_focus
+3/7 Test #3: kiddos_ui_focus ..................   Passed    0.01 sec
+    Start 4: kiddos_ui_button
+4/7 Test #4: kiddos_ui_button .................   Passed    0.01 sec
+    Start 5: kiddos_ui_controller
+5/7 Test #5: kiddos_ui_controller .............   Passed    0.01 sec
+    Start 6: kiddos_ui_image
+6/7 Test #6: kiddos_ui_image ..................   Passed    0.01 sec
+    Start 7: kiddos_ui_label
+7/7 Test #7: kiddos_ui_label ..................   Passed    0.01 sec
+
+100% tests passed out of 7
+
+Total Test time (real) =   0.06 sec
+[main 852422c] feat: add reusable KiddOS UI label widget
+ 5 files changed, 180 insertions(+)
+ create mode 100644 docs/ui-label-support.md
+ create mode 100644 include/kiddos/ui/label.hpp
+ create mode 100644 src/ui/label.cpp
+ create mode 100644 tests/ui_label_test.cpp
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   695b98f..852422c  main -> main
+Label widget built, tested, committed, and pushed.
