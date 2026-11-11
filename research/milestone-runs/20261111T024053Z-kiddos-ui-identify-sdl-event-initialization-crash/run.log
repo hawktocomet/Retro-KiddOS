@@ -1,0 +1,31 @@
+=== Backtrace: events-only initialization ===
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Enable debuginfod for this session? (y or [n]) [answered N; input not from terminal]
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ffff7454710 in ?? () from /usr/lib/libSDL3.so.0
+
+Thread 1 (Thread 0x7ffff7efb780 (LWP 325288) "kiddos_sdl_queu"):
+#0  0x00007ffff7454710 in ?? () from /usr/lib/libSDL3.so.0
+#1  0x00007ffff7f44c85 in ?? () from /usr/lib/libSDL2-2.0.so.0
+#2  0x00005555555552b0 in main ()
+=== Compile video-subsystem probe ===
+=== Run video probe with dummy driver ===
+/tmp/tmp.CNhd3OWHWp: line 7: 325302 Segmentation fault         (core dumped) SDL_VIDEODRIVER=dummy /tmp/kiddos_sdl_video_probe
+Video probe exit: 139
+=== SDL library linkage ===
+	linux-vdso.so.1 (0x00007f0a93855000)
+	libSDL2-2.0.so.0 => /usr/lib/libSDL2-2.0.so.0 (0x00007f0a937c1000)
+	libstdc++.so.6 => /usr/lib/libstdc++.so.6 (0x00007f0a93400000)
+	libm.so.6 => /usr/lib/libm.so.6 (0x00007f0a932c9000)
+	libgcc_s.so.1 => /usr/lib/libgcc_s.so.1 (0x00007f0a93794000)
+	libc.so.6 => /usr/lib/libc.so.6 (0x00007f0a93000000)
+	/lib64/ld-linux-x86-64.so.2 => /usr/lib64/ld-linux-x86-64.so.2 (0x00007f0a93857000)
+=== SDL package details ===
+2.32.74
