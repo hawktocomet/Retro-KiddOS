@@ -1,0 +1,10 @@
+Installed SDL_GetTicks and SDL_Delay as LVGL clock callbacks.
+[ 10%] Built target lvgl_thorvg
+[100%] Built target lvgl
+[100%] Building C object CMakeFiles/kiddos_lvgl_sdl_adapter.dir/main.c.o
+[100%] Linking C executable kiddos_lvgl_sdl_adapter
+[100%] Built target kiddos_lvgl_sdl_adapter
+BUILD_EXIT=0
+No SDL game controller detected; keyboard arrows remain available.\nAdapter running: LVGL -> custom flush callback -> existing SDL_Renderer
+Press Escape or close the window to exit.
+KEYPAD_POLL count=1 key=19 pressed=1 pressed_samples=1\nKEYPAD_POLL count=2 key=19 pressed=1 pressed_samples=2\nKEYPAD_POLL count=3 key=19 pressed=1 pressed_samples=3\nKEYPAD_POLL count=4 key=19 pressed=1 pressed_samples=4\nKEYPAD_POLL count=5 key=19 pressed=1 pressed_samples=5\nKEYPAD_POLL count=6 key=19 pressed=0 pressed_samples=5\nKEYPAD_POLL count=7 key=19 pressed=0 pressed_samples=5\nKEYPAD_POLL count=8 key=19 pressed=0 pressed_samples=5\nKEYPAD_POLL count=9 key=19 pressed=0 pressed_samples=5\nKEYPAD_POLL count=10 key=19 pressed=0 pressed_samples=5\nKEYPAD_POLL count=11 key=19 pressed=0 pressed_samples=5\nKEYPAD_POLL count=12 key=19 pressed=0 pressed_samples=5\nSYNTHETIC_RIGHT_NAV=FAIL\nLVGL_KEYPAD_NAVIGATION=FAIL

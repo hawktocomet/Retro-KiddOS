@@ -1,1 +1,1 @@
-research/milestone-runs/20261111T004447Z-lvgl-feasibility-verify-lvgl-tick-source
+research/milestone-runs/20261111T004507Z-lvgl-feasibility-install-sdl-tick-source
