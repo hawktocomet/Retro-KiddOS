@@ -1,0 +1,156 @@
+=== Verify text-aware dispatch ===
+508-    while (SDL_PollEvent(&event)) {
+509-        received = true;
+510-
+511-        switch (event.type) {
+512-            case SDL_QUIT:
+513-                pending_actions_.push_back(Action::Quit);
+514-                break;
+515-
+516:            case SDL_KEYDOWN:
+517-                if (event.key.repeat != 0) break;
+518-
+519-                switch (event.key.keysym.sym) {
+520-                    case SDLK_BACKSPACE:
+521-                        if (text_input_active_) {
+522-                            pending_text_events_.push_back(
+523-                                {TextInputEventType::Backspace, {}});
+524-                        }
+525-                        break;
+526-                    case SDLK_DELETE:
+527-                        if (text_input_active_) {
+528-                            pending_text_events_.push_back(
+529-                                {TextInputEventType::Delete, {}});
+530-                        }
+531-                        break;
+532-                    case SDLK_HOME:
+533-                        if (text_input_active_) {
+534-                            pending_text_events_.push_back(
+535-                                {TextInputEventType::Home, {}});
+536-                        }
+537-                        break;
+538-                    case SDLK_END:
+539-                        if (text_input_active_) {
+540-                            pending_text_events_.push_back(
+541-                                {TextInputEventType::End, {}});
+542-                        }
+543-                        break;
+544-                    case SDLK_LEFT:
+545-                    case SDLK_RIGHT:
+546-                        if (text_input_active_) {
+547-                            pending_text_events_.push_back({
+548-                                event.key.keysym.sym == SDLK_LEFT
+549-                                    ? TextInputEventType::Left
+550-                                    : TextInputEventType::Right, {}});
+551-                        } else {
+552-                            pending_actions_.push_back(
+553-                                map_key(event.key.keysym.sym));
+554-                        }
+555-                        break;
+556-                    default: {
+557-                        const Action action =
+558-                            map_key(event.key.keysym.sym);
+559-                        if (action != Action::None) {
+560-                            pending_actions_.push_back(action);
+561-                        }
+562-                        break;
+563-                    }
+564-                }
+565-                break;
+566-
+567-            case SDL_TEXTINPUT:
+568-                pending_text_events_.push_back(
+569-                    {TextInputEventType::Text, event.text.text});
+570-                break;
+571-
+572-            case SDL_CONTROLLERBUTTONDOWN:
+573-                if (event.cbutton.which == controller_instance_) {
+574-                    const Action action =
+575-                        map_controller_button(event.cbutton.button);
+576-                    if (action != Action::None) {
+577-                        pending_actions_.push_back(action);
+578-                    }
+579-                }
+580-                break;
+581-
+582-            case SDL_CONTROLLERDEVICEADDED:
+583-                open_controller(event.cdevice.which);
+584-                break;
+585-
+586-            case SDL_CONTROLLERDEVICEREMOVED:
+587-                if (event.cdevice.which == controller_instance_) {
+588-                    close_controller();
+589-                }
+590-                break;
+591-
+=== Configure and build ===
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/3] Building CXX object CMakeFiles/kiddos.dir/src/main.cpp.o
+[2/3] Building CXX object CMakeFiles/kiddos.dir/src/platform/sdl_platform.cpp.o
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:27:40: warning: multi-character character constant [-Wmultichar]
+   27 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:43:40: warning: multi-character character constant [-Wmultichar]
+   43 |                   << SDL_GetError() << '\\n';
+      |                                        ^~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:250:6: warning: ‘void kiddos::{anonymous}::draw_ocean_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  250 | void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:218:6: warning: ‘void kiddos::{anonymous}::draw_forest_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  218 | void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~~
+/home/hawk/KiddOS/src/platform/sdl_platform.cpp:188:6: warning: ‘void kiddos::{anonymous}::draw_space_world(SDL_Renderer*, SDL_Rect, Uint8)’ defined but not used [-Wunused-function]
+  188 | void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+      |      ^~~~~~~~~~~~~~~~
+[3/3] Linking CXX executable kiddos
+=== Full test suite ===
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_platform_text_input_event
+ 1/19 Test  #1: kiddos_platform_text_input_event ...   Passed    0.00 sec
+      Start  2: kiddos_ui_layout
+ 2/19 Test  #2: kiddos_ui_layout ...................   Passed    0.01 sec
+      Start  3: kiddos_ui_geometry
+ 3/19 Test  #3: kiddos_ui_geometry .................   Passed    0.00 sec
+      Start  4: kiddos_ui_focus
+ 4/19 Test  #4: kiddos_ui_focus ....................   Passed    0.00 sec
+      Start  5: kiddos_ui_button
+ 5/19 Test  #5: kiddos_ui_button ...................   Passed    0.00 sec
+      Start  6: kiddos_ui_controller
+ 6/19 Test  #6: kiddos_ui_controller ...............   Passed    0.00 sec
+      Start  7: kiddos_ui_image
+ 7/19 Test  #7: kiddos_ui_image ....................   Passed    0.00 sec
+      Start  8: kiddos_ui_label
+ 8/19 Test  #8: kiddos_ui_label ....................   Passed    0.00 sec
+      Start  9: kiddos_ui_panel
+ 9/19 Test  #9: kiddos_ui_panel ....................   Passed    0.00 sec
+      Start 10: kiddos_ui_progress_bar
+10/19 Test #10: kiddos_ui_progress_bar .............   Passed    0.01 sec
+      Start 11: kiddos_ui_toggle
+11/19 Test #11: kiddos_ui_toggle ...................   Passed    0.00 sec
+      Start 12: kiddos_ui_slider
+12/19 Test #12: kiddos_ui_slider ...................   Passed    0.00 sec
+      Start 13: kiddos_ui_theme
+13/19 Test #13: kiddos_ui_theme ....................   Passed    0.00 sec
+      Start 14: kiddos_ui_list_view
+14/19 Test #14: kiddos_ui_list_view ................   Passed    0.00 sec
+      Start 15: kiddos_ui_checkbox
+15/19 Test #15: kiddos_ui_checkbox .................   Passed    0.00 sec
+      Start 16: kiddos_ui_radio_group
+16/19 Test #16: kiddos_ui_radio_group ..............   Passed    0.01 sec
+      Start 17: kiddos_ui_select
+17/19 Test #17: kiddos_ui_select ...................   Passed    0.00 sec
+      Start 18: kiddos_ui_text_input
+18/19 Test #18: kiddos_ui_text_input ...............   Passed    0.00 sec
+      Start 19: kiddos_ui_text_input_interaction
+19/19 Test #19: kiddos_ui_text_input_interaction ...   Passed    0.00 sec
+
+100% tests passed out of 19
+
+Total Test time (real) =   0.09 sec
+=== Commit text-aware keyboard dispatch ===
+[main 1c500fb] fix: route SDL editing keys when text input is active
+ 2 files changed, 29 insertions(+), 11 deletions(-)
+To https://github.com/hawktocomet/Retro-KiddOS.git
+   2a36ea2..1c500fb  main -> main
