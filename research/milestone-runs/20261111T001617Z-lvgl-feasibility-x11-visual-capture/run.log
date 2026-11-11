@@ -1,0 +1,40 @@
+=== Check capture support ===
+/usr/bin/ffmpeg
+DISPLAY=:0
+=== Launch prototype using X11 backend ===
+=== Capture visible desktop ===
+FFmpeg capture exit: 0
+=== Stop prototype ===
+Application exit: 0
+=== Capture result ===
+/tmp/kiddos-lvgl-prototype.png: PNG image data, 1280 x 720, 8-bit/color RGB, non-interlaced
+-rw-r--r-- 1 hawk hawk 4.3K Nov 10 19:16 /tmp/kiddos-lvgl-prototype.png
+=== Runtime output ===
+=== Capture output ===
+ffmpeg version n9.0.2 Copyright (c) 2000-2026 the FFmpeg developers
+  built with gcc 16 (GCC)
+  configuration: --prefix=/usr --disable-debug --disable-static --disable-stripping --enable-amf --enable-avisynth --enable-cuda-llvm --enable-lto --enable-fontconfig --enable-frei0r --enable-gmp --enable-gnutls --enable-gpl --enable-ladspa --enable-lcms2 --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libdav1d --enable-libdrm --enable-libdvdnav --enable-libdvdread --enable-libfreetype --enable-libfribidi --enable-libgsm --enable-libharfbuzz --enable-libiec61883 --enable-libjack --enable-libjxl --enable-libmodplug --enable-libmp3lame --enable-libopencore_amrnb --enable-libopencore_amrwb --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libplacebo --enable-libpulse --enable-librav1e --enable-librsvg --enable-librubberband --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libv4l2 --enable-libvidstab --enable-libvmaf --enable-libvorbis --enable-libvpl --enable-libvpx --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxcb --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-nvdec --enable-nvenc --enable-opencl --enable-opengl --enable-shared --enable-vapoursynth --enable-version3 --enable-vulkan --disable-decoder=magicyuv
+  libavutil      61.  1.102 / 61.  1.102
+  libavcodec     63.  1.102 / 63.  1.102
+  libavformat    63.  1.102 / 63.  1.102
+  libavdevice    63.  1.102 / 63.  1.102
+  libavfilter    12.  1.102 / 12.  1.102
+  libswscale     10.  1.102 / 10.  1.102
+  libswresample   7.  1.102 /  7.  1.102
+[in#0/x11grab @ 0x56234b2c9bc0] Stream #0: not enough frames to estimate rate; consider increasing probesize
+Input #0, x11grab, from ':0.0':
+  Duration: N/A, start: 1794356180.351171, bitrate: 883852 kb/s
+  Stream #0:0: Video: rawvideo (BGR[0] / 0x524742), bgr0, 1280x720, 883852 kb/s, 29.97 fps, 1000k tbr, 1000k tbn, start 1794356180.351171
+Stream mapping:
+  Stream #0:0 -> #0:0 (rawvideo (native) -> png (native))
+Press [q] to stop, [?] for help
+Output #0, image2, to '/tmp/kiddos-lvgl-prototype.png':
+  Metadata:
+    encoder         : Lavf63.1.102
+  Stream #0:0: Video: png, rgb24(pc, gbr/unknown/unknown, progressive), 1280x720, q=2-31, 200 kb/s, 29.97 fps, 29.97 tbn
+    Metadata:
+      encoder         : Lavc63.1.102 png
+[image2 @ 0x56234b2d3e80] The specified filename '/tmp/kiddos-lvgl-prototype.png' does not contain an image sequence pattern or a pattern is invalid.
+[image2 @ 0x56234b2d3e80] Use a pattern such as %03d for an image sequence or use the -update option (with -frames:v 1 if needed) to write a single image.
+[out#0/image2 @ 0x56234b2d3d80] video:4KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame=    1 fps=0.0 q=-0.0 Lsize=N/A time=00:00:00.03 bitrate=N/A speed=1.01x elapsed=0:00:00.03    
