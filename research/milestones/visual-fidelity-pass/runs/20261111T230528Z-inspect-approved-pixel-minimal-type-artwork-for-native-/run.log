@@ -1,0 +1,22 @@
+<stdin>:13: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+Image size: 1000 x 200
+Aspect ratio: 5.0000
+Visible artwork bounds: (0, 0, 1000, 200)
+Most common colors:
+  (16, 27, 53, 255): 183759 pixels
+  (255, 255, 255, 255): 10423 pixels
+  (54, 164, 255, 255): 3357 pixels
+  (74, 82, 102, 255): 98 pixels
+  (227, 228, 231, 255): 72 pixels
+  (93, 100, 118, 255): 66 pixels
+  (83, 91, 110, 255): 61 pixels
+  (195, 198, 204, 255): 61 pixels
+  (29, 73, 120, 255): 55 pixels
+  (234, 235, 238, 255): 52 pixels
+  (96, 103, 120, 255): 47 pixels
+  (208, 210, 215, 255): 39 pixels
+Source SVG:
+<svg xmlns="http://www.w3.org/2000/svg" width="190" height="52" viewBox="0 0 190 52">
+<text x="95" y="39" text-anchor="middle" font-family="DejaVu Sans" font-size="30" font-weight="bold" letter-spacing="2" fill="#FFFFFF">KiddOS</text>
+</svg>
+
