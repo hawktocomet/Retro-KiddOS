@@ -1,0 +1,318 @@
+--- Selected cover layout and positioning ---
+include/kiddos/platform/platform.hpp:23:    virtual void draw_carousel(int selected_index) = 0;
+include/kiddos/platform/platform.hpp:24:    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+include/kiddos/platform/sdl_platform.hpp:22:    void draw_carousel(int selected_index) override;
+include/kiddos/platform/sdl_platform.hpp:23:    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+include/kiddos/app/home_carousel_screen.hpp:22:    void set_selected_game(int index);
+include/kiddos/app/home_carousel_screen.hpp:23:    int selected_game() const noexcept { return selected_game_; }
+include/kiddos/ui/image.hpp:46:    ImageFit fit_ = ImageFit::contain;
+include/kiddos/ui/list_view.hpp:27:    int selected_index() const noexcept;
+include/kiddos/ui/list_view.hpp:28:    bool set_selected_index(int index);
+include/kiddos/ui/list_view.hpp:43:    int selected_index_ = -1;
+include/kiddos/ui/radio_group.hpp:30:    bool set_selected(int index);
+include/kiddos/ui/radio_group.hpp:31:    int selected() const noexcept;
+include/kiddos/ui/select.hpp:28:    bool set_selected(int index);
+include/kiddos/ui/select.hpp:29:    int selected() const noexcept;
+include/kiddos/ui/select.hpp:30:    const std::string* selected_option() const noexcept;
+src/app/home_carousel_screen.cpp:122:    // Keep the selected game cover subtly emphasized without a visible frame.
+src/app/home_carousel_screen.cpp:145:        image.set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp:153:    wordmark_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp:158:    hints_->set_fit(ui::ImageFit::contain);
+src/app/home_carousel_screen.cpp:174:void HomeCarouselScreen::set_selected_game(int index) {
+src/app/home_carousel_screen.cpp:198:    selected_game_ = index;
+src/ui/image.cpp:30:    if (fit == ImageFit::contain) {
+src/ui/theme.cpp:72:    style.selected = colors_.primary_dark;
+src/ui/theme.cpp:95:    style.selected = colors_.primary;
+src/ui/list_view.cpp:15:    selected_index_ = items_.empty() ? -1 : 0;
+src/ui/list_view.cpp:23:int ListView::selected_index() const noexcept {
+src/ui/list_view.cpp:24:    return selected_index_;
+src/ui/list_view.cpp:27:bool ListView::set_selected_index(int index) {
+src/ui/list_view.cpp:29:    if (selected_index_ == index) return true;
+src/ui/list_view.cpp:30:    selected_index_ = index;
+src/ui/list_view.cpp:40:    const int next = selected_index_ + (direction > 0 ? 1 : -1);
+src/ui/list_view.cpp:43:    selected_index_ = next;
+src/ui/list_view.cpp:49:    if (!visible() || !enabled() || selected_index_ < 0 ||
+src/ui/list_view.cpp:50:        selected_index_ >= static_cast<int>(items_.size()) || !on_activate_) {
+src/ui/list_view.cpp:54:    on_activate_(selected_index_);
+src/ui/list_view.cpp:85:    if (area.h <= 0 || row_height_ <= 0 || selected_index_ < 0) {
+src/ui/list_view.cpp:91:    if (selected_index_ < scroll_offset_) {
+src/ui/list_view.cpp:92:        scroll_offset_ = selected_index_;
+src/ui/list_view.cpp:93:    } else if (selected_index_ >= scroll_offset_ + visible_rows) {
+src/ui/list_view.cpp:94:        scroll_offset_ = selected_index_ - visible_rows + 1;
+src/ui/list_view.cpp:122:        if (index == selected_index_) {
+src/ui/radio_group.cpp:17:    selected_ = options_.empty() ? -1 : 0;
+src/ui/radio_group.cpp:24:bool RadioGroup::set_selected(int index) {
+src/ui/radio_group.cpp:27:    if (selected_ == index) return true;
+src/ui/radio_group.cpp:28:    selected_ = index;
+src/ui/radio_group.cpp:33:int RadioGroup::selected() const noexcept {
+src/ui/radio_group.cpp:92:                enabled() ? style_.selected : style_.disabled_text
+src/ui/select.cpp:17:    selected_ = options_.empty() ? -1 : 0;
+src/ui/select.cpp:24:bool Select::set_selected(int index) {
+src/ui/select.cpp:27:    if (selected_ == index) return true;
+src/ui/select.cpp:29:    selected_ = index;
+src/ui/select.cpp:34:int Select::selected() const noexcept {
+src/ui/select.cpp:38:const std::string* Select::selected_option() const noexcept {
+src/ui/select.cpp:112:            text.draw_centered(*selected_option(), *font_, text_area,
+
+--- Home carousel implementation ---
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/ui/panel.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <string>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr ui::Color background{1, 1, 1, 255};
+
+constexpr ui::Rect left_art{24, 268, 128, 128};
+constexpr ui::Rect center_art{210, 148, 300, 300};
+constexpr ui::Rect right_art{568, 268, 128, 128};
+
+constexpr ui::Rect title_rect{145, 465, 430, 54};
+constexpr ui::Rect wordmark_rect{275, 18, 170, 32};
+constexpr ui::Rect hints_rect{0, 662, 720, 42};
+
+
+
+constexpr const char* wordmark_path =
+    "assets/artwork/generated/kiddos-wordmark.png";
+constexpr const char* hints_path =
+    "assets/artwork/generated/navigation-hints.png";
+
+void fill_speaker_cone(
+    ui::Renderer& renderer,
+    int narrow_x,
+    int narrow_top,
+    int narrow_bottom,
+    int wide_x,
+    int wide_top,
+    int wide_bottom,
+    ui::Color color
+) {
+    for (int y = wide_top; y <= wide_bottom; ++y) {
+        int left = narrow_x;
+
+        if (y < narrow_top) {
+            left += (narrow_top - y) * (wide_x - narrow_x) /
+                    (narrow_top - wide_top);
+        } else if (y > narrow_bottom) {
+            left += (y - narrow_bottom) * (wide_x - narrow_x) /
+                    (wide_bottom - narrow_bottom);
+        }
+
+        renderer.draw_line({left, y}, {wide_x, y}, color);
+    }
+}
+
+void draw_arc(
+    ui::Renderer& renderer,
+    ui::Point center,
+    int radius,
+    double start_degrees,
+    double end_degrees,
+    ui::Color color
+) {
+    constexpr double pi = 3.14159265358979323846;
+    const int steps = std::max(2, radius * 2);
+    const double delta = (end_degrees - start_degrees) / steps;
+
+    auto point_at = [&](double degrees) {
+        const double radians = degrees * pi / 180.0;
+        return ui::Point{
+            center.x + static_cast<int>(std::lround(radius * std::cos(radians))),
+            center.y + static_cast<int>(std::lround(radius * std::sin(radians)))
+        };
+    };
+
+    ui::Point previous = point_at(start_degrees);
+    for (int i = 1; i <= steps; ++i) {
+        const ui::Point point = point_at(start_degrees + delta * i);
+        renderer.draw_line(previous, point, color);
+        previous = point;
+    }
+}
+
+class StatusIndicators final : public ui::Element {
+protected:
+    void draw(ui::Renderer& renderer) override {
+        const ui::Color primary{190, 208, 235, 210};
+        const ui::Color accent{105, 160, 225, 210};
+
+        // Compact speaker indicator.
+        renderer.fill_rect({25, 32, 7, 12}, primary);
+        fill_speaker_cone(renderer, 32, 32, 44, 42, 27, 49, primary);
+        draw_arc(renderer, {44, 38}, 7, -48.0, 48.0, accent);
+
+        // Quiet battery indicator.
+        renderer.outline_rect({660, 29, 30, 16}, primary);
+        renderer.fill_rect({691, 34, 3, 6}, primary);
+        renderer.fill_rect({664, 33, 20, 8}, accent);
+    }
+};
+
+int interpolate(int current, int target, float amount) {
+    return static_cast<int>(std::lround(
+        current + (target - current) * amount));
+}
+
+ui::Rect interpolate_rect(
+    ui::Rect current,
+    ui::Rect target,
+    float amount
+) {
+    return {
+        interpolate(current.x, target.x, amount),
+        interpolate(current.y, target.y, amount),
+        interpolate(current.w, target.w, amount),
+        interpolate(current.h, target.h, amount)
+    };
+}
+
+} // namespace
+
+HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+    // Keep the selected game cover subtly emphasized without a visible frame.
+    highlight_ = &root().add<ui::Panel>(ui::PanelStyle{
+        {24, 82, 190, 38}, {0, 0, 0, 0}, 0, 28
+    });
+    highlight_->set_bounds({216, 154, 288, 288});
+
+    constexpr std::array<const char*, game_count> game_cover_paths{{
+        "assets/artwork/generated/boxart/gb-tetris.png",
+        "assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png",
+        "assets/artwork/generated/boxart/snes-super-mario-world.png",
+        "assets/artwork/generated/boxart/arcade-pac-man.png"
+    }};
+
+    for (std::size_t game = 0; game < game_textures_.size(); ++game) {
+        game_textures_[game].load(renderer, game_cover_paths[game], false);
+    }
+
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto& image = root().add<ui::Image>();
+        image.set_fit(ui::ImageFit::contain);
+        image.set_bounds(slot_bounds[slot]);
+        game_images_[slot] = &image;
+    }
+
+    wordmark_texture_.load(renderer, wordmark_path, false);
+    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+    wordmark_->set_bounds(wordmark_rect);
+    wordmark_->set_fit(ui::ImageFit::contain);
+
+    hints_texture_.load(renderer, hints_path, false);
+    hints_ = &root().add<ui::Image>(&hints_texture_);
+    hints_->set_bounds(hints_rect);
+    hints_->set_fit(ui::ImageFit::contain);
+
+    root().add<StatusIndicators>();
+
+    set_selected_game(1);
+}
+
+HomeCarouselScreen::~HomeCarouselScreen() {
+    for (auto* image : game_images_) {
+        if (image) image->set_texture(nullptr);
+    }
+
+    if (wordmark_) wordmark_->set_texture(nullptr);
+    if (hints_) hints_->set_texture(nullptr);
+}
+
+void HomeCarouselScreen::set_selected_game(int index) {
+    if (index < 0 || index >= game_count) return;
+    if (index == selected_game_) return;
+
+    const int previous = selected_game_;
+    const bool moving_right =
+        previous >= 0 && index == (previous + 1) % game_count;
+    const bool moving_left =
+        previous >= 0 && index == (previous + game_count - 1) % game_count;
+
+    if (moving_right) {
+        auto* recycled = game_images_[0];
+        game_images_[0] = game_images_[1];
+        game_images_[1] = game_images_[2];
+        game_images_[2] = recycled;
+        recycled->set_bounds({720, right_art.y, right_art.w, right_art.h});
+    } else if (moving_left) {
+        auto* recycled = game_images_[2];
+        game_images_[2] = game_images_[1];
+        game_images_[1] = game_images_[0];
+        game_images_[0] = recycled;
+        recycled->set_bounds({-128, left_art.y, left_art.w, left_art.h});
+    }
+
+    selected_game_ = index;
+
+    const std::array<int, 3> visible_games{
+        (index + game_count - 1) % game_count,
+        index,
+        (index + 1) % game_count
+    };
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto* image = game_images_[slot];
+        image->set_texture(
+            &game_textures_[static_cast<std::size_t>(visible_games[slot])]);
+        target_bounds_[slot] = slot_bounds[slot];
+        target_opacity_[slot] = slot == 1 ? 255 : 118;
+
+        if (!moving_right && !moving_left) {
+            image->set_bounds(slot_bounds[slot]);
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[slot]));
+        }
+    }
+}
+
+void HomeCarouselScreen::update(float delta_seconds) {
+    if (delta_seconds <= 0.0f) return;
+
+    // A critically damped-feeling ease that settles quickly while allowing
+    // another direction input to retarget the carousel mid-motion.
+    const float amount = std::clamp(
+        1.0f - std::exp(-delta_seconds * 7.0f), 0.0f, 1.0f);
+
+    for (std::size_t i = 0; i < game_images_.size(); ++i) {
+        ui::Image* image = game_images_[i];
+        if (!image) continue;
+
+        const ui::Rect current = image->bounds();
+        const ui::Rect target = target_bounds_[i];
+        const ui::Rect next = interpolate_rect(current, target, amount);
+
+        const int opacity = interpolate(
+            image->opacity(), target_opacity_[i], amount);
+
+        image->set_bounds(next);
+        image->set_opacity(static_cast<std::uint8_t>(
+            std::clamp(opacity, 0, 255)));
+
+        if (std::abs(next.x - target.x) <= 1 &&
+            std::abs(next.y - target.y) <= 1 &&
+            std::abs(next.w - target.w) <= 1 &&
+            std::abs(next.h - target.h) <= 1) {
+            image->set_bounds(target);
+        }
+
+        if (std::abs(opacity - target_opacity_[i]) <= 1) {
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[i]));
+        }
+    }
+}
+
+} // namespace kiddos::app
