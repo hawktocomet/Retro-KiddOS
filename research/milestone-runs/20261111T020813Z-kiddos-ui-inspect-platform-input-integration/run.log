@@ -1,0 +1,450 @@
+=== SDL event handling ===
+    if (!carousel_title_texture || !carousel_selected_texture) {
+        shutdown();
+        return false;
+    }
+    SDL_SetTextureBlendMode(carousel_title_texture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(carousel_selected_texture, SDL_BLENDMODE_BLEND);
+
+
+    for (int index = 0; index < SDL_NumJoysticks(); ++index) {
+        if (SDL_IsGameController(index)) {
+            open_controller(index);
+            if (controller_) {
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
+void SDLPlatform::open_controller(int device_index) {
+    if (controller_) return;
+
+    controller_ = SDL_GameControllerOpen(device_index);
+
+    if (controller_) {
+        controller_instance_ = SDL_JoystickInstanceID(
+            SDL_GameControllerGetJoystick(controller_)
+        );
+    }
+}
+
+void SDLPlatform::close_controller() {
+    if (controller_) {
+        SDL_GameControllerClose(controller_);
+        controller_ = nullptr;
+    }
+
+    controller_instance_ = -1;
+}
+
+Action SDLPlatform::map_key(SDL_Keycode key) {
+    switch (key) {
+        case SDLK_LEFT: return Action::NavigateLeft;
+        case SDLK_RIGHT: return Action::NavigateRight;
+        case SDLK_UP: return Action::NavigateUp;
+        case SDLK_DOWN: return Action::NavigateDown;
+        case SDLK_RETURN:
+        case SDLK_SPACE: return Action::Confirm;
+        case SDLK_ESCAPE: return Action::Back;
+        case SDLK_q: return Action::Quit;
+        default: return Action::None;
+    }
+}
+
+Action SDLPlatform::map_controller_button(Uint8 button) {
+    switch (button) {
+        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+            return Action::NavigateLeft;
+        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+            return Action::NavigateRight;
+        case SDL_CONTROLLER_BUTTON_DPAD_UP:
+            return Action::NavigateUp;
+        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+            return Action::NavigateDown;
+        case SDL_CONTROLLER_BUTTON_A:
+            return Action::Confirm;
+        case SDL_CONTROLLER_BUTTON_B:
+            return Action::Back;
+        default:
+            return Action::None;
+    }
+}
+
+bool SDLPlatform::poll_action(Action& action) {
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        action = Action::None;
+
+        switch (event.type) {
+            case SDL_QUIT:
+                action = Action::Quit;
+                return true;
+
+            case SDL_KEYDOWN:
+                if (event.key.repeat == 0) {
+                    action = map_key(event.key.keysym.sym);
+                }
+                break;
+
+            case SDL_CONTROLLERBUTTONDOWN:
+                if (event.cbutton.which == controller_instance_) {
+                    action = map_controller_button(event.cbutton.button);
+                }
+                break;
+
+            case SDL_CONTROLLERDEVICEADDED:
+                open_controller(event.cdevice.which);
+                break;
+
+            case SDL_CONTROLLERDEVICEREMOVED:
+                if (event.cdevice.which == controller_instance_) {
+                    close_controller();
+                }
+                break;
+
+            case SDL_WINDOWEVENT:
+                if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
+                    action = Action::Quit;
+                    return true;
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        if (action != Action::None) return true;
+    }
+
+    return false;
+}
+
+void SDLPlatform::begin_frame() {
+    if (!renderer_) return;
+
+    color(renderer_, {8, 15, 35, 255});
+    SDL_RenderClear(renderer_);
+}
+
+
+void SDLPlatform::draw_carousel(int selected_index) {
+    if (!renderer_) return;
+
+    const int left = (selected_index + 2) % 3;
+    const int right = (selected_index + 1) % 3;
+
+    const Color side_fill{16, 41, 75, 255};
+    const Color center_fill{18, 63, 117, 255};
+    const Color center_border{36, 164, 255, 255};
+=== Platform interface ===
+#pragma once
+
+#include "kiddos/core/action.hpp"
+
+namespace kiddos {
+
+class Platform {
+public:
+    virtual ~Platform() = default;
+
+    virtual bool initialize() = 0;
+    virtual bool poll_action(Action& action) = 0;
+    virtual void begin_frame() = 0;
+    virtual void draw_carousel(int selected_index) = 0;
+    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+    virtual void present() = 0;
+    virtual void shutdown() = 0;
+};
+
+} // namespace kiddos
+=== Application event loop ===
+#include "kiddos/app/application.hpp"
+
+#include <chrono>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+            if (!running_) {
+                break;
+            }
+        }
+
+        if (running_) {
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::NavigateLeft:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + game_count_ - 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateRight:
+            if (!action_screen_) {
+                selected_game_ =
+                    (selected_game_ + 1) % game_count_;
+            }
+            break;
+
+        case Action::NavigateUp:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::NavigateDown:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::Confirm:
+            if (!action_screen_) {
+                action_screen_ = true;
+                selected_action_ = 0;
+            }
+            // Game launching is intentionally not implemented yet.
+            break;
+
+        case Action::Back:
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
+            break;
+
+        case Action::None:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    if (action_screen_) {
+        // Game 1 is a temporary checkpoint demonstration fixture.
+        platform_.draw_game_actions(
+            selected_game_, selected_game_ == 1, selected_action_);
+    } else {
+        platform_.draw_carousel(selected_game_);
+    }
+    platform_.present();
+}
+
+} // namespace kiddos
+=== Controller interaction ===
+#pragma once
+
+#include "kiddos/ui/button.hpp"
+#include "kiddos/ui/focus.hpp"
+
+namespace kiddos::ui {
+
+enum class UIAction {
+    Left,
+    Right,
+    Up,
+    Down,
+    Confirm,
+    Back
+};
+
+class ControllerInteraction final {
+public:
+    explicit ControllerInteraction(FocusManager& focus) noexcept;
+
+    bool handle(UIAction action);
+    bool cancel() noexcept;
+
+private:
+    FocusManager& focus_;
+};
+
+} // namespace kiddos::ui
+#include "kiddos/ui/controller.hpp"
+#include "kiddos/ui/toggle.hpp"
+#include "kiddos/ui/checkbox.hpp"
+#include "kiddos/ui/radio_group.hpp"
+#include "kiddos/ui/select.hpp"
+#include "kiddos/ui/slider.hpp"
+#include "kiddos/ui/list_view.hpp"
+
+namespace kiddos::ui {
+
+ControllerInteraction::ControllerInteraction(FocusManager& focus) noexcept
+    : focus_(focus) {
+}
+
+bool ControllerInteraction::handle(UIAction action) {
+    Element* focused = focus_.focused();
+
+    switch (action) {
+        case UIAction::Left:
+            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+                return radio->select_previous();
+            if (auto* select = dynamic_cast<Select*>(focused))
+                return select->select_previous();
+            if (auto* slider = dynamic_cast<Slider*>(focused))
+                return slider->adjust(-1);
+            return focus_.move(Direction::Left);
+
+        case UIAction::Right:
+            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+                return radio->select_next();
+            if (auto* select = dynamic_cast<Select*>(focused))
+                return select->select_next();
+            if (auto* slider = dynamic_cast<Slider*>(focused))
+                return slider->adjust(1);
+            return focus_.move(Direction::Right);
+
+        case UIAction::Up:
+            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+                return radio->select_previous();
+            if (auto* list = dynamic_cast<ListView*>(focused))
+                return list->move_selection(-1);
+            return focus_.move(Direction::Up);
+
+        case UIAction::Down:
+            if (auto* radio = dynamic_cast<RadioGroup*>(focused))
+                return radio->select_next();
+            if (auto* list = dynamic_cast<ListView*>(focused))
+                return list->move_selection(1);
+            return focus_.move(Direction::Down);
+
+        case UIAction::Confirm:
+            if (auto* button = dynamic_cast<Button*>(focused))
+                return button->activate();
+            if (auto* toggle = dynamic_cast<Toggle*>(focused))
+                return toggle->toggle();
+            if (auto* checkbox = dynamic_cast<Checkbox*>(focused))
+                return checkbox->toggle();
+            if (auto* list = dynamic_cast<ListView*>(focused))
+                return list->activate_selected();
+            return false;
+
+        case UIAction::Back:
+            return cancel();
+    }
+
+    return false;
+}
+
+bool ControllerInteraction::cancel() noexcept {
+    return false;
+}
+
+} // namespace kiddos::ui
+=== Focus manager interface ===
+#pragma once
+
+#include "kiddos/ui/container.hpp"
+
+namespace kiddos::ui {
+
+enum class Direction {
+    Left,
+    Right,
+    Up,
+    Down
+};
+
+class FocusManager final {
+public:
+    explicit FocusManager(Container& root) noexcept;
+
+    Element* focused() const noexcept;
+    bool focus_first() noexcept;
+    bool move(Direction direction) noexcept;
+    void clear() noexcept;
+
+private:
+    Container& root_;
+    Element* focused_ = nullptr;
+
+    bool eligible(const Element* element) const noexcept;
+};
+
+} // namespace kiddos::ui
+=== Element focus and enabled API ===
+#pragma once
+
+#include "kiddos/ui/geometry.hpp"
+#include "kiddos/ui/renderer.hpp"
+
+namespace kiddos::ui {
+
+class Element {
+public:
+    virtual ~Element() = default;
+
+    void set_bounds(Rect bounds) noexcept { bounds_ = bounds; }
+    Rect bounds() const noexcept { return bounds_; }
+
+    void set_visible(bool visible) noexcept { visible_ = visible; }
+    bool visible() const noexcept { return visible_; }
+
+    void set_enabled(bool enabled) noexcept { enabled_ = enabled; }
+    bool enabled() const noexcept { return enabled_; }
+
+    void set_focusable(bool focusable) noexcept {
+        focusable_ = focusable;
+    }
+
+    bool focusable() const noexcept { return focusable_; }
+
+    void set_focused(bool focused) noexcept { focused_ = focused; }
+    bool focused() const noexcept { return focused_; }
+
+    void render(Renderer& renderer) {
+        if (visible_) draw(renderer);
+    }
+
+protected:
+    virtual void draw(Renderer& renderer) = 0;
+
+private:
+    Rect bounds_{};
+    bool visible_ = true;
+    bool enabled_ = true;
+    bool focusable_ = false;
+    bool focused_ = false;
+};
+
+} // namespace kiddos::ui
