@@ -1,0 +1,11 @@
+=== Verify SDL-specific draw backend is absent ===
+SDL_DRAW_SYMBOL_CHECK=0
+=== Run adapter on desktop for five seconds ===
+APP_EXIT=124
+Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer
+Press Escape or close the window to exit.
+=== GDB backtrace if it still crashes ===
+=== Check display capture tools ===
+/usr/bin/grim
+/usr/bin/import
+DISPLAY=:0 WAYLAND_DISPLAY=wayland-0
