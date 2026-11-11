@@ -1,1 +1,1 @@
-research/milestones/visual-fidelity-pass/runs/20261111T200209Z-set-actual-screen-background-to-electric-cobalt-blue
+research/milestones/visual-fidelity-pass/runs/20261111T200331Z-set-sdl-clear-color-to-cobalt-blue
