@@ -1,0 +1,1556 @@
+=== Existing renderer creation and presentation ===
+}
+
+} // namespace
+
+SDLPlatform::~SDLPlatform() {
+    shutdown();
+}
+
+bool SDLPlatform::initialize() {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+        std::cerr << "SDL initialization failed: "
+                  << SDL_GetError() << '\n';
+        return false;
+    }
+
+    initialized_ = true;
+
+    window_ = SDL_CreateWindow(
+        "Retro KiddOS - Kid Mode",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        720,
+        720,
+        SDL_WINDOW_SHOWN
+    );
+
+    if (!window_) {
+        std::cerr << "Window creation failed: "
+                  << SDL_GetError() << '\n';
+        shutdown();
+        return false;
+    }
+
+    renderer_ = SDL_CreateRenderer(
+        window_, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
+
+    if (!renderer_) {
+        renderer_ = SDL_CreateRenderer(
+            window_, -1, SDL_RENDERER_SOFTWARE
+        );
+    }
+
+    if (!renderer_) {
+        std::cerr << "Renderer creation failed: "
+                  << SDL_GetError() << '\n';
+        shutdown();
+        return false;
+    }
+
+    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+
+    const char* artwork_paths[] = {
+        "assets/artwork/generated/carousel-star.bmp",
+        "assets/artwork/generated/carousel-mushroom.bmp",
+        "assets/artwork/generated/carousel-car.bmp"
+    };
+    const char* label_paths[] = {
+        "assets/artwork/generated/label-play.bmp",
+        "assets/artwork/generated/label-resume.bmp",
+                          ? Color{75, 165, 255, 255}
+                          : Color{65, 93, 145, 190});
+
+        const int symbol_x = 145;
+        const int symbol_y = y + box_height / 2;
+
+        if (!has_checkpoint || i == 0) {
+            if (has_checkpoint) {
+                draw_resume_symbol(renderer_, symbol_x, symbol_y);
+                draw_action_label(renderer_, 1, 230, y + 20);
+            } else {
+                draw_play_symbol(renderer_, symbol_x - 20, symbol_y);
+                draw_action_label(renderer_, 0, 230, y + 20);
+            }
+        } else {
+            draw_restart_symbol(renderer_, symbol_x, symbol_y);
+            draw_action_label(renderer_, 2, 230, y + 20);
+        }
+
+        if (selected) {
+            rounded_outline(renderer_,
+                            {box.x - 4, box.y - 4,
+                             box.w + 8, box.h + 8},
+                            26, {43, 126, 231, 180});
+        }
+    }
+}
+
+
+void SDLPlatform::present() {
+    if (renderer_) SDL_RenderPresent(renderer_);
+}
+
+void SDLPlatform::shutdown() {
+    close_controller();
+
+    for (auto& texture : artwork_textures) {
+        if (texture) {
+            SDL_DestroyTexture(texture);
+            texture = nullptr;
+        }
+=== LVGL display creation and flush APIs ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h:73:    /** MANDATORY: Write the internal buffer (draw_buf) to the display. 'lv_display_flush_ready()' has to be
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h:80:     * If not set `flushing` flag is used which can be cleared with `lv_display_flush_ready()` */
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:75:lv_display_t * lv_display_create(int32_t hor_res, int32_t ver_res)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:93:    disp->color_format = LV_COLOR_FORMAT_DEFAULT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:463:void lv_display_set_buffers(lv_display_t * disp, void * buf1, void * buf2, uint32_t buf_size,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:468:    lv_display_set_buffers_with_stride(disp, buf1, buf2, buf_size, LV_STRIDE_AUTO, render_mode);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:471:void lv_display_set_buffers_with_stride(lv_display_t * disp, void * buf1, void * buf2, uint32_t buf_size,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:493:    if(render_mode == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:526:void lv_display_set_flush_cb(lv_display_t * disp, lv_display_flush_cb_t flush_cb)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:577:    LV_CHECK_ARG(disp != NULL, return LV_COLOR_FORMAT_UNKNOWN);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:623:    LV_CHECK_ARG(disp != NULL, return LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:628:LV_ATTRIBUTE_FLUSH_READY void lv_display_flush_ready(lv_display_t * disp)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/scale/lv_scale.c:1056:        lv_layer_t * layer_label = lv_draw_layer_create(layer, LV_COLOR_FORMAT_ARGB8888, &label_coords);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/qrcode/lv_qrcode.c:72:    lv_draw_buf_t * new_buf = lv_draw_buf_create(size, size, LV_COLOR_FORMAT_I1, LV_STRIDE_AUTO);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/lottie/lv_lottie.c:90:    int32_t stride = lv_draw_buf_width_to_stride(w, LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/lottie/lv_lottie.c:91:    buf = lv_draw_buf_align(buf, LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/lottie/lv_lottie.c:95:    lv_canvas_set_buffer(obj, buf, w, h, LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/lottie/lv_lottie.c:113:    if(draw_buf->header.cf != LV_COLOR_FORMAT_ARGB8888 && draw_buf->header.cf != LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/image/lv_image.c:683:    img->cf        = LV_COLOR_FORMAT_UNKNOWN;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/image/lv_image.c:1058:    img->cf = LV_COLOR_FORMAT_UNKNOWN;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gstreamer/lv_gstreamer.c:70:    {LV_COLOR_FORMAT_RGB565,   "RGB16"},
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gstreamer/lv_gstreamer.c:71:    {LV_COLOR_FORMAT_RGB888,   "BGR"},
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gstreamer/lv_gstreamer.c:72:    {LV_COLOR_FORMAT_XRGB8888, "BGRx"},
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gstreamer/lv_gstreamer.c:73:    {LV_COLOR_FORMAT_ARGB8888, "BGRA"},
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gstreamer/lv_gstreamer.c:76:#define GSTREAMER_FALLBACK_COLOR_FORMAT LV_COLOR_FORMAT_ARGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:93:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:94:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:95:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:96:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:97:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:277:    gifobj->color_format = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:440:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:443:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:446:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:449:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/gif/lv_gif.c:450:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/ffmpeg/lv_ffmpeg.c:207:    lv_color_format_t cf = has_alpha ? LV_COLOR_FORMAT_ARGB8888 : LV_COLOR_FORMAT_DEFAULT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/ffmpeg/lv_ffmpeg.c:490:        int lv_linesize = lv_color_format_get_size(LV_COLOR_FORMAT_DEFAULT) * width;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/ffmpeg/lv_ffmpeg.c:688:        header->cf = has_alpha ? LV_COLOR_FORMAT_ARGB8888 : LV_COLOR_FORMAT_DEFAULT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:126:    if(LV_COLOR_FORMAT_IS_INDEXED(cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:130:            case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:133:            case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:136:            case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:139:            case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:152:    else if(cf == LV_COLOR_FORMAT_L8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:155:    else if(cf == LV_COLOR_FORMAT_A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:158:    else if(cf == LV_COLOR_FORMAT_RGB565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:164:    else if(cf == LV_COLOR_FORMAT_RGB888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:169:    else if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:175:    else if(cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:182:    else if(cf == LV_COLOR_FORMAT_AL88) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:227:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:230:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:231:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:237:        case LV_COLOR_FORMAT_RGB565: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:245:        case LV_COLOR_FORMAT_A8: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:253:        case LV_COLOR_FORMAT_L8: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:317:    if(header->cf == LV_COLOR_FORMAT_RGB565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:326:    else if(header->cf == LV_COLOR_FORMAT_XRGB8888 || header->cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:328:        if(header->cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:339:    else if(header->cf == LV_COLOR_FORMAT_RGB888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:349:    else if(header->cf == LV_COLOR_FORMAT_L8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/canvas/lv_canvas.c:358:    else if(header->cf == LV_COLOR_FORMAT_AL88) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/barcode/lv_barcode.c:359:       old_buf->header.cf == LV_COLOR_FORMAT_I1) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/barcode/lv_barcode.c:363:    lv_draw_buf_t * new_buf = lv_draw_buf_create(w, h, LV_COLOR_FORMAT_I1, LV_STRIDE_AUTO);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/widgets/bar/lv_bar.c:645:        lv_layer_t * layer_indic = lv_draw_layer_create(layer, LV_COLOR_FORMAT_ARGB8888, &indic_draw_area);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:46:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:47:        case LV_COLOR_FORMAT_A1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:49:        case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:50:        case LV_COLOR_FORMAT_A2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:52:        case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:53:        case LV_COLOR_FORMAT_A4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:54:        case LV_COLOR_FORMAT_NEMA_TSC4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:56:        case LV_COLOR_FORMAT_NEMA_TSC6:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:57:        case LV_COLOR_FORMAT_NEMA_TSC6A:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:58:        case LV_COLOR_FORMAT_NEMA_TSC6AP:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:60:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:61:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:62:        case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:63:        case LV_COLOR_FORMAT_ARGB2222:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:65:        case LV_COLOR_FORMAT_NEMA_TSC12:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:66:        case LV_COLOR_FORMAT_NEMA_TSC12A:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:68:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:69:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:70:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:71:        case LV_COLOR_FORMAT_YUY2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:72:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:73:        case LV_COLOR_FORMAT_ARGB1555:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:74:        case LV_COLOR_FORMAT_ARGB4444:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:77:        case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:78:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:80:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:81:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:82:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:85:        case LV_COLOR_FORMAT_UNKNOWN:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:94:        case LV_COLOR_FORMAT_A1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:95:        case LV_COLOR_FORMAT_A2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:96:        case LV_COLOR_FORMAT_A4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:97:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:98:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:99:        case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:100:        case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:101:        case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:102:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:103:        case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:104:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:105:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:106:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:107:        case LV_COLOR_FORMAT_ARGB2222:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:108:        case LV_COLOR_FORMAT_ARGB1555:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:109:        case LV_COLOR_FORMAT_ARGB4444:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/libs/lodepng/lodepng.c:5800:        lv_draw_buf_t * decoded = lv_draw_buf_create_ex(image_cache_draw_buf_handlers, *w, *h, LV_COLOR_FORMAT_ARGB8888, 4 * *w);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/libs/lodepng/lodepng.c:5841:        lv_draw_buf_t * new_buf = lv_draw_buf_create_ex(image_cache_draw_buf_handlers,*w, *h, LV_COLOR_FORMAT_ARGB8888, 4 * *w);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/svg/lv_svg_decoder.c:185:        header->cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/svg/lv_svg_decoder.c:247:    draw_buf->header.cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_tjpgd.c:95:            header->cf = LV_COLOR_FORMAT_RAW;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_tjpgd.c:122:            header->cf = LV_COLOR_FORMAT_RAW;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_tjpgd.c:213:    dsc->header.cf = LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_lodepng.c:125:        header->cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_libwebp.c:114:        header->cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_libpng.c:122:        header->cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_libpng.c:244:        cf = LV_COLOR_FORMAT_I8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_libpng.c:248:        cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_libjpeg_turbo.c:175:        header->cf = LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_libjpeg_turbo.c:364:    lv_color_format_t fm = LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_libjpeg_turbo.c:366:        fm = LV_COLOR_FORMAT_XRGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_image_decoder.c:335:    if(args->stride_align && decoded->header.cf != LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_image_decoder.c:357:       && !LV_COLOR_FORMAT_IS_ALPHA_ONLY(decoded->header.cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_image_decoder.c:360:       && decoded->header.cf != LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED /*Hasn't done yet*/
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_image_decoder.c:493:    if(header->cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bmp.c:122:                    header->cf = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bmp.c:125:                    header->cf = LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bmp.c:128:                    header->cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:159:        header->cf = LV_COLOR_FORMAT_A8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:166:    if(header->cf == LV_COLOR_FORMAT_UNKNOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:221:        else if(LV_COLOR_FORMAT_IS_INDEXED(cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:230:        else if(LV_COLOR_FORMAT_IS_ALPHA_ONLY(cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:234:        else if(cf == LV_COLOR_FORMAT_ARGB8888      \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:235:                || cf == LV_COLOR_FORMAT_XRGB8888   \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:236:                || cf == LV_COLOR_FORMAT_RGB888     \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:237:                || cf == LV_COLOR_FORMAT_RGB565     \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:238:                || cf == LV_COLOR_FORMAT_RGB565_SWAPPED     \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:239:                || cf == LV_COLOR_FORMAT_RGB565A8   \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:240:                || cf == LV_COLOR_FORMAT_ARGB8565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:262:        else if(LV_COLOR_FORMAT_IS_INDEXED(cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:278:        else if(LV_COLOR_FORMAT_IS_ALPHA_ONLY(cf) && cf != LV_COLOR_FORMAT_A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:407:        LV_COLOR_FORMAT_IS_INDEXED(cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:408:        || cf == LV_COLOR_FORMAT_ARGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:409:        || cf == LV_COLOR_FORMAT_XRGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:410:        || cf == LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:411:        || cf == LV_COLOR_FORMAT_RGB565
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:412:        || cf == LV_COLOR_FORMAT_RGB565_SWAPPED
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:413:        || cf == LV_COLOR_FORMAT_ARGB8565
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:414:        || cf == LV_COLOR_FORMAT_RGB565A8,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:432:        lv_color_format_t cf_decoded = LV_COLOR_FORMAT_IS_INDEXED(cf) ? LV_COLOR_FORMAT_ARGB8888 : cf;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:459:    if(LV_COLOR_FORMAT_IS_INDEXED(cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:492:    if(cf == LV_COLOR_FORMAT_ARGB8888 || cf == LV_COLOR_FORMAT_XRGB8888 || cf == LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:493:       || cf == LV_COLOR_FORMAT_RGB565 || cf == LV_COLOR_FORMAT_RGB565_SWAPPED || cf == LV_COLOR_FORMAT_ARGB8565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:506:    if(cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:653:                                                    LV_COLOR_FORMAT_ARGB8888,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:804:    if(cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:868:    decoded = lv_draw_buf_create_ex(image_cache_draw_buf_handlers, dsc->header.w, dsc->header.h, LV_COLOR_FORMAT_A8,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:894:    if(dsc->header.cf != LV_COLOR_FORMAT_A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:1019:    if(LV_COLOR_FORMAT_IS_INDEXED(cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:1023:    else if(LV_COLOR_FORMAT_IS_ALPHA_ONLY(cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:1181:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:1183:        case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:1185:        case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:1187:        case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/image/lv_bin_decoder.c:1269:        if(dsc->header.cf == LV_COLOR_FORMAT_RGB565A8)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/font/tiny_ttf/lv_tiny_ttf.c:654:    lv_draw_buf_t * draw_buf = lv_draw_buf_create_ex(font_draw_buf_handlers, w, h, LV_COLOR_FORMAT_A8, LV_STRIDE_AUTO);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/font/freetype/lv_freetype_image.c:191:        col_format = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/font/freetype/lv_freetype_image.c:194:        col_format = LV_COLOR_FORMAT_A8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/font/fmt_txt/lv_font_fmt_txt.c:132:        uint32_t stride_out = lv_draw_buf_width_to_stride(gdsc->box_w, LV_COLOR_FORMAT_A8);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/font/fmt_txt/lv_font_fmt_txt.c:512:    uint32_t stride = lv_draw_buf_width_to_stride(w, LV_COLOR_FORMAT_A8);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:110: * @note              @ref lv_display_flush_ready has to be called when it's finished.
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:127:    color_t   *   src_data = (color_t *)px_map + (LV_X11_RENDER_MODE == LV_DISPLAY_RENDER_MODE_PARTIAL ? 0 : hor_res *
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:135:        src_data += (LV_X11_RENDER_MODE == LV_DISPLAY_RENDER_MODE_PARTIAL ? 0 : hor_res - (area->x2 - area->x1 + 1));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:152:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:168:    if(LV_X11_RENDER_MODE != LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:173:        lv_display_set_buffers(disp, xd->buffer[0], xd->buffer[1], sz_buffers, LV_X11_RENDER_MODE);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:181:                              hor_res, ver_res, lv_color_format_get_bpp(LV_COLOR_FORMAT_ARGB8888), 0);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:341:                              hor_res, ver_res, lv_color_format_get_bpp(LV_COLOR_FORMAT_ARGB8888), 0);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:364:    lv_display_t * disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:370:    lv_display_set_flush_cb(disp, x11_flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:377:    if(LV_X11_RENDER_MODE == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/x11/lv_x11_display.c:382:    lv_display_set_buffers(disp, xd->buffer[0], xd->buffer[1], sz_buffers, LV_X11_RENDER_MODE);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c:196:                                               LV_COLOR_FORMAT_DEFAULT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c:218:                                      LV_COLOR_FORMAT_DEFAULT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c:269:            lv_display_set_buffers(
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c:299:        lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c:306:        lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c:354:    lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c:529:                context->display_device_object = lv_display_create(
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/windows/lv_windows_context.c:535:                lv_display_set_flush_cb(
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_window.c:64:    window->lv_disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_dmabuf.c:172:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_dmabuf.c:174:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_dmabuf.c:175:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_dmabuf.c:177:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:133:    lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:139:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:140:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:142:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:144:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:187:        cf = LV_COLOR_FORMAT_XRGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:244:        lv_display_set_buffers(display, ddata->rotated_buf, NULL,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:248:        lv_display_set_buffers(display, ddata->mmap_ptr,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:330:    lv_display_set_flush_cb(display, shm_flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:403:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:411:    if(ddata->shm_cf == WL_SHM_FORMAT_ARGB8888 && cf != LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_shm.c:450:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_g2d.c:282:    if(cf == LV_COLOR_FORMAT_RGB565 && !ctx->supports_rgb565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_g2d.c:284:        cf = LV_COLOR_FORMAT_XRGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_g2d.c:351:    lv_display_set_flush_cb(display, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_g2d.c:359:    if(cf == LV_COLOR_FORMAT_UNKNOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_g2d.c:364:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_g2d.c:367:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_g2d.c:368:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_g2d.c:371:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_g2d.c:385:    lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_g2d.c:638:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_egl.c:103:    lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_egl.c:195:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_egl.c:203:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_egl.c:233:    lv_display_set_flush_cb(display, egl_flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_dmabuf.c:189:    if(cf == LV_COLOR_FORMAT_RGB565 && !c->dmabuf.supports_rgb565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_dmabuf.c:238:    lv_display_set_buffers(display, ddata->render_buf, NULL, buf_size,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_dmabuf.c:240:    lv_display_set_flush_cb(display, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_dmabuf.c:283:    lv_display_set_buffers(display, ddata->render_buf, NULL, buf_size,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_dmabuf.c:308:    lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_dmabuf.c:324:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_dmabuf.c:331:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_dmabuf.c:336:    if(ddata->buffers[0].cf == DRM_FORMAT_ARGB8888 && cf != LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_dmabuf.c:353:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/wayland/lv_wayland_backend_dmabuf.c:359:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_display.c:90:    display = lv_display_create(display_ctx->gop_protocol->Mode->Info->HorizontalResolution,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_display.c:93:    lv_display_set_flush_cb(display, _display_flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_display.c:94:    lv_display_set_buffers(display, display_ctx->buffer, NULL, (uint32_t)display_ctx->buffer_size,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/uefi/lv_uefi_display.c:255:    lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:23:#if LV_COLOR_DEPTH == 1 && LV_SDL_RENDER_MODE != LV_DISPLAY_RENDER_MODE_PARTIAL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:24:    #error SDL LV_COLOR_DEPTH 1 requires LV_SDL_RENDER_MODE LV_DISPLAY_RENDER_MODE_PARTIAL
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_window.c:79:    lv_display_t * disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:81:    lv_draw_buf_init(&draw_buf, 4096, 4096, LV_COLOR_FORMAT_ARGB8888, 4096 * 4, &dummy_buf, 4096 * 4096 * 4);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:85:    lv_display_set_flush_cb(display, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_texture.c:116:    lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:116:    lv_display_set_flush_cb(display, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:118:    if(LV_SDL_RENDER_MODE == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:125:        lv_display_set_buffers(display, ddata->buf1, ddata->buf2, buffer_size_bytes, LV_SDL_RENDER_MODE);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:131:        lv_display_set_buffers(display, ddata->fb1, ddata->fb2, stride * display->ver_res,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:142:    if(cf == LV_COLOR_FORMAT_I1) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:143:        cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:148:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:151:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:154:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:157:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:175:    if(sdl_render_mode() == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:183:        lv_display_set_buffers(display, ddata->fb1, ddata->fb2, stride * display->ver_res, LV_SDL_RENDER_MODE);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:269:    if(LV_SDL_RENDER_MODE == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:270:        if(cf == LV_COLOR_FORMAT_RGB565_SWAPPED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:277:        if(cf == LV_COLOR_FORMAT_I1) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:279:            cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:286:                lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:290:            px_map += LV_COLOR_INDEXED_PALETTE_SIZE(LV_COLOR_FORMAT_I1) * 4;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:291:            const uint32_t i1_stride = lv_draw_buf_width_to_stride(width, LV_COLOR_FORMAT_I1);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:292:            const uint32_t argb8888_stride = lv_draw_buf_width_to_stride(width, LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:326:        if(sdl_render_mode() != LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:332:    lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:339:    if(cf == LV_COLOR_FORMAT_I1) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_sw.c:340:        cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_egl.c:95:        lv_draw_buf_init(&draw_buf, 4096, 4096, LV_COLOR_FORMAT_ARGB8888, 4096 * 4, &dummy_buf, 4096 * 4096 * 4);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_egl.c:114:    lv_display_set_flush_cb(display, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/sdl/lv_sdl_egl.c:205:    lv_display_flush_ready(display);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:96:    lv_display_t * disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:108:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:286:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/qnx/lv_qnx.c:389:    lv_display_set_buffers(disp, ptr1, ptr2, bufsize, LV_DISPLAY_RENDER_MODE_FULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_texture.c:105:    lv_display_set_buffers(display, &dummy_buf, NULL,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_texture.c:111:    lv_display_set_buffers(display, &dummy_buf, NULL, width * height * 4, LV_DISPLAY_RENDER_MODE_DIRECT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_texture.c:125:    lv_display_set_buffers(display, texture->fb1, NULL, buf_size, lv_display_get_render_mode(display));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_texture.c:153:    lv_display_set_buffers(display, &dummy_buf, NULL,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_texture.c:160:    lv_display_set_buffers(display, &dummy_buf, NULL, w * h * 4, LV_DISPLAY_RENDER_MODE_DIRECT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_texture.c:170:    lv_display_set_buffers(display, texture->fb1, NULL, buf_size, LV_DISPLAY_RENDER_MODE_DIRECT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_texture.c:243:    lv_display_t * disp = lv_display_create(w, h);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_texture.c:263:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_texture.c:317:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_pbuffer.c:75:    lv_display_t * disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_pbuffer.c:108:    ctx->draw_buf = lv_draw_buf_create(hor_res, ver_res, LV_COLOR_FORMAT_XRGB8888, LV_STRIDE_AUTO);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_pbuffer.c:117:    lv_display_set_color_format(disp, LV_COLOR_FORMAT_XRGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_pbuffer.c:120:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_pbuffer.c:146:    if(cf != LV_COLOR_FORMAT_XRGB8888 && cf != LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_pbuffer.c:268:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_pbuffer.c:276:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_glfw.c:283:    lv_display_t * disp = lv_display_create(w, h);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_glfw.c:302:    lv_display_set_buffers(disp, &dummy_buf, NULL, h * lv_draw_buf_width_to_stride(w, LV_COLOR_FORMAT_ARGB8888),
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_glfw.c:316:    lv_display_set_buffers(disp, dsc->fb, NULL, buf_size, LV_DISPLAY_RENDER_MODE_DIRECT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_glfw.c:337:    lv_display_set_flush_cb(disp, window_display_flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_glfw.c:696:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.h:50: * compatible else it falls back to `LV_COLOR_FORMAT_ARGB8888` and logs a warning.
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:190:    if(cf != LV_COLOR_FORMAT_L8 && lv_opengles_gl_format_from_color_format(cf, &gl_format) == LV_RESULT_OK) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:195:    lv_display_set_color_format(display, LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:196:    return LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:559:            return LV_COLOR_FORMAT_RGB565A8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:562:            return LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:567:            return LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:570:            return LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:575:    return LV_COLOR_FORMAT_UNKNOWN;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:587:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:588:            return config_cf == LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:589:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:590:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_egl.c:591:            return config_cf == LV_COLOR_FORMAT_ARGB8888 || config_cf == LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_driver.c:160:    params->cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_driver.c:168:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_driver.c:175:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_driver.c:182:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_driver.c:189:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_driver.c:197:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_driver.c:198:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_driver.c:199:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/opengles/lv_opengles_driver.c:205:            gl_format->premultiplied = cf == LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_lcd.c:152:    lcd->area.data = (uint8_t *)color_p + (LV_COLOR_FORMAT_IS_INDEXED(cf) ?
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_lcd.c:155:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_lcd.c:169:    lv_display_t * disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_lcd.c:179:    lv_display_render_mode_t render_mode = LV_DISPLAY_RENDER_MODE_PARTIAL;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_lcd.c:207:    lv_display_set_flush_cb(lcd->disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_lcd.c:221:        lv_display_set_flush_cb(disp, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:89:    lv_display_t * disp = lv_display_create(800, 480);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:97:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:137:    if(color_format == LV_COLOR_FORMAT_UNKNOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:275:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:320:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:327:            return LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:329:            return LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:331:            return LV_COLOR_FORMAT_XRGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:333:            return LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:340:    return LV_COLOR_FORMAT_UNKNOWN;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/nuttx/lv_nuttx_fbdev.c:485:        lv_display_set_flush_cb(disp, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/draw/eve/lv_draw_eve_display.c:58:    lv_display_t * disp = lv_display_create(params->hor_res, params->ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/draw/eve/lv_draw_eve_display.c:59:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/draw/eve/lv_draw_eve_display.c:60:    lv_display_set_buffers(disp, &dummy_buf, NULL,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/draw/eve/lv_draw_eve_display.c:61:                           params->hor_res * params->ver_res * LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_DEFAULT),
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/draw/eve/lv_draw_eve_display.c:226:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/tft_espi/lv_tft_espi.cpp:50:    lv_display_t * disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/tft_espi/lv_tft_espi.cpp:60:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/tft_espi/lv_tft_espi.cpp:62:    lv_display_set_buffers(disp, (void *)buf, NULL, buf_size_bytes, LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/tft_espi/lv_tft_espi.cpp:82:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:105:    return create(render_buf_1, render_buf_2, buf_size, layer_idx, LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:120:    if(cf == LV_COLOR_FORMAT_UNKNOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:126:    if(mode == LV_DISPLAY_RENDER_MODE_PARTIAL && (cf == LV_COLOR_FORMAT_L8 || cf == LV_COLOR_FORMAT_AL88)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:132:    lv_display_t * disp = lv_display_create(layer_width, layer_height);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:134:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:140:        lv_display_set_buffers(disp, buf1, buf2, layer_width * layer_height * cf_size, LV_DISPLAY_RENDER_MODE_DIRECT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:148:        lv_display_set_buffers(disp, buf1, buf2, buf_size, LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:255:            return LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:257:            return LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:259:            return LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:261:            return LV_COLOR_FORMAT_L8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:263:            return LV_COLOR_FORMAT_AL88;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:267:    return LV_COLOR_FORMAT_UNKNOWN;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:320:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:322:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:324:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:326:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:328:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/st_ltdc/lv_st_ltdc.c:330:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/renesas_glcdc/lv_renesas_glcdc.c:102:    return glcdc_create(buf1, buf2, buf_size, LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/renesas_glcdc/lv_renesas_glcdc.c:156:    lv_display_t * display = lv_display_create(DISPLAY_HSIZE_INPUT0, DISPLAY_VSIZE_INPUT0);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/renesas_glcdc/lv_renesas_glcdc.c:159:        lv_display_set_flush_cb(display, flush_direct);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/renesas_glcdc/lv_renesas_glcdc.c:162:    else if(render_mode == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/renesas_glcdc/lv_renesas_glcdc.c:163:        lv_display_set_flush_cb(display, flush_partial);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/renesas_glcdc/lv_renesas_glcdc.c:170:    lv_display_set_buffers_with_stride(display, buf1, buf2, buf_size, DISPLAY_BUFFER_STRIDE_BYTES_INPUT0, render_mode);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c:60:    lv_display_t * disp = lv_display_create(config->panelWidth, config->panelHeight);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c:65:    lv_display_set_buffers(disp, frame_buffer1, frame_buffer2, buf_size, LV_DISPLAY_RENDER_MODE_DIRECT);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c:89:    lv_display_set_flush_cb(disp, flush_partial_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c:90:    lv_display_set_buffers(disp, frame_buffer1, frame_buffer2, buf_size, LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c:150:    int32_t bytes_per_pixel = LV_COLOR_FORMAT_GET_SIZE(lv_display_get_color_format(disp));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c:170:            color_format = LV_COLOR_FORMAT_L8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c:173:            color_format = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c:176:            color_format = LV_COLOR_FORMAT_XRGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c:179:            color_format = LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c:186:            color_format = LV_COLOR_FORMAT_UNKNOWN;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/mipi/lv_lcd_generic_mipi.c:52:    lv_display_t * disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/mipi/lv_lcd_generic_mipi.c:79:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/mipi/lv_lcd_generic_mipi.c:173:    /* note: LVGL waits for your callback to call `lv_display_flush_ready` to know when the transfer has finished. */
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/lovyan_gfx/lv_lovyan_gfx.cpp:51:    lv_display_t * disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/lovyan_gfx/lv_lovyan_gfx.cpp:68:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/lovyan_gfx/lv_lovyan_gfx.cpp:69:    lv_display_set_color_format(disp, LV_COLOR_FORMAT_RGB565_SWAPPED);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/lovyan_gfx/lv_lovyan_gfx.cpp:71:    lv_display_set_buffers(disp, (void *)buf, NULL, buf_size_bytes, LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/lovyan_gfx/lv_lovyan_gfx.cpp:107:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/ft81x/lv_ft81x.c:96:    lv_display_t * disp = lv_display_create(params->hor_res, params->ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/ft81x/lv_ft81x.c:104:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/ft81x/lv_ft81x.c:105:    lv_display_set_color_format(disp, LV_COLOR_FORMAT_RGB565);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/ft81x/lv_ft81x.c:106:    lv_display_set_buffers(disp, partial_buf, NULL, buf_size, LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/ft81x/lv_ft81x.c:269:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:122:    lv_display_t * disp = lv_display_create(800, 480);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:133:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:263:                            "LV_COLOR_FORMAT_L8 is not supported", (unsigned)dsc->vinfo.grayscale);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:267:            lv_display_set_color_format(disp, LV_COLOR_FORMAT_L8);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:270:            lv_display_set_color_format(disp, LV_COLOR_FORMAT_RGB565);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:273:            lv_display_set_color_format(disp, LV_COLOR_FORMAT_RGB888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:276:            lv_display_set_color_format(disp, LV_COLOR_FORMAT_XRGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:306:    if(LV_LINUX_FBDEV_RENDER_MODE == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:338:    lv_display_set_buffers(disp, draw_buf, draw_buf_2, draw_buf_size, LV_LINUX_FBDEV_RENDER_MODE);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:428:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:451:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:473:                lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:516:        lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/fb/lv_linux_fbdev.c:589:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/drm/lv_linux_drm_egl.c:83:    ctx->display = lv_display_create(1, 1);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/drm/lv_linux_drm_egl.c:133:    lv_display_set_flush_cb(disp, flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/drm/lv_linux_drm_egl.c:199:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/drm/lv_linux_drm.c:145:    disp = lv_display_create(800, 480);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/drm/lv_linux_drm.c:152:    lv_display_set_flush_cb(disp, drm_flush);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/drm/lv_linux_drm.c:232:     * to lv_display_create then the buffers aren't big enough for LV_DISPLAY_RENDER_MODE_DIRECT.
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/drm/lv_linux_drm.c:235:    lv_display_set_buffers_with_stride(disp, drm_dev->drm_bufs[1].map, drm_dev->drm_bufs[0].map, buf_size,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/drivers/display/drm/lv_linux_drm.c:1105:    lv_display_set_flush_cb(disp, NULL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:494:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:495:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:496:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:497:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:498:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:499:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:500:        case LV_COLOR_FORMAT_ARGB1555:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:501:        case LV_COLOR_FORMAT_ARGB4444:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:502:        case LV_COLOR_FORMAT_ARGB2222:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:505:        case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:506:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:519:        case LV_COLOR_FORMAT_A4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:520:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:521:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:522:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:523:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:524:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:525:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:526:        case LV_COLOR_FORMAT_ARGB1555:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:527:        case LV_COLOR_FORMAT_ARGB4444:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:528:        case LV_COLOR_FORMAT_ARGB2222:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:531:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:532:        case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:533:        case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:536:        case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:539:        case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:540:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:543:        case LV_COLOR_FORMAT_NV12:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:546:        case LV_COLOR_FORMAT_YUY2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:559:        case LV_COLOR_FORMAT_A4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:562:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:565:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:568:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:571:        case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:574:        case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:577:        case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:580:        case LV_COLOR_FORMAT_ARGB1555:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:583:        case LV_COLOR_FORMAT_ARGB4444:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:586:        case LV_COLOR_FORMAT_ARGB2222:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:589:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:592:        case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:595:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:602:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:603:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:606:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:609:        case LV_COLOR_FORMAT_NV12:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:612:        case LV_COLOR_FORMAT_YUY2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:720:    if(LV_COLOR_FORMAT_IS_INDEXED(draw_buf->header.cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:828:    if(LV_COLOR_FORMAT_IS_INDEXED(decoded->header.cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:30:    LV_VG_LITE_ALIGN(LV_COLOR_INDEXED_PALETTE_SIZE(LV_COLOR_FORMAT_I8) * sizeof(lv_color32_t), LV_DRAW_BUF_ALIGN)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:119:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:123:        case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:127:        case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:131:        case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:160:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:161:        case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:162:        case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:163:            return LV_COLOR_FORMAT_I8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:165:        case LV_COLOR_FORMAT_A1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:166:        case LV_COLOR_FORMAT_A2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:167:            return LV_COLOR_FORMAT_A8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:173:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:174:            return vg_lite_query_feature(gcFEATURE_BIT_VG_24BIT) ? LV_COLOR_FORMAT_UNKNOWN : LV_COLOR_FORMAT_XRGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:175:        case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:176:            return vg_lite_query_feature(gcFEATURE_BIT_VG_24BIT) ? LV_COLOR_FORMAT_UNKNOWN : LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:178:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:179:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:180:            return LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:182:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:183:            return LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:189:    return LV_COLOR_FORMAT_UNKNOWN;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:207:    if(cf == LV_COLOR_FORMAT_UNKNOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:326:        case LV_COLOR_FORMAT_A1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:331:        case LV_COLOR_FORMAT_A2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:336:        case LV_COLOR_FORMAT_A4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:341:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:386:        case LV_COLOR_FORMAT_RGB565_SWAPPED: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:395:        case LV_COLOR_FORMAT_RGB888: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:404:        case LV_COLOR_FORMAT_ARGB8565: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:413:        case LV_COLOR_FORMAT_RGB565A8: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:441:        case LV_COLOR_FORMAT_AL88: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:578:        case LV_COLOR_FORMAT_RGB565_SWAPPED: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:592:        case LV_COLOR_FORMAT_RGB888: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:606:        case LV_COLOR_FORMAT_ARGB8565: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:620:        case LV_COLOR_FORMAT_RGB565A8: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:663:        case LV_COLOR_FORMAT_AL88: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:690:    if(dest_cf == LV_COLOR_FORMAT_UNKNOWN) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:739:                    case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:740:                    case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:741:                    case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:742:                    case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:746:                    case LV_COLOR_FORMAT_A1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:747:                    case LV_COLOR_FORMAT_A2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:751:                    case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:752:                    case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:753:                    case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:754:                    case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:755:                    case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:814:                    case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:815:                    case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:816:                    case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:817:                    case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:821:                    case LV_COLOR_FORMAT_A1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:822:                    case LV_COLOR_FORMAT_A2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:826:                    case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:827:                    case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:828:                    case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:829:                    case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:830:                    case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_bitmap_font_cache.c:156:                                                     LV_COLOR_FORMAT_A8,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_draw_vg_lite_img.c:77:                       || (decoder_dsc.decoded->header.cf == LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:305:    if(cf != LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:417:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:418:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:423:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:428:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:507:    if(cf != LV_COLOR_FORMAT_ARGB8888 && \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:508:       cf != LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:510:        new_buf = lv_draw_buf_create(width, height, LV_COLOR_FORMAT_ARGB8888, LV_STRIDE_AUTO);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_triangle.c:145:        blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:168:    if(src_cf == LV_COLOR_FORMAT_RGB888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:169:        dest_stride = dest_w * lv_color_format_get_size(LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:171:    else if(src_cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:174:    else if(src_cf == LV_COLOR_FORMAT_L8 || src_cf == LV_COLOR_FORMAT_AL88) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:182:    if(src_cf == LV_COLOR_FORMAT_RGB565 || src_cf == LV_COLOR_FORMAT_RGB565_SWAPPED || src_cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:186:    else if(src_cf == LV_COLOR_FORMAT_L8 || src_cf == LV_COLOR_FORMAT_AL88) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:259:            case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:265:            case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:271:            case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:277:            case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:283:            case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:289:            case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:295:            case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:301:            case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:308:            case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:315:            case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_letter.c:174:                            mask_area.x2 = mask_area.x1 + lv_draw_buf_width_to_stride(lv_area_get_width(&mask_area), LV_COLOR_FORMAT_A8) - 1;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_letter.c:259:    stride = lv_draw_buf_width_to_stride(w, LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_letter.c:260:    draw_buf = lv_draw_buf_create(w, h, LV_COLOR_FORMAT_ARGB8888, stride);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_letter.c:265:    glyph_layer.color_format = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:124:        fill_dsc.color = lv_color_hex(layer_to_draw->color_format == LV_COLOR_FORMAT_ARGB8888 ? 0xff0000 : 0x00ff00);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:175:    if(!transformed && !radius && cf == LV_COLOR_FORMAT_A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:189:    else if(!transformed && !radius && cf == LV_COLOR_FORMAT_RGB565A8 && draw_dsc->recolor_opa <= LV_OPA_MIN &&
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:206:        blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:209:    else if(!transformed && !radius && (cf == LV_COLOR_FORMAT_L8 || cf == LV_COLOR_FORMAT_AL88) &&
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:259:    if(cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:260:        cf = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:283:    if(cf == LV_COLOR_FORMAT_A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:296:        if(cf_ori == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:302:        else if(cf_ori == LV_COLOR_FORMAT_A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:314:        if(cf_ori == LV_COLOR_FORMAT_RGB565A8 || cf_ori == LV_COLOR_FORMAT_A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:368:    if(cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:372:        blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:422:    if(cf == LV_COLOR_FORMAT_L8 || cf == LV_COLOR_FORMAT_A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:432:    if(cf_final == LV_COLOR_FORMAT_RGB888 || cf_final == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:433:        cf_final = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:435:    else if(cf_final == LV_COLOR_FORMAT_RGB565 ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:436:            cf_final == LV_COLOR_FORMAT_RGB565_SWAPPED) cf_final = LV_COLOR_FORMAT_RGB565A8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:437:    else if(cf_final == LV_COLOR_FORMAT_L8) cf_final = LV_COLOR_FORMAT_AL88;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:442:    else if(cf_final == LV_COLOR_FORMAT_ARGB8888 && draw_dsc->antialias) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:443:        cf_final = LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:449:    if(cf_final == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:455:    else if(cf_final == LV_COLOR_FORMAT_AL88) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:480:    if(cf_final == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:488:        blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:490:    else if(cf_final == LV_COLOR_FORMAT_AL88) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:497:        blend_dsc.src_color_format = LV_COLOR_FORMAT_L8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:499:    else if(cf_final == LV_COLOR_FORMAT_A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:522:            if(has_colorkey && cf_final != LV_COLOR_FORMAT_RGB565_SWAPPED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:539:            if(cf_final == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:542:            else if(cf_final == LV_COLOR_FORMAT_AL88) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:565:    if(cf == LV_COLOR_FORMAT_RGB565A8 || cf == LV_COLOR_FORMAT_RGB565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:586:                    if(cf == LV_COLOR_FORMAT_RGB565A8 && mask_buf_tmp) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:612:    else if(cf == LV_COLOR_FORMAT_RGB888 || cf == LV_COLOR_FORMAT_XRGB8888 || cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:635:                    if(cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:638:                    else if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:646:                    if(cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:649:                    else if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:657:                    if(cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:660:                    else if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:668:                    if(cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:671:                    else if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:682:    else if(cf == LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:764:    if(cf == LV_COLOR_FORMAT_RGB565A8 || cf == LV_COLOR_FORMAT_RGB565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:803:    else if(cf == LV_COLOR_FORMAT_RGB565_SWAPPED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:843:    else if(cf == LV_COLOR_FORMAT_RGB888 || cf == LV_COLOR_FORMAT_XRGB8888 || cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:855:                        if(cf == LV_COLOR_FORMAT_ARGB8888) dest_buf[3] = src_buf[3];
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:856:                        else if(cf == LV_COLOR_FORMAT_XRGB8888) dest_buf[3] = 0xff;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:875:                        if(cf == LV_COLOR_FORMAT_ARGB8888) dest_buf[3] = src_buf[3];
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:876:                        else if(cf == LV_COLOR_FORMAT_XRGB8888) dest_buf[3] = 0xff;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:885:    else if(cf == LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:951:    if(mask_decoder_dsc.decoded->header.cf != LV_COLOR_FORMAT_A8 &&
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:952:       mask_decoder_dsc.decoded->header.cf != LV_COLOR_FORMAT_L8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_fill.c:119:        blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_blur.c:114:    bool swapped = layer->draw_buf->header.cf == LV_COLOR_FORMAT_RGB565_SWAPPED;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_arc.c:166:            if(blend_dsc.src_color_format == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_arc.c:167:                blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw.c:285:                if(masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw.c:289:                if(cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb888.c:521:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb888.c:525:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb888.c:529:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb888.c:534:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb888.c:539:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb888.c:544:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb888.c:549:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb888.c:554:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565_swapped.c:469:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565_swapped.c:473:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565_swapped.c:478:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565_swapped.c:483:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565_swapped.c:488:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565_swapped.c:493:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565_swapped.c:498:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565_swapped.c:503:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565_swapped.c:508:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c:448:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c:452:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c:457:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c:462:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c:467:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c:472:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c:477:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c:482:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c:487:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_l8.c:284:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_l8.c:289:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_l8.c:294:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_l8.c:299:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_l8.c:304:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_l8.c:309:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_l8.c:313:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_l8.c:317:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_l8.c:322:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_i1.c:337:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_i1.c:342:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_i1.c:347:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_i1.c:352:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_i1.c:357:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_i1.c:362:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_i1.c:367:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_i1.c:372:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_i1.c:376:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888_premultiplied.c:234:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888_premultiplied.c:240:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888_premultiplied.c:246:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888_premultiplied.c:251:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.c:404:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.c:409:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.c:414:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.c:419:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.c:424:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.c:428:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.c:432:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.c:437:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.c:442:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_al88.c:302:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_al88.c:307:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_al88.c:312:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_al88.c:317:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_al88.c:322:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_al88.c:327:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_al88.c:331:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_al88.c:335:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_a8.c:244:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_a8.c:249:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_a8.c:254:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_a8.c:259:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_a8.c:264:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_a8.c:270:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_a8.c:274:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_a8.c:278:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_a8.c:283:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend_to_a8.c:288:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:181:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:186:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:191:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:196:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:201:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:206:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:211:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:216:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:221:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:226:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:240:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:241:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:246:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:251:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:256:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:261:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:266:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:271:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:276:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:281:        case LV_COLOR_FORMAT_AL88:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/blend/lv_draw_sw_blend.c:286:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:103:            if(LV_COLOR_FORMAT_RGB565 == des_cf) {                              \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:130:            else if(LV_COLOR_FORMAT_XRGB8888 == des_cf) {                       \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:202:        if((LV_COLOR_FORMAT_RGB565 == des_cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:203:        && !(  (LV_COLOR_FORMAT_RGB565 == src_cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:204:           ||  (LV_COLOR_FORMAT_RGB565A8 == src_cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:206:           ||  (LV_COLOR_FORMAT_ARGB8888 == src_cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:207:           ||  (LV_COLOR_FORMAT_XRGB8888 == src_cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:209:           ||  (LV_COLOR_FORMAT_A8 == src_cf))) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:213:        if((LV_COLOR_FORMAT_XRGB8888 == des_cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:214:        && !(  (LV_COLOR_FORMAT_ARGB8888 == src_cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:215:           ||  (LV_COLOR_FORMAT_XRGB8888 == src_cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:216:           ||  (LV_COLOR_FORMAT_A8 == src_cf))) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:220:        if((LV_COLOR_FORMAT_XRGB8888 == des_cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:221:        || (LV_COLOR_FORMAT_RGB888 == des_cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:222:        || (LV_COLOR_FORMAT_ARGB8888 == des_cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:341:        if(LV_COLOR_FORMAT_A8 == src_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:346:            if(LV_COLOR_FORMAT_RGB565 == des_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:376:            else if(LV_COLOR_FORMAT_XRGB8888 == des_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:412:        else if(LV_COLOR_FORMAT_RGB565A8 == src_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:413:            LV_ASSERT(LV_COLOR_FORMAT_RGB565 == des_cf);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:469:        else if(LV_COLOR_FORMAT_RGB565 == src_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:470:            LV_ASSERT(LV_COLOR_FORMAT_RGB565 == des_cf);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:528:        else if(LV_COLOR_FORMAT_ARGB8888 == src_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:529:            if (LV_COLOR_FORMAT_XRGB8888 == des_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:546:            else if(LV_COLOR_FORMAT_RGB565 == des_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:564:        else if(LV_COLOR_FORMAT_XRGB8888 == src_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:565:            if(LV_COLOR_FORMAT_XRGB8888 == des_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:579:            else if(LV_COLOR_FORMAT_RGB565 == des_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/arm2d/lv_draw_sw_arm2d.h:643:    if(LV_COLOR_FORMAT_XRGB8888 != src_cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:85:    draw_buf = lv_draw_buf_reshape(draw_buf, LV_COLOR_FORMAT_UNKNOWN, w, h, LV_STRIDE_AUTO);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:96:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:97:        case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:98:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:99:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:100:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:101:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:102:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:103:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:104:        case LV_COLOR_FORMAT_ARGB2222:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:105:        case LV_COLOR_FORMAT_ARGB4444:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/snapshot/lv_snapshot.c:106:        case LV_COLOR_FORMAT_ARGB1555:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:53:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:58:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:64:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:68:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:69:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:73:        case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:78:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:84:        case LV_COLOR_FORMAT_A4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:90:        case LV_COLOR_FORMAT_A2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:96:        case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:97:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:103:        case LV_COLOR_FORMAT_I420:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:107:        case LV_COLOR_FORMAT_YUY2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:111:        case LV_COLOR_FORMAT_UYVY:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:185:    if((LV_COLOR_FORMAT_RAW == cf || LV_COLOR_FORMAT_RAW_ALPHA == cf) &&
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:191:    if((LV_COLOR_FORMAT_RAW == cf || LV_COLOR_FORMAT_RAW_ALPHA == cf) &&
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:198:    if(LV_COLOR_FORMAT_RGB565 == cf ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:199:       LV_COLOR_FORMAT_ARGB8565 == cf ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:200:       LV_COLOR_FORMAT_RGB888 == cf ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:201:       LV_COLOR_FORMAT_ARGB8888 == cf ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:202:       LV_COLOR_FORMAT_XRGB8888 == cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:207:    if(LV_COLOR_FORMAT_A8 == cf) return true;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:211:    if(LV_COLOR_FORMAT_RGB565A8 == cf) return true;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:215:    if(LV_COLOR_FORMAT_A4 == cf) return true;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:219:    if(LV_COLOR_FORMAT_A2 == cf) return true;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:223:    if((LV_COLOR_FORMAT_I8 == cf) || (LV_COLOR_FORMAT_L8 == cf)) return true;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:227:    if(LV_COLOR_FORMAT_I420 == cf ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:228:       LV_COLOR_FORMAT_YUY2 == cf ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_sifli_epic_utils.c:229:       LV_COLOR_FORMAT_UYVY == cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_draw_sifli_epic_img.c:159:    if(cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_draw_sifli_epic_img.c:183:           (mask_dsc->header.cf == LV_COLOR_FORMAT_A8 || mask_dsc->header.cf == LV_COLOR_FORMAT_L8)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_draw_sifli_epic_img.c:206:            if(mask_img->header.cf == LV_COLOR_FORMAT_A8 || mask_img->header.cf == LV_COLOR_FORMAT_L8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_draw_sifli_epic.c:273:                if((LV_COLOR_FORMAT_RGB565A8 == draw_dsc->header.cf) && has_transform) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sifli/epic/lv_draw_sifli_epic.c:356:                if((LV_COLOR_FORMAT_RGB565A8 == layer_to_draw->color_format) && has_transform) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:136:    lv_draw_buf_init(&draw_sdl_unit->render_draw_buf, 0, 0, LV_COLOR_FORMAT_ARGB8888, LV_STRIDE_AUTO, NULL, 0);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:203:       ((lv_draw_image_dsc_t *)task->draw_dsc)->header.cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:228:    if(!lv_draw_buf_reshape(&u->render_draw_buf, LV_COLOR_FORMAT_ARGB8888, texture_w, texture_h, LV_STRIDE_AUTO)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:230:        uint32_t data_size = LV_DRAW_BUF_SIZE(texture_w, texture_h, LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:235:        lv_result_t init_result = lv_draw_buf_init(&u->render_draw_buf, texture_w, texture_h, LV_COLOR_FORMAT_ARGB8888,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sdl/lv_draw_sdl.c:242:    dest_layer.color_format = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:72:        case(LV_COLOR_FORMAT_I1):
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:75:        case(LV_COLOR_FORMAT_I2):
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:78:        case(LV_COLOR_FORMAT_I4):
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:81:        case(LV_COLOR_FORMAT_I8):
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:84:        case(LV_COLOR_FORMAT_A8):
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:87:        case(LV_COLOR_FORMAT_RGB565):
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:90:        case(LV_COLOR_FORMAT_ARGB1555):
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:93:        case(LV_COLOR_FORMAT_ARGB4444):
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:96:        case(LV_COLOR_FORMAT_ARGB8888):
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:99:        case(LV_COLOR_FORMAT_XRGB8888):
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:103:        case(LV_COLOR_FORMAT_RGB888): //LV_COLOR_FORMAT_RGB888 is a 3 byte format, d2_mode_rgb888 is a 4 byte format, not supported
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:130:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:131:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:132:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:133:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c:134:        case LV_COLOR_FORMAT_ARGB4444:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_label.c:85:                    mask_area.x2 = mask_area.x1 + lv_draw_buf_width_to_stride(lv_area_get_width(&mask_area), LV_COLOR_FORMAT_A8) - 1;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_label.c:104:                                  (d2_s32)lv_draw_buf_width_to_stride((uint32_t)lv_area_get_width(&letter_coords), LV_COLOR_FORMAT_A8),
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:125:    if(LV_COLOR_FORMAT_RGB565A8 == cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:139:        uint32_t size = header->h * (header->w * lv_color_format_get_size(LV_COLOR_FORMAT_ARGB8888));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:147:                       lv_draw_dave2d_lv_colour_fmt_to_d2_fmt(LV_COLOR_FORMAT_ARGB8888));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:162:                      (d2_s32)(img_stride / lv_color_format_get_size(LV_COLOR_FORMAT_RGB565)),
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:163:                      header->w,  header->h, lv_draw_dave2d_lv_colour_fmt_to_d2_fmt(LV_COLOR_FORMAT_RGB565));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:185:                                                                         LV_COLOR_FORMAT_RGB565))),
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:186:                      (d2_s32)(img_stride / lv_color_format_get_size(LV_COLOR_FORMAT_RGB565)),
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:187:                      header->w,  header->h, lv_draw_dave2d_lv_colour_fmt_to_d2_fmt(LV_COLOR_FORMAT_A8));
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:200:        cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:213:    if(LV_COLOR_FORMAT_RGB565 == cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d_image.c:216:    else if(LV_COLOR_FORMAT_A8 == cf) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d.c:241:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d.c:242:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d.c:243:        case LV_COLOR_FORMAT_ARGB1555:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d.c:244:        case LV_COLOR_FORMAT_ARGB4444:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d.c:245:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/renesas/dave2d/lv_draw_dave2d.c:246:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/opengles/lv_draw_opengles.c:109:    lv_draw_buf_init(&draw_opengles_unit->render_draw_buf, 0, 0, LV_COLOR_FORMAT_ARGB8888, LV_STRIDE_AUTO, NULL, 0);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/opengles/lv_draw_opengles.c:325:    if(NULL == lv_draw_buf_reshape(&u->render_draw_buf, LV_COLOR_FORMAT_ARGB8888, texture_w, texture_h, LV_STRIDE_AUTO)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/opengles/lv_draw_opengles.c:327:        uint32_t data_size = LV_DRAW_BUF_SIZE(texture_w, texture_h, LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/opengles/lv_draw_opengles.c:330:        lv_result_t init_result = lv_draw_buf_init(&u->render_draw_buf, texture_w, texture_h, LV_COLOR_FORMAT_ARGB8888,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/opengles/lv_draw_opengles.c:336:    dest_layer.color_format = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:45:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:48:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:51:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:54:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:71:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:74:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:77:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:80:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:97:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:100:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:103:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_pxp_utils.c:111:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp_layer.c:96:    fill_dsc.color = lv_color_hex(layer_to_draw->color_format == LV_COLOR_FORMAT_ARGB8888 ? 0xff0000 : 0x00ff00);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp_img.c:142:    bool src_has_alpha = (src_cf == LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp_img.c:279:    bool src_has_alpha = (src_cf == LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp.c:181:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp.c:182:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp.c:183:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp.c:198:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp.c:199:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp.c:200:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp.c:201:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp.c:224:    bool src_has_alpha = (img_dsc->header.cf == LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/pxp/lv_draw_pxp.c:300:                if(img_dsc->header.cf >= LV_COLOR_FORMAT_PROPRIETARY_START)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_g2d_utils.c:47:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_g2d_utils.c:50:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_g2d_utils.c:53:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_g2d_utils.c:56:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_g2d_utils.c:59:        case LV_COLOR_FORMAT_NV12:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_g2d_utils.c:62:        case LV_COLOR_FORMAT_I420:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_g2d_utils.c:65:        case LV_COLOR_FORMAT_NV21:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_g2d_utils.c:68:        case LV_COLOR_FORMAT_YUY2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_g2d_utils.c:71:        case LV_COLOR_FORMAT_UYVY:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_draw_g2d.c:140:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_draw_g2d.c:141:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_draw_g2d.c:144:        case LV_COLOR_FORMAT_RGB565: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_draw_g2d.c:163:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_draw_g2d.c:164:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nxp/g2d/lv_draw_g2d.c:167:        case LV_COLOR_FORMAT_RGB565: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_vector.c:68:    int32_t stride = (dst_cf >= LV_COLOR_FORMAT_NEMA_TSC_START && dst_cf <= LV_COLOR_FORMAT_NEMA_TSC_END) ?
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:46:        case LV_COLOR_FORMAT_A1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:48:        case LV_COLOR_FORMAT_A2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:50:        case LV_COLOR_FORMAT_A4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:52:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:54:        case LV_COLOR_FORMAT_I1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:56:        case LV_COLOR_FORMAT_I2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:58:        case LV_COLOR_FORMAT_I4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:60:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:61:        case LV_COLOR_FORMAT_I8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:63:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:65:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:67:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:69:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:71:        case LV_COLOR_FORMAT_NEMA_TSC4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:73:        case LV_COLOR_FORMAT_NEMA_TSC6:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:75:        case LV_COLOR_FORMAT_NEMA_TSC6A:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:77:        case LV_COLOR_FORMAT_NEMA_TSC12:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:79:        case LV_COLOR_FORMAT_NEMA_TSC12A:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:83:        case LV_COLOR_FORMAT_NEMA_TSC6AP:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:134:        case LV_COLOR_FORMAT_ARGB8565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_utils.c:135:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_triangle.c:72:    int32_t stride = (dst_cf >= LV_COLOR_FORMAT_NEMA_TSC_START && dst_cf <= LV_COLOR_FORMAT_NEMA_TSC_END) ?
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_line.c:78:    int32_t stride = (dst_cf >= LV_COLOR_FORMAT_NEMA_TSC_START && dst_cf <= LV_COLOR_FORMAT_NEMA_TSC_END) ?
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_label.c:134:    int32_t stride = (dst_cf >= LV_COLOR_FORMAT_NEMA_TSC_START && dst_cf <= LV_COLOR_FORMAT_NEMA_TSC_END) ?
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_label.c:368:                mask_area.x2 = mask_area.x1 + lv_draw_buf_width_to_stride(lv_area_get_width(&mask_area), LV_COLOR_FORMAT_A8) - 1;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_label.c:826:                draw_buf = lv_draw_buf_create_ex(font_draw_buf_handlers, g.box_w, h, LV_COLOR_FORMAT_A8, LV_STRIDE_AUTO);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_img.c:90:    if(src_cf == LV_COLOR_FORMAT_ARGB8888 || src_cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_img.c:96:    int32_t src_stride = (src_cf >= LV_COLOR_FORMAT_NEMA_TSC_START && src_cf <= LV_COLOR_FORMAT_NEMA_TSC_END)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_img.c:99:    int32_t stride = (dst_cf >= LV_COLOR_FORMAT_NEMA_TSC_START && dst_cf <= LV_COLOR_FORMAT_NEMA_TSC_END) ?
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_img.c:105:    if(!LV_COLOR_FORMAT_IS_INDEXED(src_cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_img.c:133:        if(dsc->bitmap_mask_src->header.cf == LV_COLOR_FORMAT_A8 || dsc->bitmap_mask_src->header.cf == LV_COLOR_FORMAT_L8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_img.c:202:        case LV_COLOR_FORMAT_A1:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_img.c:204:        case LV_COLOR_FORMAT_A2:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_img.c:206:        case LV_COLOR_FORMAT_A4:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_img.c:208:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_img.c:209:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_fill.c:68:    int32_t stride = (dst_cf >= LV_COLOR_FORMAT_NEMA_TSC_START && dst_cf <= LV_COLOR_FORMAT_NEMA_TSC_END) ?
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nema_gfx/lv_draw_nema_gfx_border.c:81:    int32_t stride = (dst_cf >= LV_COLOR_FORMAT_NEMA_TSC_START && dst_cf <= LV_COLOR_FORMAT_NEMA_TSC_END) ?
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_nanovg_image_cache.c:284:        case LV_COLOR_FORMAT_A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_nanovg_image_cache.c:288:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_nanovg_image_cache.c:289:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_nanovg_image_cache.c:293:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_nanovg_image_cache.c:297:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_nanovg_image_cache.c:301:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_nanovg_image_cache.c:333:    if(cf == LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_draw_nanovg_label.c:255:    lv_draw_buf_t * image_buf = lv_nanovg_reshape_global_image(item->u, LV_COLOR_FORMAT_A8, w, h);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_draw_nanovg.c:340:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_draw_nanovg.c:341:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_draw_nanovg.c:342:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_draw_nanovg.c:347:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_draw_nanovg.c:352:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/nanovg/lv_draw_nanovg.c:370:        if(draw_buf->header.cf == LV_COLOR_FORMAT_RGB888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:273:            case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:276:            case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:279:            case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:282:            case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:283:            case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:284:            case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:296:            case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:299:            case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:302:            case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:305:            case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:306:            case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:307:            case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:319:            case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:322:            case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:325:            case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:328:            case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:329:            case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_utils.c:330:            case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_label.c:725:                draw_buf = lv_draw_buf_create_ex(font_draw_buf_handlers, g.box_w, h, LV_COLOR_FORMAT_A8, LV_STRIDE_AUTO);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_buf.c:356:    if(cf == LV_COLOR_FORMAT_UNKNOWN) cf = draw_buf->header.cf;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_buf.c:522:        if(LV_COLOR_FORMAT_IS_INDEXED(draw_buf->header.cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_buf.c:542:    LV_CHECK_ARG_MSG(LV_COLOR_FORMAT_IS_INDEXED(draw_buf->header.cf), return, "Color format is not indexed");
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_buf.c:629:        if(LV_COLOR_FORMAT_IS_INDEXED(dest->header.cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_buf.c:716:    if(cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw_buf.c:719:    else if(LV_COLOR_FORMAT_IS_INDEXED(cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/lv_draw.c:672:    lv_layer_t * ds_layer = lv_draw_layer_create(parent_layer, LV_COLOR_FORMAT_A8, &drop_shadow_area);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa_layer.c:101:    if(target_cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa_img.c:87:    uint32_t image_cf_size = LV_COLOR_FORMAT_GET_SIZE(image_cf);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa_img.c:130:    if(output_cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa_fill.c:55:    uint32_t cf_size = LV_COLOR_FORMAT_GET_SIZE(cf);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa_fill.c:88:        if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:165:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:166:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:168:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:170:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:172:        case LV_COLOR_FORMAT_ARGB1555:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:174:        case LV_COLOR_FORMAT_ARGB4444:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:361:                     && (dsc->base.layer->color_format == LV_COLOR_FORMAT_ARGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:362:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_XRGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:363:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:364:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB565))) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:378:                if(!(source_layer->color_format == LV_COLOR_FORMAT_ARGB8888 ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:379:                     source_layer->color_format == LV_COLOR_FORMAT_XRGB8888 ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:380:                     source_layer->color_format == LV_COLOR_FORMAT_RGB888 ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:381:                     source_layer->color_format == LV_COLOR_FORMAT_RGB565) ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:382:                   !(dsc->base.layer->color_format == LV_COLOR_FORMAT_ARGB8888 ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:383:                     dsc->base.layer->color_format == LV_COLOR_FORMAT_XRGB8888 ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:384:                     dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB888 ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:385:                     dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB565)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:402:                if(!(dsc->header.cf < LV_COLOR_FORMAT_PROPRIETARY_START
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:415:                     && (dsc->header.cf == LV_COLOR_FORMAT_ARGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:416:                         || dsc->header.cf == LV_COLOR_FORMAT_XRGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:417:                         || dsc->header.cf == LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:418:                         || dsc->header.cf == LV_COLOR_FORMAT_RGB565
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:419:                         || dsc->header.cf == LV_COLOR_FORMAT_ARGB1555)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:420:                     && (dsc->base.layer->color_format == LV_COLOR_FORMAT_ARGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:421:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_XRGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:422:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/gigadevice/ipa/lv_draw_ipa.c:423:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB565))) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:79:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:83:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:87:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:88:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:154:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:155:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:156:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:157:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:183:        case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:187:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:191:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:192:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:216:            case LV_COLOR_FORMAT_L8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:217:            case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:220:            case LV_COLOR_FORMAT_RGB565A8: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/eve/lv_draw_eve_image.c:232:            case LV_COLOR_FORMAT_ARGB8888: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:97:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:98:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:99:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:114:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:115:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:116:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:129:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:131:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:133:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:143:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:145:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:147:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:167:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:169:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa_private.h:171:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa.c:122:                if(!(dsc->header.cf < LV_COLOR_FORMAT_PROPRIETARY_START
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa.c:136:                     && (dsc->header.cf == LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa.c:137:                         || dsc->header.cf == LV_COLOR_FORMAT_RGB565)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa.c:138:                     && (dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/espressif/ppa/lv_draw_ppa.c:139:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB565))) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_img.c:90:    uint32_t image_cf_size = LV_COLOR_FORMAT_GET_SIZE(image_cf);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_img.c:129:    if(image_cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_img.c:133:    if(output_cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_fill.c:57:    uint32_t cf_size = LV_COLOR_FORMAT_GET_SIZE(cf);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d_fill.c:90:        if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:176:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:177:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:179:        case LV_COLOR_FORMAT_RGB888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:181:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:183:        case LV_COLOR_FORMAT_ARGB1555:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:371:                     && (dsc->base.layer->color_format == LV_COLOR_FORMAT_ARGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:372:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_XRGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:373:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:374:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB565))) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:381:                if(!(dsc->header.cf < LV_COLOR_FORMAT_PROPRIETARY_START
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:394:                     && (dsc->header.cf == LV_COLOR_FORMAT_ARGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:395:                         || dsc->header.cf == LV_COLOR_FORMAT_XRGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:396:                         || dsc->header.cf == LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:397:                         || dsc->header.cf == LV_COLOR_FORMAT_RGB565
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:398:                         || dsc->header.cf == LV_COLOR_FORMAT_ARGB1555)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:399:                     && (dsc->base.layer->color_format == LV_COLOR_FORMAT_ARGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:400:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_XRGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:401:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/dma2d/lv_draw_dma2d.c:402:                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB565))) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/neon/lv_draw_buf_convert_neon.c:42:    if(!LV_COLOR_FORMAT_IS_INDEXED(buf->header.cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/neon/lv_draw_buf_convert_neon.c:51:    palette_draw_buf.header.cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/neon/lv_draw_buf_convert_neon.c:67:    if(buf->header.cf != LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/lv_draw_buf_convert.c:62:    if(LV_COLOR_FORMAT_IS_INDEXED(cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/lv_draw_buf_convert.c:71:    else if(cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/lv_draw_buf_convert.c:87:    else if(cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/lv_draw_buf_convert.c:106:    else if(cf == LV_COLOR_FORMAT_ARGB8565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/helium/lv_draw_buf_convert_helium.c:40:    if(!LV_COLOR_FORMAT_IS_INDEXED(buf->header.cf)) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/helium/lv_draw_buf_convert_helium.c:49:    palette_draw_buf.header.cf = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/convert/helium/lv_draw_buf_convert_helium.c:64:    if(buf->header.cf != LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:5:	choice LV_COLOR_FORMAT_DEFAULT
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:7:		default LV_COLOR_FORMAT_I1       if LV_COLOR_DEPTH_1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:8:		default LV_COLOR_FORMAT_L8       if LV_COLOR_DEPTH_8
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:9:		default LV_COLOR_FORMAT_RGB888   if LV_COLOR_DEPTH_24
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:10:		default LV_COLOR_FORMAT_XRGB8888 if LV_COLOR_DEPTH_32
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:11:		default LV_COLOR_FORMAT_RGB565
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:13:		config LV_COLOR_FORMAT_I1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:16:		config LV_COLOR_FORMAT_L8
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:19:		config LV_COLOR_FORMAT_RGB565
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:22:		config LV_COLOR_FORMAT_RGB565_SWAPPED
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:25:		config LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:28:		config LV_COLOR_FORMAT_XRGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:31:		config LV_COLOR_FORMAT_ARGB8888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:34:		config LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:40:		prompt "Color depth [DEPRECATED: Use LV_COLOR_FORMAT_DEFAULT]"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:43:			bool "Use LV_COLOR_FORMAT_DEFAULT"
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:63:		default 1 if LV_COLOR_FORMAT_I1
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:64:		default 8 if LV_COLOR_FORMAT_L8
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:65:		default 16 if LV_COLOR_FORMAT_RGB565 || LV_COLOR_FORMAT_RGB565_SWAPPED
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/Kconfig:66:		default 24 if LV_COLOR_FORMAT_RGB888
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h:73:    /** MANDATORY: Write the internal buffer (draw_buf) to the display. 'lv_display_flush_ready()' has to be
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display_private.h:80:     * If not set `flushing` flag is used which can be cleared with `lv_display_flush_ready()` */
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:75:lv_display_t * lv_display_create(int32_t hor_res, int32_t ver_res)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:93:    disp->color_format = LV_COLOR_FORMAT_DEFAULT;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:463:void lv_display_set_buffers(lv_display_t * disp, void * buf1, void * buf2, uint32_t buf_size,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:468:    lv_display_set_buffers_with_stride(disp, buf1, buf2, buf_size, LV_STRIDE_AUTO, render_mode);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:471:void lv_display_set_buffers_with_stride(lv_display_t * disp, void * buf1, void * buf2, uint32_t buf_size,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:493:    if(render_mode == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:526:void lv_display_set_flush_cb(lv_display_t * disp, lv_display_flush_cb_t flush_cb)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:577:    LV_CHECK_ARG(disp != NULL, return LV_COLOR_FORMAT_UNKNOWN);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:623:    LV_CHECK_ARG(disp != NULL, return LV_DISPLAY_RENDER_MODE_PARTIAL);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/display/lv_display.c:628:LV_ATTRIBUTE_FLUSH_READY void lv_display_flush_ready(lv_display_t * disp)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_screenshot_compare.c:225:    if(cf_in == LV_COLOR_FORMAT_RGB565 || cf_in == LV_COLOR_FORMAT_RGB565_SWAPPED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_screenshot_compare.c:226:        if(cf_in == LV_COLOR_FORMAT_RGB565_SWAPPED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_screenshot_compare.c:246:    else if(cf_in == LV_COLOR_FORMAT_ARGB8888 || cf_in == LV_COLOR_FORMAT_XRGB8888 ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_screenshot_compare.c:247:            cf_in == LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_screenshot_compare.c:262:    else if(cf_in == LV_COLOR_FORMAT_RGB888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_screenshot_compare.c:277:    else if(cf_in == LV_COLOR_FORMAT_L8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_screenshot_compare.c:292:    else if(cf_in == LV_COLOR_FORMAT_AL88) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_screenshot_compare.c:307:    else if(cf_in == LV_COLOR_FORMAT_I1) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_display_egl.c:122:    LV_ASSERT_FORMAT_MSG(cf == LV_COLOR_FORMAT_XRGB8888 || cf == LV_COLOR_FORMAT_ARGB8888,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_display.c:48:    lv_display_t * disp = lv_display_create(hor_res, ver_res);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_display.c:49:    lv_display_set_color_format(disp, LV_COLOR_FORMAT_XRGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_display.c:55:    lv_draw_buf_init(&_state.draw_buf, hor_res, ver_res, LV_COLOR_FORMAT_XRGB8888, LV_STRIDE_AUTO, lv_draw_buf_align(buf,
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_display.c:56:                                                                                                                     LV_COLOR_FORMAT_XRGB8888), buf_size);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_display.c:61:    lv_display_set_flush_cb(disp, dummy_flush_cb);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/debugging/test/lv_test_display.c:105:    lv_display_flush_ready(disp);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_refr.c:203:                    layer_children = lv_draw_layer_create(layer, LV_COLOR_FORMAT_ARGB8888, &bottom);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_refr.c:224:                    layer_children = lv_draw_layer_create(layer, LV_COLOR_FORMAT_ARGB8888, &top);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_refr.c:306:    if(disp->color_format == LV_COLOR_FORMAT_I1) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_refr.c:579:                                                          area_need_alpha ? LV_COLOR_FORMAT_ARGB8888 : LV_COLOR_FORMAT_DEFAULT, &layer_area_act);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_refr.c:819:        if(disp_refr->render_mode == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_refr.c:898:    if(disp_refr->render_mode == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/core/lv_refr.c:923:    if(LV_COLOR_FORMAT_IS_INDEXED(layer->color_format) == false) {
+=== LVGL software draw-buffer pixel format ===
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:68:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:69:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:70:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:80:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:81:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:82:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:102:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:104:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:105:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/misc/lv_color.c:261:uint8_t lv_color_format_get_size(lv_color_format_t cf)
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:496:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:497:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:498:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:499:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:522:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:523:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:524:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:525:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:589:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:602:        case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:603:        case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_utils.c:606:        case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:174:            return vg_lite_query_feature(gcFEATURE_BIT_VG_24BIT) ? LV_COLOR_FORMAT_UNKNOWN : LV_COLOR_FORMAT_XRGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:176:            return vg_lite_query_feature(gcFEATURE_BIT_VG_24BIT) ? LV_COLOR_FORMAT_UNKNOWN : LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:178:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:180:            return LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:182:        case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:183:            return LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:386:        case LV_COLOR_FORMAT_RGB565_SWAPPED: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:413:        case LV_COLOR_FORMAT_RGB565A8: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:578:        case LV_COLOR_FORMAT_RGB565_SWAPPED: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:620:        case LV_COLOR_FORMAT_RGB565A8: {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:751:                    case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:754:                    case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:826:                    case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_vg_lite_decoder.c:829:                    case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/vg_lite/lv_draw_vg_lite_img.c:77:                       || (decoder_dsc.decoded->header.cf == LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:305:    if(cf != LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:417:        case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:418:        case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:507:    if(cf != LV_COLOR_FORMAT_ARGB8888 && \
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:508:       cf != LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_vector.c:510:        new_buf = lv_draw_buf_create(width, height, LV_COLOR_FORMAT_ARGB8888, LV_STRIDE_AUTO);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:169:        dest_stride = dest_w * lv_color_format_get_size(LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:171:    else if(src_cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:178:        dest_stride = dest_w * lv_color_format_get_size(src_cf);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:182:    if(src_cf == LV_COLOR_FORMAT_RGB565 || src_cf == LV_COLOR_FORMAT_RGB565_SWAPPED || src_cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:259:            case LV_COLOR_FORMAT_XRGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:277:            case LV_COLOR_FORMAT_ARGB8888:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:283:            case LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:289:            case LV_COLOR_FORMAT_RGB565:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:295:            case LV_COLOR_FORMAT_RGB565_SWAPPED:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_transform.c:301:            case LV_COLOR_FORMAT_RGB565A8:
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_letter.c:259:    stride = lv_draw_buf_width_to_stride(w, LV_COLOR_FORMAT_ARGB8888);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_letter.c:260:    draw_buf = lv_draw_buf_create(w, h, LV_COLOR_FORMAT_ARGB8888, stride);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_letter.c:265:    glyph_layer.color_format = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:124:        fill_dsc.color = lv_color_hex(layer_to_draw->color_format == LV_COLOR_FORMAT_ARGB8888 ? 0xff0000 : 0x00ff00);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:189:    else if(!transformed && !radius && cf == LV_COLOR_FORMAT_RGB565A8 && draw_dsc->recolor_opa <= LV_OPA_MIN &&
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:206:        blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:259:    if(cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:260:        cf = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:296:        if(cf_ori == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:314:        if(cf_ori == LV_COLOR_FORMAT_RGB565A8 || cf_ori == LV_COLOR_FORMAT_A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:340:    uint32_t px_size = lv_color_format_get_size(cf);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:368:    if(cf == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:372:        blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:432:    if(cf_final == LV_COLOR_FORMAT_RGB888 || cf_final == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:433:        cf_final = LV_COLOR_FORMAT_ARGB8888;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:435:    else if(cf_final == LV_COLOR_FORMAT_RGB565 ||
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:436:            cf_final == LV_COLOR_FORMAT_RGB565_SWAPPED) cf_final = LV_COLOR_FORMAT_RGB565A8;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:442:    else if(cf_final == LV_COLOR_FORMAT_ARGB8888 && draw_dsc->antialias) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:443:        cf_final = LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:449:    if(cf_final == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:462:        uint32_t buf_stride = blend_w * lv_color_format_get_size(cf_final);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:480:    if(cf_final == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:488:        blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:507:        blend_dsc.src_stride = blend_w * lv_color_format_get_size(cf_final);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:522:            if(has_colorkey && cf_final != LV_COLOR_FORMAT_RGB565_SWAPPED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:539:            if(cf_final == LV_COLOR_FORMAT_RGB565A8) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:565:    if(cf == LV_COLOR_FORMAT_RGB565A8 || cf == LV_COLOR_FORMAT_RGB565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:586:                    if(cf == LV_COLOR_FORMAT_RGB565A8 && mask_buf_tmp) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:612:    else if(cf == LV_COLOR_FORMAT_RGB888 || cf == LV_COLOR_FORMAT_XRGB8888 || cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:613:        uint32_t px_size = lv_color_format_get_size(cf);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:635:                    if(cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:638:                    else if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:646:                    if(cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:649:                    else if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:657:                    if(cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:660:                    else if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:668:                    if(cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:671:                    else if(cf == LV_COLOR_FORMAT_XRGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:682:    else if(cf == LV_COLOR_FORMAT_ARGB8888_PREMULTIPLIED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:764:    if(cf == LV_COLOR_FORMAT_RGB565A8 || cf == LV_COLOR_FORMAT_RGB565) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:803:    else if(cf == LV_COLOR_FORMAT_RGB565_SWAPPED) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:843:    else if(cf == LV_COLOR_FORMAT_RGB888 || cf == LV_COLOR_FORMAT_XRGB8888 || cf == LV_COLOR_FORMAT_ARGB8888) {
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:845:            uint32_t px_size = lv_color_format_get_size(cf);
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:855:                        if(cf == LV_COLOR_FORMAT_ARGB8888) dest_buf[3] = src_buf[3];
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:856:                        else if(cf == LV_COLOR_FORMAT_XRGB8888) dest_buf[3] = 0xff;
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:875:                        if(cf == LV_COLOR_FORMAT_ARGB8888) dest_buf[3] = src_buf[3];
+/tmp/kiddos-lvgl-cff1c632206a267534102ee1065f51ac87be4099/src/draw/sw/lv_draw_sw_img.c:876:                        else if(cf == LV_COLOR_FORMAT_XRGB8888) dest_buf[3] = 0xff;
+=== SDL renderer output formats ===
+/usr/include/SDL2/SDL_pixels.h:241:    SDL_PIXELFORMAT_RGB565 =
+/usr/include/SDL2/SDL_pixels.h:267:    SDL_PIXELFORMAT_ARGB8888 =
+/usr/include/SDL2/SDL_pixels.h:273:    SDL_PIXELFORMAT_ABGR8888 =
+/usr/include/SDL2/SDL_pixels.h:286:    SDL_PIXELFORMAT_ARGB32 = SDL_PIXELFORMAT_ARGB8888,
+/usr/include/SDL2/SDL_pixels.h:288:    SDL_PIXELFORMAT_ABGR32 = SDL_PIXELFORMAT_ABGR8888,
+/usr/include/SDL2/SDL_pixels.h:294:    SDL_PIXELFORMAT_RGBA32 = SDL_PIXELFORMAT_ABGR8888,
+/usr/include/SDL2/SDL_pixels.h:296:    SDL_PIXELFORMAT_BGRA32 = SDL_PIXELFORMAT_ARGB8888,
+/usr/include/SDL2/SDL_pixels.h:325: * (SDL_PIXELFORMAT_ABGR8888 on little-endian systems and
+/usr/include/SDL2/SDL_render.h:333: * \sa SDL_UpdateTexture
+/usr/include/SDL2/SDL_render.h:599:extern DECLSPEC int SDLCALL SDL_UpdateTexture(SDL_Texture * texture,
+/usr/include/SDL2/SDL_render.h:607: * You can use SDL_UpdateTexture() as long as your pixel data is a contiguous
+/usr/include/SDL2/SDL_render.h:628: * \sa SDL_UpdateTexture
+/usr/include/SDL2/SDL_render.h:639: * You can use SDL_UpdateTexture() as long as your pixel data is a contiguous
+=== Current prototype display setup ===
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "lvgl.h"
+#include "lvgl/drivers/sdl/lv_sdl_window.h"
+
+#include <SDL.h>
+
+#define SCREEN_W 720
+#define SCREEN_H 720
+#define GAME_COUNT 3
+
+static const char *game_names[GAME_COUNT] = {
+    "Super Mario World",
+    "Sonic the Hedgehog",
+    "The Legend of Zelda"
+};
+
+static lv_obj_t *cards[GAME_COUNT];
+static lv_obj_t *card_titles[GAME_COUNT];
+static lv_obj_t *selected_title;
+static lv_group_t *game_group;
+static int selected_index = 0;
+
+static bool controller_left;
+static bool controller_right;
+static bool controller_confirm;
+static bool controller_back;
+
+static int controller_event_watch(void *userdata, SDL_Event *event)
+{
+    (void)userdata;
+
+    if(event->type == SDL_CONTROLLERBUTTONDOWN ||
+       event->type == SDL_CONTROLLERBUTTONUP) {
+        bool down = event->type == SDL_CONTROLLERBUTTONDOWN;
+        switch(event->cbutton.button) {
+            case SDL_CONTROLLER_BUTTON_DPAD_LEFT:  controller_left = down; break;
+            case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: controller_right = down; break;
+            case SDL_CONTROLLER_BUTTON_A:          controller_confirm = down; break;
+            case SDL_CONTROLLER_BUTTON_B:          controller_back = down; break;
+            default: break;
+        }
+    }
+
+    if(event->type == SDL_CONTROLLERAXISMOTION &&
+       event->caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
+        controller_left = event->caxis.value < -12000;
+        controller_right = event->caxis.value > 12000;
+    }
+
+    return 1;
+}
+
+static void controller_read(lv_indev_t *indev, lv_indev_data_t *data)
+{
+    (void)indev;
+    static bool left_sent;
+    static bool right_sent;
+
+    data->state = LV_INDEV_STATE_RELEASED;
+    data->key = 0;
+
+    if(controller_left && !left_sent) {
+        data->key = LV_KEY_LEFT;
+        data->state = LV_INDEV_STATE_PRESSED;
+        left_sent = true;
+    } else if(!controller_left) {
+        left_sent = false;
+    }
+
+    if(controller_right && !right_sent) {
+        data->key = LV_KEY_RIGHT;
+        data->state = LV_INDEV_STATE_PRESSED;
+        right_sent = true;
+    } else if(!controller_right) {
+        right_sent = false;
+    }
+
+    if(controller_confirm) {
+        data->key = LV_KEY_ENTER;
+        data->state = LV_INDEV_STATE_PRESSED;
+    }
+
+    if(controller_back) {
+        data->key = LV_KEY_ESC;
+        data->state = LV_INDEV_STATE_PRESSED;
+    }
+}
+
+static void refresh_carousel(void)
+{
+    const int left = (selected_index + GAME_COUNT - 1) % GAME_COUNT;
+    const int right = (selected_index + 1) % GAME_COUNT;
+
+    lv_obj_set_pos(cards[selected_index], 220, 145);
+    lv_obj_set_size(cards[selected_index], 280, 370);
+    lv_obj_set_style_bg_color(cards[selected_index], lv_color_hex(0x1769D2), 0);
+    lv_obj_set_style_border_width(cards[selected_index], 4, 0);
+    lv_obj_set_style_border_color(cards[selected_index], lv_color_hex(0x55A8FF), 0);
+
+    lv_obj_set_pos(cards[left], 20, 195);
+    lv_obj_set_size(cards[left], 190, 270);
+    lv_obj_set_style_bg_color(cards[left], lv_color_hex(0x172B49), 0);
+    lv_obj_set_style_border_width(cards[left], 1, 0);
+
+    lv_obj_set_pos(cards[right], 510, 195);
+    lv_obj_set_size(cards[right], 190, 270);
+    lv_obj_set_style_bg_color(cards[right], lv_color_hex(0x172B49), 0);
+    lv_obj_set_style_border_width(cards[right], 1, 0);
+
+    lv_label_set_text(selected_title, game_names[selected_index]);
+    lv_obj_set_style_text_color(selected_title, lv_color_hex(0xFFFFFF), 0);
+}
+
+static void card_focused(lv_event_t *event)
+{
+    int index = (int)(intptr_t)lv_event_get_user_data(event);
+    selected_index = index;
+    refresh_carousel();
+}
+
+static void build_ui(void)
+{
+    lv_obj_t *screen = lv_screen_active();
+    lv_obj_set_style_bg_color(screen, lv_color_hex(0x081426), 0);
+    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+
+    lv_obj_t *heading = lv_label_create(screen);
+    lv_label_set_text(heading, "KIDDOS");
+    lv_obj_set_style_text_color(heading, lv_color_hex(0x65B5FF), 0);
+    lv_obj_set_style_text_font(heading, LV_FONT_DEFAULT, 0);
+    lv_obj_align(heading, LV_ALIGN_TOP_MID, 0, 28);
+
+    lv_obj_t *sound = lv_label_create(screen);
+    lv_label_set_text(sound, "♪");
+    lv_obj_set_style_text_color(sound, lv_color_hex(0x8DBEFF), 0);
+    lv_obj_align(sound, LV_ALIGN_TOP_LEFT, 25, 25);
+
+    lv_obj_t *battery = lv_label_create(screen);
+    lv_label_set_text(battery, "▰");
+    lv_obj_set_style_text_color(battery, lv_color_hex(0x8DBEFF), 0);
+    lv_obj_align(battery, LV_ALIGN_TOP_RIGHT, -25, 25);
+
+    selected_title = lv_label_create(screen);
+    lv_obj_set_style_text_font(selected_title, LV_FONT_DEFAULT, 0);
+    lv_obj_set_style_text_color(selected_title, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_align(selected_title, LV_ALIGN_BOTTOM_MID, 0, -65);
+
+    game_group = lv_group_create();
+    lv_group_set_wrap(game_group, true);
+
+    for(int i = 0; i < GAME_COUNT; i++) {
+        cards[i] = lv_button_create(screen);
+        lv_obj_set_style_radius(cards[i], 20, 0);
+        lv_obj_set_style_bg_opa(cards[i], LV_OPA_COVER, 0);
+        lv_obj_set_style_shadow_width(cards[i], 18, 0);
+        lv_obj_set_style_shadow_opa(cards[i], LV_OPA_30, 0);
+        lv_obj_set_style_pad_all(cards[i], 12, 0);
+
+        card_titles[i] = lv_label_create(cards[i]);
+        lv_label_set_text(card_titles[i], game_names[i]);
+        lv_obj_set_width(card_titles[i], LV_PCT(100));
+        lv_label_set_long_mode(card_titles[i], LV_LABEL_LONG_WRAP);
+        lv_obj_center(card_titles[i]);
+
+        lv_obj_add_event_cb(cards[i], card_focused, LV_EVENT_FOCUSED,
+                            (void *)(intptr_t)i);
+        lv_group_add_obj(game_group, cards[i]);
+    }
+
+    refresh_carousel();
+    lv_group_focus_obj(cards[selected_index]);
+}
+
+int main(int argc, char **argv)
+{
+    bool smoke_test = argc > 1 && strcmp(argv[1], "--smoke-test") == 0;
+
+    lv_init();
+
+    lv_display_t *display = lv_sdl_window_create(SCREEN_W, SCREEN_H);
+    if(!display) {
+        fprintf(stderr, "Could not create LVGL SDL display\n");
+        return 1;
+    }
+
+    lv_sdl_window_set_title(display, "Kiddos - LVGL Prototype");
+    lv_sdl_window_set_resizeable(display, false);
+
+
+    SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);
+    SDL_GameControllerEventState(SDL_ENABLE);
+    SDL_AddEventWatch(controller_event_watch, NULL);
+
+    for(int i = 0; i < SDL_NumJoysticks(); i++) {
+        if(SDL_IsGameController(i)) {
+            SDL_GameControllerOpen(i);
+        }
+    }
+
+    build_ui();
+
+    lv_indev_t *keypad = lv_indev_create();
+    lv_indev_set_type(keypad, LV_INDEV_TYPE_KEYPAD);
+    lv_indev_set_read_cb(keypad, controller_read);
+    lv_indev_set_group(keypad, game_group);
+
+    if(smoke_test) {
+        uint32_t start = SDL_GetTicks();
+        while(SDL_GetTicks() - start < 1200) {
+            lv_timer_handler();
+            SDL_Delay(5);
+        }
+    } else {
+        while(true) {
+            lv_timer_handler();
+            SDL_Delay(5);
+        }
+    }
+
+    SDL_DelEventWatch(controller_event_watch, NULL);
+    lv_sdl_quit();
+    return 0;
+}
