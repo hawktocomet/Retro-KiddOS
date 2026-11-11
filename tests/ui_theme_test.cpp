@@ -1,4 +1,5 @@
 #include "kiddos/ui/theme.hpp"
+#include "kiddos/ui/list_view.hpp"
 
 #include <cassert>
 
@@ -44,6 +45,10 @@ int main() {
     assert(theme.colors().primary.r == 200);
     assert(theme.button_style().focused.r == colors.primary_dark.r);
     assert(theme.toggle_style().on.r == 200);
+
+    const auto list_style = theme.list_view_style();
+    assert(list_style.background.r == theme.colors().surface.r);
+    assert(list_style.text.r == theme.colors().text.r);
 
     return 0;
 }

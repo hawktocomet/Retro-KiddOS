@@ -66,4 +66,14 @@ ProgressBarStyle Theme::progress_bar_style() const noexcept {
     return style;
 }
 
+ListViewStyle Theme::list_view_style() const noexcept {
+    ListViewStyle style;
+    style.background = colors_.surface;
+    style.selected = colors_.primary_dark;
+    style.text = colors_.text;
+    style.disabled_text = colors_.text_muted;
+    style.border = colors_.border;
+    return style;
+}
+
 }

@@ -5,6 +5,7 @@
 #include "kiddos/ui/progress_bar.hpp"
 #include "kiddos/ui/slider.hpp"
 #include "kiddos/ui/toggle.hpp"
+#include "kiddos/ui/list_view.hpp"
 
 namespace kiddos::ui {
 
@@ -36,6 +37,7 @@ public:
     ToggleStyle toggle_style() const noexcept;
     SliderStyle slider_style() const noexcept;
     ProgressBarStyle progress_bar_style() const noexcept;
+    ListViewStyle list_view_style() const noexcept;
 
 private:
     ThemeColors colors_{};

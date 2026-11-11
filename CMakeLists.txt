@@ -155,9 +155,11 @@ if(BUILD_TESTING)
     target_include_directories(kiddos_ui_theme_test PRIVATE include)
     target_link_libraries(kiddos_ui_theme_test PRIVATE kiddos_ui)
     add_test(NAME kiddos_ui_theme COMMAND kiddos_ui_theme_test)
-endif()
-
     add_executable(kiddos_ui_list_view_test tests/ui_list_view_test.cpp)
     target_include_directories(kiddos_ui_list_view_test PRIVATE include)
     target_link_libraries(kiddos_ui_list_view_test PRIVATE kiddos_ui)
     add_test(NAME kiddos_ui_list_view COMMAND kiddos_ui_list_view_test)
+endif()
+
+
+
