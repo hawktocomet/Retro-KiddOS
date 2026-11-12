@@ -1,0 +1,567 @@
+===== EXISTING WORKING TREE — PRESERVE THESE CHANGES =====
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/cartridges/
+
+===== CARTRIDGE ARTWORK INVENTORY =====
+assets/artwork/generated/cartridges/option-1/cartridge-01.png
+assets/artwork/generated/cartridges/option-1/cartridge-02.png
+assets/artwork/generated/cartridges/option-1/cartridge-03.png
+assets/artwork/generated/cartridges/option-1/cartridge-04.png
+assets/artwork/generated/cartridges/option-1/cartridge-05.png
+assets/artwork/generated/cartridges/option-1/cartridge-06.png
+assets/artwork/generated/cartridges/option-1/cartridge-07.png
+assets/artwork/generated/cartridges/option-1/cartridge-08.png
+assets/artwork/generated/cartridges/option-1/cartridge-09.png
+assets/artwork/generated/cartridges/option-2/cartridge-01.png
+assets/artwork/generated/cartridges/option-2/cartridge-02.png
+assets/artwork/generated/cartridges/option-2/cartridge-03.png
+assets/artwork/generated/cartridges/option-2/cartridge-04.png
+assets/artwork/generated/cartridges/option-2/cartridge-05.png
+assets/artwork/generated/cartridges/option-2/cartridge-06.png
+assets/artwork/generated/cartridges/option-2/cartridge-07.png
+assets/artwork/generated/cartridges/option-2/cartridge-08.png
+assets/artwork/generated/cartridges/option-2/cartridge-09.png
+assets/artwork/generated/cartridges/option-1/cartridge-01.png: PNG image data, 212 x 215, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-02.png: PNG image data, 275 x 179, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-03.png: PNG image data, 261 x 159, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-04.png: PNG image data, 210 x 214, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-05.png: PNG image data, 197 x 177, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-06.png: PNG image data, 265 x 129, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-07.png: PNG image data, 246 x 129, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-08.png: PNG image data, 253 x 144, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-09.png: PNG image data, 204 x 191, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-01.png: PNG image data, 399 x 415, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-02.png: PNG image data, 439 x 429, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-03.png: PNG image data, 398 x 435, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-04.png: PNG image data, 398 x 359, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-05.png: PNG image data, 439 x 373, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-06.png: PNG image data, 397 x 373, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-07.png: PNG image data, 399 x 443, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-08.png: PNG image data, 439 x 443, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-09.png: PNG image data, 387 x 443, 8-bit/color RGBA, non-interlaced
+
+===== EXISTING GAME BOX ART =====
+assets/artwork/generated/boxart/gb-tetris.png: PNG image data, 512 x 512, 8-bit/color RGB, non-interlaced
+assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png: PNG image data, 512 x 512, 8-bit/color RGB, non-interlaced
+assets/artwork/generated/boxart/snes-super-mario-world.png: PNG image data, 512 x 357, 8-bit/color RGB, non-interlaced
+assets/artwork/generated/boxart/arcade-pac-man.png: PNG image data, 512 x 664, 8-bit/color RGB, non-interlaced
+assets/artwork/generated/boxart/SOURCES.txt: ASCII text
+
+===== PLATFORM GAME DEFINITIONS =====
+#pragma once
+
+#include <array>
+#include <cstddef>
+#include <string_view>
+
+namespace kiddos::app {
+
+enum class PlatformId {
+    GameBoy,
+    GameBoyAdvance,
+    SuperNintendo,
+    Arcade
+};
+
+struct PlatformDefinition {
+    PlatformId id;
+    std::string_view short_name;
+    std::string_view full_name;
+};
+
+inline constexpr std::array<PlatformDefinition, 4> initial_platforms{{
+    {PlatformId::GameBoy, "GB/GBC", "Game Boy / Game Boy Color"},
+    {PlatformId::GameBoyAdvance, "GBA", "Game Boy Advance"},
+    {PlatformId::SuperNintendo, "SNES", "Super Nintendo"},
+    {PlatformId::Arcade, "Arcade", "FinalBurn Neo"}
+}};
+
+inline constexpr std::size_t platform_count = initial_platforms.size();
+
+} // namespace kiddos::app
+
+===== SCREEN TEST CONVENTIONS =====
+#include "kiddos/app/home_carousel_screen.hpp"
+
+#include "kiddos/ui/image.hpp"
+#include "kiddos/ui/renderer.hpp"
+
+#include <SDL.h>
+#include <SDL_image.h>
+
+#include <cassert>
+#include <cstdint>
+#include <unistd.h>
+
+namespace {
+
+using kiddos::ui::Color;
+using kiddos::ui::Rect;
+
+Color pixel(SDL_Surface* surface, int x, int y) {
+    assert(SDL_LockSurface(surface) == 0);
+    const auto* row = static_cast<const std::uint8_t*>(surface->pixels)
+        + y * surface->pitch;
+    const auto* value = reinterpret_cast<const std::uint32_t*>(row) + x;
+    std::uint8_t r = 0, g = 0, b = 0, a = 0;
+    SDL_GetRGBA(*value, surface->format, &r, &g, &b, &a);
+    SDL_UnlockSurface(surface);
+    return {r, g, b, a};
+}
+
+bool same_color(const Color& a, const Color& b) {
+    return a.r == b.r && a.g == b.g &&
+           a.b == b.b && a.a == b.a;
+}
+
+bool any_pixel_different(
+    SDL_Surface* surface,
+    const Rect& rect,
+    const Color& color
+) {
+    for (int y = rect.y; y < rect.y + rect.h; ++y) {
+        for (int x = rect.x; x < rect.x + rect.w; ++x) {
+            if (!same_color(pixel(surface, x, y), color)) return true;
+        }
+    }
+    return false;
+}
+
+const kiddos::ui::Element* find_by_bounds(
+    kiddos::ui::Screen& screen,
+    const Rect& bounds
+) {
+    for (std::size_t i = 0; i < screen.root().child_count(); ++i) {
+        const auto* child = screen.root().child(i);
+        if (!child) continue;
+
+        const Rect actual = child->bounds();
+        if (actual.x == bounds.x && actual.y == bounds.y &&
+            actual.w == bounds.w && actual.h == bounds.h) {
+            return child;
+        }
+    }
+    return nullptr;
+}
+
+void test_structure_and_selection() {
+    kiddos::app::HomeCarouselScreen screen(nullptr);
+
+    // Three game-cover slots, wordmark, hints, status, and highlight.
+    assert(screen.root().child_count() == 6);
+    assert(screen.selected_game() == 1);
+
+    const auto* wordmark = find_by_bounds(screen, {185, 4, 350, 64});
+    assert(wordmark);
+    assert(wordmark->visible());
+
+    const auto* hints = find_by_bounds(screen, {0, 662, 720, 42});
+    assert(hints);
+    assert(hints->visible());
+
+    screen.set_selected_game(0);
+    assert(screen.selected_game() == 0);
+    assert(screen.selected_game() == 0);
+
+    screen.set_selected_game(3);
+    assert(screen.selected_game() == 3);
+
+    screen.set_selected_game(4);
+    assert(screen.selected_game() == 3);
+
+    screen.set_selected_game(0);
+    assert(screen.selected_game() == 0);
+
+    // The transition can be advanced to completion without an SDL renderer.
+    screen.update(1.0f);
+}
+
+void test_renders_minimal_carousel() {
+    assert(SDL_Init(0) == 0);
+    IMG_Init(IMG_INIT_PNG);
+    assert(chdir(KIDDOS_SOURCE_DIR) == 0);
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+        0, 720, 720, 32, SDL_PIXELFORMAT_RGBA32);
+    assert(surface);
+
+    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+    assert(native);
+    SDL_SetRenderDrawBlendMode(native, SDL_BLENDMODE_BLEND);
+
+    {
+        kiddos::ui::Renderer renderer(native);
+        kiddos::app::HomeCarouselScreen screen(native);
+
+        const Color background{8, 15, 35, 255};
+        renderer.clear(background);
+        screen.render(renderer);
+
+        // The screen is no longer composed of large framed panels.
+        assert(same_color(pixel(surface, 540, 160), background));
+
+        // Three game-cover positions, wordmark, and hints are visible.
+        assert(any_pixel_different(surface, {220, 158, 280, 280}, background));
+        assert(any_pixel_different(surface, {24, 268, 128, 128}, background));
+        assert(any_pixel_different(surface, {568, 268, 128, 128}, background));
+        assert(any_pixel_different(surface, {185, 4, 350, 64}, background));
+        assert(any_pixel_different(surface, {0, 662, 720, 42}, background));
+
+        // Selecting another game updates all three visible cover slots.
+        screen.set_selected_game(0);
+        screen.update(0.05f);
+        screen.render(renderer);
+
+        screen.update(1.0f);
+        screen.render(renderer);
+
+        assert(any_pixel_different(surface, {220, 158, 280, 280}, background));
+    }
+
+    SDL_DestroyRenderer(native);
+    SDL_FreeSurface(surface);
+    IMG_Quit();
+    SDL_Quit();
+}
+
+} // namespace
+
+int main() {
+    test_structure_and_selection();
+    test_renders_minimal_carousel();
+    return 0;
+}
+#include "kiddos/ui/screen_manager.hpp"
+
+#include <cassert>
+#include <memory>
+
+struct Counts {
+    int entered = 0;
+    int exited = 0;
+    int suspended = 0;
+    int resumed = 0;
+    int activated = 0;
+};
+
+class ProbeScreen final : public kiddos::ui::Screen {
+public:
+    explicit ProbeScreen(Counts& counts) : counts_(counts) {}
+
+    void on_enter() override {
+        ++counts_.entered;
+        auto& button = root().add<kiddos::ui::Button>("Activate");
+        button.set_on_activate([this] { ++counts_.activated; });
+    }
+
+    void on_exit() override { ++counts_.exited; }
+    void on_suspend() override { ++counts_.suspended; }
+    void on_resume() override { ++counts_.resumed; }
+
+private:
+    Counts& counts_;
+};
+
+int main() {
+    using namespace kiddos::ui;
+
+    ScreenManager manager;
+    Counts first_counts;
+    Counts second_counts;
+    Counts third_counts;
+    Counts fourth_counts;
+
+    assert(manager.depth() == 0);
+    assert(manager.current() == nullptr);
+    assert(!manager.pop());
+    assert(!manager.handle_action(UIAction::Back));
+
+    auto first = std::make_unique<ProbeScreen>(first_counts);
+    auto* first_ptr = first.get();
+    assert(manager.push(std::move(first)));
+    assert(manager.current() == first_ptr);
+    assert(manager.depth() == 1);
+    assert(first_counts.entered == 1);
+
+    assert(manager.handle_action(UIAction::Confirm));
+    assert(first_counts.activated == 1);
+
+    auto second = std::make_unique<ProbeScreen>(second_counts);
+    auto* second_ptr = second.get();
+    assert(manager.push(std::move(second)));
+    assert(manager.current() == second_ptr);
+    assert(manager.depth() == 2);
+    assert(first_counts.suspended == 1);
+    assert(second_counts.entered == 1);
+
+    assert(manager.handle_action(UIAction::Confirm));
+    assert(second_counts.activated == 1);
+
+    assert(manager.handle_action(UIAction::Back));
+    assert(manager.current() == first_ptr);
+    assert(manager.depth() == 1);
+    assert(second_counts.exited == 1);
+    assert(first_counts.resumed == 1);
+
+    auto third = std::make_unique<ProbeScreen>(third_counts);
+    auto* third_ptr = third.get();
+    assert(manager.replace(std::move(third)));
+    assert(manager.current() == third_ptr);
+    assert(manager.depth() == 1);
+    assert(first_counts.exited == 1);
+    assert(third_counts.entered == 1);
+
+    auto fourth = std::make_unique<ProbeScreen>(fourth_counts);
+    assert(manager.push(std::move(fourth)));
+    assert(manager.depth() == 2);
+    assert(third_counts.suspended == 1);
+
+    manager.clear();
+    assert(manager.depth() == 0);
+    assert(manager.current() == nullptr);
+    assert(fourth_counts.exited == 1);
+    assert(third_counts.exited == 1);
+
+    assert(!manager.handle_action(UIAction::Confirm));
+    assert(!manager.handle_action(UIAction::Back));
+
+    return 0;
+}
+
+===== UI ELEMENT AND COLOR APIs =====
+#pragma once
+
+#include "kiddos/ui/geometry.hpp"
+#include "kiddos/ui/renderer.hpp"
+
+namespace kiddos::ui {
+
+class Element {
+public:
+    virtual ~Element() = default;
+
+    void set_bounds(Rect bounds) noexcept { bounds_ = bounds; }
+    Rect bounds() const noexcept { return bounds_; }
+
+    void set_visible(bool visible) noexcept { visible_ = visible; }
+    bool visible() const noexcept { return visible_; }
+
+    void set_enabled(bool enabled) noexcept { enabled_ = enabled; }
+    bool enabled() const noexcept { return enabled_; }
+
+    void set_focusable(bool focusable) noexcept {
+        focusable_ = focusable;
+    }
+
+    bool focusable() const noexcept { return focusable_; }
+
+    void set_focused(bool focused) noexcept { focused_ = focused; }
+    bool focused() const noexcept { return focused_; }
+
+    void render(Renderer& renderer) {
+        if (visible_) draw(renderer);
+    }
+
+protected:
+    virtual void draw(Renderer& renderer) = 0;
+
+private:
+    Rect bounds_{};
+    bool visible_ = true;
+    bool enabled_ = true;
+    bool focusable_ = false;
+    bool focused_ = false;
+};
+
+} // namespace kiddos::ui
+#pragma once
+
+#include <cstdint>
+
+namespace kiddos::ui {
+
+struct Color {
+    std::uint8_t r = 0;
+    std::uint8_t g = 0;
+    std::uint8_t b = 0;
+    std::uint8_t a = 255;
+};
+
+namespace colors {
+inline constexpr Color transparent{0, 0, 0, 0};
+inline constexpr Color navy{8, 15, 35, 255};
+inline constexpr Color blue{69, 151, 255, 255};
+inline constexpr Color white{255, 255, 255, 255};
+}
+
+} // namespace kiddos::ui
+#pragma once
+
+#include <SDL.h>
+#include <string>
+
+namespace kiddos::ui {
+
+class Texture final {
+public:
+    Texture() = default;
+    ~Texture();
+
+    Texture(const Texture&) = delete;
+    Texture& operator=(const Texture&) = delete;
+
+    Texture(Texture&& other) noexcept;
+    Texture& operator=(Texture&& other) noexcept;
+
+    // Loads an image file through SDL_image. With magenta_key enabled,
+    // bright magenta (255, 0, 255) pixels become transparent.
+    bool load(SDL_Renderer* renderer, const std::string& path,
+              bool magenta_key = false);
+    void reset() noexcept;
+    bool valid() const noexcept;
+    int width() const noexcept;
+    int height() const noexcept;
+    SDL_Texture* native() const noexcept;
+
+private:
+    SDL_Texture* texture_ = nullptr;
+    int width_ = 0;
+    int height_ = 0;
+};
+
+}
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/font.hpp"
+
+#include <string>
+
+namespace kiddos::ui {
+
+enum class LabelAlignment {
+    left,
+    center,
+    right
+};
+
+class Label final : public Element {
+public:
+    explicit Label(std::string text = {});
+
+    void set_text(std::string text);
+    const std::string& text() const noexcept;
+
+    void set_font(const Font* font) noexcept;
+    const Font* font() const noexcept;
+
+    void set_color(Color color) noexcept;
+    Color color() const noexcept;
+
+    void set_alignment(LabelAlignment alignment) noexcept;
+    LabelAlignment alignment() const noexcept;
+
+private:
+    std::string text_;
+    const Font* font_ = nullptr;
+    Color color_{255, 255, 255, 255};
+    LabelAlignment alignment_ = LabelAlignment::left;
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/font.hpp"
+
+#include <functional>
+#include <string>
+
+namespace kiddos::ui {
+
+struct ButtonStyle {
+    Color normal{20, 34, 65, 255};
+    Color focused{35, 83, 150, 255};
+    Color pressed{18, 55, 105, 255};
+    Color disabled{35, 39, 50, 255};
+    Color border{69, 151, 255, 255};
+    Color focused_border{125, 190, 255, 255};
+    Color text{255, 255, 255, 255};
+    Color disabled_text{150, 155, 165, 255};
+};
+
+class Button final : public Element {
+public:
+    explicit Button(std::string label = {});
+
+    void set_label(std::string label);
+    const std::string& label() const noexcept;
+
+    void set_style(ButtonStyle style) noexcept;
+    const ButtonStyle& style() const noexcept;
+
+    void set_font(const Font* font) noexcept;
+    const Font* font() const noexcept;
+
+    void set_pressed(bool pressed) noexcept;
+    bool pressed() const noexcept;
+
+    void set_on_activate(std::function<void()> callback);
+    bool activate();
+
+private:
+    std::string label_;
+    ButtonStyle style_{};
+    const Font* font_ = nullptr;
+    std::function<void()> on_activate_;
+    bool pressed_ = false;
+
+    void draw(Renderer& renderer) override;
+};
+
+} // namespace kiddos::ui
+
+===== BUILD REGISTRATION =====
+41:    src/ui/screen_manager.cpp
+57:add_executable(kiddos
+60:    src/app/home_carousel_screen.cpp
+76:    add_executable(kiddos_app_ui_action_mapping_test
+83:    add_executable(kiddos_app_home_carousel_screen_test
+84:        tests/app_home_carousel_screen_test.cpp
+85:        src/app/home_carousel_screen.cpp)
+86:    target_include_directories(kiddos_app_home_carousel_screen_test PRIVATE include)
+87:    target_compile_definitions(kiddos_app_home_carousel_screen_test PRIVATE
+89:    target_link_libraries(kiddos_app_home_carousel_screen_test PRIVATE kiddos_ui)
+90:    add_test(NAME kiddos_app_home_carousel_screen
+91:        COMMAND kiddos_app_home_carousel_screen_test)
+93:    add_executable(kiddos_platform_sdl_text_input_translator_test
+100:    add_executable(kiddos_platform_text_input_interface_test
+106:    add_executable(kiddos_platform_sdl_keyboard_policy_test
+113:    add_executable(kiddos_platform_text_input_event_test
+119:    add_executable(kiddos_ui_geometry_test
+125:    add_executable(kiddos_ui_layout_test
+143:    add_executable(kiddos_ui_focus_test
+155:    add_executable(kiddos_ui_button_test
+167:    add_executable(kiddos_ui_controller_test
+179:    add_executable(kiddos_ui_renderer_test tests/ui_renderer_test.cpp)
+184:    add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
+189:    add_executable(kiddos_ui_label_test tests/ui_label_test.cpp)
+194:    add_executable(kiddos_ui_panel_test tests/ui_panel_test.cpp)
+199:    add_executable(kiddos_ui_progress_bar_test tests/ui_progress_bar_test.cpp)
+204:    add_executable(kiddos_ui_toggle_test tests/ui_toggle_test.cpp)
+209:    add_executable(kiddos_ui_slider_test tests/ui_slider_test.cpp)
+214:    add_executable(kiddos_ui_theme_test tests/ui_theme_test.cpp)
+218:    add_executable(kiddos_ui_list_view_test tests/ui_list_view_test.cpp)
+223:    add_executable(kiddos_ui_checkbox_test tests/ui_checkbox_test.cpp)
+228:    add_executable(kiddos_ui_radio_group_test tests/ui_radio_group_test.cpp)
+233:    add_executable(kiddos_ui_select_test tests/ui_select_test.cpp)
+238:    add_executable(kiddos_ui_text_input_test tests/ui_text_input_test.cpp)
+243:    add_executable(kiddos_ui_text_input_interaction_test
+260:    add_executable(kiddos_ui_screen_manager_test
+261:        tests/ui_screen_manager_test.cpp)
+262:    target_include_directories(kiddos_ui_screen_manager_test PRIVATE include)
+263:    target_link_libraries(kiddos_ui_screen_manager_test PRIVATE kiddos_ui)
+264:    add_test(NAME kiddos_ui_screen_manager
+265:        COMMAND kiddos_ui_screen_manager_test)
