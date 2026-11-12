@@ -1,0 +1,27 @@
+===== FIX HEADER INCLUDE =====
+
+===== BUILD APPLICATION =====
+[1/2] Building CXX object CMakeFiles/kiddos.dir/src/app/selected_game_screen.cpp.o
+[2/2] Linking CXX executable kiddos
+
+===== BUILD SELECTED GAME TEST =====
+[1/3] Building CXX object CMakeFiles/kiddos_app_selected_game_screen_test.dir/tests/app_selected_game_screen_test.cpp.o
+[2/3] Building CXX object CMakeFiles/kiddos_app_selected_game_screen_test.dir/src/app/selected_game_screen.cpp.o
+[3/3] Linking CXX executable kiddos_app_selected_game_screen_test
+
+===== RUN SELECTED GAME TEST =====
+Test project /home/hawk/KiddOS/build
+    Start 2: kiddos_app_selected_game_screen
+1/1 Test #2: kiddos_app_selected_game_screen ...   Passed    0.03 sec
+
+100% tests passed out of 1
+
+Total Test time (real) =   0.03 sec
+
+===== WORKING TREE =====
+ M CMakeLists.txt
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/selected_game_screen.hpp
+?? src/app/selected_game_screen.cpp
+?? tests/app_selected_game_screen_test.cpp
