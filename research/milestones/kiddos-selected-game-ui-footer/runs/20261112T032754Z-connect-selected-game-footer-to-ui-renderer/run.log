@@ -1,0 +1,207 @@
+
+===== APPLICATION HEADER =====
+#pragma once
+
+#include "kiddos/app/platform.hpp"
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/ui/renderer.hpp"
+#include "kiddos/ui/screen_manager.hpp"
+
+namespace kiddos {
+
+namespace app { class SharedShell; }
+
+class Application {
+public:
+    explicit Application(Platform& platform);
+    int run();
+
+private:
+    Platform& platform_;
+    ui::ScreenManager screens_;
+    ui::Renderer ui_renderer_;
+    bool running_ = true;
+    int selected_game_ = 1;
+    static constexpr int game_count_ = static_cast<int>(app::platform_count);
+
+    void handle_action(Action action);
+    void render(app::SharedShell& shell);
+};
+
+} // namespace kiddos
+
+===== APPLICATION IMPLEMENTATION =====
+#include "kiddos/app/application.hpp"
+
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/app/selected_game_screen.hpp"
+#include "kiddos/app/shared_shell.hpp"
+#include "kiddos/app/ui_action_mapping.hpp"
+
+#include <SDL_image.h>
+
+#include <chrono>
+#include <memory>
+#include <thread>
+#include <SDL_ttf.h>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    IMG_Init(IMG_INIT_PNG);
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        IMG_Quit();
+        return 1;
+    }
+
+    // The UI renderer is a non-owning adapter around the platform renderer.
+    ui_renderer_.attach(platform_.native_renderer());
+    if (TTF_Init() != 0) {
+        IMG_Quit();
+        platform_.shutdown();
+        return 1;
+    }
+
+    app::SharedShell shell;
+    if (!shell.initialize(platform_.native_renderer())) {
+        TTF_Quit();
+        IMG_Quit();
+        platform_.shutdown();
+        return 1;
+    }
+
+    screens_.push(std::make_unique<app::HomeCarouselScreen>(
+        platform_.native_renderer()));
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+            if (!running_) break;
+        }
+
+        if (running_) {
+            screens_.update(0.008f);
+            render(shell);
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    // Screens and their textures must be destroyed before the SDL renderer.
+    screens_.clear();
+    shell.reset();
+    TTF_Quit();
+    IMG_Quit();
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    if (action == Action::Quit) {
+        running_ = false;
+        return;
+    }
+
+    const auto ui_action = app::to_ui_action(action);
+    if (!ui_action) return;
+
+    // Back pops a child screen, but never removes the home screen.
+    if (*ui_action == ui::UIAction::Back) {
+        if (screens_.depth() > 1) {
+            screens_.handle_action(*ui_action);
+        }
+        return;
+    }
+
+    // Let the active screen handle its own controls first. This is how
+    // Confirm activates the Play button on Selected Game.
+    if (screens_.handle_action(*ui_action)) return;
+
+    auto* home = dynamic_cast<app::HomeCarouselScreen*>(screens_.current());
+    if (!home) return;
+
+    switch (*ui_action) {
+        case ui::UIAction::Left:
+            selected_game_ =
+                (selected_game_ + game_count_ - 1) % game_count_;
+            home->set_selected_game(selected_game_);
+            break;
+
+        case ui::UIAction::Right:
+            selected_game_ = (selected_game_ + 1) % game_count_;
+            home->set_selected_game(selected_game_);
+            break;
+
+        case ui::UIAction::Confirm:
+            screens_.push(std::make_unique<app::SelectedGameScreen>(
+                platform_.native_renderer(), selected_game_));
+            break;
+
+        case ui::UIAction::Up:
+        case ui::UIAction::Down:
+        case ui::UIAction::Back:
+            break;
+    }
+}
+
+void Application::render(app::SharedShell& shell) {
+    platform_.begin_frame();
+    screens_.render(ui_renderer_);
+
+    const bool selected_game =
+        dynamic_cast<app::SelectedGameScreen*>(screens_.current()) != nullptr;
+
+    shell.render_header();
+    shell.render_footer(selected_game);
+
+    platform_.present();
+}
+
+} // namespace kiddos
+
+===== PLATFORM INTERFACE =====
+#pragma once
+
+#include <array>
+#include <cstddef>
+#include <string_view>
+
+namespace kiddos::app {
+
+enum class PlatformId {
+    GameBoy,
+    GameBoyAdvance,
+    SuperNintendo,
+    Arcade
+};
+
+struct PlatformDefinition {
+    PlatformId id;
+    std::string_view short_name;
+    std::string_view full_name;
+};
+
+inline constexpr std::array<PlatformDefinition, 4> initial_platforms{{
+    {PlatformId::GameBoy, "GB/GBC", "Game Boy / Game Boy Color"},
+    {PlatformId::GameBoyAdvance, "GBA", "Game Boy Advance"},
+    {PlatformId::SuperNintendo, "SNES", "Super Nintendo"},
+    {PlatformId::Arcade, "Arcade", "FinalBurn Neo"}
+}};
+
+inline constexpr std::size_t platform_count = initial_platforms.size();
+
+} // namespace kiddos::app
+
+===== SDL PLATFORM FOOTER AND SCREEN METHODS =====
+rg: regex parse error:
+    (?:draw_game_actions|render\\(|action_screen_|selected_game_)
+    ^
+error: unclosed group
