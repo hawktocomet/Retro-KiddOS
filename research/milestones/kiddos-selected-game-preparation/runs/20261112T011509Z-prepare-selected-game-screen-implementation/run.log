@@ -1,0 +1,408 @@
+===== GAME CATALOGUE =====
+#pragma once
+
+#include <array>
+#include <cstddef>
+#include <string_view>
+
+namespace kiddos::app {
+
+enum class PlatformId {
+    GameBoy,
+    GameBoyAdvance,
+    SuperNintendo,
+    Arcade
+};
+
+struct PlatformDefinition {
+    PlatformId id;
+    std::string_view short_name;
+    std::string_view full_name;
+};
+
+inline constexpr std::array<PlatformDefinition, 4> initial_platforms{{
+    {PlatformId::GameBoy, "GB/GBC", "Game Boy / Game Boy Color"},
+    {PlatformId::GameBoyAdvance, "GBA", "Game Boy Advance"},
+    {PlatformId::SuperNintendo, "SNES", "Super Nintendo"},
+    {PlatformId::Arcade, "Arcade", "FinalBurn Neo"}
+}};
+
+inline constexpr std::size_t platform_count = initial_platforms.size();
+
+} // namespace kiddos::app
+
+===== APPLICATION HEADER =====
+#pragma once
+
+#include "kiddos/app/platform.hpp"
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/ui/renderer.hpp"
+#include "kiddos/ui/screen_manager.hpp"
+
+namespace kiddos {
+
+class Application {
+public:
+    explicit Application(Platform& platform);
+
+    int run();
+
+private:
+    Platform& platform_;
+    ui::ScreenManager screens_;
+    ui::Renderer ui_renderer_;
+    bool running_ = true;
+    int selected_game_ = 1;
+    bool action_screen_ = false;
+    int selected_action_ = 0;
+    static constexpr int game_count_ = static_cast<int>(app::platform_count);
+
+    void handle_action(Action action);
+    void render();
+};
+
+} // namespace kiddos
+
+===== APPLICATION IMPLEMENTATION =====
+#include "kiddos/app/application.hpp"
+
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/app/ui_action_mapping.hpp"
+
+#include <SDL_image.h>
+
+#include <chrono>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    // Attach the platform-owned SDL renderer to the non-owning UI renderer
+    // adapter; the UI layer never creates a second SDL renderer.
+    ui_renderer_.attach(platform_.native_renderer());
+
+    // SDL_image initialization is left to the application lifecycle; the
+    // carousel artwork is BMP, which needs no extra image format flags.
+    IMG_Init(IMG_INIT_PNG);
+
+    screens_.push(std::make_unique<app::HomeCarouselScreen>(
+        platform_.native_renderer()));
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+
+            if (!running_) {
+                break;
+            }
+        }
+
+        if (running_) {
+            screens_.update(0.008f);
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    // Release screens and their SDL textures before the platform shuts
+    // down and destroys the native renderer they were created from.
+    screens_.clear();
+    IMG_Quit();
+
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    switch (action) {
+        case Action::Quit:
+            running_ = false;
+            break;
+
+        case Action::NavigateUp:
+        case Action::NavigateDown:
+            if (action_screen_ && selected_game_ == 1) {
+                selected_action_ =
+                    (selected_action_ + 1) % 2;
+            }
+            break;
+
+        case Action::Back:
+            // Back is handled at the application level only; it must not
+            // pop the home screen off the screen manager.
+            if (action_screen_) {
+                action_screen_ = false;
+                selected_action_ = 0;
+            }
+            break;
+
+        case Action::NavigateLeft:
+        case Action::NavigateRight:
+        case Action::Confirm: {
+            if (action_screen_) break;
+
+            // Translate the platform action and give the active screen a
+            // chance to respond first. The home carousel is currently
+            // display-only, so the application carousel state handles the
+            // remaining behavior.
+            const std::optional<ui::UIAction> ui_action =
+                app::to_ui_action(action);
+            if (!ui_action || screens_.handle_action(*ui_action)) break;
+
+            switch (*ui_action) {
+                case ui::UIAction::Left:
+                    selected_game_ =
+                        (selected_game_ + game_count_ - 1) % game_count_;
+                    break;
+
+                case ui::UIAction::Right:
+                    selected_game_ =
+                        (selected_game_ + 1) % game_count_;
+                    break;
+
+                case ui::UIAction::Confirm:
+                    action_screen_ = true;
+                    selected_action_ = 0;
+                    break;
+
+                case ui::UIAction::Up:
+                case ui::UIAction::Down:
+                case ui::UIAction::Back:
+                    break;
+            }
+            break;
+        }
+
+        case Action::None:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+
+    if (action_screen_) {
+        // Game 1 is a temporary checkpoint demonstration fixture; this
+        // screen remains on the platform's manual rendering path.
+        platform_.draw_game_actions(
+            selected_game_, selected_game_ == 1, selected_action_);
+    } else if (auto* home =
+                   static_cast<app::HomeCarouselScreen*>(screens_.current())) {
+        home->set_selected_game(selected_game_);
+        screens_.render(ui_renderer_);
+    }
+
+    platform_.present();
+}
+
+} // namespace kiddos
+
+===== SCREEN STACK API =====
+#pragma once
+#include "kiddos/ui/screen.hpp"
+#include <memory>
+#include <vector>
+namespace kiddos::ui {
+class ScreenManager final {
+public:
+    ~ScreenManager();
+    ScreenManager() = default;
+    ScreenManager(const ScreenManager&) = delete;
+    ScreenManager& operator=(const ScreenManager&) = delete;
+    bool push(std::unique_ptr<Screen> screen);
+    bool pop();
+    bool replace(std::unique_ptr<Screen> screen);
+    void clear() noexcept;
+    Screen* current() noexcept;
+    const Screen* current() const noexcept;
+    std::size_t depth() const noexcept;
+    void update(float delta_seconds);
+    void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    std::vector<std::unique_ptr<Screen>> stack_;
+};
+}
+#include "kiddos/ui/screen_manager.hpp"
+namespace kiddos::ui {
+ScreenManager::~ScreenManager() { clear(); }
+bool ScreenManager::push(std::unique_ptr<Screen> screen) {
+    if (!screen) return false;
+    if (auto* active = current()) active->on_suspend();
+    auto* next = screen.get();
+    stack_.push_back(std::move(screen));
+    next->on_enter();
+    next->focus().focus_first();
+    return true;
+}
+bool ScreenManager::pop() {
+    if (stack_.empty()) return false;
+    stack_.back()->on_exit();
+    stack_.pop_back();
+    if (auto* active = current()) { active->on_resume(); active->focus().focus_first(); }
+    return true;
+}
+bool ScreenManager::replace(std::unique_ptr<Screen> screen) {
+    if (!screen) return false;
+    if (auto* active = current()) { active->on_exit(); stack_.pop_back(); }
+    auto* next = screen.get();
+    stack_.push_back(std::move(screen));
+    next->on_enter();
+    next->focus().focus_first();
+    return true;
+}
+void ScreenManager::clear() noexcept {
+    while (!stack_.empty()) { stack_.back()->on_exit(); stack_.pop_back(); }
+}
+Screen* ScreenManager::current() noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+const Screen* ScreenManager::current() const noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+std::size_t ScreenManager::depth() const noexcept { return stack_.size(); }
+void ScreenManager::update(float dt) { if (auto* s=current()) s->update(dt); }
+void ScreenManager::render(Renderer& r) { if (auto* s=current()) s->render(r); }
+bool ScreenManager::handle_action(UIAction a) {
+    if (a == UIAction::Back) return pop();
+    auto* s=current(); return s ? s->handle_action(a) : false;
+}
+bool ScreenManager::handle_text_input(const ::kiddos::TextInputEvent& e) {
+    auto* s=current(); return s ? s->handle_text_input(e) : false;
+}
+}
+
+===== IMAGE AND TEXTURE API =====
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/texture.hpp"
+
+#include <cstdint>
+
+namespace kiddos::ui {
+
+enum class ImageFit {
+    contain,
+    cover,
+    stretch
+};
+
+struct ImageGeometry {
+    Rect source{};
+    Rect destination{};
+    bool valid = false;
+};
+
+ImageGeometry calculate_image_geometry(
+    int texture_width,
+    int texture_height,
+    Rect bounds,
+    ImageFit fit
+) noexcept;
+
+class Image final : public Element {
+public:
+    explicit Image(Texture* texture = nullptr) noexcept;
+
+    void set_texture(Texture* texture) noexcept;
+    Texture* texture() const noexcept;
+
+    void set_fit(ImageFit fit) noexcept;
+    ImageFit fit() const noexcept;
+
+    void set_opacity(std::uint8_t opacity) noexcept;
+    std::uint8_t opacity() const noexcept;
+
+    ImageGeometry geometry() const noexcept;
+
+private:
+    Texture* texture_ = nullptr;
+    ImageFit fit_ = ImageFit::contain;
+    std::uint8_t opacity_ = 255;
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+#pragma once
+
+#include <SDL.h>
+#include <string>
+
+namespace kiddos::ui {
+
+class Texture final {
+public:
+    Texture() = default;
+    ~Texture();
+
+    Texture(const Texture&) = delete;
+    Texture& operator=(const Texture&) = delete;
+
+    Texture(Texture&& other) noexcept;
+    Texture& operator=(Texture&& other) noexcept;
+
+    // Loads an image file through SDL_image. With magenta_key enabled,
+    // bright magenta (255, 0, 255) pixels become transparent.
+    bool load(SDL_Renderer* renderer, const std::string& path,
+              bool magenta_key = false);
+    void reset() noexcept;
+    bool valid() const noexcept;
+    int width() const noexcept;
+    int height() const noexcept;
+    SDL_Texture* native() const noexcept;
+
+private:
+    SDL_Texture* texture_ = nullptr;
+    int width_ = 0;
+    int height_ = 0;
+};
+
+}
+
+===== AVAILABLE GAME ARTWORK =====
+assets/artwork/generated/boxart/gb-tetris.png: PNG image data, 512 x 512, 8-bit/color RGB, non-interlaced
+assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png: PNG image data, 512 x 512, 8-bit/color RGB, non-interlaced
+assets/artwork/generated/boxart/snes-super-mario-world.png: PNG image data, 512 x 357, 8-bit/color RGB, non-interlaced
+assets/artwork/generated/boxart/arcade-pac-man.png: PNG image data, 512 x 664, 8-bit/color RGB, non-interlaced
+assets/artwork/generated/boxart/SOURCES.txt: ASCII text
+assets/artwork/generated/cartridges/option-1/cartridge-01.png: PNG image data, 212 x 215, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-02.png: PNG image data, 275 x 179, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-03.png: PNG image data, 261 x 159, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-04.png: PNG image data, 210 x 214, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-05.png: PNG image data, 197 x 177, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-06.png: PNG image data, 265 x 129, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-07.png: PNG image data, 246 x 129, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-08.png: PNG image data, 253 x 144, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-1/cartridge-09.png: PNG image data, 204 x 191, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-01.png: PNG image data, 399 x 415, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-02.png: PNG image data, 439 x 429, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-03.png: PNG image data, 398 x 435, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-04.png: PNG image data, 398 x 359, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-05.png: PNG image data, 439 x 373, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-06.png: PNG image data, 397 x 373, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-07.png: PNG image data, 399 x 443, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-08.png: PNG image data, 439 x 443, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/cartridges/option-2/cartridge-09.png: PNG image data, 387 x 443, 8-bit/color RGBA, non-interlaced
+
+===== CURRENT WORKTREE =====
+ M assets/artwork/generated/kiddos-wordmark.png
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+?? assets/artwork/generated/boxart/
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/platform.hpp
