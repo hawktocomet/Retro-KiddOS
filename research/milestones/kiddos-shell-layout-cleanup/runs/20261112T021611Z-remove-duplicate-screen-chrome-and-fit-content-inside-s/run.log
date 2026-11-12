@@ -1,0 +1,87 @@
+UPDATED include/kiddos/app/home_carousel_screen.hpp
+UPDATED src/app/home_carousel_screen.cpp
+UPDATED src/app/home_carousel_screen.cpp
+UPDATED include/kiddos/app/selected_game_screen.hpp
+UPDATED src/app/selected_game_screen.cpp
+UPDATED tests/app_selected_game_screen_test.cpp
+
+===== BUILD =====
+[1/4] Building CXX object CMakeFiles/kiddos.dir/src/app/home_carousel_screen.cpp.o
+[2/4] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+[3/4] Building CXX object CMakeFiles/kiddos.dir/src/app/selected_game_screen.cpp.o
+[4/4] Linking CXX executable kiddos
+
+===== BUILD ALL TEST TARGETS =====
+[1/6] Building CXX object CMakeFiles/kiddos_app_selected_game_screen_test.dir/tests/app_selected_game_screen_test.cpp.o
+[2/6] Building CXX object CMakeFiles/kiddos_app_selected_game_screen_test.dir/src/app/selected_game_screen.cpp.o
+[3/6] Building CXX object CMakeFiles/kiddos_app_home_carousel_screen_test.dir/tests/app_home_carousel_screen_test.cpp.o
+[4/6] Linking CXX executable kiddos_app_selected_game_screen_test
+[5/6] Building CXX object CMakeFiles/kiddos_app_home_carousel_screen_test.dir/src/app/home_carousel_screen.cpp.o
+[6/6] Linking CXX executable kiddos_app_home_carousel_screen_test
+
+===== FULL TEST SUITE =====
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_app_ui_action_mapping
+ 1/27 Test  #1: kiddos_app_ui_action_mapping ................   Passed    0.00 sec
+      Start  2: kiddos_app_selected_game_screen
+ 2/27 Test  #2: kiddos_app_selected_game_screen .............   Passed    0.01 sec
+      Start  3: kiddos_app_home_carousel_screen
+ 3/27 Test  #3: kiddos_app_home_carousel_screen .............Subprocess aborted***Exception:   0.09 sec
+kiddos_app_home_carousel_screen_test: /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:68: void {anonymous}::test_structure_and_selection(): Assertion `screen.root().child_count() == 6' failed.
+
+      Start  4: kiddos_platform_sdl_text_input_translator
+ 4/27 Test  #4: kiddos_platform_sdl_text_input_translator ...   Passed    0.00 sec
+      Start  5: kiddos_platform_text_input_interface
+ 5/27 Test  #5: kiddos_platform_text_input_interface ........   Passed    0.00 sec
+      Start  6: kiddos_platform_sdl_keyboard_policy
+ 6/27 Test  #6: kiddos_platform_sdl_keyboard_policy .........   Passed    0.00 sec
+      Start  7: kiddos_platform_text_input_event
+ 7/27 Test  #7: kiddos_platform_text_input_event ............   Passed    0.00 sec
+      Start  8: kiddos_ui_layout
+ 8/27 Test  #8: kiddos_ui_layout ............................   Passed    0.00 sec
+      Start  9: kiddos_ui_geometry
+ 9/27 Test  #9: kiddos_ui_geometry ..........................   Passed    0.00 sec
+      Start 10: kiddos_ui_focus
+10/27 Test #10: kiddos_ui_focus .............................   Passed    0.00 sec
+      Start 11: kiddos_ui_button
+11/27 Test #11: kiddos_ui_button ............................   Passed    0.00 sec
+      Start 12: kiddos_ui_controller
+12/27 Test #12: kiddos_ui_controller ........................   Passed    0.00 sec
+      Start 13: kiddos_ui_renderer
+13/27 Test #13: kiddos_ui_renderer ..........................   Passed    0.01 sec
+      Start 14: kiddos_ui_image
+14/27 Test #14: kiddos_ui_image .............................   Passed    0.00 sec
+      Start 15: kiddos_ui_label
+15/27 Test #15: kiddos_ui_label .............................   Passed    0.00 sec
+      Start 16: kiddos_ui_panel
+16/27 Test #16: kiddos_ui_panel .............................   Passed    0.00 sec
+      Start 17: kiddos_ui_progress_bar
+17/27 Test #17: kiddos_ui_progress_bar ......................   Passed    0.00 sec
+      Start 18: kiddos_ui_toggle
+18/27 Test #18: kiddos_ui_toggle ............................   Passed    0.00 sec
+      Start 19: kiddos_ui_slider
+19/27 Test #19: kiddos_ui_slider ............................   Passed    0.00 sec
+      Start 20: kiddos_ui_theme
+20/27 Test #20: kiddos_ui_theme .............................   Passed    0.00 sec
+      Start 21: kiddos_ui_list_view
+21/27 Test #21: kiddos_ui_list_view .........................   Passed    0.00 sec
+      Start 22: kiddos_ui_checkbox
+22/27 Test #22: kiddos_ui_checkbox ..........................   Passed    0.00 sec
+      Start 23: kiddos_ui_radio_group
+23/27 Test #23: kiddos_ui_radio_group .......................   Passed    0.00 sec
+      Start 24: kiddos_ui_select
+24/27 Test #24: kiddos_ui_select ............................   Passed    0.00 sec
+      Start 25: kiddos_ui_text_input
+25/27 Test #25: kiddos_ui_text_input ........................   Passed    0.01 sec
+      Start 26: kiddos_ui_text_input_interaction
+26/27 Test #26: kiddos_ui_text_input_interaction ............   Passed    0.00 sec
+      Start 27: kiddos_ui_screen_manager
+27/27 Test #27: kiddos_ui_screen_manager ....................   Passed    0.00 sec
+
+96% tests passed, 1 tests failed out of 27
+
+Total Test time (real) =   0.21 sec
+
+The following tests FAILED:
+	  3 - kiddos_app_home_carousel_screen (Subprocess aborted)
+Errors while running CTest
