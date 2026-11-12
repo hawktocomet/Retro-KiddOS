@@ -1,0 +1,9 @@
+Prototype box-art samples sourced from the Libretro thumbnail server.
+These are temporary visual assets, not a declaration of the final game library.
+
+GB: Tetris (World) (Rev 1)
+GBA: Mario Kart - Super Circuit (USA)
+SNES: Super Mario World (USA)
+Arcade: Pac-Man (Midway), from the MAME artwork collection
+
+Source: https://thumbnails.libretro.com/

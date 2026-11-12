@@ -1,5 +1,6 @@
 #pragma once
 
+#include "kiddos/app/platform.hpp"
 #include "kiddos/platform/platform.hpp"
 #include "kiddos/ui/renderer.hpp"
 #include "kiddos/ui/screen_manager.hpp"
@@ -20,7 +21,7 @@ private:
     int selected_game_ = 1;
     bool action_screen_ = false;
     int selected_action_ = 0;
-    static constexpr int game_count_ = 3;
+    static constexpr int game_count_ = static_cast<int>(app::platform_count);
 
     void handle_action(Action action);
     void render();
