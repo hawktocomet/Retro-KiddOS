@@ -1,0 +1,654 @@
+===== GIT STATE =====
+## main...origin/main
+ M CMakeLists.txt
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/application.cpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+?? assets/artwork/generated/cartridges/
+?? assets/artwork/generated/selected-game-hints.png
+?? assets/artwork/source/branding/selected-game-hints.svg
+?? include/kiddos/app/selected_game_screen.hpp
+?? include/kiddos/app/shared_shell.hpp
+?? src/app/selected_game_screen.cpp
+?? src/app/shared_shell.cpp
+?? tests/app_selected_game_screen_test.cpp
+fab7cee chore: record milestone run - commit-approved-screen-reference-assets
+
+===== SOURCE TREE =====
+include/kiddos/app/application.hpp
+include/kiddos/app/home_carousel_screen.hpp
+include/kiddos/app/platform.hpp
+include/kiddos/app/selected_game_screen.hpp
+include/kiddos/app/shared_shell.hpp
+include/kiddos/app/ui_action_mapping.hpp
+include/kiddos/core/action.hpp
+include/kiddos/kiddos_ui.hpp
+include/kiddos/platform/platform.hpp
+include/kiddos/platform/sdl_keyboard_policy.hpp
+include/kiddos/platform/sdl_platform.hpp
+include/kiddos/platform/sdl_text_input_translator.hpp
+include/kiddos/platform/text_input_event.hpp
+include/kiddos/ui/button.hpp
+include/kiddos/ui/checkbox.hpp
+include/kiddos/ui/color.hpp
+include/kiddos/ui/container.hpp
+include/kiddos/ui/controller.hpp
+include/kiddos/ui/element.hpp
+include/kiddos/ui/focus.hpp
+include/kiddos/ui/font.hpp
+include/kiddos/ui/geometry.hpp
+include/kiddos/ui/image.hpp
+include/kiddos/ui/label.hpp
+include/kiddos/ui/layout.hpp
+include/kiddos/ui/list_view.hpp
+include/kiddos/ui/panel.hpp
+include/kiddos/ui/progress_bar.hpp
+include/kiddos/ui/radio_group.hpp
+include/kiddos/ui/renderer.hpp
+include/kiddos/ui/screen.hpp
+include/kiddos/ui/screen_manager.hpp
+include/kiddos/ui/select.hpp
+include/kiddos/ui/slider.hpp
+include/kiddos/ui/text.hpp
+include/kiddos/ui/text_input.hpp
+include/kiddos/ui/text_input_interaction.hpp
+include/kiddos/ui/texture.hpp
+include/kiddos/ui/theme.hpp
+include/kiddos/ui/toggle.hpp
+include/kiddos/ui/ui.hpp
+src/app/application.cpp
+src/app/home_carousel_screen.cpp
+src/app/selected_game_screen.cpp
+src/app/shared_shell.cpp
+src/main.cpp
+src/platform/sdl_platform.cpp
+src/ui/button.cpp
+src/ui/checkbox.cpp
+src/ui/controller.cpp
+src/ui/focus.cpp
+src/ui/font.cpp
+src/ui/image.cpp
+src/ui/label.cpp
+src/ui/layout.cpp
+src/ui/list_view.cpp
+src/ui/panel.cpp
+src/ui/progress_bar.cpp
+src/ui/radio_group.cpp
+src/ui/renderer.cpp
+src/ui/screen.cpp
+src/ui/screen_manager.cpp
+src/ui/select.cpp
+src/ui/slider.cpp
+src/ui/text.cpp
+src/ui/text_input.cpp
+src/ui/text_input_interaction.cpp
+src/ui/texture.cpp
+src/ui/theme.cpp
+src/ui/toggle.cpp
+tests/app_home_carousel_screen_test.cpp
+tests/app_selected_game_screen_test.cpp
+tests/app_ui_action_mapping_test.cpp
+tests/platform_sdl_keyboard_policy_test.cpp
+tests/platform_sdl_text_input_translator_test.cpp
+tests/platform_text_input_event_test.cpp
+tests/platform_text_input_interface_test.cpp
+tests/ui_button_test.cpp
+tests/ui_checkbox_test.cpp
+tests/ui_controller_test.cpp
+tests/ui_focus_test.cpp
+tests/ui_geometry_test.cpp
+tests/ui_image_test.cpp
+tests/ui_label_test.cpp
+tests/ui_layout_test.cpp
+tests/ui_list_view_test.cpp
+tests/ui_panel_test.cpp
+tests/ui_progress_bar_test.cpp
+tests/ui_radio_group_test.cpp
+tests/ui_renderer_test.cpp
+tests/ui_screen_manager_test.cpp
+tests/ui_select_test.cpp
+tests/ui_slider_test.cpp
+tests/ui_text_input_interaction_test.cpp
+tests/ui_text_input_test.cpp
+tests/ui_theme_test.cpp
+tests/ui_toggle_test.cpp
+
+===== PROJECT DIRECTORIES =====
+.
+./assets
+./assets/artwork
+./assets/fonts
+./assets/sounds
+./config
+./design
+./design/reference
+./docs
+./docs/reference
+./include
+./include/kiddos
+./logs
+./platform
+./platform/desktop
+./platform/emuelec
+./research
+./research/abandoned
+./research/branding
+./research/firmware
+./research/kiddos-ui
+./research/milestones
+./research/workflow
+./src
+./src/app
+./src/platform
+./src/ui
+./tasks
+./tasks/active
+./tasks/completed
+./tests
+./tools
+
+===== BUILD CONFIGURATION =====
+./build/CMakeFiles/4.4.4/CMakeCXXCompiler.cmake
+./build/CMakeFiles/4.4.4/CMakeSystem.cmake
+./build/CMakeFiles/CTestScript.cmake
+./build/cmake_install.cmake
+./build/CTestTestfile.cmake
+./CMakeLists.txt
+
+===== ALL C/C++ SOURCE FILES =====
+./include/kiddos/app/application.hpp
+./include/kiddos/app/home_carousel_screen.hpp
+./include/kiddos/app/platform.hpp
+./include/kiddos/app/selected_game_screen.hpp
+./include/kiddos/app/shared_shell.hpp
+./include/kiddos/app/ui_action_mapping.hpp
+./include/kiddos/core/action.hpp
+./include/kiddos/kiddos_ui.hpp
+./include/kiddos/platform/platform.hpp
+./include/kiddos/platform/sdl_keyboard_policy.hpp
+./include/kiddos/platform/sdl_platform.hpp
+./include/kiddos/platform/sdl_text_input_translator.hpp
+./include/kiddos/platform/text_input_event.hpp
+./include/kiddos/ui/button.hpp
+./include/kiddos/ui/checkbox.hpp
+./include/kiddos/ui/color.hpp
+./include/kiddos/ui/container.hpp
+./include/kiddos/ui/controller.hpp
+./include/kiddos/ui/element.hpp
+./include/kiddos/ui/focus.hpp
+./include/kiddos/ui/font.hpp
+./include/kiddos/ui/geometry.hpp
+./include/kiddos/ui/image.hpp
+./include/kiddos/ui/label.hpp
+./include/kiddos/ui/layout.hpp
+./include/kiddos/ui/list_view.hpp
+./include/kiddos/ui/panel.hpp
+./include/kiddos/ui/progress_bar.hpp
+./include/kiddos/ui/radio_group.hpp
+./include/kiddos/ui/renderer.hpp
+./include/kiddos/ui/screen.hpp
+./include/kiddos/ui/screen_manager.hpp
+./include/kiddos/ui/select.hpp
+./include/kiddos/ui/slider.hpp
+./include/kiddos/ui/text.hpp
+./include/kiddos/ui/text_input.hpp
+./include/kiddos/ui/text_input_interaction.hpp
+./include/kiddos/ui/texture.hpp
+./include/kiddos/ui/theme.hpp
+./include/kiddos/ui/toggle.hpp
+./include/kiddos/ui/ui.hpp
+./research/abandoned/framework-exploration/lvgl/adapter/lv_conf.h
+./research/abandoned/framework-exploration/lvgl/adapter/main.c
+./research/abandoned/framework-exploration/lvgl/prototype/lv_conf.h
+./research/abandoned/framework-exploration/lvgl/prototype/main.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/kvimfan-aml/sources/khadas-fan.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-drivers/amlogic/wifi_dummy-aml/sources/wifi_dummy.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/kernel/linux-firmware/intel-ucode/sources/intel-microcode2ucode.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/sysutils/wait-time-sync/sources/wait-time-sync.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/sysutils/evdev_tools/sources/evkill.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/sysutils/evdev_tools/sources/evtest.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/sysutils/evdev_tools/sources/remap.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/sysutils/evdev_tools/sources/send.c
+./src/app/application.cpp
+./src/app/home_carousel_screen.cpp
+./src/app/selected_game_screen.cpp
+./src/app/shared_shell.cpp
+./src/main.cpp
+./src/platform/sdl_platform.cpp
+./src/ui/button.cpp
+./src/ui/checkbox.cpp
+./src/ui/controller.cpp
+./src/ui/focus.cpp
+./src/ui/font.cpp
+./src/ui/image.cpp
+./src/ui/label.cpp
+./src/ui/layout.cpp
+./src/ui/list_view.cpp
+./src/ui/panel.cpp
+./src/ui/progress_bar.cpp
+./src/ui/radio_group.cpp
+./src/ui/renderer.cpp
+./src/ui/screen.cpp
+./src/ui/screen_manager.cpp
+./src/ui/select.cpp
+./src/ui/slider.cpp
+./src/ui/text.cpp
+./src/ui/text_input.cpp
+./src/ui/text_input_interaction.cpp
+./src/ui/texture.cpp
+./src/ui/theme.cpp
+./src/ui/toggle.cpp
+./tests/app_home_carousel_screen_test.cpp
+./tests/app_selected_game_screen_test.cpp
+./tests/app_ui_action_mapping_test.cpp
+./tests/platform_sdl_keyboard_policy_test.cpp
+./tests/platform_sdl_text_input_translator_test.cpp
+./tests/platform_text_input_event_test.cpp
+./tests/platform_text_input_interface_test.cpp
+./tests/ui_button_test.cpp
+./tests/ui_checkbox_test.cpp
+./tests/ui_controller_test.cpp
+./tests/ui_focus_test.cpp
+./tests/ui_geometry_test.cpp
+./tests/ui_image_test.cpp
+./tests/ui_label_test.cpp
+./tests/ui_layout_test.cpp
+./tests/ui_list_view_test.cpp
+./tests/ui_panel_test.cpp
+./tests/ui_progress_bar_test.cpp
+./tests/ui_radio_group_test.cpp
+./tests/ui_renderer_test.cpp
+./tests/ui_screen_manager_test.cpp
+./tests/ui_select_test.cpp
+./tests/ui_slider_test.cpp
+./tests/ui_text_input_interaction_test.cpp
+./tests/ui_text_input_test.cpp
+./tests/ui_theme_test.cpp
+./tests/ui_toggle_test.cpp
+
+===== RENDERING API USAGE =====
+./src/platform/sdl_platform.cpp:20:std::array<SDL_Texture*, 3> artwork_textures{};
+./src/platform/sdl_platform.cpp:21:std::array<SDL_Texture*, 3> action_label_textures{};
+./src/platform/sdl_platform.cpp:22:SDL_Texture* carousel_title_texture{};
+./src/platform/sdl_platform.cpp:23:SDL_Texture* carousel_selected_texture{};
+./src/platform/sdl_platform.cpp:24:SDL_Texture* selected_game_hints_texture{};
+./src/platform/sdl_platform.cpp:25:SDL_Texture* navigation_hints_texture{};
+./src/platform/sdl_platform.cpp:27:SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+./src/platform/sdl_platform.cpp:42:    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+./src/platform/sdl_platform.cpp:54:void color(SDL_Renderer* r, Color c) {
+./src/platform/sdl_platform.cpp:58:void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+./src/platform/sdl_platform.cpp:60:    SDL_RenderFillRect(r, &rect);
+./src/platform/sdl_platform.cpp:63:void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+./src/platform/sdl_platform.cpp:65:    SDL_RenderDrawRect(r, &rect);
+./src/platform/sdl_platform.cpp:68:void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+./src/platform/sdl_platform.cpp:84:        SDL_RenderDrawLine(r, rect.x + inset, rect.y + y,
+./src/platform/sdl_platform.cpp:89:void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+./src/platform/sdl_platform.cpp:94:    SDL_RenderDrawLine(r, rect.x + radius, rect.y,
+./src/platform/sdl_platform.cpp:96:    SDL_RenderDrawLine(r, rect.x + radius, rect.y + rect.h - 1,
+./src/platform/sdl_platform.cpp:98:    SDL_RenderDrawLine(r, rect.x, rect.y + radius,
+./src/platform/sdl_platform.cpp:100:    SDL_RenderDrawLine(r, rect.x + rect.w - 1, rect.y + radius,
+./src/platform/sdl_platform.cpp:109:        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+./src/platform/sdl_platform.cpp:111:        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+./src/platform/sdl_platform.cpp:113:        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+./src/platform/sdl_platform.cpp:115:        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+./src/platform/sdl_platform.cpp:120:void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+./src/platform/sdl_platform.cpp:129:        SDL_RenderDrawLine(r, rect.x, rect.y + y,
+./src/platform/sdl_platform.cpp:131:        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, rect.y + y,
+./src/platform/sdl_platform.cpp:135:        SDL_RenderDrawLine(r, rect.x, bottom_y,
+./src/platform/sdl_platform.cpp:137:        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, bottom_y,
+./src/platform/sdl_platform.cpp:142:void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+./src/platform/sdl_platform.cpp:151:        SDL_RenderDrawLine(r, cx - x, cy + y, cx + x, cy + y);
+./src/platform/sdl_platform.cpp:155:void triangle(SDL_Renderer* r, int x1, int y1,
+./src/platform/sdl_platform.cpp:183:            SDL_RenderDrawLine(
+./src/platform/sdl_platform.cpp:194:void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+./src/platform/sdl_platform.cpp:224:void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+./src/platform/sdl_platform.cpp:256:void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+./src/platform/sdl_platform.cpp:278:            SDL_RenderDrawPoint(r, x, wave_y);
+./src/platform/sdl_platform.cpp:288:void draw_art(SDL_Renderer* r, int index,
+./src/platform/sdl_platform.cpp:291:    SDL_Texture* texture = artwork_textures[static_cast<std::size_t>(index)];
+./src/platform/sdl_platform.cpp:295:    SDL_RenderCopy(r, texture, nullptr, &area);
+./src/platform/sdl_platform.cpp:299:void draw_card(SDL_Renderer* r, int index,
+./src/platform/sdl_platform.cpp:316:    SDL_RenderSetClipRect(r, &art);
+./src/platform/sdl_platform.cpp:318:    SDL_RenderSetClipRect(r, nullptr);
+./src/platform/sdl_platform.cpp:340:void draw_status(SDL_Renderer* r) {
+./src/platform/sdl_platform.cpp:349:    SDL_RenderDrawLine(r, 49, 29, 54, 34);
+./src/platform/sdl_platform.cpp:350:    SDL_RenderDrawLine(r, 54, 34, 54, 42);
+./src/platform/sdl_platform.cpp:351:    SDL_RenderDrawLine(r, 54, 42, 49, 47);
+./src/platform/sdl_platform.cpp:391:    renderer_ = SDL_CreateRenderer(
+./src/platform/sdl_platform.cpp:397:        renderer_ = SDL_CreateRenderer(
+./src/platform/sdl_platform.cpp:668:    SDL_RenderClear(renderer_);
+./src/platform/sdl_platform.cpp:714:        SDL_RenderCopy(renderer_, carousel_title_texture,
+./src/platform/sdl_platform.cpp:724:void draw_action_label(SDL_Renderer* r, int index,
+./src/platform/sdl_platform.cpp:727:    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+./src/platform/sdl_platform.cpp:731:    SDL_RenderCopy(r, texture, nullptr, &destination);
+./src/platform/sdl_platform.cpp:738:void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+./src/platform/sdl_platform.cpp:743:void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+./src/platform/sdl_platform.cpp:751:void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+./src/platform/sdl_platform.cpp:773:            SDL_RenderDrawLine(r, previous_x, previous_y, next_x, next_y);
+./src/platform/sdl_platform.cpp:848:        SDL_RenderCopy(renderer_, selected_game_hints_texture,
+./src/platform/sdl_platform.cpp:855:        SDL_RenderCopy(renderer_, navigation_hints_texture,
+./src/platform/sdl_platform.cpp:862:    if (renderer_) SDL_RenderPresent(renderer_);
+./src/app/application.cpp:84:    if (*ui_action == ui::UIAction::Back) {
+./src/app/application.cpp:99:        case ui::UIAction::Left:
+./src/app/application.cpp:105:        case ui::UIAction::Right:
+./src/app/application.cpp:110:        case ui::UIAction::Confirm:
+./src/app/application.cpp:115:        case ui::UIAction::Up:
+./src/app/application.cpp:116:        case ui::UIAction::Down:
+./src/app/application.cpp:117:        case ui::UIAction::Back:
+./src/app/home_carousel_screen.cpp:38:HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+./src/app/selected_game_screen.cpp:33:    SDL_Renderer* renderer,
+./src/app/shared_shell.cpp:15:void set_color(SDL_Renderer* renderer, SDL_Color color) {
+./src/app/shared_shell.cpp:25:bool SharedShell::initialize(SDL_Renderer* renderer) {
+./src/app/shared_shell.cpp:65:    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
+./src/app/shared_shell.cpp:68:        SDL_RenderCopy(renderer_, texture, nullptr, &destination);
+./src/app/shared_shell.cpp:86:    SDL_RenderFillRect(renderer_, &cabinet);
+./src/app/shared_shell.cpp:95:        SDL_RenderDrawLine(renderer_, left, y, 44, y);
+./src/app/shared_shell.cpp:111:                SDL_RenderDrawLine(renderer_, previous.x, previous.y,
+./src/app/shared_shell.cpp:125:    SDL_RenderDrawRect(renderer_, &battery);
+./src/app/shared_shell.cpp:126:    SDL_RenderFillRect(renderer_, &terminal);
+./src/app/shared_shell.cpp:130:    SDL_RenderFillRect(renderer_, &fill);
+./src/app/shared_shell.cpp:135:        SDL_RenderCopy(renderer_, logo_, nullptr, &destination);
+./src/app/shared_shell.cpp:145:        SDL_RenderCopy(renderer_, hints_, nullptr, &destination);
+./src/ui/renderer.cpp:8:Renderer::Renderer(SDL_Renderer* renderer) noexcept
+./src/ui/renderer.cpp:12:void Renderer::attach(SDL_Renderer* renderer) noexcept {
+./src/ui/renderer.cpp:20:SDL_Renderer* Renderer::native() const noexcept {
+./src/ui/renderer.cpp:38:    return SDL_RenderClear(renderer_) == 0;
+./src/ui/renderer.cpp:45:    return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+./src/ui/renderer.cpp:52:    return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+./src/ui/renderer.cpp:58:    return SDL_RenderDrawLine(
+./src/ui/renderer.cpp:66:    return SDL_RenderDrawPoint(
+./src/ui/renderer.cpp:72:    SDL_Texture* texture,
+./src/ui/renderer.cpp:85:    const bool rendered = SDL_RenderCopy(renderer_, texture, &src, &dst) == 0;
+./src/ui/renderer.cpp:113:        return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+./src/ui/renderer.cpp:124:        if (SDL_RenderDrawLine(
+./src/ui/renderer.cpp:144:        return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+./src/ui/renderer.cpp:148:    if (SDL_RenderDrawLine(
+./src/ui/renderer.cpp:152:        SDL_RenderDrawLine(
+./src/ui/renderer.cpp:156:        SDL_RenderDrawLine(
+./src/ui/renderer.cpp:160:        SDL_RenderDrawLine(
+./src/ui/renderer.cpp:204:                if (SDL_RenderDrawPoint(
+./src/ui/renderer.cpp:239:    return SDL_RenderSetClipRect(renderer_, &native_rect) == 0;
+./src/ui/renderer.cpp:245:    return SDL_RenderSetClipRect(renderer_, nullptr) == 0;
+./src/ui/renderer.cpp:250:        SDL_RenderPresent(renderer_);
+./src/ui/controller.cpp:19:        case UIAction::Left:
+./src/ui/controller.cpp:28:        case UIAction::Right:
+./src/ui/controller.cpp:37:        case UIAction::Up:
+./src/ui/controller.cpp:44:        case UIAction::Down:
+./src/ui/controller.cpp:51:        case UIAction::Confirm:
+./src/ui/controller.cpp:62:        case UIAction::Back:
+./src/ui/text.cpp:14:    SDL_Texture* texture =
+./src/ui/text.cpp:22:        SDL_RenderCopy(renderer_.native(), texture, nullptr, &destination);
+./src/ui/texture.cpp:26:    SDL_Renderer* renderer,
+./src/ui/texture.cpp:41:    SDL_Texture* loaded = SDL_CreateTextureFromSurface(renderer, surface);
+./src/ui/texture.cpp:66:SDL_Texture* Texture::native() const noexcept { return texture_; }
+./src/ui/screen_manager.cpp:38:    if (a == UIAction::Back) return pop();
+./tests/ui_controller_test.cpp:28:    assert(controller.handle(UIAction::Right));
+./tests/ui_controller_test.cpp:31:    assert(controller.handle(UIAction::Confirm));
+./tests/ui_controller_test.cpp:35:    assert(controller.handle(UIAction::Left));
+./tests/ui_controller_test.cpp:38:    assert(controller.handle(UIAction::Confirm));
+./tests/ui_controller_test.cpp:41:    assert(!controller.handle(UIAction::Right) == false);
+./tests/ui_controller_test.cpp:45:    assert(controller.handle(UIAction::Left));
+./tests/ui_controller_test.cpp:47:    assert(controller.handle(UIAction::Right));
+./tests/ui_controller_test.cpp:50:    assert(!controller.handle(UIAction::Confirm));
+./tests/ui_controller_test.cpp:52:    assert(!controller.handle(UIAction::Back));
+./tests/ui_toggle_test.cpp:60:    assert(controller.handle(UIAction::Confirm));
+./tests/ui_toggle_test.cpp:63:    assert(controller.handle(UIAction::Confirm));
+./tests/ui_slider_test.cpp:73:    assert(controller.handle(UIAction::Right));
+./tests/ui_slider_test.cpp:75:    assert(controller.handle(UIAction::Left));
+./tests/ui_list_view_test.cpp:51:    assert(controller.handle(UIAction::Down));
+./tests/ui_list_view_test.cpp:53:    assert(controller.handle(UIAction::Confirm));
+./tests/ui_list_view_test.cpp:57:    assert(!controller.handle(UIAction::Down));
+./tests/ui_checkbox_test.cpp:46:    assert(controller.handle(UIAction::Confirm));
+./tests/ui_checkbox_test.cpp:48:    assert(controller.handle(UIAction::Confirm));
+./tests/ui_radio_group_test.cpp:56:    assert(controller.handle(UIAction::Right));
+./tests/ui_radio_group_test.cpp:58:    assert(controller.handle(UIAction::Down));
+./tests/ui_radio_group_test.cpp:60:    assert(controller.handle(UIAction::Left));
+./tests/ui_select_test.cpp:72:    assert(controller.handle(UIAction::Right));
+./tests/ui_select_test.cpp:74:    assert(controller.handle(UIAction::Left));
+./tests/ui_screen_manager_test.cpp:44:    assert(!manager.handle_action(UIAction::Back));
+./tests/ui_screen_manager_test.cpp:53:    assert(manager.handle_action(UIAction::Confirm));
+./tests/ui_screen_manager_test.cpp:64:    assert(manager.handle_action(UIAction::Confirm));
+./tests/ui_screen_manager_test.cpp:67:    assert(manager.handle_action(UIAction::Back));
+./tests/ui_screen_manager_test.cpp:92:    assert(!manager.handle_action(UIAction::Confirm));
+./tests/ui_screen_manager_test.cpp:93:    assert(!manager.handle_action(UIAction::Back));
+./tests/ui_renderer_test.cpp:28:    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+./tests/ui_renderer_test.cpp:34:    SDL_Texture* texture = SDL_CreateTexture(
+./tests/app_ui_action_mapping_test.cpp:11:    assert(to_ui_action(Action::NavigateLeft) == UIAction::Left);
+./tests/app_ui_action_mapping_test.cpp:12:    assert(to_ui_action(Action::NavigateRight) == UIAction::Right);
+./tests/app_ui_action_mapping_test.cpp:13:    assert(to_ui_action(Action::NavigateUp) == UIAction::Up);
+./tests/app_ui_action_mapping_test.cpp:14:    assert(to_ui_action(Action::NavigateDown) == UIAction::Down);
+./tests/app_ui_action_mapping_test.cpp:15:    assert(to_ui_action(Action::Confirm) == UIAction::Confirm);
+./tests/app_ui_action_mapping_test.cpp:16:    assert(to_ui_action(Action::Back) == UIAction::Back);
+./tests/app_home_carousel_screen_test.cpp:98:    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+./tests/app_selected_game_screen_test.cpp:49:    assert(manager.handle_action(kiddos::ui::UIAction::Confirm));
+./tests/app_selected_game_screen_test.cpp:74:    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+./research/abandoned/framework-exploration/lvgl/prototype/lv_conf.h:176:/** Widgets with `style_opa < 255` (not `bg_opa`, `text_opa` etc) or a non-NORMAL blend mode are
+./research/abandoned/framework-exploration/lvgl/prototype/lv_conf.h:760:/** Widget names (lv_obj_set_name) */
+./research/abandoned/framework-exploration/lvgl/prototype/lv_conf.h:763:/** Widget id (lv_obj_set_id) */
+./research/abandoned/framework-exploration/lvgl/prototype/lv_conf.h:855:/** Widget creation */
+./research/abandoned/framework-exploration/lvgl/prototype/lv_conf.h:2568:/** Widgets demo */
+./research/abandoned/framework-exploration/lvgl/adapter/lv_conf.h:176:/** Widgets with `style_opa < 255` (not `bg_opa`, `text_opa` etc) or a non-NORMAL blend mode are
+./research/abandoned/framework-exploration/lvgl/adapter/lv_conf.h:760:/** Widget names (lv_obj_set_name) */
+./research/abandoned/framework-exploration/lvgl/adapter/lv_conf.h:763:/** Widget id (lv_obj_set_id) */
+./research/abandoned/framework-exploration/lvgl/adapter/lv_conf.h:855:/** Widget creation */
+./research/abandoned/framework-exploration/lvgl/adapter/lv_conf.h:2568:/** Widgets demo */
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:13:static SDL_Renderer *renderer;
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:14:static SDL_Texture *texture;
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:40:        SDL_RenderClear(renderer);
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:41:        SDL_RenderCopy(renderer, texture, NULL, NULL);
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:42:        SDL_RenderPresent(renderer);
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:110:    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:112:        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:114:        fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:126:    SDL_RenderClear(renderer);
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:127:    SDL_RenderPresent(renderer);
+./research/abandoned/framework-exploration/lvgl/adapter/main.c:173:    printf("Adapter running: LVGL -> custom flush callback -> existing SDL_Renderer\n");
+./include/kiddos/platform/platform.hpp:6:struct SDL_Renderer;
+./include/kiddos/platform/platform.hpp:16:    virtual SDL_Renderer* native_renderer() const noexcept { return nullptr; }
+./include/kiddos/platform/sdl_platform.hpp:27:    SDL_Renderer* native_renderer() const noexcept override {
+./include/kiddos/platform/sdl_platform.hpp:33:    SDL_Renderer* renderer_ = nullptr;
+./include/kiddos/app/ui_action_mapping.hpp:15:            return ui::UIAction::Left;
+./include/kiddos/app/ui_action_mapping.hpp:17:            return ui::UIAction::Right;
+./include/kiddos/app/ui_action_mapping.hpp:19:            return ui::UIAction::Up;
+./include/kiddos/app/ui_action_mapping.hpp:21:            return ui::UIAction::Down;
+./include/kiddos/app/ui_action_mapping.hpp:23:            return ui::UIAction::Confirm;
+./include/kiddos/app/ui_action_mapping.hpp:25:            return ui::UIAction::Back;
+./include/kiddos/app/home_carousel_screen.hpp:18:    explicit HomeCarouselScreen(SDL_Renderer* renderer);
+./include/kiddos/app/selected_game_screen.hpp:15:    SelectedGameScreen(SDL_Renderer* renderer, int selected_game);
+./include/kiddos/app/shared_shell.hpp:16:    bool initialize(SDL_Renderer* renderer);
+./include/kiddos/app/shared_shell.hpp:24:    SDL_Renderer* renderer_ = nullptr;
+./include/kiddos/app/shared_shell.hpp:25:    SDL_Texture* logo_ = nullptr;
+./include/kiddos/app/shared_shell.hpp:26:    SDL_Texture* hints_ = nullptr;
+./include/kiddos/ui/renderer.hpp:12:// The SDLPlatform remains responsible for creating and destroying SDL_Renderer.
+./include/kiddos/ui/renderer.hpp:15:    explicit Renderer(SDL_Renderer* renderer = nullptr) noexcept;
+./include/kiddos/ui/renderer.hpp:17:    void attach(SDL_Renderer* renderer) noexcept;
+./include/kiddos/ui/renderer.hpp:25:    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination,
+./include/kiddos/ui/renderer.hpp:35:    SDL_Renderer* native() const noexcept;
+./include/kiddos/ui/renderer.hpp:38:    SDL_Renderer* renderer_ = nullptr;
+./include/kiddos/ui/texture.hpp:21:    bool load(SDL_Renderer* renderer, const std::string& path,
+./include/kiddos/ui/texture.hpp:27:    SDL_Texture* native() const noexcept;
+./include/kiddos/ui/texture.hpp:30:    SDL_Texture* texture_ = nullptr;
+
+===== TEST FILES =====
+./docs/PRODUCT_SPECIFICATION.md
+./research/abandoned/framework-exploration/rmlui/logs/01-inspection-20261110-184509.log
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/mono/zxspectrum.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/logos/zxspectrum.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/systems/blurred/zxspectrum.blurred.webp
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-albedo/assets/systems/zxspectrum.webp
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/assets/logos/zxspectrum.svg
+./research/firmware/manufacturer/RetroPixel_Pocket/distributions/RetroPixel/theme/es-theme-elementerial/assets/systems/zxspectrum.webp
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gbc/games/Ms. Pac-Man - Special Color Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gbc/games/Ms. Pac-Man - Special Colour Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gbc/games/Pac-Man - Special Color Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gbc/games/Pac-Man - Special Colour Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Edicion Amarilla - Edicion Especial Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Edicion Amarilla - Edicion Especial Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Edicion Amarilla - Edicion Especial Pikachu.3.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Gelbe Edition - Special Pikachu Edition.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Gelbe Edition - Special Pikachu Edition.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Gelbe Edition - Special Pikachu Edition.3.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Gelbe Edition - Special Pikachu Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Versione Gialla - Speciale Edizione Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Versione Gialla - Speciale Edizione Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Versione Gialla - Speciale Edizione Pikachu.3.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Version Jaune - Edition Speciale Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Version Jaune - Edition Speciale Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Version Jaune - Edition Speciale Pikachu.3.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Yellow Version - Special Pikachu Edition.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Yellow Version - Special Pikachu Edition.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Yellow Version - Special Pikachu Edition.3.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-p/bezels/default/systems/gb/games/Pokemon - Yellow Version - Special Pikachu Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gbc/games/Ms. Pac-Man - Special Color Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gbc/games/Ms. Pac-Man - Special Colour Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gbc/games/Pac-Man - Special Color Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gbc/games/Pac-Man - Special Colour Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gb/games/Pokemon - Edicion Amarilla - Edicion Especial Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gb/games/Pokemon - Edicion Amarilla - Edicion Especial Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gb/games/Pokemon - Gelbe Edition - Special Pikachu Edition.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gb/games/Pokemon - Gelbe Edition - Special Pikachu Edition.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gb/games/Pokemon - Versione Gialla - Speciale Edizione Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gb/games/Pokemon - Versione Gialla - Speciale Edizione Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gb/games/Pokemon - Version Jaune - Edition Speciale Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gb/games/Pokemon - Version Jaune - Edition Speciale Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gb/games/Pokemon - Yellow Version - Special Pikachu Edition.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/gb/games/Pokemon - Yellow Version - Special Pikachu Edition.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/nes/games/Pokemon - Edicion Amarilla - Edicion Especial Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/nes/games/Pokemon - Edicion Amarilla - Edicion Especial Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/nes/games/Pokemon - Gelbe Edition - Special Pikachu Edition.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/nes/games/Pokemon - Gelbe Edition - Special Pikachu Edition.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/nes/games/Pokemon - Versione Gialla - Speciale Edizione Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/nes/games/Pokemon - Versione Gialla - Speciale Edizione Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/nes/games/Pokemon - Version Jaune - Edition Speciale Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/nes/games/Pokemon - Version Jaune - Edition Speciale Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/nes/games/Pokemon - Yellow Version - Special Pikachu Edition.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back/bezels/default/systems/nes/games/Pokemon - Yellow Version - Special Pikachu Edition.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gbc/games/Ms. Pac-Man - Special Color Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gbc/games/Ms. Pac-Man - Special Colour Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gbc/games/Pac-Man - Special Color Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gbc/games/Pac-Man - Special Colour Edition.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gb/games/Pokemon - Edicion Amarilla - Edicion Especial Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gb/games/Pokemon - Edicion Amarilla - Edicion Especial Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gb/games/Pokemon - Gelbe Edition - Special Pikachu Edition.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gb/games/Pokemon - Gelbe Edition - Special Pikachu Edition.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gb/games/Pokemon - Versione Gialla - Speciale Edizione Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gb/games/Pokemon - Versione Gialla - Speciale Edizione Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gb/games/Pokemon - Version Jaune - Edition Speciale Pikachu.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gb/games/Pokemon - Version Jaune - Edition Speciale Pikachu.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gb/games/Pokemon - Yellow Version - Special Pikachu Edition.1.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v_back_li/bezels/default/systems/gb/games/Pokemon - Yellow Version - Special Pikachu Edition.2.cfg
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/overlay-v/test
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/amberelec/sources/scripts/batocera-bt-test-device
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/audio/sidplay-libs/patches/sidplay-libs-01-m4-tests.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/debug/memtester/patches/memtester-001-cross-compile.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/devel/fakeroot/patches/fakeroot-001-disable-docs-tests.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/games/tools/sdljoytest/sdljoytest-increase-delay.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/lang/Python3/patches/0002-Disable-buggy_getaddrinfo-configure-test-when-cross-.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/multimedia/libmpeg2/patches/libmpeg2-0.5.1-global-symbol-test.patch
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/tools/sysutils/evdev_tools/sources/evtest.c
+./research/firmware/manufacturer/RetroPixel_Pocket/packages/x11/lib/libX11/patches/libX11-disable_nls_tests.patch
+./research/milestones/kiddos-approved-screen-references/LATEST.txt
+./research/milestones/kiddos-carousel-test-investigation/LATEST.txt
+./research/milestones/kiddos-larger-wordmark/LATEST.txt
+./research/milestones/kiddos-selected-game-artwork-review/LATEST.txt
+./research/milestones/kiddos-selected-game-audit/LATEST.txt
+./research/milestones/kiddos-selected-game-controls/LATEST.txt
+./research/milestones/kiddos-selected-game-controls-test-fix/LATEST.txt
+./research/milestones/kiddos-selected-game-design/LATEST.txt
+./research/milestones/kiddos-selected-game-fix/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-alignment-2/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-alignment-3/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-alignment-4/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-alignment-5/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-alignment/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-artwork/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-cleanup/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-exact-match/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-integration/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-match/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-style-audit/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-warning-fix-2/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-warning-fix-3/LATEST.txt
+./research/milestones/kiddos-selected-game-footer-warning-fix/LATEST.txt
+./research/milestones/kiddos-selected-game-integration-audit/LATEST.txt
+./research/milestones/kiddos-selected-game-integration/LATEST.txt
+./research/milestones/kiddos-selected-game-preparation/LATEST.txt
+./research/milestones/kiddos-selected-game-review/LATEST.txt
+./research/milestones/kiddos-selected-game-runtime/LATEST.txt
+./research/milestones/kiddos-selected-game-screen/LATEST.txt
+./research/milestones/kiddos-selected-game-ui-footer-cleanup/LATEST.txt
+./research/milestones/kiddos-selected-game-ui-footer/LATEST.txt
+./research/milestones/kiddos-selected-game-ui-footer-test-fix/LATEST.txt
+./research/milestones/kiddos-selected-game-verification/LATEST.txt
+./research/milestones/kiddos-shared-shell-audit/LATEST.txt
+./research/milestones/kiddos-shared-shell-build/LATEST.txt
+./research/milestones/kiddos-shared-shell-implementation/LATEST.txt
+./research/milestones/kiddos-shared-shell-implementation-review/LATEST.txt
+./research/milestones/kiddos-shell-layout-cleanup-audit/LATEST.txt
+./research/milestones/kiddos-shell-layout-cleanup/LATEST.txt
+./research/milestones/kiddos-shell-layout-test-fix/LATEST.txt
+./research/milestones/kiddos-shell-restore-original-style/LATEST.txt
+./research/milestones/kiddos-shell-style-assets-audit/LATEST.txt
+./research/milestones/kiddos-shell-style-regression-audit/LATEST.txt
+./research/milestones/kiddos-shell-visual-capture/LATEST.txt
+./research/milestones/kiddos-shell-visual-review/LATEST.txt
+./research/milestones/kiddos-ttf-lifecycle/LATEST.txt
+./research/milestones/kiddos-ui-library/LATEST.txt
+./research/milestones/kiddos-visual-regression-audit/LATEST.txt
+./research/milestones/kiddos-wordmark-size-adjustment/LATEST.txt
+./research/milestones/kid-mode-reconstruction/LATEST.txt
+./research/milestones/visual-fidelity-pass/LATEST.txt
+./research/milestones/workflow-setup/LATEST.txt
+./tests/app_home_carousel_screen_test.cpp
+./tests/app_selected_game_screen_test.cpp
+./tests/app_ui_action_mapping_test.cpp
+./tests/platform_sdl_keyboard_policy_test.cpp
+./tests/platform_sdl_text_input_translator_test.cpp
+./tests/platform_text_input_event_test.cpp
+./tests/platform_text_input_interface_test.cpp
+./tests/ui_button_test.cpp
+./tests/ui_checkbox_test.cpp
+./tests/ui_controller_test.cpp
+./tests/ui_focus_test.cpp
+./tests/ui_geometry_test.cpp
+./tests/ui_image_test.cpp
+./tests/ui_label_test.cpp
+./tests/ui_layout_test.cpp
+./tests/ui_list_view_test.cpp
+./tests/ui_panel_test.cpp
+./tests/ui_progress_bar_test.cpp
+./tests/ui_radio_group_test.cpp
+./tests/ui_renderer_test.cpp
+./tests/ui_screen_manager_test.cpp
+./tests/ui_select_test.cpp
+./tests/ui_slider_test.cpp
+./tests/ui_text_input_interaction_test.cpp
+./tests/ui_text_input_test.cpp
+./tests/ui_theme_test.cpp
+./tests/ui_toggle_test.cpp
+
+===== BUILD ENTRY POINTS =====
+total 24
+drwxr-xr-x 1 hawk hawk   248 Nov 11 22:43 .
+drwx------ 1 hawk hawk   724 Nov 11 21:51 ..
+drwxr-xr-x 1 hawk hawk    36 Nov  9 14:16 assets
+drwxr-xr-x 1 hawk hawk  1796 Nov 11 22:35 build
+-rw-r--r-- 1 hawk hawk 10892 Nov 11 21:14 CMakeLists.txt
+drwxr-xr-x 1 hawk hawk     0 Nov  9 14:16 config
+-rw-r--r-- 1 hawk hawk  1344 Nov 10 11:50 CONTRIBUTING.md
+drwxr-xr-x 1 hawk hawk    18 Nov 11 22:43 design
+drwxr-xr-x 1 hawk hawk   866 Nov 11 14:09 docs
+drwxr-xr-x 1 hawk hawk   166 Nov 11 22:55 .git
+-rw-r--r-- 1 hawk hawk    84 Nov  9 14:16 .gitignore
+drwxr-xr-x 1 hawk hawk    12 Nov 10 14:01 include
+drwxr-xr-x 1 hawk hawk    82 Nov 10 14:40 logs
+drwxr-xr-x 1 hawk hawk    28 Nov  9 14:16 platform
+-rw-r--r-- 1 hawk hawk  2608 Nov 10 22:02 README.md
+drwxr-xr-x 1 hawk hawk   104 Nov 11 17:37 research
+drwxr-xr-x 1 hawk hawk    42 Nov 10 20:01 src
+drwxr-xr-x 1 hawk hawk    30 Nov 10 22:44 tasks
+drwxr-xr-x 1 hawk hawk  1310 Nov 11 20:27 tests
+drwxr-xr-x 1 hawk hawk    32 Nov 10 22:47 tools
