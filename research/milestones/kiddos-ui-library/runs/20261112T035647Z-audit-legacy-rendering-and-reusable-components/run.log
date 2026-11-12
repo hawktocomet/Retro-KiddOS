@@ -1,0 +1,1227 @@
+===== SDL PLATFORM PUBLIC INTERFACE =====
+     1	#pragma once
+     2	
+     3	#include <array>
+     4	#include <cstddef>
+     5	#include <string_view>
+     6	
+     7	namespace kiddos::app {
+     8	
+     9	enum class PlatformId {
+    10	    GameBoy,
+    11	    GameBoyAdvance,
+    12	    SuperNintendo,
+    13	    Arcade
+    14	};
+    15	
+    16	struct PlatformDefinition {
+    17	    PlatformId id;
+    18	    std::string_view short_name;
+    19	    std::string_view full_name;
+    20	};
+    21	
+    22	inline constexpr std::array<PlatformDefinition, 4> initial_platforms{{
+    23	    {PlatformId::GameBoy, "GB/GBC", "Game Boy / Game Boy Color"},
+    24	    {PlatformId::GameBoyAdvance, "GBA", "Game Boy Advance"},
+    25	    {PlatformId::SuperNintendo, "SNES", "Super Nintendo"},
+    26	    {PlatformId::Arcade, "Arcade", "FinalBurn Neo"}
+    27	}};
+    28	
+    29	inline constexpr std::size_t platform_count = initial_platforms.size();
+    30	
+    31	} // namespace kiddos::app
+     1	#pragma once
+     2	
+     3	#include "kiddos/platform/platform.hpp"
+     4	#include "kiddos/platform/text_input_event.hpp"
+     5	
+     6	#include <SDL.h>
+     7	
+     8	#include <deque>
+     9	
+    10	namespace kiddos {
+    11	
+    12	class SDLPlatform final : public Platform {
+    13	public:
+    14	    SDLPlatform() = default;
+    15	    ~SDLPlatform() override;
+    16	
+    17	    bool initialize() override;
+    18	    bool poll_action(Action& action) override;
+    19	    bool poll_text_input_event(TextInputEvent& event) override;
+    20	    void set_text_input_active(bool active) override;
+    21	    void begin_frame() override;
+    22	    void draw_carousel(int selected_index) override;
+    23	    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    24	    void present() override;
+    25	    void shutdown() override;
+    26	
+    27	    SDL_Renderer* native_renderer() const noexcept override {
+    28	        return renderer_;
+    29	    }
+    30	
+    31	private:
+    32	    SDL_Window* window_ = nullptr;
+    33	    SDL_Renderer* renderer_ = nullptr;
+    34	    SDL_GameController* controller_ = nullptr;
+    35	    SDL_JoystickID controller_instance_ = -1;
+    36	    bool initialized_ = false;
+    37	    bool text_input_active_ = false;
+    38	    std::deque<Action> pending_actions_;
+    39	    std::deque<TextInputEvent> pending_text_events_;
+    40	    bool pump_events();
+    41	
+    42	    void open_controller(int device_index);
+    43	    void close_controller();
+    44	    static Action map_key(SDL_Keycode key);
+    45	    static Action map_controller_button(Uint8 button);
+    46	};
+    47	
+    48	} // namespace kiddos
+
+===== LEGACY SDL CAROUSEL AND ACTION RENDERING =====
+   280	    }
+   281	
+   282	    triangle(r, a.x, a.y + a.h * 60 / 100,
+   283	             a.x + a.w / 3, a.y + a.h * 43 / 100,
+   284	             a.x + a.w * 55 / 100, a.y + a.h * 60 / 100,
+   285	             c(39, 139, 166));
+   286	}
+   287	
+   288	void draw_art(SDL_Renderer* r, int index,
+   289	              SDL_Rect area, Uint8 alpha) {
+   290	    if (index < 0 || index >= static_cast<int>(artwork_textures.size())) return;
+   291	    SDL_Texture* texture = artwork_textures[static_cast<std::size_t>(index)];
+   292	    if (!texture) return;
+   293	
+   294	    SDL_SetTextureAlphaMod(texture, alpha);
+   295	    SDL_RenderCopy(r, texture, nullptr, &area);
+   296	    SDL_SetTextureAlphaMod(texture, 255);
+   297	}
+   298	
+   299	void draw_card(SDL_Renderer* r, int index,
+   300	               SDL_Rect rect, bool selected) {
+   301	    const Uint8 alpha = selected ? 255 : 145;
+   302	
+   303	    rounded_fill(r,
+   304	                 {rect.x - 5, rect.y - 5, rect.w + 10, rect.h + 10},
+   305	                 30, {7, 13, 32, static_cast<Uint8>(selected ? 255 : 170)});
+   306	
+   307	    rounded_fill(r, rect, 25, {20, 34, 65, alpha});
+   308	
+   309	    SDL_Rect art{
+   310	        rect.x + 9,
+   311	        rect.y + 9,
+   312	        rect.w - 18,
+   313	        rect.h - 18
+   314	    };
+   315	
+   316	    SDL_RenderSetClipRect(r, &art);
+   317	    draw_art(r, index, art, alpha);
+   318	    SDL_RenderSetClipRect(r, nullptr);
+   319	    mask_artwork_corners(r, art, 18, {20, 34, 65, alpha});
+   320	
+   321	    // A three-pass concentric outline gives the card a substantial,
+   322	    // uniform border consistent with the home carousel's heavier frames.
+   323	    for (int inset = 0; inset < 3; ++inset) {
+   324	        rounded_outline(r,
+   325	                        {rect.x + inset, rect.y + inset,
+   326	                         rect.w - inset * 2, rect.h - inset * 2},
+   327	                        25 - inset,
+   328	                        selected
+   329	                            ? Color{69, 151, 255, 255}
+   330	                            : Color{80, 117, 170, 110});
+   331	    }
+   332	
+   333	    if (selected) {
+   334	        rounded_outline(r,
+   335	                        {rect.x - 2, rect.y - 2, rect.w + 4, rect.h + 4},
+   336	                        27, {43, 105, 210, 170});
+   337	    }
+   338	}
+   339	
+   340	void draw_status(SDL_Renderer* r) {
+   341	    const Color white{205, 222, 255, 220};
+   342	    color(r, white);
+   343	
+   344	    // Sound status: speaker and sound waves.
+   345	    triangle(r, 31, 34, 43, 25, 43, 51, white);
+   346	    rectangle(r, {25, 33, 10, 12}, white);
+   347	
+   348	    color(r, {80, 157, 255, 220});
+   349	    SDL_RenderDrawLine(r, 49, 29, 54, 34);
+   350	    SDL_RenderDrawLine(r, 54, 34, 54, 42);
+   351	    SDL_RenderDrawLine(r, 54, 42, 49, 47);
+   352	
+   353	    // Battery status: outline, terminal, charge fill.
+   354	    outline(r, {657, 27, 34, 19}, white);
+   355	    rectangle(r, {691, 33, 4, 7}, white);
+   356	    rectangle(r, {661, 31, 22, 11},
+   357	              {67, 157, 255, 240});
+   358	}
+   359	
+   360	} // namespace
+   361	
+   362	SDLPlatform::~SDLPlatform() {
+   363	    shutdown();
+   364	}
+   365	
+   366	bool SDLPlatform::initialize() {
+   367	    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+   368	        std::cerr << "SDL initialization failed: "
+   369	                  << SDL_GetError() << '\n';
+   370	        return false;
+   650	    return true;
+   651	}
+   652	
+   653	void SDLPlatform::set_text_input_active(bool active) {
+   654	    if (text_input_active_ == active) return;
+   655	
+   656	    text_input_active_ = active;
+   657	    if (active) {
+   658	        SDL_StartTextInput();
+   659	    } else {
+   660	        SDL_StopTextInput();
+   661	    }
+   662	}
+   663	
+   664	void SDLPlatform::begin_frame() {
+   665	    if (!renderer_) return;
+   666	
+   667	    color(renderer_, {8, 15, 35, 255});
+   668	    SDL_RenderClear(renderer_);
+   669	}
+   670	
+   671	
+   672	void SDLPlatform::draw_carousel(int selected_index) {
+   673	    if (!renderer_) return;
+   674	
+   675	    const int left = (selected_index + 2) % 3;
+   676	    const int right = (selected_index + 1) % 3;
+   677	
+   678	    const Color side_fill{16, 41, 75, 255};
+   679	    const Color center_fill{18, 63, 117, 255};
+   680	    const Color center_border{36, 164, 255, 255};
+   681	
+   682	    // Draw the smaller neighboring cards first, behind the main card.
+   683	    const SDL_Rect side_left{25, 250, 190, 175};
+   684	    const SDL_Rect side_right{505, 250, 190, 175};
+   685	
+   686	    rounded_fill(renderer_, side_left, 24, side_fill);
+   687	    rounded_outline(renderer_, side_left, 24,
+   688	                    {55, 105, 165, 190});
+   689	    draw_art(renderer_, left,
+   690	             {side_left.x + 55, side_left.y + 42, 80, 90}, 180);
+   691	
+   692	    rounded_fill(renderer_, side_right, 24, side_fill);
+   693	    rounded_outline(renderer_, side_right, 24,
+   694	                    {55, 105, 165, 190});
+   695	    draw_art(renderer_, right,
+   696	             {side_right.x + 55, side_right.y + 42, 80, 90}, 180);
+   697	
+   698	    // Main card is larger and drawn last so it overlaps both neighbors.
+   699	    const SDL_Rect center{145, 135, 430, 370};
+   700	    rounded_fill(renderer_, center, 30, center_fill);
+   701	    rounded_outline(renderer_, center, 30, center_border);
+   702	    rounded_outline(renderer_,
+   703	                    {center.x - 3, center.y - 3,
+   704	                     center.w + 6, center.h + 6},
+   705	                    32, {36, 164, 255, 150});
+   706	
+   707	    // Artwork always follows the actual selected game.
+   708	    draw_art(renderer_, selected_index,
+   709	             {center.x + 115, center.y + 70, 200, 205}, 255);
+   710	
+   711	    // Game title belongs below the main card; no SELECTED badge.
+   712	    if (carousel_title_texture && selected_index == 1) {
+   713	        SDL_Rect title{220, 525, 280, 42};
+   714	        SDL_RenderCopy(renderer_, carousel_title_texture,
+   715	                       nullptr, &title);
+   716	    }
+   717	
+   718	    draw_status(renderer_);
+   719	}
+   720	
+   721	
+   722	namespace {
+   723	
+   724	void draw_action_label(SDL_Renderer* r, int index,
+   725	                       int x, int y) {
+   726	    if (index < 0 || index >= static_cast<int>(action_label_textures.size())) return;
+   727	    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+   728	    if (!texture) return;
+   729	
+   730	    SDL_Rect destination{x, y, 350, 72};
+   731	    SDL_RenderCopy(r, texture, nullptr, &destination);
+   732	}
+   733	
+   734	// Conventional play/resume symbol: a solid right-pointing triangle
+   735	// centered on (x, y). Play and Resume share this geometry on purpose:
+   736	// a filled play triangle is the conventional symbol for both actions,
+   737	// and the text label next to it names the action.
+   738	void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+   739	    triangle(r, x - 18, y - 32, x - 18, y + 32, x + 30, y,
+   740	             {220, 237, 255, 255});
+   741	}
+   742	
+   743	void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+   744	    draw_play_symbol(r, x, y);
+   745	}
+   746	
+   747	// Conventional circular restart arrow: a thick ring open across the top
+   748	// with a solid arrowhead continuing the ring clockwise. The ring band is
+   749	// stamped as tightly overlapping filled disks along the arc so it renders
+   750	// as one solid, evenly weighted band. Centered on (x, y).
+   751	void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+   752	    // A simple clockwise restart arrow with a consistent line weight.
+   753	    constexpr double pi = 3.14159265358979323846;
+   754	    constexpr int segments = 32;
+   755	    const Color icon{220, 237, 255, 255};
+   756	
+   757	    color(r, icon);
+   758	
+   759	    for (int stroke = -1; stroke <= 1; ++stroke) {
+   760	        const double radius = 24.0 + stroke;
+   761	        int previous_x = x + static_cast<int>(std::lround(
+   762	            radius * std::cos(135.0 * pi / 180.0)));
+   763	        int previous_y = y + static_cast<int>(std::lround(
+   764	            radius * std::sin(135.0 * pi / 180.0)));
+   765	
+   766	        for (int step = 1; step <= segments; ++step) {
+   767	            const double angle = (135.0 + 270.0 * step / segments)
+   768	                                 * pi / 180.0;
+   769	            const int next_x = x + static_cast<int>(
+   770	                std::lround(radius * std::cos(angle)));
+   771	            const int next_y = y + static_cast<int>(
+   772	                std::lround(radius * std::sin(angle)));
+   773	            SDL_RenderDrawLine(r, previous_x, previous_y, next_x, next_y);
+   774	            previous_x = next_x;
+   775	            previous_y = next_y;
+   776	        }
+   777	    }
+   778	
+   779	    // Arrowhead at the upper-right end of the circular stroke.
+   780	    triangle(r, x + 31, y - 21,
+   781	             x + 8, y - 29,
+   782	             x + 22, y - 5, icon);
+   783	}
+   784	
+   785	} // namespace
+   786	
+   787	void SDLPlatform::draw_game_actions(
+   788	    int selected_index, bool has_checkpoint, int selected_action) {
+   789	
+   790	    if (!renderer_) return;
+   791	
+   792	    draw_status(renderer_);
+   793	
+   794	    // Keep the selected game's artwork prominent.
+   795	    draw_card(renderer_, selected_index,
+   796	              {235, 48, 250, 310}, true);
+   797	
+   798	    const int action_count = has_checkpoint ? 2 : 1;
+   799	    const int box_height = 112;
+   800	    const int gap = 17;
+   801	    const int total_height =
+   802	        action_count * box_height + (action_count - 1) * gap;
+   803	    const int start_y = 405 + (210 - total_height) / 2;
+   804	
+   805	    for (int i = 0; i < action_count; ++i) {
+   806	        const int y = start_y + i * (box_height + gap);
+   807	        const bool selected = i == selected_action;
+   808	
+   809	        SDL_Rect box{65, y, 590, box_height};
+   810	
+   811	        rounded_fill(renderer_, box, 22,
+   812	                     selected
+   813	                       ? Color{24, 69, 139, 255}
+   814	                       : Color{16, 30, 65, 255});
+   815	
+   816	        rounded_outline(renderer_, box, 22,
+   817	                        selected
+   818	                          ? Color{75, 165, 255, 255}
+   819	                          : Color{65, 93, 145, 190});
+   820	
+   821	        const int symbol_x = 145;
+   822	        const int symbol_y = y + box_height / 2;
+   823	
+   824	        if (!has_checkpoint || i == 0) {
+   825	            if (has_checkpoint) {
+   826	                draw_resume_symbol(renderer_, symbol_x, symbol_y);
+   827	                draw_action_label(renderer_, 1, 230, y + 20);
+   828	            } else {
+   829	                draw_play_symbol(renderer_, symbol_x, symbol_y);
+   830	                draw_action_label(renderer_, 0, 230, y + 20);
+   831	            }
+   832	        } else {
+   833	            draw_restart_symbol(renderer_, symbol_x, symbol_y);
+   834	            draw_action_label(renderer_, 2, 230, y + 20);
+   835	        }
+   836	
+   837	        if (selected) {
+   838	            rounded_outline(renderer_,
+   839	                            {box.x - 4, box.y - 4,
+   840	                             box.w + 8, box.h + 8},
+   841	                            26, {43, 126, 231, 180});
+   842	        }
+   843	    }
+   844	
+   845	    if (selected_game_hints_texture) {
+   846	        const SDL_Rect back_source{16, 0, 100, 34};
+   847	        const SDL_Rect back_destination{16, 666, 100, 34};
+   848	        SDL_RenderCopy(renderer_, selected_game_hints_texture,
+   849	                       &back_source, &back_destination);
+   850	    }
+   851	
+   852	    if (navigation_hints_texture) {
+   853	        const SDL_Rect select_source{623, 0, 97, 34};
+   854	        const SDL_Rect select_destination{623, 666, 97, 34};
+   855	        SDL_RenderCopy(renderer_, navigation_hints_texture,
+   856	                       &select_source, &select_destination);
+   857	    }
+   858	}
+   859	
+   860	
+   861	void SDLPlatform::present() {
+   862	    if (renderer_) SDL_RenderPresent(renderer_);
+   863	}
+   864	
+   865	void SDLPlatform::shutdown() {
+
+===== ALL REFERENCES TO LEGACY DRAW METHODS =====
+include/kiddos/platform/platform.hpp:16:    virtual SDL_Renderer* native_renderer() const noexcept { return nullptr; }
+include/kiddos/platform/platform.hpp:22:    virtual void begin_frame() = 0;
+include/kiddos/platform/platform.hpp:23:    virtual void draw_carousel(int selected_index) = 0;
+include/kiddos/platform/platform.hpp:24:    virtual void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) = 0;
+include/kiddos/platform/sdl_platform.hpp:21:    void begin_frame() override;
+include/kiddos/platform/sdl_platform.hpp:22:    void draw_carousel(int selected_index) override;
+include/kiddos/platform/sdl_platform.hpp:23:    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+include/kiddos/platform/sdl_platform.hpp:27:    SDL_Renderer* native_renderer() const noexcept override {
+include/kiddos/app/shared_shell.hpp:17:    void render_header();
+include/kiddos/app/shared_shell.hpp:18:    void render_footer(bool selected_game);
+src/app/application.cpp:30:    ui_renderer_.attach(platform_.native_renderer());
+src/app/application.cpp:38:    if (!shell.initialize(platform_.native_renderer())) {
+src/app/application.cpp:46:        platform_.native_renderer()));
+src/app/application.cpp:112:                platform_.native_renderer(), selected_game_));
+src/app/application.cpp:123:    platform_.begin_frame();
+src/app/application.cpp:129:    shell.render_header();
+src/app/application.cpp:130:    shell.render_footer(selected_game);
+src/app/shared_shell.cpp:74:void SharedShell::render_header() {
+src/app/shared_shell.cpp:139:void SharedShell::render_footer(bool selected_game) {
+tests/platform_text_input_interface_test.cpp:9:    void begin_frame() override {}
+tests/platform_text_input_interface_test.cpp:10:    void draw_carousel(int) override {}
+tests/platform_text_input_interface_test.cpp:11:    void draw_game_actions(int, bool, int) override {}
+
+===== UI COMPONENT INVENTORY =====
+include/kiddos/ui/button.hpp
+include/kiddos/ui/checkbox.hpp
+include/kiddos/ui/color.hpp
+include/kiddos/ui/container.hpp
+include/kiddos/ui/controller.hpp
+include/kiddos/ui/element.hpp
+include/kiddos/ui/focus.hpp
+include/kiddos/ui/font.hpp
+include/kiddos/ui/geometry.hpp
+include/kiddos/ui/image.hpp
+include/kiddos/ui/label.hpp
+include/kiddos/ui/layout.hpp
+include/kiddos/ui/list_view.hpp
+include/kiddos/ui/panel.hpp
+include/kiddos/ui/progress_bar.hpp
+include/kiddos/ui/radio_group.hpp
+include/kiddos/ui/renderer.hpp
+include/kiddos/ui/screen.hpp
+include/kiddos/ui/screen_manager.hpp
+include/kiddos/ui/select.hpp
+include/kiddos/ui/slider.hpp
+include/kiddos/ui/text.hpp
+include/kiddos/ui/text_input.hpp
+include/kiddos/ui/text_input_interaction.hpp
+include/kiddos/ui/texture.hpp
+include/kiddos/ui/theme.hpp
+include/kiddos/ui/toggle.hpp
+include/kiddos/ui/ui.hpp
+src/ui/button.cpp
+src/ui/checkbox.cpp
+src/ui/controller.cpp
+src/ui/focus.cpp
+src/ui/font.cpp
+src/ui/image.cpp
+src/ui/label.cpp
+src/ui/layout.cpp
+src/ui/list_view.cpp
+src/ui/panel.cpp
+src/ui/progress_bar.cpp
+src/ui/radio_group.cpp
+src/ui/renderer.cpp
+src/ui/screen.cpp
+src/ui/screen_manager.cpp
+src/ui/select.cpp
+src/ui/slider.cpp
+src/ui/text.cpp
+src/ui/text_input.cpp
+src/ui/text_input_interaction.cpp
+src/ui/texture.cpp
+src/ui/theme.cpp
+src/ui/toggle.cpp
+
+===== UI COMPONENT CLASS DEFINITIONS =====
+include/kiddos/ui/geometry.hpp:5:struct Point {
+include/kiddos/ui/geometry.hpp:10:struct Rect {
+include/kiddos/ui/color.hpp:7:struct Color {
+include/kiddos/ui/renderer.hpp:13:class Renderer final {
+include/kiddos/ui/element.hpp:8:class Element {
+include/kiddos/ui/container.hpp:12:class Container : public Element {
+include/kiddos/ui/layout.hpp:7:enum class Axis {
+include/kiddos/ui/layout.hpp:12:struct Insets {
+include/kiddos/ui/layout.hpp:19:class StackLayout final {
+include/kiddos/ui/focus.hpp:7:enum class Direction {
+include/kiddos/ui/focus.hpp:14:class FocusManager final {
+include/kiddos/ui/button.hpp:11:struct ButtonStyle {
+include/kiddos/ui/button.hpp:22:class Button final : public Element {
+include/kiddos/ui/controller.hpp:8:enum class UIAction {
+include/kiddos/ui/controller.hpp:17:class ControllerInteraction final {
+include/kiddos/ui/font.hpp:6:class Font final {
+include/kiddos/ui/text.hpp:9:class TextRenderer final {
+include/kiddos/ui/texture.hpp:8:class Texture final {
+include/kiddos/ui/image.hpp:10:enum class ImageFit {
+include/kiddos/ui/image.hpp:16:struct ImageGeometry {
+include/kiddos/ui/image.hpp:29:class Image final : public Element {
+include/kiddos/ui/label.hpp:10:enum class LabelAlignment {
+include/kiddos/ui/label.hpp:16:class Label final : public Element {
+include/kiddos/ui/panel.hpp:7:struct PanelStyle {
+include/kiddos/ui/panel.hpp:14:class Panel final : public Element {
+include/kiddos/ui/progress_bar.hpp:7:enum class ProgressOrientation {
+include/kiddos/ui/progress_bar.hpp:12:struct ProgressBarStyle {
+include/kiddos/ui/progress_bar.hpp:19:class ProgressBar final : public Element {
+include/kiddos/ui/toggle.hpp:9:struct ToggleStyle {
+include/kiddos/ui/toggle.hpp:16:class Toggle final : public Element {
+include/kiddos/ui/slider.hpp:9:struct SliderStyle {
+include/kiddos/ui/slider.hpp:16:class Slider final : public Element {
+include/kiddos/ui/theme.hpp:16:struct ThemeColors {
+include/kiddos/ui/theme.hpp:29:class Theme final {
+include/kiddos/ui/list_view.hpp:12:struct ListViewStyle {
+include/kiddos/ui/list_view.hpp:20:class ListView final : public Element {
+include/kiddos/ui/checkbox.hpp:11:struct CheckboxStyle {
+include/kiddos/ui/checkbox.hpp:21:class Checkbox final : public Element {
+include/kiddos/ui/radio_group.hpp:13:struct RadioGroupStyle {
+include/kiddos/ui/radio_group.hpp:23:class RadioGroup final : public Element {
+include/kiddos/ui/select.hpp:12:struct SelectStyle {
+include/kiddos/ui/select.hpp:21:class Select final : public Element {
+include/kiddos/ui/text_input.hpp:12:struct TextInputStyle {
+include/kiddos/ui/text_input.hpp:22:class TextInput final : public Element {
+include/kiddos/ui/text_input_interaction.hpp:9:enum class TextInputKey {
+include/kiddos/ui/text_input_interaction.hpp:18:class TextInputInteraction final {
+include/kiddos/ui/screen.hpp:8:class Screen {
+include/kiddos/ui/screen_manager.hpp:6:class ScreenManager final {
+
+===== SCREEN AND LAYOUT INFRASTRUCTURE =====
+     1	#pragma once
+     2	#include "kiddos/ui/container.hpp"
+     3	#include "kiddos/ui/controller.hpp"
+     4	#include "kiddos/ui/text_input_interaction.hpp"
+     5	#include "kiddos/platform/text_input_event.hpp"
+     6	
+     7	namespace kiddos::ui {
+     8	class Screen {
+     9	public:
+    10	    Screen() noexcept;
+    11	    virtual ~Screen() = default;
+    12	    Screen(const Screen&) = delete;
+    13	    Screen& operator=(const Screen&) = delete;
+    14	    Container& root() noexcept;
+    15	    FocusManager& focus() noexcept;
+    16	    virtual void on_enter() {}
+    17	    virtual void on_exit() {}
+    18	    virtual void on_suspend() {}
+    19	    virtual void on_resume() {}
+    20	    virtual void update(float) {}
+    21	    virtual void render(Renderer& renderer);
+    22	    bool handle_action(UIAction action);
+    23	    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+    24	private:
+    25	    Container root_;
+    26	    FocusManager focus_;
+    27	    ControllerInteraction controller_;
+    28	    TextInputInteraction text_input_;
+    29	};
+    30	}
+     1	#pragma once
+     2	#include "kiddos/ui/screen.hpp"
+     3	#include <memory>
+     4	#include <vector>
+     5	namespace kiddos::ui {
+     6	class ScreenManager final {
+     7	public:
+     8	    ~ScreenManager();
+     9	    ScreenManager() = default;
+    10	    ScreenManager(const ScreenManager&) = delete;
+    11	    ScreenManager& operator=(const ScreenManager&) = delete;
+    12	    bool push(std::unique_ptr<Screen> screen);
+    13	    bool pop();
+    14	    bool replace(std::unique_ptr<Screen> screen);
+    15	    void clear() noexcept;
+    16	    Screen* current() noexcept;
+    17	    const Screen* current() const noexcept;
+    18	    std::size_t depth() const noexcept;
+    19	    void update(float delta_seconds);
+    20	    void render(Renderer& renderer);
+    21	    bool handle_action(UIAction action);
+    22	    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+    23	private:
+    24	    std::vector<std::unique_ptr<Screen>> stack_;
+    25	};
+    26	}
+     1	#include "kiddos/ui/screen_manager.hpp"
+     2	namespace kiddos::ui {
+     3	ScreenManager::~ScreenManager() { clear(); }
+     4	bool ScreenManager::push(std::unique_ptr<Screen> screen) {
+     5	    if (!screen) return false;
+     6	    if (auto* active = current()) active->on_suspend();
+     7	    auto* next = screen.get();
+     8	    stack_.push_back(std::move(screen));
+     9	    next->on_enter();
+    10	    next->focus().focus_first();
+    11	    return true;
+    12	}
+    13	bool ScreenManager::pop() {
+    14	    if (stack_.empty()) return false;
+    15	    stack_.back()->on_exit();
+    16	    stack_.pop_back();
+    17	    if (auto* active = current()) { active->on_resume(); active->focus().focus_first(); }
+    18	    return true;
+    19	}
+    20	bool ScreenManager::replace(std::unique_ptr<Screen> screen) {
+    21	    if (!screen) return false;
+    22	    if (auto* active = current()) { active->on_exit(); stack_.pop_back(); }
+    23	    auto* next = screen.get();
+    24	    stack_.push_back(std::move(screen));
+    25	    next->on_enter();
+    26	    next->focus().focus_first();
+    27	    return true;
+    28	}
+    29	void ScreenManager::clear() noexcept {
+    30	    while (!stack_.empty()) { stack_.back()->on_exit(); stack_.pop_back(); }
+    31	}
+    32	Screen* ScreenManager::current() noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+    33	const Screen* ScreenManager::current() const noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+    34	std::size_t ScreenManager::depth() const noexcept { return stack_.size(); }
+    35	void ScreenManager::update(float dt) { if (auto* s=current()) s->update(dt); }
+    36	void ScreenManager::render(Renderer& r) { if (auto* s=current()) s->render(r); }
+    37	bool ScreenManager::handle_action(UIAction a) {
+    38	    if (a == UIAction::Back) return pop();
+    39	    auto* s=current(); return s ? s->handle_action(a) : false;
+    40	}
+    41	bool ScreenManager::handle_text_input(const ::kiddos::TextInputEvent& e) {
+    42	    auto* s=current(); return s ? s->handle_text_input(e) : false;
+    43	}
+    44	}
+     1	#include "kiddos/ui/layout.hpp"
+     2	
+     3	#include <algorithm>
+     4	#include <vector>
+     5	
+     6	namespace kiddos::ui {
+     7	
+     8	void StackLayout::apply(
+     9	    Container& container,
+    10	    Rect area,
+    11	    Axis axis,
+    12	    int gap,
+    13	    Insets padding
+    14	) noexcept {
+    15	    container.set_bounds(area);
+    16	
+    17	    gap = std::max(0, gap);
+    18	
+    19	    const int left = std::clamp(padding.left, 0, area.w);
+    20	    const int right = std::clamp(padding.right, 0, area.w - left);
+    21	    const int top = std::clamp(padding.top, 0, area.h);
+    22	    const int bottom = std::clamp(padding.bottom, 0, area.h - top);
+    23	
+    24	    const int content_x = area.x + left;
+    25	    const int content_y = area.y + top;
+    26	    const int content_w = std::max(0, area.w - left - right);
+    27	    const int content_h = std::max(0, area.h - top - bottom);
+    28	
+    29	    std::vector<Element*> visible;
+    30	
+    31	    for (std::size_t i = 0; i < container.child_count(); ++i) {
+    32	        Element* item = container.child(i);
+    33	        if (item && item->visible()) {
+    34	            visible.push_back(item);
+    35	        }
+    36	    }
+    37	
+    38	    if (visible.empty()) return;
+    39	
+    40	    const int main_size =
+    41	        axis == Axis::Horizontal ? content_w : content_h;
+    42	
+    43	    const int cross_size =
+    44	        axis == Axis::Horizontal ? content_h : content_w;
+    45	
+    46	    const int total_gaps =
+    47	        gap * static_cast<int>(visible.size() - 1);
+    48	
+    49	    const int available = std::max(0, main_size - total_gaps);
+    50	    const int base_size = available / static_cast<int>(visible.size());
+    51	    const int remainder = available % static_cast<int>(visible.size());
+    52	
+    53	    int position = axis == Axis::Horizontal ? content_x : content_y;
+    54	
+    55	    for (std::size_t i = 0; i < visible.size(); ++i) {
+    56	        const int item_size =
+    57	            base_size + (static_cast<int>(i) < remainder ? 1 : 0);
+    58	
+    59	        if (axis == Axis::Horizontal) {
+    60	            visible[i]->set_bounds({
+    61	                position, content_y, item_size, cross_size
+    62	            });
+    63	        } else {
+    64	            visible[i]->set_bounds({
+    65	                content_x, position, cross_size, item_size
+    66	            });
+    67	        }
+    68	
+    69	        position += item_size + gap;
+    70	    }
+    71	}
+    72	
+    73	} // namespace kiddos::ui
+
+===== SCREEN HEADERS =====
+     1	#pragma once
+     2	
+     3	#include "kiddos/app/platform.hpp"
+     4	#include "kiddos/ui/image.hpp"
+     5	#include "kiddos/ui/screen.hpp"
+     6	#include "kiddos/ui/texture.hpp"
+     7	
+     8	#include <SDL.h>
+     9	
+    10	#include <array>
+    11	
+    12	namespace kiddos::app {
+    13	
+    14	class HomeCarouselScreen final : public ui::Screen {
+    15	public:
+    16	    static constexpr int game_count = static_cast<int>(platform_count);
+    17	
+    18	    explicit HomeCarouselScreen(SDL_Renderer* renderer);
+    19	    ~HomeCarouselScreen() override;
+    20	
+    21	    void set_selected_game(int index);
+    22	    int selected_game() const noexcept { return selected_game_; }
+    23	    void update(float delta_seconds) override;
+    24	
+    25	private:
+    26	    std::array<ui::Texture, game_count> game_textures_{};
+    27	
+    28	    static constexpr std::size_t visible_slot_count_ = 3;
+    29	    std::array<ui::Image*, visible_slot_count_> game_images_{};
+    30	    std::array<ui::Rect, visible_slot_count_> target_bounds_{};
+    31	    std::array<int, visible_slot_count_> target_opacity_{};
+    32	
+    33	    int selected_game_ = -1;
+    34	};
+    35	
+    36	} // namespace kiddos::app
+     1	#pragma once
+     2	
+     3	#include "kiddos/ui/button.hpp"
+     4	#include "kiddos/ui/font.hpp"
+     5	#include "kiddos/ui/image.hpp"
+     6	#include "kiddos/ui/screen.hpp"
+     7	#include "kiddos/ui/texture.hpp"
+     8	
+     9	#include <SDL.h>
+    10	
+    11	namespace kiddos::app {
+    12	
+    13	class SelectedGameScreen final : public ui::Screen {
+    14	public:
+    15	    SelectedGameScreen(SDL_Renderer* renderer, int selected_game);
+    16	    ~SelectedGameScreen() override;
+    17	
+    18	    int selected_game() const noexcept { return selected_game_; }
+    19	    bool play_requested() const noexcept { return play_requested_; }
+    20	
+    21	private:
+    22	    int selected_game_ = 0;
+    23	    bool play_requested_ = false;
+    24	
+    25	    ui::Texture artwork_texture_;
+    26	    ui::Image* artwork_ = nullptr;
+    27	    ui::Texture hints_texture_;
+    28	    ui::Image* hints_ = nullptr;
+    29	    ui::Font font_;
+    30	    ui::Button* play_button_ = nullptr;
+    31	};
+    32	
+    33	} // namespace kiddos::app
+     1	#pragma once
+     2	
+     3	#include <SDL.h>
+     4	#include <SDL_ttf.h>
+     5	
+     6	namespace kiddos::app {
+     7	
+     8	class SharedShell final {
+     9	public:
+    10	    SharedShell() = default;
+    11	    ~SharedShell();
+    12	
+    13	    SharedShell(const SharedShell&) = delete;
+    14	    SharedShell& operator=(const SharedShell&) = delete;
+    15	
+    16	    bool initialize(SDL_Renderer* renderer);
+    17	    void render_header();
+    18	    void render_footer(bool selected_game);
+    19	    void reset() noexcept;
+    20	
+    21	private:
+    22	    void draw_text(const char* text, int x, int y);
+    23	
+    24	    SDL_Renderer* renderer_ = nullptr;
+    25	    SDL_Texture* logo_ = nullptr;
+    26	    SDL_Texture* hints_ = nullptr;
+    27	    TTF_Font* font_ = nullptr;
+    28	};
+    29	
+    30	} // namespace kiddos::app
+
+===== SCREEN TEST COVERAGE =====
+     1	#include "kiddos/app/home_carousel_screen.hpp"
+     2	
+     3	#include "kiddos/ui/image.hpp"
+     4	#include "kiddos/ui/renderer.hpp"
+     5	
+     6	#include <SDL.h>
+     7	#include <SDL_image.h>
+     8	
+     9	#include <cassert>
+    10	#include <cstdint>
+    11	#include <unistd.h>
+    12	
+    13	namespace {
+    14	
+    15	using kiddos::ui::Color;
+    16	using kiddos::ui::Rect;
+    17	
+    18	Color pixel(SDL_Surface* surface, int x, int y) {
+    19	    assert(SDL_LockSurface(surface) == 0);
+    20	    const auto* row = static_cast<const std::uint8_t*>(surface->pixels)
+    21	        + y * surface->pitch;
+    22	    const auto* value = reinterpret_cast<const std::uint32_t*>(row) + x;
+    23	    std::uint8_t r = 0, g = 0, b = 0, a = 0;
+    24	    SDL_GetRGBA(*value, surface->format, &r, &g, &b, &a);
+    25	    SDL_UnlockSurface(surface);
+    26	    return {r, g, b, a};
+    27	}
+    28	
+    29	bool same_color(const Color& a, const Color& b) {
+    30	    return a.r == b.r && a.g == b.g &&
+    31	           a.b == b.b && a.a == b.a;
+    32	}
+    33	
+    34	bool any_pixel_different(
+    35	    SDL_Surface* surface,
+    36	    const Rect& rect,
+    37	    const Color& color
+    38	) {
+    39	    for (int y = rect.y; y < rect.y + rect.h; ++y) {
+    40	        for (int x = rect.x; x < rect.x + rect.w; ++x) {
+    41	            if (!same_color(pixel(surface, x, y), color)) return true;
+    42	        }
+    43	    }
+    44	    return false;
+    45	}
+    46	
+    47	const kiddos::ui::Element* find_by_bounds(
+    48	    kiddos::ui::Screen& screen,
+    49	    const Rect& bounds
+    50	) {
+    51	    for (std::size_t i = 0; i < screen.root().child_count(); ++i) {
+    52	        const auto* child = screen.root().child(i);
+    53	        if (!child) continue;
+    54	
+    55	        const Rect actual = child->bounds();
+    56	        if (actual.x == bounds.x && actual.y == bounds.y &&
+    57	            actual.w == bounds.w && actual.h == bounds.h) {
+    58	            return child;
+    59	        }
+    60	    }
+    61	    return nullptr;
+    62	}
+    63	
+    64	void test_structure_and_selection() {
+    65	    kiddos::app::HomeCarouselScreen screen(nullptr);
+    66	
+    67	    // The shared shell owns the header, status indicators, and footer.
+    68	    // The carousel itself owns only its three game-cover slots.
+    69	    assert(screen.root().child_count() == 3);
+    70	    assert(screen.selected_game() == 1);
+    71	
+    72	    screen.set_selected_game(0);
+    73	    assert(screen.selected_game() == 0);
+    74	    assert(screen.selected_game() == 0);
+    75	
+    76	    screen.set_selected_game(3);
+    77	    assert(screen.selected_game() == 3);
+    78	
+    79	    screen.set_selected_game(4);
+    80	    assert(screen.selected_game() == 3);
+    81	
+    82	    screen.set_selected_game(0);
+    83	    assert(screen.selected_game() == 0);
+    84	
+    85	    // The transition can be advanced to completion without an SDL renderer.
+    86	    screen.update(1.0f);
+    87	}
+    88	
+    89	void test_renders_minimal_carousel() {
+    90	    assert(SDL_Init(0) == 0);
+    91	    IMG_Init(IMG_INIT_PNG);
+    92	    assert(chdir(KIDDOS_SOURCE_DIR) == 0);
+    93	
+    94	    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+    95	        0, 720, 720, 32, SDL_PIXELFORMAT_RGBA32);
+    96	    assert(surface);
+    97	
+    98	    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+    99	    assert(native);
+   100	    SDL_SetRenderDrawBlendMode(native, SDL_BLENDMODE_BLEND);
+   101	
+   102	    {
+   103	        kiddos::ui::Renderer renderer(native);
+   104	        kiddos::app::HomeCarouselScreen screen(native);
+   105	
+   106	        const Color background{8, 15, 35, 255};
+   107	        renderer.clear(background);
+   108	        screen.render(renderer);
+   109	
+   110	        // The screen is no longer composed of large framed panels.
+   111	        assert(same_color(pixel(surface, 540, 160), background));
+   112	
+   113	        // All three game-cover positions are visible.
+   114	        assert(any_pixel_different(surface, {220, 158, 280, 280}, background));
+   115	        assert(any_pixel_different(surface, {24, 250, 128, 128}, background));
+   116	        assert(any_pixel_different(surface, {568, 250, 128, 128}, background));
+   117	
+   118	        // Selecting another game updates all three visible cover slots.
+   119	        screen.set_selected_game(0);
+   120	        screen.update(0.05f);
+   121	        screen.render(renderer);
+   122	
+   123	        screen.update(1.0f);
+   124	        screen.render(renderer);
+   125	
+   126	        assert(any_pixel_different(surface, {220, 158, 280, 280}, background));
+   127	    }
+   128	
+   129	    SDL_DestroyRenderer(native);
+   130	    SDL_FreeSurface(surface);
+   131	    IMG_Quit();
+   132	    SDL_Quit();
+   133	}
+   134	
+   135	} // namespace
+   136	
+   137	int main() {
+   138	    test_structure_and_selection();
+   139	    test_renders_minimal_carousel();
+   140	    return 0;
+   141	}
+     1	#include "kiddos/app/selected_game_screen.hpp"
+     2	
+     3	#include "kiddos/ui/button.hpp"
+     4	#include "kiddos/ui/image.hpp"
+     5	#include "kiddos/ui/label.hpp"
+     6	#include "kiddos/ui/screen_manager.hpp"
+     7	
+     8	#include <SDL.h>
+     9	#include <SDL_image.h>
+    10	
+    11	#include <cassert>
+    12	#include <unistd.h>
+    13	
+    14	namespace {
+    15	
+    16	void test_screen_structure_and_play_action() {
+    17	    kiddos::app::SelectedGameScreen screen(nullptr, 1);
+    18	
+    19	    assert(screen.selected_game() == 1);
+    20	    assert(!screen.play_requested());
+    21	    assert(screen.root().child_count() == 3);
+    22	
+    23	    auto* artwork = dynamic_cast<kiddos::ui::Image*>(
+    24	        screen.root().child(0));
+    25	    auto* hints = dynamic_cast<kiddos::ui::Image*>(
+    26	        screen.root().child(1));
+    27	    auto* play = dynamic_cast<kiddos::ui::Button*>(
+    28	        screen.root().child(2));
+    29	    assert(artwork);
+    30	    assert(hints);
+    31	    assert(hints->bounds().x == 0);
+    32	    assert(hints->bounds().y == 678);
+    33	    assert(hints->bounds().w == 720);
+    34	    assert(hints->bounds().h == 42);
+    35	    assert(artwork->bounds().x == 90);
+    36	    assert(artwork->bounds().y == 85);
+    37	    assert(artwork->bounds().w == 540);
+    38	    assert(artwork->bounds().h == 450);
+    39	
+    40	    assert(play);
+    41	    assert(play->focusable());
+    42	    assert(play->label() == "PLAY");
+    43	    assert(play->bounds().x == 190);
+    44	    assert(play->bounds().y == 545);
+    45	
+    46	    kiddos::ui::ScreenManager manager;
+    47	    assert(manager.push(std::make_unique<kiddos::app::SelectedGameScreen>(
+    48	        nullptr, 1)));
+    49	    assert(manager.handle_action(kiddos::ui::UIAction::Confirm));
+    50	
+    51	    auto* active =
+    52	        dynamic_cast<kiddos::app::SelectedGameScreen*>(manager.current());
+    53	    assert(active);
+    54	    assert(active->play_requested());
+    55	}
+    56	
+    57	void test_invalid_game_index_is_safe() {
+    58	    kiddos::app::SelectedGameScreen negative(nullptr, -1);
+    59	    kiddos::app::SelectedGameScreen too_large(nullptr, 999);
+    60	
+    61	    assert(negative.selected_game() == 0);
+    62	    assert(too_large.selected_game() == 0);
+    63	}
+    64	
+    65	void test_artwork_renders() {
+    66	    assert(SDL_Init(0) == 0);
+    67	    IMG_Init(IMG_INIT_PNG);
+    68	    assert(chdir(KIDDOS_SOURCE_DIR) == 0);
+    69	
+    70	    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+    71	        0, 720, 720, 32, SDL_PIXELFORMAT_RGBA32);
+    72	    assert(surface);
+    73	
+    74	    SDL_Renderer* native = SDL_CreateSoftwareRenderer(surface);
+    75	    assert(native);
+    76	
+    77	    {
+    78	        kiddos::ui::Renderer renderer(native);
+    79	        kiddos::app::SelectedGameScreen screen(native, 1);
+    80	
+    81	        renderer.clear({8, 15, 35, 255});
+    82	        screen.render(renderer);
+    83	
+    84	        // The artwork area is populated by the selected game's cover.
+    85	        const auto* bytes =
+    86	            static_cast<const unsigned char*>(surface->pixels);
+    87	        bool changed = false;
+    88	        for (int y = 85; y < 535 && !changed; ++y) {
+    89	            for (int x = 90; x < 630; ++x) {
+    90	                const auto* pixel = bytes + y * surface->pitch + x * 4;
+    91	                if (pixel[0] != 8 || pixel[1] != 15 || pixel[2] != 35) {
+    92	                    changed = true;
+    93	                    break;
+    94	                }
+    95	            }
+    96	        }
+    97	        assert(changed);
+    98	    }
+    99	
+   100	    SDL_DestroyRenderer(native);
+   101	    SDL_FreeSurface(surface);
+   102	    IMG_Quit();
+   103	    SDL_Quit();
+   104	}
+   105	
+   106	} // namespace
+   107	
+   108	int main() {
+   109	    test_screen_structure_and_play_action();
+   110	    test_invalid_game_index_is_safe();
+   111	    test_artwork_renders();
+   112	    return 0;
+   113	}
+
+===== UI COMPONENT TEST COVERAGE =====
+ui_button_test.cpp
+ui_checkbox_test.cpp
+ui_controller_test.cpp
+ui_focus_test.cpp
+ui_geometry_test.cpp
+ui_image_test.cpp
+ui_label_test.cpp
+ui_layout_test.cpp
+ui_list_view_test.cpp
+ui_panel_test.cpp
+ui_progress_bar_test.cpp
+ui_radio_group_test.cpp
+ui_renderer_test.cpp
+ui_screen_manager_test.cpp
+ui_select_test.cpp
+ui_slider_test.cpp
+ui_text_input_interaction_test.cpp
+ui_text_input_test.cpp
+ui_theme_test.cpp
+ui_toggle_test.cpp
+
+===== SCREEN MANAGER AND LAYOUT TESTS =====
+     1	#include "kiddos/ui/screen_manager.hpp"
+     2	
+     3	#include <cassert>
+     4	#include <memory>
+     5	
+     6	struct Counts {
+     7	    int entered = 0;
+     8	    int exited = 0;
+     9	    int suspended = 0;
+    10	    int resumed = 0;
+    11	    int activated = 0;
+    12	};
+    13	
+    14	class ProbeScreen final : public kiddos::ui::Screen {
+    15	public:
+    16	    explicit ProbeScreen(Counts& counts) : counts_(counts) {}
+    17	
+    18	    void on_enter() override {
+    19	        ++counts_.entered;
+    20	        auto& button = root().add<kiddos::ui::Button>("Activate");
+    21	        button.set_on_activate([this] { ++counts_.activated; });
+    22	    }
+    23	
+    24	    void on_exit() override { ++counts_.exited; }
+    25	    void on_suspend() override { ++counts_.suspended; }
+    26	    void on_resume() override { ++counts_.resumed; }
+    27	
+    28	private:
+    29	    Counts& counts_;
+    30	};
+    31	
+    32	int main() {
+    33	    using namespace kiddos::ui;
+    34	
+    35	    ScreenManager manager;
+    36	    Counts first_counts;
+    37	    Counts second_counts;
+    38	    Counts third_counts;
+    39	    Counts fourth_counts;
+    40	
+    41	    assert(manager.depth() == 0);
+    42	    assert(manager.current() == nullptr);
+    43	    assert(!manager.pop());
+    44	    assert(!manager.handle_action(UIAction::Back));
+    45	
+    46	    auto first = std::make_unique<ProbeScreen>(first_counts);
+    47	    auto* first_ptr = first.get();
+    48	    assert(manager.push(std::move(first)));
+    49	    assert(manager.current() == first_ptr);
+    50	    assert(manager.depth() == 1);
+    51	    assert(first_counts.entered == 1);
+    52	
+    53	    assert(manager.handle_action(UIAction::Confirm));
+    54	    assert(first_counts.activated == 1);
+    55	
+    56	    auto second = std::make_unique<ProbeScreen>(second_counts);
+    57	    auto* second_ptr = second.get();
+    58	    assert(manager.push(std::move(second)));
+    59	    assert(manager.current() == second_ptr);
+    60	    assert(manager.depth() == 2);
+    61	    assert(first_counts.suspended == 1);
+    62	    assert(second_counts.entered == 1);
+    63	
+    64	    assert(manager.handle_action(UIAction::Confirm));
+    65	    assert(second_counts.activated == 1);
+    66	
+    67	    assert(manager.handle_action(UIAction::Back));
+    68	    assert(manager.current() == first_ptr);
+    69	    assert(manager.depth() == 1);
+    70	    assert(second_counts.exited == 1);
+    71	    assert(first_counts.resumed == 1);
+    72	
+    73	    auto third = std::make_unique<ProbeScreen>(third_counts);
+    74	    auto* third_ptr = third.get();
+    75	    assert(manager.replace(std::move(third)));
+    76	    assert(manager.current() == third_ptr);
+    77	    assert(manager.depth() == 1);
+    78	    assert(first_counts.exited == 1);
+    79	    assert(third_counts.entered == 1);
+    80	
+    81	    auto fourth = std::make_unique<ProbeScreen>(fourth_counts);
+    82	    assert(manager.push(std::move(fourth)));
+    83	    assert(manager.depth() == 2);
+    84	    assert(third_counts.suspended == 1);
+    85	
+    86	    manager.clear();
+    87	    assert(manager.depth() == 0);
+    88	    assert(manager.current() == nullptr);
+    89	    assert(fourth_counts.exited == 1);
+    90	    assert(third_counts.exited == 1);
+    91	
+    92	    assert(!manager.handle_action(UIAction::Confirm));
+    93	    assert(!manager.handle_action(UIAction::Back));
+    94	
+    95	    return 0;
+    96	}
+     1	#include "kiddos/ui/layout.hpp"
+     2	
+     3	#include <cassert>
+     4	
+     5	class TestElement final : public kiddos::ui::Element {
+     6	private:
+     7	    void draw(kiddos::ui::Renderer&) override {}
+     8	};
+     9	
+    10	int main() {
+    11	    using namespace kiddos::ui;
+    12	
+    13	    Container row;
+    14	
+    15	    auto& first = row.add<TestElement>();
+    16	    auto& second = row.add<TestElement>();
+    17	    auto& third = row.add<TestElement>();
+    18	
+    19	    StackLayout::apply(
+    20	        row,
+    21	        {0, 0, 720, 200},
+    22	        Axis::Horizontal,
+    23	        10,
+    24	        {10, 20, 10, 20}
+    25	    );
+    26	
+    27	    assert(first.bounds().x == 10);
+    28	    assert(first.bounds().y == 20);
+    29	    assert(first.bounds().w == 227);
+    30	    assert(first.bounds().h == 160);
+    31	
+    32	    assert(second.bounds().x == 247);
+    33	    assert(second.bounds().w == 227);
+    34	
+    35	    assert(third.bounds().x == 484);
+    36	    assert(third.bounds().w == 226);
+    37	
+    38	    second.set_visible(false);
+    39	
+    40	    StackLayout::apply(
+    41	        row,
+    42	        {0, 0, 600, 100},
+    43	        Axis::Vertical,
+    44	        10
+    45	    );
+    46	
+    47	    assert(first.bounds().h == 45);
+    48	    assert(third.bounds().y == 55);
+    49	    assert(third.bounds().h == 45);
+    50	
+    51	    assert(row.child_count() == 3);
+    52	    assert(row.child(3) == nullptr);
+    53	
+    54	    Container empty;
+    55	    StackLayout::apply(empty, {0, 0, 100, 100}, Axis::Vertical);
+    56	    assert(empty.child_count() == 0);
+    57	
+    58	    return 0;
+    59	}
