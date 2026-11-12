@@ -1,0 +1,106 @@
+===== ORIGINAL WORDMARK =====
+assets/artwork/generated/kiddos-wordmark.png: PNG image data, 500 x 92, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/kiddos-wordmark.png PNG 500x92 500x92+0+0 8-bit sRGB 4368B 0.000u 0:00.000
+
+===== ORIGINAL NAVIGATION HINTS =====
+assets/artwork/generated/navigation-hints.png: PNG image data, 720 x 34, 8-bit/color RGBA, non-interlaced
+assets/artwork/generated/navigation-hints.png PNG 720x34 720x34+0+0 8-bit sRGB 7190B 0.000u 0:00.000
+
+===== RELATED ORIGINAL ASSETS =====
+assets/artwork/source/branding/kiddos-wordmark.svg
+assets/artwork/source/branding/navigation-hints.svg
+assets/artwork/generated/kiddos-wordmark.png
+assets/artwork/generated/navigation-hints.png
+
+===== ORIGINAL CAROUSEL STATUS INDICATOR SOURCE =====
+// Draws a circular arc as short connected line segments, used for the
+// sound waves next to the speaker icon.
+void draw_arc(
+    ui::Renderer& renderer,
+    ui::Point center,
+    int radius,
+    double start_degrees,
+    double end_degrees,
+    ui::Color color
+) {
+    constexpr double kPi = 3.14159265358979323846;
+
+    const int steps = std::max(2, radius * 2);
+    const double delta = (end_degrees - start_degrees) / steps;
+
+    const auto point_at = [&](double degrees) {
+        const double radians = degrees * kPi / 180.0;
+        return ui::Point{
+            center.x + static_cast<int>(std::lround(
+                radius * std::cos(radians))),
+            center.y + static_cast<int>(std::lround(
+                radius * std::sin(radians)))
+        };
+    };
+
+    ui::Point previous = point_at(start_degrees);
+    for (int step = 1; step <= steps; ++step) {
+        const ui::Point point = point_at(start_degrees + delta * step);
+        renderer.draw_line(previous, point, color);
+        previous = point;
+    }
+}
+
+// Draws the sound and battery indicators in the top corners of the screen,
+// matching SDLPlatform::draw_status.
+class StatusIndicators final : public ui::Element {
+protected:
+    void draw(ui::Renderer& renderer) override {
+        const ui::Color body{205, 222, 255, 220};
+        const ui::Color waves{80, 157, 255, 220};
+        const ui::Color charge{67, 157, 255, 240};
+
+        // Sound status: speaker cabinet, flared cone, and two sound waves.
+        renderer.fill_rect({25, 33, 8, 14}, body);
+        fill_speaker_cone(renderer, 33, 33, 46, 44, 27, 52, body);
+
+        draw_arc(renderer, {47, 39}, 6, -50.0, 50.0, waves);
+        draw_arc(renderer, {47, 39}, 12, -50.0, 50.0, waves);
+
+        // Battery status: outline, terminal, charge fill.
+        renderer.outline_rect({657, 27, 34, 19}, body);
+        renderer.fill_rect({691, 33, 4, 7}, body);
+        renderer.fill_rect({661, 31, 22, 11}, charge);
+    }
+};
+
+} // namespace
+
+HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+    for (int index = 0; index < game_count; ++index) {
+        artworks_[static_cast<std::size_t>(index)].load(
+            renderer, artwork_paths[static_cast<std::size_t>(index)], false);
+    }
+    for (int index = 0; index < game_count; ++index) {
+        title_textures_[static_cast<std::size_t>(index)].load(
+            renderer, title_paths[static_cast<std::size_t>(index)], false);
+    }
+    wordmark_texture_.load(renderer, wordmark_path, false);
+    hints_texture_.load(renderer, hints_path, false);
+
+    // Smaller neighboring cards first, drawn behind the main card.
+    auto& side_left = root().add<ui::Panel>(
+        ui::PanelStyle{side_fill, side_border, 1, 24});
+    side_left.set_bounds(side_left_card);
+
+    side_left_art_ = &root().add<ui::Image>();
+
+===== CURRENT WORKING TREE =====
+ M CMakeLists.txt
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/application.cpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/selected_game_screen.hpp
+?? include/kiddos/app/shared_shell.hpp
+?? src/app/selected_game_screen.cpp
+?? src/app/shared_shell.cpp
+?? tests/app_selected_game_screen_test.cpp
