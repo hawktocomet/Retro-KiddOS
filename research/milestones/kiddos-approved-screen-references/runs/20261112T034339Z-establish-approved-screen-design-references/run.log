@@ -1,0 +1,26 @@
+=== VERIFY SOURCE SCREENSHOTS ===
+
+=== APPROVED REFERENCE FILES ===
+total 656K
+-rw-r--r-- 1 hawk hawk 302K Nov 11 22:43 GameCarouselScreen.png
+-rw-r--r-- 1 hawk hawk 351K Nov 11 22:43 SelectedGameScreen.png
+
+=== SHA256 CHECKSUMS ===
+d7bdd004ce6b9440ca615f29cc1c0efa531dcaf51db5d857fc302705502c9bf4  design/reference/approved-screens/GameCarouselScreen.png
+86ea1cc478cfe6926c4904e42bdad80597d6236137afbcf02bf4d882bef81ecd  design/reference/approved-screens/SelectedGameScreen.png
+
+=== DESIGN REFERENCE INDEX ===
+# KiddOS Design References
+
+This directory contains approved visual references for KiddOS.
+
+## Approved Screens
+
+These screenshots are the current visual source of truth:
+
+- `approved-screens/GameCarouselScreen.png` — Final Game Carousel screen.
+- `approved-screens/SelectedGameScreen.png` — Final Selected Game screen.
+
+Use these references when implementing or refining screens to maintain
+visual consistency. Replace a reference only when a new design is
+explicitly approved.
