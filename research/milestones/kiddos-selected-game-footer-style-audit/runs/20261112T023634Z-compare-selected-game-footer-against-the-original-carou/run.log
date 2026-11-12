@@ -1,0 +1,372 @@
+===== SHARED SHELL FOOTER IMPLEMENTATION =====
+104-            const double degrees = -50.0 + 100.0 * step / steps;
+105-            const double radians = degrees * pi / 180.0;
+106-            SDL_Point point{
+107-                47 + static_cast<int>(std::lround(radius * std::cos(radians))),
+108-                39 + static_cast<int>(std::lround(radius * std::sin(radians)))
+109-            };
+110-            if (step > 0) {
+111-                SDL_RenderDrawLine(renderer_, previous.x, previous.y,
+112-                                   point.x, point.y);
+113-            }
+114-            previous = point;
+115-        }
+116-    };
+117-    set_color(renderer_, waves);
+118-    draw_arc(6);
+119-    draw_arc(12);
+120-
+121-    // Original battery outline, terminal, and charge fill.
+122-    set_color(renderer_, body);
+123-    SDL_Rect battery{657, 27, 34, 19};
+124-    SDL_Rect terminal{691, 33, 4, 7};
+125-    SDL_RenderDrawRect(renderer_, &battery);
+126-    SDL_RenderFillRect(renderer_, &terminal);
+127-
+128-    set_color(renderer_, charge);
+129-    SDL_Rect fill{661, 31, 22, 11};
+130-    SDL_RenderFillRect(renderer_, &fill);
+131-
+132-    // Original wordmark dimensions and placement.
+133-    if (logo_) {
+134-        SDL_Rect destination{195, 5, 330, 61};
+135-        SDL_RenderCopy(renderer_, logo_, nullptr, &destination);
+136-    }
+137-}
+138-
+139:void SharedShell::render_footer(bool selected_game) {
+140-    if (!renderer_) return;
+141-
+142-    // The carousel uses its original full-width navigation artwork.
+143-    if (!selected_game) {
+144-        if (hints_) {
+145-            SDL_Rect destination{0, 682, 720, 34};
+146-            SDL_RenderCopy(renderer_, hints_, nullptr, &destination);
+147-        }
+148-        return;
+149-    }
+150-
+151-    // Selected Game keeps its Play / Back controls.
+152-    set_color(renderer_, navy);
+153:    SDL_Rect footer{0, 650, 720, 70};
+154:    SDL_RenderFillRect(renderer_, &footer);
+155-
+156-    set_color(renderer_, blue);
+157-    SDL_RenderDrawLine(renderer_, 0, 650, 720, 650);
+158-
+159:    draw_text("B  BACK", 155, 674);
+160:    draw_text("A  SELECT", 485, 674);
+161-}
+162-
+163-void SharedShell::reset() noexcept {
+164-    if (logo_) {
+165-        SDL_DestroyTexture(logo_);
+166-        logo_ = nullptr;
+167-    }
+168-    if (hints_) {
+169-        SDL_DestroyTexture(hints_);
+170-        hints_ = nullptr;
+171-    }
+172-    if (font_) {
+173-        TTF_CloseFont(font_);
+174-        font_ = nullptr;
+175-    }
+176-    renderer_ = nullptr;
+177-}
+178-
+179-} // namespace kiddos::app
+
+===== SHARED SHELL HEADER =====
+#include "kiddos/app/shared_shell.hpp"
+
+#include <SDL_image.h>
+#include <algorithm>
+#include <cmath>
+
+namespace kiddos::app {
+namespace {
+
+constexpr SDL_Color navy{12, 22, 42, 255};
+constexpr SDL_Color blue{75, 174, 255, 255};
+constexpr SDL_Color white{235, 243, 255, 255};
+constexpr SDL_Color muted{145, 173, 207, 255};
+
+void set_color(SDL_Renderer* renderer, SDL_Color color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+}
+
+} // namespace
+
+SharedShell::~SharedShell() {
+    reset();
+}
+
+bool SharedShell::initialize(SDL_Renderer* renderer) {
+    reset();
+    if (!renderer) return false;
+
+    renderer_ = renderer;
+
+    SDL_Surface* logo_surface =
+        IMG_Load("assets/artwork/generated/kiddos-wordmark.png");
+    if (logo_surface) {
+        logo_ = SDL_CreateTextureFromSurface(renderer_, logo_surface);
+        SDL_FreeSurface(logo_surface);
+    }
+
+    SDL_Surface* hints_surface =
+        IMG_Load("assets/artwork/generated/navigation-hints.png");
+    if (hints_surface) {
+        hints_ = SDL_CreateTextureFromSurface(renderer_, hints_surface);
+        SDL_FreeSurface(hints_surface);
+    }
+
+    const char* font_paths[] = {
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf"
+    };
+
+    for (const char* path : font_paths) {
+        font_ = TTF_OpenFont(path, 20);
+        if (font_) break;
+    }
+
+    return true;
+}
+
+void SharedShell::draw_text(const char* text, int x, int y) {
+    if (!renderer_ || !font_ || !text) return;
+
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(font_, text, white);
+    if (!surface) return;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
+    if (texture) {
+        SDL_Rect destination{x, y, surface->w, surface->h};
+        SDL_RenderCopy(renderer_, texture, nullptr, &destination);
+        SDL_DestroyTexture(texture);
+    }
+    SDL_FreeSurface(surface);
+}
+
+void SharedShell::render_header() {
+    if (!renderer_) return;
+
+    const SDL_Color body{205, 222, 255, 220};
+    const SDL_Color waves{80, 157, 255, 220};
+    const SDL_Color charge{67, 157, 255, 240};
+
+    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+
+    // Original speaker cabinet and flared cone.
+    set_color(renderer_, body);
+    SDL_Rect cabinet{25, 33, 8, 14};
+    SDL_RenderFillRect(renderer_, &cabinet);
+
+    for (int y = 27; y <= 52; ++y) {
+        int left = 33;
+        if (y < 33) {
+            left += (33 - y) * 11 / 6;
+        } else if (y > 46) {
+            left += (y - 46) * 11 / 6;
+        }
+        SDL_RenderDrawLine(renderer_, left, y, 44, y);
+    }
+
+    // Original two curved sound waves.
+    const auto draw_arc = [&](int radius) {
+        constexpr double pi = 3.14159265358979323846;
+        const int steps = std::max(2, radius * 2);
+        SDL_Point previous{};
+        for (int step = 0; step <= steps; ++step) {
+            const double degrees = -50.0 + 100.0 * step / steps;
+            const double radians = degrees * pi / 180.0;
+            SDL_Point point{
+                47 + static_cast<int>(std::lround(radius * std::cos(radians))),
+                39 + static_cast<int>(std::lround(radius * std::sin(radians)))
+            };
+            if (step > 0) {
+                SDL_RenderDrawLine(renderer_, previous.x, previous.y,
+                                   point.x, point.y);
+            }
+            previous = point;
+        }
+    };
+    set_color(renderer_, waves);
+    draw_arc(6);
+    draw_arc(12);
+
+    // Original battery outline, terminal, and charge fill.
+    set_color(renderer_, body);
+    SDL_Rect battery{657, 27, 34, 19};
+    SDL_Rect terminal{691, 33, 4, 7};
+    SDL_RenderDrawRect(renderer_, &battery);
+    SDL_RenderFillRect(renderer_, &terminal);
+
+    set_color(renderer_, charge);
+    SDL_Rect fill{661, 31, 22, 11};
+    SDL_RenderFillRect(renderer_, &fill);
+
+    // Original wordmark dimensions and placement.
+    if (logo_) {
+        SDL_Rect destination{195, 5, 330, 61};
+        SDL_RenderCopy(renderer_, logo_, nullptr, &destination);
+    }
+}
+
+void SharedShell::render_footer(bool selected_game) {
+    if (!renderer_) return;
+
+    // The carousel uses its original full-width navigation artwork.
+    if (!selected_game) {
+        if (hints_) {
+            SDL_Rect destination{0, 682, 720, 34};
+            SDL_RenderCopy(renderer_, hints_, nullptr, &destination);
+        }
+        return;
+    }
+
+    // Selected Game keeps its Play / Back controls.
+    set_color(renderer_, navy);
+    SDL_Rect footer{0, 650, 720, 70};
+    SDL_RenderFillRect(renderer_, &footer);
+
+    set_color(renderer_, blue);
+    SDL_RenderDrawLine(renderer_, 0, 650, 720, 650);
+
+    draw_text("B  BACK", 155, 674);
+    draw_text("A  SELECT", 485, 674);
+}
+
+void SharedShell::reset() noexcept {
+    if (logo_) {
+        SDL_DestroyTexture(logo_);
+        logo_ = nullptr;
+    }
+    if (hints_) {
+        SDL_DestroyTexture(hints_);
+        hints_ = nullptr;
+    }
+    if (font_) {
+        TTF_CloseFont(font_);
+        font_ = nullptr;
+    }
+    renderer_ = nullptr;
+}
+
+} // namespace kiddos::app
+
+===== CAROUSEL FOOTER REFERENCES =====
+
+===== SELECTED GAME SCREEN =====
+#include "kiddos/app/selected_game_screen.hpp"
+
+#include "kiddos/app/platform.hpp"
+
+#include <array>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr std::array<const char*, platform_count> artwork_paths{{
+    "assets/artwork/generated/boxart/gb-tetris.png",
+    "assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png",
+    "assets/artwork/generated/boxart/snes-super-mario-world.png",
+    "assets/artwork/generated/boxart/arcade-pac-man.png"
+}};
+
+void load_ui_font(ui::Font& font, int size) {
+    constexpr std::array<const char*, 3> paths{{
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf"
+    }};
+
+    for (const char* path : paths) {
+        if (font.load(path, size)) return;
+    }
+}
+
+} // namespace
+
+SelectedGameScreen::SelectedGameScreen(
+    SDL_Renderer* renderer,
+    int selected_game
+) : selected_game_(selected_game) {
+    if (selected_game_ < 0 ||
+        selected_game_ >= static_cast<int>(platform_count)) {
+        selected_game_ = 0;
+    }
+
+    artwork_texture_.load(
+        renderer,
+        artwork_paths[static_cast<std::size_t>(selected_game_)],
+        false
+    );
+
+    auto& artwork = root().add<ui::Image>(&artwork_texture_);
+    artwork.set_bounds({90, 85, 540, 450});
+    artwork.set_fit(ui::ImageFit::contain);
+    artwork_ = &artwork;
+
+    load_ui_font(font_, 28);
+
+    auto& play = root().add<ui::Button>("PLAY");
+    play.set_bounds({190, 545, 340, 88});
+    play.set_font(&font_);
+    play.set_style({
+        {18, 43, 83, 255},
+        {35, 91, 165, 255},
+        {14, 55, 112, 255},
+        {35, 39, 50, 255},
+        {69, 151, 255, 255},
+        {125, 190, 255, 255},
+        {255, 255, 255, 255},
+        {150, 155, 165, 255}
+    });
+    play.set_on_activate([this] {
+        // This records the UI request; the game-launch backend is separate.
+        play_requested_ = true;
+    });
+    play_button_ = &play;
+}
+
+SelectedGameScreen::~SelectedGameScreen() {
+    if (artwork_) artwork_->set_texture(nullptr);
+}
+
+} // namespace kiddos::app
+
+===== SHARED SHELL HEADER FILE =====
+#pragma once
+
+#include <SDL.h>
+#include <SDL_ttf.h>
+
+namespace kiddos::app {
+
+class SharedShell final {
+public:
+    SharedShell() = default;
+    ~SharedShell();
+
+    SharedShell(const SharedShell&) = delete;
+    SharedShell& operator=(const SharedShell&) = delete;
+
+    bool initialize(SDL_Renderer* renderer);
+    void render_header();
+    void render_footer(bool selected_game);
+    void reset() noexcept;
+
+private:
+    void draw_text(const char* text, int x, int y);
+
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_Texture* logo_ = nullptr;
+    SDL_Texture* hints_ = nullptr;
+    TTF_Font* font_ = nullptr;
+};
+
+} // namespace kiddos::app
