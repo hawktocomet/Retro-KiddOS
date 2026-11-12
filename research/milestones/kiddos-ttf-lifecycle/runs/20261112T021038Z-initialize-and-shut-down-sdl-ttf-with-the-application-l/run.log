@@ -1,0 +1,153 @@
+===== CURRENT SDL_TTF LIFECYCLE =====
+src/app/application.cpp:27:    IMG_Init(IMG_INIT_PNG);
+src/app/application.cpp:51:    IMG_Quit();
+
+===== APPLICATION SOURCE =====
+#include "kiddos/app/application.hpp"
+
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/app/selected_game_screen.hpp"
+#include "kiddos/app/ui_action_mapping.hpp"
+
+#include <SDL_image.h>
+
+#include <chrono>
+#include <memory>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    // The UI renderer is a non-owning adapter around the platform renderer.
+    ui_renderer_.attach(platform_.native_renderer());
+    IMG_Init(IMG_INIT_PNG);
+
+    screens_.push(std::make_unique<app::HomeCarouselScreen>(
+        platform_.native_renderer()));
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+            if (!running_) break;
+        }
+
+        if (running_) {
+            screens_.update(0.008f);
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    // Screens and their textures must be destroyed before the SDL renderer.
+    screens_.clear();
+    IMG_Quit();
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    if (action == Action::Quit) {
+        running_ = false;
+        return;
+    }
+
+    const auto ui_action = app::to_ui_action(action);
+    if (!ui_action) return;
+
+    // Back pops a child screen, but never removes the home screen.
+    if (*ui_action == ui::UIAction::Back) {
+        if (screens_.depth() > 1) {
+            screens_.handle_action(*ui_action);
+        }
+        return;
+    }
+
+    // Let the active screen handle its own controls first. This is how
+    // Confirm activates the Play button on Selected Game.
+    if (screens_.handle_action(*ui_action)) return;
+
+    auto* home = dynamic_cast<app::HomeCarouselScreen*>(screens_.current());
+    if (!home) return;
+
+    switch (*ui_action) {
+        case ui::UIAction::Left:
+            selected_game_ =
+                (selected_game_ + game_count_ - 1) % game_count_;
+            home->set_selected_game(selected_game_);
+            break;
+
+        case ui::UIAction::Right:
+            selected_game_ = (selected_game_ + 1) % game_count_;
+            home->set_selected_game(selected_game_);
+            break;
+
+        case ui::UIAction::Confirm:
+            screens_.push(std::make_unique<app::SelectedGameScreen>(
+                platform_.native_renderer(), selected_game_));
+            break;
+
+        case ui::UIAction::Up:
+        case ui::UIAction::Down:
+        case ui::UIAction::Back:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    screens_.render(ui_renderer_);
+    platform_.present();
+}
+
+} // namespace kiddos
+
+===== FONT HEADER INCLUDE STYLE =====
+#pragma once
+#include <SDL_ttf.h>
+#include <string>
+
+namespace kiddos::ui {
+class Font final {
+public:
+    Font() = default;
+    ~Font();
+    Font(const Font&) = delete;
+    Font& operator=(const Font&) = delete;
+    Font(Font&& other) noexcept;
+    Font& operator=(Font&& other) noexcept;
+    bool load(const std::string& path, int point_size);
+    void reset() noexcept;
+    bool valid() const noexcept;
+    TTF_Font* native() const noexcept;
+private:
+    TTF_Font* font_ = nullptr;
+};
+}
+Added SDL_ttf initialization and shutdown.
+
+===== BUILD =====
+[1/2] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+[2/2] Linking CXX executable kiddos
+
+===== SDL_TTF LIFECYCLE AFTER CHANGE =====
+28:    IMG_Init(IMG_INIT_PNG);
+29:    if (TTF_Init() != 0) {
+30:        IMG_Quit();
+57:    TTF_Quit();
+58:    IMG_Quit();
+
+===== BUILD RESULT =====
+PASS: kiddos target built successfully.
