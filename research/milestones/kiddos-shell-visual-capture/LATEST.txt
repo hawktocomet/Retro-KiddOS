@@ -1,1 +1,1 @@
-research/milestones/kiddos-shell-visual-capture/runs/20261112T022009Z-launch-kiddos-and-capture-the-rendered-carousel
+research/milestones/kiddos-shell-visual-capture/runs/20261112T022042Z-capture-carousel-preview-and-record-image-metadata
