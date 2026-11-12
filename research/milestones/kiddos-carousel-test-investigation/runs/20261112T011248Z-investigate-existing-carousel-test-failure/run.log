@@ -1,0 +1,78 @@
+===== PREVIOUS MILESTONE REPORT =====
+# Milestone Run Report
+
+- Milestone: kiddos-selected-game-audit
+- Title: Selected Game screen discovery and design audit
+- Timestamp (UTC): 20261112T011147Z
+- Result: SUCCESS
+- Branch: main
+- Log: research/milestones/kiddos-selected-game-audit/runs/20261112T011147Z-selected-game-screen-discovery-and-design-audit/run.log
+- Lines captured: 384
+- Log size: 24K
+
+Full terminal output is available in run.log.
+
+===== ORIGINAL TEST FAILURE CONTEXT =====
+316-===== BUILD =====
+317-ninja: no work to do.
+318-BUILD_EXIT_CODE=0
+319-
+320-===== TEST SUITE =====
+321-Test project /home/hawk/KiddOS/build
+322-      Start  1: kiddos_app_ui_action_mapping
+323- 1/26 Test  #1: kiddos_app_ui_action_mapping ................   Passed    0.01 sec
+324:      Start  2: kiddos_app_home_carousel_screen
+325: 2/26 Test  #2: kiddos_app_home_carousel_screen .............Subprocess aborted***Exception:   0.07 sec
+326:kiddos_app_home_carousel_screen_test: /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:72: void {anonymous}::test_structure_and_selection(): Assertion `wordmark' failed.
+327-
+328-      Start  3: kiddos_platform_sdl_text_input_translator
+329- 3/26 Test  #3: kiddos_platform_sdl_text_input_translator ...   Passed    0.00 sec
+330-      Start  4: kiddos_platform_text_input_interface
+331- 4/26 Test  #4: kiddos_platform_text_input_interface ........   Passed    0.00 sec
+332-      Start  5: kiddos_platform_sdl_keyboard_policy
+333- 5/26 Test  #5: kiddos_platform_sdl_keyboard_policy .........   Passed    0.00 sec
+334-      Start  6: kiddos_platform_text_input_event
+--
+369-23/26 Test #23: kiddos_ui_select ............................   Passed    0.00 sec
+370-      Start 24: kiddos_ui_text_input
+371-24/26 Test #24: kiddos_ui_text_input ........................   Passed    0.00 sec
+372-      Start 25: kiddos_ui_text_input_interaction
+373-25/26 Test #25: kiddos_ui_text_input_interaction ............   Passed    0.00 sec
+374-      Start 26: kiddos_ui_screen_manager
+375-26/26 Test #26: kiddos_ui_screen_manager ....................   Passed    0.00 sec
+376-
+377:96% tests passed, 1 tests failed out of 26
+378-
+379-Total Test time (real) =   0.18 sec
+380-
+381:The following tests FAILED:
+382:	  2 - kiddos_app_home_carousel_screen (Subprocess aborted)
+383:Errors while running CTest
+384-TEST_EXIT_CODE=8
+
+===== REPRODUCE CAROUSEL TEST =====
+Test project /home/hawk/KiddOS/build
+    Start 2: kiddos_app_home_carousel_screen
+1/1 Test #2: kiddos_app_home_carousel_screen ...Subprocess aborted***Exception:   0.09 sec
+kiddos_app_home_carousel_screen_test: /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:72: void {anonymous}::test_structure_and_selection(): Assertion `wordmark' failed.
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   0.09 sec
+
+The following tests FAILED:
+	  2 - kiddos_app_home_carousel_screen (Subprocess aborted)
+Errors while running CTest
+CAROUSEL_TEST_EXIT_CODE=8
+
+===== FINAL GIT STATUS =====
+ M assets/artwork/generated/kiddos-wordmark.png
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+?? assets/artwork/generated/boxart/
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/platform.hpp
