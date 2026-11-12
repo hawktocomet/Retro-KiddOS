@@ -1,0 +1,457 @@
+===== SHARED SHELL =====
+#include "kiddos/app/shared_shell.hpp"
+
+#include <SDL_image.h>
+
+namespace kiddos::app {
+namespace {
+
+constexpr SDL_Color navy{12, 22, 42, 255};
+constexpr SDL_Color blue{75, 174, 255, 255};
+constexpr SDL_Color white{235, 243, 255, 255};
+constexpr SDL_Color muted{145, 173, 207, 255};
+
+void set_color(SDL_Renderer* renderer, SDL_Color color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+}
+
+} // namespace
+
+SharedShell::~SharedShell() {
+    reset();
+}
+
+bool SharedShell::initialize(SDL_Renderer* renderer) {
+    reset();
+    if (!renderer) return false;
+
+    renderer_ = renderer;
+
+    SDL_Surface* logo_surface =
+        IMG_Load("assets/artwork/generated/kiddos-wordmark.png");
+    if (logo_surface) {
+        logo_ = SDL_CreateTextureFromSurface(renderer_, logo_surface);
+        SDL_FreeSurface(logo_surface);
+    }
+
+    const char* font_paths[] = {
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf"
+    };
+
+    for (const char* path : font_paths) {
+        font_ = TTF_OpenFont(path, 20);
+        if (font_) break;
+    }
+
+    return true;
+}
+
+void SharedShell::draw_text(const char* text, int x, int y) {
+    if (!renderer_ || !font_ || !text) return;
+
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(font_, text, white);
+    if (!surface) return;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
+    if (texture) {
+        SDL_Rect destination{x, y, surface->w, surface->h};
+        SDL_RenderCopy(renderer_, texture, nullptr, &destination);
+        SDL_DestroyTexture(texture);
+    }
+    SDL_FreeSurface(surface);
+}
+
+void SharedShell::render_header() {
+    if (!renderer_) return;
+
+    set_color(renderer_, navy);
+    SDL_Rect header{0, 0, 720, 78};
+    SDL_RenderFillRect(renderer_, &header);
+
+    set_color(renderer_, blue);
+    SDL_RenderDrawLine(renderer_, 0, 77, 720, 77);
+
+    // Sound status icon.
+    SDL_Rect speaker{24, 29, 10, 20};
+    SDL_RenderFillRect(renderer_, &speaker);
+    SDL_Point sound_wave[] = {
+        {34, 29}, {46, 20}, {46, 58}, {34, 49}
+    };
+    SDL_RenderDrawLines(renderer_, sound_wave, 4);
+
+    // Battery status icon.
+    SDL_Rect battery{665, 27, 32, 20};
+    SDL_RenderDrawRect(renderer_, &battery);
+    SDL_Rect battery_tip{697, 33, 4, 8};
+    SDL_RenderFillRect(renderer_, &battery_tip);
+    SDL_Rect battery_charge{669, 31, 23, 12};
+    set_color(renderer_, blue);
+    SDL_RenderFillRect(renderer_, &battery_charge);
+
+    if (logo_) {
+        SDL_Rect destination{185, 4, 350, 64};
+        SDL_RenderCopy(renderer_, logo_, nullptr, &destination);
+    }
+}
+
+void SharedShell::render_footer(bool selected_game) {
+    if (!renderer_) return;
+
+    set_color(renderer_, navy);
+    SDL_Rect footer{0, 650, 720, 70};
+    SDL_RenderFillRect(renderer_, &footer);
+
+    set_color(renderer_, blue);
+    SDL_RenderDrawLine(renderer_, 0, 650, 720, 650);
+
+    if (selected_game) {
+        draw_text("A  PLAY", 155, 674);
+        draw_text("B  BACK", 485, 674);
+    } else {
+        draw_text("A  SELECT", 135, 674);
+        draw_text("B  BROWSE", 475, 674);
+    }
+}
+
+void SharedShell::reset() noexcept {
+    if (logo_) {
+        SDL_DestroyTexture(logo_);
+        logo_ = nullptr;
+    }
+    if (font_) {
+        TTF_CloseFont(font_);
+        font_ = nullptr;
+    }
+    renderer_ = nullptr;
+}
+
+} // namespace kiddos::app
+
+===== APPLICATION RENDER FLOW =====
+111-                platform_.native_renderer(), selected_game_));
+112-            break;
+113-
+114-        case ui::UIAction::Up:
+115-        case ui::UIAction::Down:
+116-        case ui::UIAction::Back:
+117-            break;
+118-    }
+119-}
+120-
+121:void Application::render(app::SharedShell& shell) {
+122-    platform_.begin_frame();
+123-    screens_.render(ui_renderer_);
+124-
+125-    const bool selected_game =
+126-        dynamic_cast<app::SelectedGameScreen*>(screens_.current()) != nullptr;
+127-
+128-    shell.render_header();
+129-    shell.render_footer(selected_game);
+130-
+131-    platform_.present();
+132-}
+133-
+134-} // namespace kiddos
+
+===== CAROUSEL LAYOUT =====
+#include "kiddos/app/home_carousel_screen.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <string>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr ui::Color background{1, 1, 1, 255};
+
+constexpr ui::Rect left_art{24, 250, 128, 128};
+constexpr ui::Rect center_art{180, 145, 360, 360};
+constexpr ui::Rect right_art{568, 250, 128, 128};
+
+int interpolate(int current, int target, float amount) {
+    return static_cast<int>(std::lround(
+        current + (target - current) * amount));
+}
+
+ui::Rect interpolate_rect(
+    ui::Rect current,
+    ui::Rect target,
+    float amount
+) {
+    return {
+        interpolate(current.x, target.x, amount),
+        interpolate(current.y, target.y, amount),
+        interpolate(current.w, target.w, amount),
+        interpolate(current.h, target.h, amount)
+    };
+}
+
+} // namespace
+
+HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+    constexpr std::array<const char*, game_count> game_cover_paths{{
+        "assets/artwork/generated/boxart/gb-tetris.png",
+        "assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png",
+        "assets/artwork/generated/boxart/snes-super-mario-world.png",
+        "assets/artwork/generated/boxart/arcade-pac-man.png"
+    }};
+
+    for (std::size_t game = 0; game < game_textures_.size(); ++game) {
+        game_textures_[game].load(renderer, game_cover_paths[game], false);
+    }
+
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto& image = root().add<ui::Image>();
+        image.set_fit(ui::ImageFit::contain);
+        image.set_bounds(slot_bounds[slot]);
+        game_images_[slot] = &image;
+    }
+
+    set_selected_game(1);
+}
+
+HomeCarouselScreen::~HomeCarouselScreen() {
+    for (auto* image : game_images_) {
+        if (image) image->set_texture(nullptr);
+    }
+
+}
+
+void HomeCarouselScreen::set_selected_game(int index) {
+    if (index < 0 || index >= game_count) return;
+    if (index == selected_game_) return;
+
+    const int previous = selected_game_;
+    const bool moving_right =
+        previous >= 0 && index == (previous + 1) % game_count;
+    const bool moving_left =
+        previous >= 0 && index == (previous + game_count - 1) % game_count;
+
+    if (moving_right) {
+        auto* recycled = game_images_[0];
+        game_images_[0] = game_images_[1];
+        game_images_[1] = game_images_[2];
+        game_images_[2] = recycled;
+        recycled->set_bounds({720, right_art.y, right_art.w, right_art.h});
+    } else if (moving_left) {
+        auto* recycled = game_images_[2];
+        game_images_[2] = game_images_[1];
+        game_images_[1] = game_images_[0];
+        game_images_[0] = recycled;
+        recycled->set_bounds({-128, left_art.y, left_art.w, left_art.h});
+    }
+
+    selected_game_ = index;
+
+    const std::array<int, 3> visible_games{
+        (index + game_count - 1) % game_count,
+        index,
+        (index + 1) % game_count
+    };
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto* image = game_images_[slot];
+        image->set_texture(
+            &game_textures_[static_cast<std::size_t>(visible_games[slot])]);
+        target_bounds_[slot] = slot_bounds[slot];
+        target_opacity_[slot] = slot == 1 ? 255 : 118;
+
+        if (!moving_right && !moving_left) {
+            image->set_bounds(slot_bounds[slot]);
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[slot]));
+        }
+    }
+}
+
+void HomeCarouselScreen::update(float delta_seconds) {
+    if (delta_seconds <= 0.0f) return;
+
+    // A critically damped-feeling ease that settles quickly while allowing
+    // another direction input to retarget the carousel mid-motion.
+    const float amount = std::clamp(
+        1.0f - std::exp(-delta_seconds * 7.0f), 0.0f, 1.0f);
+
+    for (std::size_t i = 0; i < game_images_.size(); ++i) {
+        ui::Image* image = game_images_[i];
+        if (!image) continue;
+
+        const ui::Rect current = image->bounds();
+        const ui::Rect target = target_bounds_[i];
+        const ui::Rect next = interpolate_rect(current, target, amount);
+
+        const int opacity = interpolate(
+            image->opacity(), target_opacity_[i], amount);
+
+        image->set_bounds(next);
+        image->set_opacity(static_cast<std::uint8_t>(
+            std::clamp(opacity, 0, 255)));
+
+        if (std::abs(next.x - target.x) <= 1 &&
+            std::abs(next.y - target.y) <= 1 &&
+            std::abs(next.w - target.w) <= 1 &&
+            std::abs(next.h - target.h) <= 1) {
+            image->set_bounds(target);
+        }
+
+        if (std::abs(opacity - target_opacity_[i]) <= 1) {
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[i]));
+        }
+    }
+}
+
+} // namespace kiddos::app
+
+===== SELECTED GAME LAYOUT =====
+#include "kiddos/app/selected_game_screen.hpp"
+
+#include "kiddos/app/platform.hpp"
+
+#include <array>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr std::array<const char*, platform_count> artwork_paths{{
+    "assets/artwork/generated/boxart/gb-tetris.png",
+    "assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png",
+    "assets/artwork/generated/boxart/snes-super-mario-world.png",
+    "assets/artwork/generated/boxart/arcade-pac-man.png"
+}};
+
+void load_ui_font(ui::Font& font, int size) {
+    constexpr std::array<const char*, 3> paths{{
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf"
+    }};
+
+    for (const char* path : paths) {
+        if (font.load(path, size)) return;
+    }
+}
+
+} // namespace
+
+SelectedGameScreen::SelectedGameScreen(
+    SDL_Renderer* renderer,
+    int selected_game
+) : selected_game_(selected_game) {
+    if (selected_game_ < 0 ||
+        selected_game_ >= static_cast<int>(platform_count)) {
+        selected_game_ = 0;
+    }
+
+    artwork_texture_.load(
+        renderer,
+        artwork_paths[static_cast<std::size_t>(selected_game_)],
+        false
+    );
+
+    auto& artwork = root().add<ui::Image>(&artwork_texture_);
+    artwork.set_bounds({90, 85, 540, 450});
+    artwork.set_fit(ui::ImageFit::contain);
+    artwork_ = &artwork;
+
+    load_ui_font(font_, 28);
+
+    auto& play = root().add<ui::Button>("A  PLAY");
+    play.set_bounds({190, 545, 340, 88});
+    play.set_font(&font_);
+    play.set_style({
+        {18, 43, 83, 255},
+        {35, 91, 165, 255},
+        {14, 55, 112, 255},
+        {35, 39, 50, 255},
+        {69, 151, 255, 255},
+        {125, 190, 255, 255},
+        {255, 255, 255, 255},
+        {150, 155, 165, 255}
+    });
+    play.set_on_activate([this] {
+        // This records the UI request; the game-launch backend is separate.
+        play_requested_ = true;
+    });
+    play_button_ = &play;
+}
+
+SelectedGameScreen::~SelectedGameScreen() {
+    if (artwork_) artwork_->set_texture(nullptr);
+}
+
+} // namespace kiddos::app
+
+===== TEST STATUS =====
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_app_ui_action_mapping
+ 1/27 Test  #1: kiddos_app_ui_action_mapping ................   Passed    0.01 sec
+      Start  2: kiddos_app_selected_game_screen
+ 2/27 Test  #2: kiddos_app_selected_game_screen .............   Passed    0.02 sec
+      Start  3: kiddos_app_home_carousel_screen
+ 3/27 Test  #3: kiddos_app_home_carousel_screen .............   Passed    0.04 sec
+      Start  4: kiddos_platform_sdl_text_input_translator
+ 4/27 Test  #4: kiddos_platform_sdl_text_input_translator ...   Passed    0.00 sec
+      Start  5: kiddos_platform_text_input_interface
+ 5/27 Test  #5: kiddos_platform_text_input_interface ........   Passed    0.00 sec
+      Start  6: kiddos_platform_sdl_keyboard_policy
+ 6/27 Test  #6: kiddos_platform_sdl_keyboard_policy .........   Passed    0.00 sec
+      Start  7: kiddos_platform_text_input_event
+ 7/27 Test  #7: kiddos_platform_text_input_event ............   Passed    0.00 sec
+      Start  8: kiddos_ui_layout
+ 8/27 Test  #8: kiddos_ui_layout ............................   Passed    0.00 sec
+      Start  9: kiddos_ui_geometry
+ 9/27 Test  #9: kiddos_ui_geometry ..........................   Passed    0.00 sec
+      Start 10: kiddos_ui_focus
+10/27 Test #10: kiddos_ui_focus .............................   Passed    0.00 sec
+      Start 11: kiddos_ui_button
+11/27 Test #11: kiddos_ui_button ............................   Passed    0.00 sec
+      Start 12: kiddos_ui_controller
+12/27 Test #12: kiddos_ui_controller ........................   Passed    0.00 sec
+      Start 13: kiddos_ui_renderer
+13/27 Test #13: kiddos_ui_renderer ..........................   Passed    0.01 sec
+      Start 14: kiddos_ui_image
+14/27 Test #14: kiddos_ui_image .............................   Passed    0.00 sec
+      Start 15: kiddos_ui_label
+15/27 Test #15: kiddos_ui_label .............................   Passed    0.00 sec
+      Start 16: kiddos_ui_panel
+16/27 Test #16: kiddos_ui_panel .............................   Passed    0.00 sec
+      Start 17: kiddos_ui_progress_bar
+17/27 Test #17: kiddos_ui_progress_bar ......................   Passed    0.00 sec
+      Start 18: kiddos_ui_toggle
+18/27 Test #18: kiddos_ui_toggle ............................   Passed    0.00 sec
+      Start 19: kiddos_ui_slider
+19/27 Test #19: kiddos_ui_slider ............................   Passed    0.00 sec
+      Start 20: kiddos_ui_theme
+20/27 Test #20: kiddos_ui_theme .............................   Passed    0.00 sec
+      Start 21: kiddos_ui_list_view
+21/27 Test #21: kiddos_ui_list_view .........................   Passed    0.00 sec
+      Start 22: kiddos_ui_checkbox
+22/27 Test #22: kiddos_ui_checkbox ..........................   Passed    0.00 sec
+      Start 23: kiddos_ui_radio_group
+23/27 Test #23: kiddos_ui_radio_group .......................   Passed    0.00 sec
+      Start 24: kiddos_ui_select
+24/27 Test #24: kiddos_ui_select ............................   Passed    0.00 sec
+      Start 25: kiddos_ui_text_input
+25/27 Test #25: kiddos_ui_text_input ........................   Passed    0.00 sec
+      Start 26: kiddos_ui_text_input_interaction
+26/27 Test #26: kiddos_ui_text_input_interaction ............   Passed    0.01 sec
+      Start 27: kiddos_ui_screen_manager
+27/27 Test #27: kiddos_ui_screen_manager ....................   Passed    0.00 sec
+
+100% tests passed out of 27
+
+Total Test time (real) =   0.16 sec
