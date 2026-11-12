@@ -1,0 +1,759 @@
+===== UI RENDERER =====
+#pragma once
+
+#include "kiddos/ui/color.hpp"
+#include "kiddos/ui/geometry.hpp"
+
+#include <SDL.h>
+#include <cstdint>
+
+namespace kiddos::ui {
+
+// Non-owning SDL2 renderer adapter.
+// The SDLPlatform remains responsible for creating and destroying SDL_Renderer.
+class Renderer final {
+public:
+    explicit Renderer(SDL_Renderer* renderer = nullptr) noexcept;
+
+    void attach(SDL_Renderer* renderer) noexcept;
+    bool valid() const noexcept;
+
+    bool clear(Color color) const;
+    bool fill_rect(Rect rect, Color color) const;
+    bool outline_rect(Rect rect, Color color) const;
+    bool draw_line(Point from, Point to, Color color) const;
+    bool draw_point(Point point, Color color) const;
+    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination,
+                      std::uint8_t opacity = 255) const;
+    bool fill_rounded_rect(Rect rect, int radius, Color color) const;
+    bool outline_rounded_rect(Rect rect, int radius, Color color) const;
+
+    bool set_clip(Rect rect) const;
+    bool clear_clip() const;
+
+    void present() const;
+
+    SDL_Renderer* native() const noexcept;
+
+private:
+    SDL_Renderer* renderer_ = nullptr;
+
+    bool set_color(Color color) const;
+};
+
+} // namespace kiddos::ui
+#include "kiddos/ui/renderer.hpp"
+
+#include <algorithm>
+#include <cmath>
+
+namespace kiddos::ui {
+
+Renderer::Renderer(SDL_Renderer* renderer) noexcept
+    : renderer_(renderer) {
+}
+
+void Renderer::attach(SDL_Renderer* renderer) noexcept {
+    renderer_ = renderer;
+}
+
+bool Renderer::valid() const noexcept {
+    return renderer_ != nullptr;
+}
+
+SDL_Renderer* Renderer::native() const noexcept {
+    return renderer_;
+}
+
+bool Renderer::set_color(Color color) const {
+    if (!renderer_) return false;
+
+    return SDL_SetRenderDrawColor(
+        renderer_,
+        color.r,
+        color.g,
+        color.b,
+        color.a
+    ) == 0;
+}
+
+bool Renderer::clear(Color color) const {
+    if (!set_color(color)) return false;
+    return SDL_RenderClear(renderer_) == 0;
+}
+
+bool Renderer::fill_rect(Rect rect, Color color) const {
+    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+
+    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+    return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+}
+
+bool Renderer::outline_rect(Rect rect, Color color) const {
+    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+
+    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+    return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+}
+
+bool Renderer::draw_line(Point from, Point to, Color color) const {
+    if (!renderer_ || !set_color(color)) return false;
+
+    return SDL_RenderDrawLine(
+        renderer_, from.x, from.y, to.x, to.y
+    ) == 0;
+}
+
+bool Renderer::draw_point(Point point, Color color) const {
+    if (!renderer_ || !set_color(color)) return false;
+
+    return SDL_RenderDrawPoint(
+        renderer_, point.x, point.y
+    ) == 0;
+}
+
+bool Renderer::draw_texture(
+    SDL_Texture* texture,
+    Rect source,
+    Rect destination,
+    std::uint8_t opacity
+) const {
+    if (!renderer_ || !texture || source.empty() || destination.empty()) return false;
+
+    Uint8 previous_opacity = 255;
+    if (SDL_GetTextureAlphaMod(texture, &previous_opacity) != 0) return false;
+    if (SDL_SetTextureAlphaMod(texture, opacity) != 0) return false;
+
+    SDL_Rect src{source.x, source.y, source.w, source.h};
+    SDL_Rect dst{destination.x, destination.y, destination.w, destination.h};
+    const bool rendered = SDL_RenderCopy(renderer_, texture, &src, &dst) == 0;
+    const bool restored = SDL_SetTextureAlphaMod(texture, previous_opacity) == 0;
+
+    return rendered && restored;
+}
+
+namespace {
+
+// Distance from the rect edge to the rounded-corner boundary at the row or
+// column `steps` in from the corner, sampled at the pixel center. Fills use
+// this so corner arcs are smooth and evenly shaped.
+int corner_inset(int radius, int steps) {
+    const double dy = static_cast<double>(radius - steps) - 0.5;
+    const double inside = std::max(
+        0.0,
+        static_cast<double>(radius) * radius - dy * dy
+    );
+    return radius - static_cast<int>(std::sqrt(inside));
+}
+
+} // namespace
+
+bool Renderer::fill_rounded_rect(Rect rect, int radius, Color color) const {
+    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+
+    radius = std::clamp(radius, 0, std::min(rect.w, rect.h) / 2);
+    if (radius == 0) {
+        SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+        return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+    }
+
+    for (int y = 0; y < rect.h; ++y) {
+        int inset = 0;
+        if (y < radius) {
+            inset = corner_inset(radius, y);
+        } else if (y >= rect.h - radius) {
+            inset = corner_inset(radius, rect.h - 1 - y);
+        }
+
+        if (SDL_RenderDrawLine(
+                renderer_,
+                rect.x + inset,
+                rect.y + y,
+                rect.x + rect.w - 1 - inset,
+                rect.y + y
+            ) != 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Renderer::outline_rounded_rect(Rect rect, int radius, Color color) const {
+    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+
+    radius = std::clamp(radius, 0, std::min(rect.w, rect.h) / 2);
+    if (radius == 0) {
+        SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+        return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+    }
+
+    // Straight edges between the corner arcs.
+    if (SDL_RenderDrawLine(
+            renderer_, rect.x + radius, rect.y,
+            rect.x + rect.w - 1 - radius, rect.y
+        ) != 0 ||
+        SDL_RenderDrawLine(
+            renderer_, rect.x + radius, rect.y + rect.h - 1,
+            rect.x + rect.w - 1 - radius, rect.y + rect.h - 1
+        ) != 0 ||
+        SDL_RenderDrawLine(
+            renderer_, rect.x, rect.y + radius,
+            rect.x, rect.y + rect.h - 1 - radius
+        ) != 0 ||
+        SDL_RenderDrawLine(
+            renderer_, rect.x + rect.w - 1, rect.y + radius,
+            rect.x + rect.w - 1, rect.y + rect.h - 1 - radius
+        ) != 0) {
+        return false;
+    }
+
+    // Corner arcs, traced along the true circle with dense angle steps so
+    // every corner stays continuous with no gaps. Points that land on the
+    // straight edge lines are skipped: the lines already cover them, and
+    // re-drawing would blend semi-transparent borders twice on one pixel.
+    constexpr double kPi = 3.14159265358979323846;
+    const int steps = std::max(2, radius * 2);
+    const int right = rect.x + rect.w - 1;
+    const int bottom = rect.y + rect.h - 1;
+
+    const auto on_edge_line = [&](ui::Point point) {
+        if (point.y == rect.y || point.y == bottom) {
+            return point.x >= rect.x + radius && point.x <= right - radius;
+        }
+        if (point.x == rect.x || point.x == right) {
+            return point.y >= rect.y + radius && point.y <= bottom - radius;
+        }
+        return false;
+    };
+
+    const auto draw_corner = [&](int center_x, int center_y, int sign_x,
+                                 int sign_y) {
+        ui::Point previous{
+            center_x + sign_x * radius,
+            center_y
+        };
+
+        for (int step = 1; step < steps; ++step) {
+            const double angle = (kPi / 2.0) * step / steps;
+            const ui::Point point{
+                center_x + sign_x *
+                    static_cast<int>(std::lround(radius * std::cos(angle))),
+                center_y + sign_y *
+                    static_cast<int>(std::lround(radius * std::sin(angle)))
+            };
+
+            if ((point.x != previous.x || point.y != previous.y) &&
+                !on_edge_line(point)) {
+                if (SDL_RenderDrawPoint(
+                        renderer_, point.x, point.y
+                    ) != 0) {
+                    return false;
+                }
+            }
+            previous = point;
+        }
+
+        return true;
+    };
+
+    if (!draw_corner(rect.x + radius, rect.y + radius, -1, -1) ||
+        !draw_corner(
+            rect.x + rect.w - 1 - radius, rect.y + radius, 1, -1
+        ) ||
+        !draw_corner(
+            rect.x + radius, rect.y + rect.h - 1 - radius, -1, 1
+        ) ||
+        !draw_corner(
+            rect.x + rect.w - 1 - radius,
+            rect.y + rect.h - 1 - radius,
+            1,
+            1
+        )) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Renderer::set_clip(Rect rect) const {
+    if (!renderer_) return false;
+
+    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+    return SDL_RenderSetClipRect(renderer_, &native_rect) == 0;
+}
+
+bool Renderer::clear_clip() const {
+    if (!renderer_) return false;
+
+    return SDL_RenderSetClipRect(renderer_, nullptr) == 0;
+}
+
+void Renderer::present() const {
+    if (renderer_) {
+        SDL_RenderPresent(renderer_);
+    }
+}
+
+} // namespace kiddos::ui
+
+===== SCREEN AND CONTAINER APIs =====
+#pragma once
+#include "kiddos/ui/container.hpp"
+#include "kiddos/ui/controller.hpp"
+#include "kiddos/ui/text_input_interaction.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+namespace kiddos::ui {
+class Screen {
+public:
+    Screen() noexcept;
+    virtual ~Screen() = default;
+    Screen(const Screen&) = delete;
+    Screen& operator=(const Screen&) = delete;
+    Container& root() noexcept;
+    FocusManager& focus() noexcept;
+    virtual void on_enter() {}
+    virtual void on_exit() {}
+    virtual void on_suspend() {}
+    virtual void on_resume() {}
+    virtual void update(float) {}
+    virtual void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    Container root_;
+    FocusManager focus_;
+    ControllerInteraction controller_;
+    TextInputInteraction text_input_;
+};
+}
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+
+#include <memory>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+namespace kiddos::ui {
+
+class Container : public Element {
+public:
+    template<typename T, typename... Args>
+    T& add(Args&&... args) {
+        static_assert(std::is_base_of_v<Element, T>,
+                      "Container children must derive from Element");
+
+        auto child = std::make_unique<T>(
+            std::forward<Args>(args)...
+        );
+
+        T& reference = *child;
+        children_.push_back(std::move(child));
+        return reference;
+    }
+
+    std::size_t child_count() const noexcept {
+        return children_.size();
+    }
+
+    Element* child(std::size_t index) noexcept {
+        if (index >= children_.size()) return nullptr;
+        return children_[index].get();
+    }
+
+    const Element* child(std::size_t index) const noexcept {
+        if (index >= children_.size()) return nullptr;
+        return children_[index].get();
+    }
+
+protected:
+    void draw(Renderer& renderer) override {
+        for (auto& element : children_) {
+            element->render(renderer);
+        }
+    }
+
+private:
+    std::vector<std::unique_ptr<Element>> children_;
+};
+
+} // namespace kiddos::ui
+#pragma once
+#include "kiddos/ui/screen.hpp"
+#include <memory>
+#include <vector>
+namespace kiddos::ui {
+class ScreenManager final {
+public:
+    ~ScreenManager();
+    ScreenManager() = default;
+    ScreenManager(const ScreenManager&) = delete;
+    ScreenManager& operator=(const ScreenManager&) = delete;
+    bool push(std::unique_ptr<Screen> screen);
+    bool pop();
+    bool replace(std::unique_ptr<Screen> screen);
+    void clear() noexcept;
+    Screen* current() noexcept;
+    const Screen* current() const noexcept;
+    std::size_t depth() const noexcept;
+    void update(float delta_seconds);
+    void render(Renderer& renderer);
+    bool handle_action(UIAction action);
+    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+private:
+    std::vector<std::unique_ptr<Screen>> stack_;
+};
+}
+#include "kiddos/ui/screen_manager.hpp"
+namespace kiddos::ui {
+ScreenManager::~ScreenManager() { clear(); }
+bool ScreenManager::push(std::unique_ptr<Screen> screen) {
+    if (!screen) return false;
+    if (auto* active = current()) active->on_suspend();
+    auto* next = screen.get();
+    stack_.push_back(std::move(screen));
+    next->on_enter();
+    next->focus().focus_first();
+    return true;
+}
+bool ScreenManager::pop() {
+    if (stack_.empty()) return false;
+    stack_.back()->on_exit();
+    stack_.pop_back();
+    if (auto* active = current()) { active->on_resume(); active->focus().focus_first(); }
+    return true;
+}
+bool ScreenManager::replace(std::unique_ptr<Screen> screen) {
+    if (!screen) return false;
+    if (auto* active = current()) { active->on_exit(); stack_.pop_back(); }
+    auto* next = screen.get();
+    stack_.push_back(std::move(screen));
+    next->on_enter();
+    next->focus().focus_first();
+    return true;
+}
+void ScreenManager::clear() noexcept {
+    while (!stack_.empty()) { stack_.back()->on_exit(); stack_.pop_back(); }
+}
+Screen* ScreenManager::current() noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+const Screen* ScreenManager::current() const noexcept { return stack_.empty() ? nullptr : stack_.back().get(); }
+std::size_t ScreenManager::depth() const noexcept { return stack_.size(); }
+void ScreenManager::update(float dt) { if (auto* s=current()) s->update(dt); }
+void ScreenManager::render(Renderer& r) { if (auto* s=current()) s->render(r); }
+bool ScreenManager::handle_action(UIAction a) {
+    if (a == UIAction::Back) return pop();
+    auto* s=current(); return s ? s->handle_action(a) : false;
+}
+bool ScreenManager::handle_text_input(const ::kiddos::TextInputEvent& e) {
+    auto* s=current(); return s ? s->handle_text_input(e) : false;
+}
+}
+
+===== LABEL AND FONT APIs =====
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/font.hpp"
+
+#include <string>
+
+namespace kiddos::ui {
+
+enum class LabelAlignment {
+    left,
+    center,
+    right
+};
+
+class Label final : public Element {
+public:
+    explicit Label(std::string text = {});
+
+    void set_text(std::string text);
+    const std::string& text() const noexcept;
+
+    void set_font(const Font* font) noexcept;
+    const Font* font() const noexcept;
+
+    void set_color(Color color) noexcept;
+    Color color() const noexcept;
+
+    void set_alignment(LabelAlignment alignment) noexcept;
+    LabelAlignment alignment() const noexcept;
+
+private:
+    std::string text_;
+    const Font* font_ = nullptr;
+    Color color_{255, 255, 255, 255};
+    LabelAlignment alignment_ = LabelAlignment::left;
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+#include "kiddos/ui/label.hpp"
+#include "kiddos/ui/text.hpp"
+
+#include <SDL_ttf.h>
+#include <utility>
+
+namespace kiddos::ui {
+
+Label::Label(std::string text)
+    : text_(std::move(text)) {
+}
+
+void Label::set_text(std::string text) {
+    text_ = std::move(text);
+}
+
+const std::string& Label::text() const noexcept {
+    return text_;
+}
+
+void Label::set_font(const Font* font) noexcept {
+    font_ = font;
+}
+
+const Font* Label::font() const noexcept {
+    return font_;
+}
+
+void Label::set_color(Color color) noexcept {
+    color_ = color;
+}
+
+Color Label::color() const noexcept {
+    return color_;
+}
+
+void Label::set_alignment(LabelAlignment alignment) noexcept {
+    alignment_ = alignment;
+}
+
+LabelAlignment Label::alignment() const noexcept {
+    return alignment_;
+}
+
+void Label::draw(Renderer& renderer) {
+    const Rect area = bounds();
+
+    if (!font_ || !font_->valid() || text_.empty() || area.empty()) {
+        return;
+    }
+
+    int width = 0;
+    int height = 0;
+
+    if (TTF_SizeUTF8(font_->native(), text_.c_str(), &width, &height) != 0) {
+        return;
+    }
+
+    int x = area.x;
+
+    switch (alignment_) {
+        case LabelAlignment::left:
+            break;
+        case LabelAlignment::center:
+            x += (area.w - width) / 2;
+            break;
+        case LabelAlignment::right:
+            x += area.w - width;
+            break;
+    }
+
+    const int y = area.y + (area.h - height) / 2;
+
+    TextRenderer text_renderer(renderer);
+    text_renderer.draw(text_, *font_, {x, y}, color_);
+}
+
+}
+#pragma once
+#include <SDL_ttf.h>
+#include <string>
+
+namespace kiddos::ui {
+class Font final {
+public:
+    Font() = default;
+    ~Font();
+    Font(const Font&) = delete;
+    Font& operator=(const Font&) = delete;
+    Font(Font&& other) noexcept;
+    Font& operator=(Font&& other) noexcept;
+    bool load(const std::string& path, int point_size);
+    void reset() noexcept;
+    bool valid() const noexcept;
+    TTF_Font* native() const noexcept;
+private:
+    TTF_Font* font_ = nullptr;
+};
+}
+#include "kiddos/ui/font.hpp"
+#include <utility>
+
+namespace kiddos::ui {
+Font::~Font() { reset(); }
+Font::Font(Font&& other) noexcept
+    : font_(std::exchange(other.font_, nullptr)) {}
+Font& Font::operator=(Font&& other) noexcept {
+    if (this != &other) {
+        reset();
+        font_ = std::exchange(other.font_, nullptr);
+    }
+    return *this;
+}
+bool Font::load(const std::string& path, int point_size) {
+    reset();
+    if (path.empty() || point_size <= 0) return false;
+    font_ = TTF_OpenFont(path.c_str(), point_size);
+    return font_ != nullptr;
+}
+void Font::reset() noexcept {
+    if (font_) {
+        TTF_CloseFont(font_);
+        font_ = nullptr;
+    }
+}
+bool Font::valid() const noexcept { return font_ != nullptr; }
+TTF_Font* Font::native() const noexcept { return font_; }
+}
+
+===== SDL PLATFORM API AND LIFECYCLE =====
+#pragma once
+
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/platform/text_input_event.hpp"
+
+#include <SDL.h>
+
+#include <deque>
+
+namespace kiddos {
+
+class SDLPlatform final : public Platform {
+public:
+    SDLPlatform() = default;
+    ~SDLPlatform() override;
+
+    bool initialize() override;
+    bool poll_action(Action& action) override;
+    bool poll_text_input_event(TextInputEvent& event) override;
+    void set_text_input_active(bool active) override;
+    void begin_frame() override;
+    void draw_carousel(int selected_index) override;
+    void draw_game_actions(int selected_index, bool has_checkpoint, int selected_action) override;
+    void present() override;
+    void shutdown() override;
+
+    SDL_Renderer* native_renderer() const noexcept override {
+        return renderer_;
+    }
+
+private:
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_GameController* controller_ = nullptr;
+    SDL_JoystickID controller_instance_ = -1;
+    bool initialized_ = false;
+    bool text_input_active_ = false;
+    std::deque<Action> pending_actions_;
+    std::deque<TextInputEvent> pending_text_events_;
+    bool pump_events();
+
+    void open_controller(int device_index);
+    void close_controller();
+    static Action map_key(SDL_Keycode key);
+    static Action map_controller_button(Uint8 button);
+};
+
+} // namespace kiddos
+src/platform/sdl_platform.cpp:359:    shutdown();
+src/platform/sdl_platform.cpp:363:    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+src/platform/sdl_platform.cpp:383:        shutdown();
+src/platform/sdl_platform.cpp:401:        shutdown();
+src/platform/sdl_platform.cpp:421:            shutdown();
+src/platform/sdl_platform.cpp:430:            shutdown();
+src/platform/sdl_platform.cpp:440:        shutdown();
+src/platform/sdl_platform.cpp:621:void SDLPlatform::begin_frame() {
+src/platform/sdl_platform.cpp:804:void SDLPlatform::present() {
+src/platform/sdl_platform.cpp:808:void SDLPlatform::shutdown() {
+src/app/application.cpp:21:        platform_.shutdown();
+src/app/application.cpp:27:    IMG_Init(IMG_INIT_PNG);
+src/app/application.cpp:51:    IMG_Quit();
+src/app/application.cpp:52:    platform_.shutdown();
+src/app/application.cpp:105:    platform_.begin_frame();
+src/app/application.cpp:107:    platform_.present();
+
+===== BUILD DEPENDENCIES =====
+14:pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+15:pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
+16:pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
+27:    src/ui/image.cpp
+49:target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
+60:    src/app/home_carousel_screen.cpp
+61:    src/app/selected_game_screen.cpp
+62:    src/platform/sdl_platform.cpp
+84:    add_executable(kiddos_app_selected_game_screen_test
+85:        tests/app_selected_game_screen_test.cpp
+86:        src/app/selected_game_screen.cpp)
+87:    target_include_directories(kiddos_app_selected_game_screen_test PRIVATE include)
+88:    target_compile_definitions(kiddos_app_selected_game_screen_test PRIVATE
+90:    target_link_libraries(kiddos_app_selected_game_screen_test PRIVATE kiddos_ui)
+91:    add_test(NAME kiddos_app_selected_game_screen
+92:        COMMAND kiddos_app_selected_game_screen_test)
+94:    add_executable(kiddos_app_home_carousel_screen_test
+95:        tests/app_home_carousel_screen_test.cpp
+96:        src/app/home_carousel_screen.cpp)
+97:    target_include_directories(kiddos_app_home_carousel_screen_test PRIVATE include)
+98:    target_compile_definitions(kiddos_app_home_carousel_screen_test PRIVATE
+100:    target_link_libraries(kiddos_app_home_carousel_screen_test PRIVATE kiddos_ui)
+101:    add_test(NAME kiddos_app_home_carousel_screen
+102:        COMMAND kiddos_app_home_carousel_screen_test)
+104:    add_executable(kiddos_platform_sdl_text_input_translator_test
+105:        tests/platform_sdl_text_input_translator_test.cpp)
+106:    target_include_directories(kiddos_platform_sdl_text_input_translator_test PRIVATE include)
+107:    target_link_libraries(kiddos_platform_sdl_text_input_translator_test PRIVATE PkgConfig::SDL2)
+108:    add_test(NAME kiddos_platform_sdl_text_input_translator
+109:        COMMAND kiddos_platform_sdl_text_input_translator_test)
+117:    add_executable(kiddos_platform_sdl_keyboard_policy_test
+118:        tests/platform_sdl_keyboard_policy_test.cpp)
+119:    target_include_directories(kiddos_platform_sdl_keyboard_policy_test PRIVATE include)
+120:    target_link_libraries(kiddos_platform_sdl_keyboard_policy_test PRIVATE PkgConfig::SDL2)
+121:    add_test(NAME kiddos_platform_sdl_keyboard_policy
+122:        COMMAND kiddos_platform_sdl_keyboard_policy_test)
+195:    add_executable(kiddos_ui_image_test tests/ui_image_test.cpp)
+196:    target_include_directories(kiddos_ui_image_test PRIVATE include)
+197:    target_link_libraries(kiddos_ui_image_test PRIVATE kiddos_ui)
+198:    add_test(NAME kiddos_ui_image COMMAND kiddos_ui_image_test)
+
+===== CURRENT SCREEN GEOMETRY =====
+src/app/home_carousel_screen.cpp:19:constexpr ui::Rect wordmark_rect{185, 4, 350, 64};
+src/app/home_carousel_screen.cpp:20:constexpr ui::Rect hints_rect{0, 662, 720, 42};
+src/app/home_carousel_screen.cpp:82:class StatusIndicators final : public ui::Element {
+src/app/home_carousel_screen.cpp:139:        image.set_bounds(slot_bounds[slot]);
+src/app/home_carousel_screen.cpp:145:    wordmark_->set_bounds(wordmark_rect);
+src/app/home_carousel_screen.cpp:150:    hints_->set_bounds(hints_rect);
+src/app/home_carousel_screen.cpp:153:    root().add<StatusIndicators>();
+src/app/home_carousel_screen.cpp:182:        recycled->set_bounds({720, right_art.y, right_art.w, right_art.h});
+src/app/home_carousel_screen.cpp:188:        recycled->set_bounds({-128, left_art.y, left_art.w, left_art.h});
+src/app/home_carousel_screen.cpp:210:            image->set_bounds(slot_bounds[slot]);
+src/app/home_carousel_screen.cpp:236:        image->set_bounds(next);
+src/app/home_carousel_screen.cpp:244:            image->set_bounds(target);
+src/app/selected_game_screen.cpp:49:    artwork.set_bounds({90, 42, 540, 450});
+src/app/selected_game_screen.cpp:56:    play.set_bounds({190, 525, 340, 88});
+src/app/selected_game_screen.cpp:75:    back.set_bounds({250, 655, 220, 36});
+
+===== USER CHANGES — PRESERVE =====
+ M CMakeLists.txt
+ M include/kiddos/app/application.hpp
+ M src/app/application.cpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/selected_game_screen.hpp
+?? src/app/selected_game_screen.cpp
+?? tests/app_selected_game_screen_test.cpp
