@@ -1,0 +1,257 @@
+===== CURRENT SHARED SHELL =====
+#pragma once
+
+#include <SDL.h>
+#include <SDL_ttf.h>
+
+namespace kiddos::app {
+
+class SharedShell final {
+public:
+    SharedShell() = default;
+    ~SharedShell();
+
+    SharedShell(const SharedShell&) = delete;
+    SharedShell& operator=(const SharedShell&) = delete;
+
+    bool initialize(SDL_Renderer* renderer);
+    void render_header();
+    void render_footer(bool selected_game);
+    void reset() noexcept;
+
+private:
+    void draw_text(const char* text, int x, int y);
+
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_Texture* logo_ = nullptr;
+    TTF_Font* font_ = nullptr;
+};
+
+} // namespace kiddos::app
+#include "kiddos/app/shared_shell.hpp"
+
+#include <SDL_image.h>
+
+namespace kiddos::app {
+namespace {
+
+constexpr SDL_Color navy{12, 22, 42, 255};
+constexpr SDL_Color blue{75, 174, 255, 255};
+constexpr SDL_Color white{235, 243, 255, 255};
+constexpr SDL_Color muted{145, 173, 207, 255};
+
+void set_color(SDL_Renderer* renderer, SDL_Color color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+}
+
+} // namespace
+
+SharedShell::~SharedShell() {
+    reset();
+}
+
+bool SharedShell::initialize(SDL_Renderer* renderer) {
+    reset();
+    if (!renderer) return false;
+
+    renderer_ = renderer;
+
+    SDL_Surface* logo_surface =
+        IMG_Load("assets/artwork/generated/kiddos-wordmark.png");
+    if (logo_surface) {
+        logo_ = SDL_CreateTextureFromSurface(renderer_, logo_surface);
+        SDL_FreeSurface(logo_surface);
+    }
+
+    const char* font_paths[] = {
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf"
+    };
+
+    for (const char* path : font_paths) {
+        font_ = TTF_OpenFont(path, 20);
+        if (font_) break;
+    }
+
+    return true;
+}
+
+void SharedShell::draw_text(const char* text, int x, int y) {
+    if (!renderer_ || !font_ || !text) return;
+
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(font_, text, white);
+    if (!surface) return;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
+    if (texture) {
+        SDL_Rect destination{x, y, surface->w, surface->h};
+        SDL_RenderCopy(renderer_, texture, nullptr, &destination);
+        SDL_DestroyTexture(texture);
+    }
+    SDL_FreeSurface(surface);
+}
+
+void SharedShell::render_header() {
+    if (!renderer_) return;
+
+    set_color(renderer_, navy);
+    SDL_Rect header{0, 0, 720, 78};
+    SDL_RenderFillRect(renderer_, &header);
+
+    set_color(renderer_, blue);
+    SDL_RenderDrawLine(renderer_, 0, 77, 720, 77);
+
+    // Sound status icon.
+    SDL_Rect speaker{24, 29, 10, 20};
+    SDL_RenderFillRect(renderer_, &speaker);
+    SDL_Point sound_wave[] = {
+        {34, 29}, {46, 20}, {46, 58}, {34, 49}
+    };
+    SDL_RenderDrawLines(renderer_, sound_wave, 4);
+
+    // Battery status icon.
+    SDL_Rect battery{665, 27, 32, 20};
+    SDL_RenderDrawRect(renderer_, &battery);
+    SDL_Rect battery_tip{697, 33, 4, 8};
+    SDL_RenderFillRect(renderer_, &battery_tip);
+    SDL_Rect battery_charge{669, 31, 23, 12};
+    set_color(renderer_, blue);
+    SDL_RenderFillRect(renderer_, &battery_charge);
+
+    if (logo_) {
+        SDL_Rect destination{185, 4, 350, 64};
+        SDL_RenderCopy(renderer_, logo_, nullptr, &destination);
+    }
+}
+
+void SharedShell::render_footer(bool selected_game) {
+    if (!renderer_) return;
+
+    set_color(renderer_, navy);
+    SDL_Rect footer{0, 650, 720, 70};
+    SDL_RenderFillRect(renderer_, &footer);
+
+    set_color(renderer_, blue);
+    SDL_RenderDrawLine(renderer_, 0, 650, 720, 650);
+
+    if (selected_game) {
+        draw_text("A  PLAY", 155, 674);
+        draw_text("B  BACK", 485, 674);
+    } else {
+        draw_text("A  SELECT", 135, 674);
+        draw_text("B  BROWSE", 475, 674);
+    }
+}
+
+void SharedShell::reset() noexcept {
+    if (logo_) {
+        SDL_DestroyTexture(logo_);
+        logo_ = nullptr;
+    }
+    if (font_) {
+        TTF_CloseFont(font_);
+        font_ = nullptr;
+    }
+    renderer_ = nullptr;
+}
+
+} // namespace kiddos::app
+
+===== CAROUSEL HISTORY =====
+b314fe9 Finalize Kid Mode home carousel
+0d803f5 feat(ui): refine home carousel borders, titles, wordmark, and hints
+0284b5a feat: render home carousel through the KiddOS UI library
+
+===== SHARED SHELL HISTORY =====
+
+===== CAROUSEL HEADER/FOOTER REFERENCES =====
+src/app/application.cpp:4:#include "kiddos/app/selected_game_screen.hpp"
+src/app/application.cpp:82:    // Back pops a child screen, but never removes the home screen.
+src/app/application.cpp:83:    if (*ui_action == ui::UIAction::Back) {
+src/app/application.cpp:91:    // Confirm activates the Play button on Selected Game.
+src/app/application.cpp:99:            selected_game_ =
+src/app/application.cpp:100:                (selected_game_ + game_count_ - 1) % game_count_;
+src/app/application.cpp:101:            home->set_selected_game(selected_game_);
+src/app/application.cpp:105:            selected_game_ = (selected_game_ + 1) % game_count_;
+src/app/application.cpp:106:            home->set_selected_game(selected_game_);
+src/app/application.cpp:110:            screens_.push(std::make_unique<app::SelectedGameScreen>(
+src/app/application.cpp:111:                platform_.native_renderer(), selected_game_));
+src/app/application.cpp:116:        case ui::UIAction::Back:
+src/app/application.cpp:125:    const bool selected_game =
+src/app/application.cpp:126:        dynamic_cast<app::SelectedGameScreen*>(screens_.current()) != nullptr;
+src/app/application.cpp:128:    shell.render_header();
+src/app/application.cpp:129:    shell.render_footer(selected_game);
+src/app/home_carousel_screen.cpp:12:constexpr ui::Color background{1, 1, 1, 255};
+src/app/home_carousel_screen.cpp:61:    set_selected_game(1);
+src/app/home_carousel_screen.cpp:71:void HomeCarouselScreen::set_selected_game(int index) {
+src/app/home_carousel_screen.cpp:73:    if (index == selected_game_) return;
+src/app/home_carousel_screen.cpp:75:    const int previous = selected_game_;
+src/app/home_carousel_screen.cpp:95:    selected_game_ = index;
+src/app/selected_game_screen.cpp:1:#include "kiddos/app/selected_game_screen.hpp"
+src/app/selected_game_screen.cpp:32:SelectedGameScreen::SelectedGameScreen(
+src/app/selected_game_screen.cpp:34:    int selected_game
+src/app/selected_game_screen.cpp:35:) : selected_game_(selected_game) {
+src/app/selected_game_screen.cpp:36:    if (selected_game_ < 0 ||
+src/app/selected_game_screen.cpp:37:        selected_game_ >= static_cast<int>(platform_count)) {
+src/app/selected_game_screen.cpp:38:        selected_game_ = 0;
+src/app/selected_game_screen.cpp:43:        artwork_paths[static_cast<std::size_t>(selected_game_)],
+src/app/selected_game_screen.cpp:68:        // This records the UI request; the game-launch backend is separate.
+src/app/selected_game_screen.cpp:74:SelectedGameScreen::~SelectedGameScreen() {
+src/app/shared_shell.cpp:29:    SDL_Surface* logo_surface =
+src/app/shared_shell.cpp:30:        IMG_Load("assets/artwork/generated/kiddos-wordmark.png");
+src/app/shared_shell.cpp:31:    if (logo_surface) {
+src/app/shared_shell.cpp:32:        logo_ = SDL_CreateTextureFromSurface(renderer_, logo_surface);
+src/app/shared_shell.cpp:33:        SDL_FreeSurface(logo_surface);
+src/app/shared_shell.cpp:65:void SharedShell::render_header() {
+src/app/shared_shell.cpp:75:    // Sound status icon.
+src/app/shared_shell.cpp:76:    SDL_Rect speaker{24, 29, 10, 20};
+src/app/shared_shell.cpp:77:    SDL_RenderFillRect(renderer_, &speaker);
+src/app/shared_shell.cpp:78:    SDL_Point sound_wave[] = {
+src/app/shared_shell.cpp:81:    SDL_RenderDrawLines(renderer_, sound_wave, 4);
+src/app/shared_shell.cpp:83:    // Battery status icon.
+src/app/shared_shell.cpp:84:    SDL_Rect battery{665, 27, 32, 20};
+src/app/shared_shell.cpp:85:    SDL_RenderDrawRect(renderer_, &battery);
+src/app/shared_shell.cpp:86:    SDL_Rect battery_tip{697, 33, 4, 8};
+src/app/shared_shell.cpp:87:    SDL_RenderFillRect(renderer_, &battery_tip);
+src/app/shared_shell.cpp:88:    SDL_Rect battery_charge{669, 31, 23, 12};
+src/app/shared_shell.cpp:90:    SDL_RenderFillRect(renderer_, &battery_charge);
+src/app/shared_shell.cpp:92:    if (logo_) {
+src/app/shared_shell.cpp:94:        SDL_RenderCopy(renderer_, logo_, nullptr, &destination);
+src/app/shared_shell.cpp:98:void SharedShell::render_footer(bool selected_game) {
+src/app/shared_shell.cpp:108:    if (selected_game) {
+src/app/shared_shell.cpp:110:        draw_text("B  BACK", 485, 674);
+src/app/shared_shell.cpp:112:        draw_text("A  SELECT", 135, 674);
+src/app/shared_shell.cpp:113:        draw_text("B  BROWSE", 475, 674);
+src/app/shared_shell.cpp:118:    if (logo_) {
+src/app/shared_shell.cpp:119:        SDL_DestroyTexture(logo_);
+src/app/shared_shell.cpp:120:        logo_ = nullptr;
+include/kiddos/app/application.hpp:22:    int selected_game_ = 1;
+include/kiddos/app/ui_action_mapping.hpp:24:        case Action::Back:
+include/kiddos/app/ui_action_mapping.hpp:25:            return ui::UIAction::Back;
+include/kiddos/app/home_carousel_screen.hpp:21:    void set_selected_game(int index);
+include/kiddos/app/home_carousel_screen.hpp:22:    int selected_game() const noexcept { return selected_game_; }
+include/kiddos/app/home_carousel_screen.hpp:33:    int selected_game_ = -1;
+include/kiddos/app/selected_game_screen.hpp:13:class SelectedGameScreen final : public ui::Screen {
+include/kiddos/app/selected_game_screen.hpp:15:    SelectedGameScreen(SDL_Renderer* renderer, int selected_game);
+include/kiddos/app/selected_game_screen.hpp:16:    ~SelectedGameScreen() override;
+include/kiddos/app/selected_game_screen.hpp:18:    int selected_game() const noexcept { return selected_game_; }
+include/kiddos/app/selected_game_screen.hpp:22:    int selected_game_ = 0;
+include/kiddos/app/shared_shell.hpp:17:    void render_header();
+include/kiddos/app/shared_shell.hpp:18:    void render_footer(bool selected_game);
+include/kiddos/app/shared_shell.hpp:25:    SDL_Texture* logo_ = nullptr;
+
+===== WORKING TREE STATUS =====
+ M CMakeLists.txt
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/application.cpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/selected_game_screen.hpp
+?? include/kiddos/app/shared_shell.hpp
+?? src/app/selected_game_screen.cpp
+?? src/app/shared_shell.cpp
+?? tests/app_selected_game_screen_test.cpp
