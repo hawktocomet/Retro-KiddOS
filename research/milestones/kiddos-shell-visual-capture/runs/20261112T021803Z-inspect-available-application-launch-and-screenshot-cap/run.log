@@ -1,0 +1,97 @@
+===== PROJECT RUN INSTRUCTIONS =====
+README.md:15:The interface is designed for the device's 720 × 720 display and physical
+README.md:35:- Reported 720 × 720 IPS display
+README.md:46:simulates the handheld's logical 720 × 720 display and input during
+docs/ARCHITECTURE.md:7:The interface targets a 720 × 720 logical display and physical controls.
+docs/ARCHITECTURE.md:24:- Game action and launch requests.
+docs/ARCHITECTURE.md:32:- Display and graphics.
+docs/ARCHITECTURE.md:35:- Game and emulator launching.
+docs/ARCHITECTURE.md:61:- Running bounded development tests.
+docs/ARCHITECTURE.md:72:- Game launch integration.
+docs/DEVELOPMENT_LOG.md:30:  a headless SDL runtime smoke test with the dummy video driver.
+docs/DEVELOPMENT_LOG.md:62:- Game launching.
+docs/DEVELOPMENT_LOG.md:154:  runtime verification plan.
+docs/DEVELOPMENT_LOG.md:156:  launching, and external kernel/U-Boot source availability. After the
+docs/DEVELOPMENT_LOG.md:165:- Ran a headless SDL runtime smoke test using SDL's dummy video driver.
+docs/DEVELOPMENT_LOG.md:181:- Built the application successfully and completed a desktop preview run.
+docs/DEVELOPMENT_LOG.md:204:- Visual parity still requires inspection of the running screen.
+docs/DEVELOPMENT_LOG.md:216:  or emulator launch is implemented.
+docs/DEVELOPMENT_LOG.md:217:- Built the SDL2 application and ran a headless runtime smoke test.
+docs/DEVELOPMENT_STATUS.md:26:  save-state integration, and emulator launching are not implemented.
+docs/DEVELOPMENT_STATUS.md:53:- Real emulator discovery, game launching, and save/checkpoint integration.
+docs/DEVELOPMENT_STATUS.md:56:- Verification and implementation of device-specific controls, display,
+docs/DEVELOPMENT_STATUS.md:69:For code changes, configure and build with CMake, run the complete CTest suite,
+docs/DEVELOPMENT_STATUS.md:70:and perform a desktop runtime smoke test when application behavior changes.
+docs/FIRMWARE_AUDIT.md:84:### Display and graphics
+docs/FIRMWARE_AUDIT.md:99:a native SDL2 interface. We still need to verify the actual display device,
+docs/FIRMWARE_AUDIT.md:201:The script only runs its LED behavior when the device-tree model is
+docs/FIRMWARE_AUDIT.md:230:hardware adapter after runtime discovery.
+docs/FIRMWARE_AUDIT.md:275:- Game launching and return-to-shell behavior
+docs/FIRMWARE_AUDIT.md:278:- Audio and display settings UI
+docs/FIRMWARE_AUDIT.md:285:- Display and graphics
+docs/FIRMWARE_AUDIT.md:304:- Display
+docs/FIRMWARE_AUDIT.md:316:## 8. Runtime verification required
+docs/FIRMWARE_AUDIT.md:323:3. Display devices, DRM nodes, and available graphics drivers
+docs/FIRMWARE_AUDIT.md:332:12. Existing game launcher, frontend, and service startup sequence
+docs/FIRMWARE_AUDIT.md:344:| Graphics foundation | DRM/KMS, Mali, RGA2 and display support configured | High |
+docs/GAME_ACTION_SCREEN.md:8:- First-launch games show Play.
+docs/GAME_ACTION_SCREEN.md:19:Confirming an action does not launch an emulator or modify saved data.
+docs/GAME_ACTION_SCREEN.md:20:Game launching, checkpoint discovery, resume, and restart behavior require
+docs/HARDWARE.md:12:- 3.1-inch IPS display
+docs/HARDWARE.md:31:- Display orientation and scaling
+docs/HARDWARE.md:35:- Existing frontend and emulator launch mechanisms
+docs/KIDDOS_UI_LIBRARY.md:110:putting game launching, emulator selection, or parental-policy decisions
+docs/KIDDOS_UI_LIBRARY.md:161:- Application services own game catalog, launch, save-state, and parental
+docs/KIDDOS_UI_LIBRARY.md:166:Run the full suite after changes:
+docs/KIDDOS_UI_LIBRARY.md:179:controls, persistent settings, or hardware-specific input/display services.
+docs/KID_MODE_CAROUSEL_PROTOTYPE.md:6:Kid Mode screen. It runs in the temporary Arch Linux SDL2 development
+docs/KID_MODE_CAROUSEL_PROTOTYPE.md:11:- Logical 720 × 720 display.
+docs/KID_MODE_CAROUSEL_PROTOTYPE.md:41:implement game discovery, game launching, emulator integration, real audio
+docs/KID_MODE_CAROUSEL_PROTOTYPE.md:43:display integration.
+docs/LOW_BATTERY_PROTECTION.md:3:KiddOS should monitor battery state while a game is running.
+docs/MEDIA_MANAGER.md:10:3. Available artwork, screenshots, and gameplay previews are retrieved.
+docs/MEDIA_MANAGER.md:11:4. The parent previews available media and chooses what to display.
+docs/MEDIA_MANAGER.md:37:No emulator should run in the background to generate previews.
+docs/PRODUCT_SPECIFICATION.md:33:- Straightforward game launching, resuming, and restarting.
+docs/PRODUCT_SPECIFICATION.md:51:- 3.1-inch IPS display
+docs/PRODUCT_SPECIFICATION.md:60:### Display and input
+docs/PRODUCT_SPECIFICATION.md:64:- The interface must be designed for the device's square display.
+docs/PRODUCT_SPECIFICATION.md:102:- Configuring display and volume settings.
+docs/PRODUCT_SPECIFICATION.md:127:- Do not display battery percentages or words in the normal indicator.
+docs/PRODUCT_SPECIFICATION.md:141:- First launch: Play.
+docs/PRODUCT_SPECIFICATION.md:149:- The preview uses the same display area as the artwork.
+docs/PRODUCT_SPECIFICATION.md:152:- Launching a game stops preview playback immediately.
+docs/PRODUCT_SPECIFICATION.md:154:- Do not run an emulator in the background to generate previews.
+docs/PRODUCT_SPECIFICATION.md:183:### Display and Volume
+docs/PRODUCT_SPECIFICATION.md:254:### Launch behavior
+docs/PRODUCT_SPECIFICATION.md:281:- Manual selection of artwork and screenshots.
+docs/PRODUCT_SPECIFICATION.md:301:  display a child-friendly full-screen charging message.
+docs/PRODUCT_SPECIFICATION.md:331:reporting, input mappings, or emulator launch mechanisms are available or
+docs/PRODUCT_SPECIFICATION.md:347:- Display orientation and scaling.
+docs/PRODUCT_SPECIFICATION.md:351:- Existing frontend and emulator launch mechanisms.
+docs/PRODUCT_SPECIFICATION.md:380:- The interface is designed around a 720 × 720 display and physical controls.
+docs/PRODUCT_SPECIFICATION.md:392:- Emulator launch and input interception mechanisms.
+docs/PROJECT_VISION.md:43:- Configuring display, volume, and child-facing features.
+docs/PROJECT_VISION.md:54:- Designed for a 720 × 720 square display.
+docs/SAVE_STATE_SYSTEM.md:3:## First launch
+docs/SAVE_STATE_SYSTEM.md:7:## Subsequent launches
+docs/UI_DESIGN.md:36:replace it after approximately 2.5 seconds, using exactly the same display
+docs/UI_DESIGN.md:37:area. Browsing to another game restarts the timer. Launching a game stops
+docs/ui-progress-bar.md:3:`ProgressBar` displays a percentage from 0 to 100.
+
+===== BUILD OUTPUTS =====
+build/kiddos
+
+===== APPLICATION ENTRY POINT =====
+#include "kiddos/app/application.hpp"
+#include "kiddos/platform/sdl_platform.hpp"
+
+int main() {
+    kiddos::SDLPlatform platform;
+    kiddos::Application application(platform);
+    return application.run();
+}
+
+===== AVAILABLE DISPLAY TOOLS =====
+/usr/bin/import
+/usr/bin/grim
