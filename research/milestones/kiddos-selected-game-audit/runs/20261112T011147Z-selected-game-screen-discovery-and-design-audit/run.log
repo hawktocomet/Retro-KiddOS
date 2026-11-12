@@ -1,0 +1,384 @@
+===== GIT STATUS =====
+ M assets/artwork/generated/kiddos-wordmark.png
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+?? assets/artwork/generated/boxart/
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/platform.hpp
+af87ce6 Add approved Pixel Minimal Type branding artwork
+2d70b55 Finalize KiddOS branding and navigation artwork
+9854785 chore: record milestone run - move-browse-group-to-bottom-left
+a33d3b9 chore: record milestone run - put-plus-between-start-and-select
+3f722cb chore: record milestone run - place-parent-menu-center-and-a-select-right
+
+===== PROJECT STRUCTURE =====
+include/kiddos/app/application.hpp
+include/kiddos/app/home_carousel_screen.hpp
+include/kiddos/app/platform.hpp
+include/kiddos/app/ui_action_mapping.hpp
+include/kiddos/core/action.hpp
+include/kiddos/kiddos_ui.hpp
+include/kiddos/platform/platform.hpp
+include/kiddos/platform/sdl_keyboard_policy.hpp
+include/kiddos/platform/sdl_platform.hpp
+include/kiddos/platform/sdl_text_input_translator.hpp
+include/kiddos/platform/text_input_event.hpp
+include/kiddos/ui/button.hpp
+include/kiddos/ui/checkbox.hpp
+include/kiddos/ui/color.hpp
+include/kiddos/ui/container.hpp
+include/kiddos/ui/controller.hpp
+include/kiddos/ui/element.hpp
+include/kiddos/ui/focus.hpp
+include/kiddos/ui/font.hpp
+include/kiddos/ui/geometry.hpp
+include/kiddos/ui/image.hpp
+include/kiddos/ui/label.hpp
+include/kiddos/ui/layout.hpp
+include/kiddos/ui/list_view.hpp
+include/kiddos/ui/panel.hpp
+include/kiddos/ui/progress_bar.hpp
+include/kiddos/ui/radio_group.hpp
+include/kiddos/ui/renderer.hpp
+include/kiddos/ui/screen.hpp
+include/kiddos/ui/screen_manager.hpp
+include/kiddos/ui/select.hpp
+include/kiddos/ui/slider.hpp
+include/kiddos/ui/text.hpp
+include/kiddos/ui/text_input.hpp
+include/kiddos/ui/text_input_interaction.hpp
+include/kiddos/ui/texture.hpp
+include/kiddos/ui/theme.hpp
+include/kiddos/ui/toggle.hpp
+include/kiddos/ui/ui.hpp
+src/app/application.cpp
+src/app/home_carousel_screen.cpp
+src/main.cpp
+src/platform/sdl_platform.cpp
+src/ui/button.cpp
+src/ui/checkbox.cpp
+src/ui/controller.cpp
+src/ui/focus.cpp
+src/ui/font.cpp
+src/ui/image.cpp
+src/ui/label.cpp
+src/ui/layout.cpp
+src/ui/list_view.cpp
+src/ui/panel.cpp
+src/ui/progress_bar.cpp
+src/ui/radio_group.cpp
+src/ui/renderer.cpp
+src/ui/screen.cpp
+src/ui/screen_manager.cpp
+src/ui/select.cpp
+src/ui/slider.cpp
+src/ui/text.cpp
+src/ui/text_input.cpp
+src/ui/text_input_interaction.cpp
+src/ui/texture.cpp
+src/ui/theme.cpp
+src/ui/toggle.cpp
+tests/app_home_carousel_screen_test.cpp
+tests/app_ui_action_mapping_test.cpp
+tests/platform_sdl_keyboard_policy_test.cpp
+tests/platform_sdl_text_input_translator_test.cpp
+tests/platform_text_input_event_test.cpp
+tests/platform_text_input_interface_test.cpp
+tests/ui_button_test.cpp
+tests/ui_checkbox_test.cpp
+tests/ui_controller_test.cpp
+tests/ui_focus_test.cpp
+tests/ui_geometry_test.cpp
+tests/ui_image_test.cpp
+tests/ui_label_test.cpp
+tests/ui_layout_test.cpp
+tests/ui_list_view_test.cpp
+tests/ui_panel_test.cpp
+tests/ui_progress_bar_test.cpp
+tests/ui_radio_group_test.cpp
+tests/ui_renderer_test.cpp
+tests/ui_screen_manager_test.cpp
+tests/ui_select_test.cpp
+tests/ui_slider_test.cpp
+tests/ui_text_input_interaction_test.cpp
+tests/ui_text_input_test.cpp
+tests/ui_theme_test.cpp
+tests/ui_toggle_test.cpp
+
+===== CAROUSEL AND SCREEN IMPLEMENTATION =====
+tests/app_home_carousel_screen_test.cpp:1:#include "kiddos/app/home_carousel_screen.hpp"
+tests/app_home_carousel_screen_test.cpp:65:    kiddos::app::HomeCarouselScreen screen(nullptr);
+tests/app_home_carousel_screen_test.cpp:69:    assert(screen.selected_game() == 1);
+tests/app_home_carousel_screen_test.cpp:79:    screen.set_selected_game(0);
+tests/app_home_carousel_screen_test.cpp:80:    assert(screen.selected_game() == 0);
+tests/app_home_carousel_screen_test.cpp:81:    assert(screen.selected_game() == 0);
+tests/app_home_carousel_screen_test.cpp:83:    screen.set_selected_game(3);
+tests/app_home_carousel_screen_test.cpp:84:    assert(screen.selected_game() == 3);
+tests/app_home_carousel_screen_test.cpp:86:    screen.set_selected_game(4);
+tests/app_home_carousel_screen_test.cpp:87:    assert(screen.selected_game() == 3);
+tests/app_home_carousel_screen_test.cpp:89:    screen.set_selected_game(0);
+tests/app_home_carousel_screen_test.cpp:90:    assert(screen.selected_game() == 0);
+tests/app_home_carousel_screen_test.cpp:96:void test_renders_minimal_carousel() {
+tests/app_home_carousel_screen_test.cpp:111:        kiddos::app::HomeCarouselScreen screen(native);
+tests/app_home_carousel_screen_test.cpp:128:        screen.set_selected_game(0);
+tests/app_home_carousel_screen_test.cpp:148:    test_renders_minimal_carousel();
+tests/platform_text_input_interface_test.cpp:10:    void draw_carousel(int) override {}
+include/kiddos/app/home_carousel_screen.hpp:14:class HomeCarouselScreen final : public ui::Screen {
+include/kiddos/app/home_carousel_screen.hpp:18:    explicit HomeCarouselScreen(SDL_Renderer* renderer);
+include/kiddos/app/home_carousel_screen.hpp:19:    ~HomeCarouselScreen() override;
+include/kiddos/app/home_carousel_screen.hpp:21:    void set_selected_game(int index);
+include/kiddos/app/home_carousel_screen.hpp:22:    int selected_game() const noexcept { return selected_game_; }
+include/kiddos/app/home_carousel_screen.hpp:39:    int selected_game_ = -1;
+src/app/home_carousel_screen.cpp:1:#include "kiddos/app/home_carousel_screen.hpp"
+src/app/home_carousel_screen.cpp:120:HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+src/app/home_carousel_screen.cpp:155:    set_selected_game(1);
+src/app/home_carousel_screen.cpp:158:HomeCarouselScreen::~HomeCarouselScreen() {
+src/app/home_carousel_screen.cpp:167:void HomeCarouselScreen::set_selected_game(int index) {
+src/app/home_carousel_screen.cpp:169:    if (index == selected_game_) return;
+src/app/home_carousel_screen.cpp:171:    const int previous = selected_game_;
+src/app/home_carousel_screen.cpp:191:    selected_game_ = index;
+src/app/home_carousel_screen.cpp:217:void HomeCarouselScreen::update(float delta_seconds) {
+src/app/home_carousel_screen.cpp:221:    // another direction input to retarget the carousel mid-motion.
+include/kiddos/app/application.hpp:21:    int selected_game_ = 1;
+include/kiddos/platform/sdl_platform.hpp:22:    void draw_carousel(int selected_index) override;
+src/app/application.cpp:3:#include "kiddos/app/home_carousel_screen.hpp"
+src/app/application.cpp:28:    // carousel artwork is BMP, which needs no extra image format flags.
+src/app/application.cpp:31:    screens_.push(std::make_unique<app::HomeCarouselScreen>(
+src/app/application.cpp:71:            if (action_screen_ && selected_game_ == 1) {
+src/app/application.cpp:92:            // chance to respond first. The home carousel is currently
+src/app/application.cpp:93:            // display-only, so the application carousel state handles the
+src/app/application.cpp:101:                    selected_game_ =
+src/app/application.cpp:102:                        (selected_game_ + game_count_ - 1) % game_count_;
+src/app/application.cpp:106:                    selected_game_ =
+src/app/application.cpp:107:                        (selected_game_ + 1) % game_count_;
+src/app/application.cpp:135:            selected_game_, selected_game_ == 1, selected_action_);
+src/app/application.cpp:137:                   static_cast<app::HomeCarouselScreen*>(screens_.current())) {
+src/app/application.cpp:138:        home->set_selected_game(selected_game_);
+include/kiddos/platform/platform.hpp:23:    virtual void draw_carousel(int selected_index) = 0;
+src/platform/sdl_platform.cpp:20:SDL_Texture* carousel_title_texture{};
+src/platform/sdl_platform.cpp:21:SDL_Texture* carousel_selected_texture{};
+src/platform/sdl_platform.cpp:318:    // uniform border consistent with the home carousel's heavier frames.
+src/platform/sdl_platform.cpp:372:        "Retro KiddOS - Kid Mode",
+src/platform/sdl_platform.cpp:408:        "assets/artwork/generated/carousel-star.bmp",
+src/platform/sdl_platform.cpp:409:        "assets/artwork/generated/carousel-mushroom.bmp",
+src/platform/sdl_platform.cpp:410:        "assets/artwork/generated/carousel-car.bmp"
+src/platform/sdl_platform.cpp:435:    carousel_title_texture =
+src/platform/sdl_platform.cpp:436:        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-title.bmp", true);
+src/platform/sdl_platform.cpp:437:    carousel_selected_texture =
+src/platform/sdl_platform.cpp:438:        load_bitmap_texture(renderer_, "assets/artwork/generated/carousel-selected.bmp", true);
+src/platform/sdl_platform.cpp:439:    if (!carousel_title_texture || !carousel_selected_texture) {
+src/platform/sdl_platform.cpp:443:    SDL_SetTextureBlendMode(carousel_title_texture, SDL_BLENDMODE_BLEND);
+src/platform/sdl_platform.cpp:444:    SDL_SetTextureBlendMode(carousel_selected_texture, SDL_BLENDMODE_BLEND);
+src/platform/sdl_platform.cpp:629:void SDLPlatform::draw_carousel(int selected_index) {
+src/platform/sdl_platform.cpp:664:    // Artwork always follows the actual selected game.
+src/platform/sdl_platform.cpp:669:    if (carousel_title_texture && selected_index == 1) {
+src/platform/sdl_platform.cpp:671:        SDL_RenderCopy(renderer_, carousel_title_texture,
+src/platform/sdl_platform.cpp:751:    // Keep the selected game's artwork prominent.
+src/platform/sdl_platform.cpp:823:    if (carousel_title_texture) {
+src/platform/sdl_platform.cpp:824:        SDL_DestroyTexture(carousel_title_texture);
+src/platform/sdl_platform.cpp:825:        carousel_title_texture = nullptr;
+src/platform/sdl_platform.cpp:827:    if (carousel_selected_texture) {
+src/platform/sdl_platform.cpp:828:        SDL_DestroyTexture(carousel_selected_texture);
+src/platform/sdl_platform.cpp:829:        carousel_selected_texture = nullptr;
+
+===== SDL RENDERING AND INPUT =====
+src/app/home_carousel_screen.cpp:120:HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+src/ui/texture.cpp:26:    SDL_Renderer* renderer,
+src/ui/texture.cpp:41:    SDL_Texture* loaded = SDL_CreateTextureFromSurface(renderer, surface);
+src/ui/texture.cpp:66:SDL_Texture* Texture::native() const noexcept { return texture_; }
+src/ui/renderer.cpp:8:Renderer::Renderer(SDL_Renderer* renderer) noexcept
+src/ui/renderer.cpp:12:void Renderer::attach(SDL_Renderer* renderer) noexcept {
+src/ui/renderer.cpp:20:SDL_Renderer* Renderer::native() const noexcept {
+src/ui/renderer.cpp:38:    return SDL_RenderClear(renderer_) == 0;
+src/ui/renderer.cpp:44:    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+src/ui/renderer.cpp:45:    return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+src/ui/renderer.cpp:51:    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+src/ui/renderer.cpp:52:    return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+src/ui/renderer.cpp:58:    return SDL_RenderDrawLine(
+src/ui/renderer.cpp:66:    return SDL_RenderDrawPoint(
+src/ui/renderer.cpp:72:    SDL_Texture* texture,
+src/ui/renderer.cpp:83:    SDL_Rect src{source.x, source.y, source.w, source.h};
+src/ui/renderer.cpp:84:    SDL_Rect dst{destination.x, destination.y, destination.w, destination.h};
+src/ui/renderer.cpp:85:    const bool rendered = SDL_RenderCopy(renderer_, texture, &src, &dst) == 0;
+src/ui/renderer.cpp:112:        SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+src/ui/renderer.cpp:113:        return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+src/ui/renderer.cpp:124:        if (SDL_RenderDrawLine(
+src/ui/renderer.cpp:143:        SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+src/ui/renderer.cpp:144:        return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+src/ui/renderer.cpp:148:    if (SDL_RenderDrawLine(
+src/ui/renderer.cpp:152:        SDL_RenderDrawLine(
+src/ui/renderer.cpp:156:        SDL_RenderDrawLine(
+src/ui/renderer.cpp:160:        SDL_RenderDrawLine(
+src/ui/renderer.cpp:204:                if (SDL_RenderDrawPoint(
+src/ui/renderer.cpp:238:    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+src/ui/renderer.cpp:239:    return SDL_RenderSetClipRect(renderer_, &native_rect) == 0;
+src/ui/renderer.cpp:245:    return SDL_RenderSetClipRect(renderer_, nullptr) == 0;
+src/ui/renderer.cpp:250:        SDL_RenderPresent(renderer_);
+include/kiddos/ui/renderer.hpp:12:// The SDLPlatform remains responsible for creating and destroying SDL_Renderer.
+include/kiddos/ui/renderer.hpp:15:    explicit Renderer(SDL_Renderer* renderer = nullptr) noexcept;
+include/kiddos/ui/renderer.hpp:17:    void attach(SDL_Renderer* renderer) noexcept;
+include/kiddos/ui/renderer.hpp:25:    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination,
+include/kiddos/ui/renderer.hpp:35:    SDL_Renderer* native() const noexcept;
+include/kiddos/ui/renderer.hpp:38:    SDL_Renderer* renderer_ = nullptr;
+include/kiddos/ui/texture.hpp:21:    bool load(SDL_Renderer* renderer, const std::string& path,
+include/kiddos/ui/texture.hpp:27:    SDL_Texture* native() const noexcept;
+include/kiddos/ui/texture.hpp:30:    SDL_Texture* texture_ = nullptr;
+src/platform/sdl_platform.cpp:18:std::array<SDL_Texture*, 3> artwork_textures{};
+src/platform/sdl_platform.cpp:19:std::array<SDL_Texture*, 3> action_label_textures{};
+src/platform/sdl_platform.cpp:20:SDL_Texture* carousel_title_texture{};
+src/platform/sdl_platform.cpp:21:SDL_Texture* carousel_selected_texture{};
+src/platform/sdl_platform.cpp:23:SDL_Texture* load_bitmap_texture(SDL_Renderer* renderer,
+src/platform/sdl_platform.cpp:38:    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+src/platform/sdl_platform.cpp:50:void color(SDL_Renderer* r, Color c) {
+src/platform/sdl_platform.cpp:54:void rectangle(SDL_Renderer* r, SDL_Rect rect, Color c) {
+src/platform/sdl_platform.cpp:56:    SDL_RenderFillRect(r, &rect);
+src/platform/sdl_platform.cpp:59:void outline(SDL_Renderer* r, SDL_Rect rect, Color c) {
+src/platform/sdl_platform.cpp:61:    SDL_RenderDrawRect(r, &rect);
+src/platform/sdl_platform.cpp:64:void rounded_fill(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+src/platform/sdl_platform.cpp:80:        SDL_RenderDrawLine(r, rect.x + inset, rect.y + y,
+src/platform/sdl_platform.cpp:85:void rounded_outline(SDL_Renderer* r, SDL_Rect rect, int radius, Color c) {
+src/platform/sdl_platform.cpp:90:    SDL_RenderDrawLine(r, rect.x + radius, rect.y,
+src/platform/sdl_platform.cpp:92:    SDL_RenderDrawLine(r, rect.x + radius, rect.y + rect.h - 1,
+src/platform/sdl_platform.cpp:94:    SDL_RenderDrawLine(r, rect.x, rect.y + radius,
+src/platform/sdl_platform.cpp:96:    SDL_RenderDrawLine(r, rect.x + rect.w - 1, rect.y + radius,
+src/platform/sdl_platform.cpp:105:        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+src/platform/sdl_platform.cpp:107:        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+src/platform/sdl_platform.cpp:109:        SDL_RenderDrawPoint(r, rect.x + radius - dx,
+src/platform/sdl_platform.cpp:111:        SDL_RenderDrawPoint(r, rect.x + rect.w - radius - 1 + dx,
+src/platform/sdl_platform.cpp:116:void mask_artwork_corners(SDL_Renderer* r, SDL_Rect rect,
+src/platform/sdl_platform.cpp:125:        SDL_RenderDrawLine(r, rect.x, rect.y + y,
+src/platform/sdl_platform.cpp:127:        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, rect.y + y,
+src/platform/sdl_platform.cpp:131:        SDL_RenderDrawLine(r, rect.x, bottom_y,
+src/platform/sdl_platform.cpp:133:        SDL_RenderDrawLine(r, rect.x + rect.w - 1 - inset, bottom_y,
+src/platform/sdl_platform.cpp:138:void circle(SDL_Renderer* r, int cx, int cy, int radius, Color c) {
+src/platform/sdl_platform.cpp:147:        SDL_RenderDrawLine(r, cx - x, cy + y, cx + x, cy + y);
+src/platform/sdl_platform.cpp:151:void triangle(SDL_Renderer* r, int x1, int y1,
+src/platform/sdl_platform.cpp:179:            SDL_RenderDrawLine(
+src/platform/sdl_platform.cpp:190:void draw_space_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:220:void draw_forest_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:252:void draw_ocean_world(SDL_Renderer* r, SDL_Rect a, Uint8 alpha) {
+src/platform/sdl_platform.cpp:274:            SDL_RenderDrawPoint(r, x, wave_y);
+src/platform/sdl_platform.cpp:284:void draw_art(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:285:              SDL_Rect area, Uint8 alpha) {
+src/platform/sdl_platform.cpp:287:    SDL_Texture* texture = artwork_textures[static_cast<std::size_t>(index)];
+src/platform/sdl_platform.cpp:291:    SDL_RenderCopy(r, texture, nullptr, &area);
+src/platform/sdl_platform.cpp:295:void draw_card(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:296:               SDL_Rect rect, bool selected) {
+src/platform/sdl_platform.cpp:305:    SDL_Rect art{
+src/platform/sdl_platform.cpp:312:    SDL_RenderSetClipRect(r, &art);
+src/platform/sdl_platform.cpp:314:    SDL_RenderSetClipRect(r, nullptr);
+src/platform/sdl_platform.cpp:336:void draw_status(SDL_Renderer* r) {
+src/platform/sdl_platform.cpp:345:    SDL_RenderDrawLine(r, 49, 29, 54, 34);
+src/platform/sdl_platform.cpp:346:    SDL_RenderDrawLine(r, 54, 34, 54, 42);
+src/platform/sdl_platform.cpp:347:    SDL_RenderDrawLine(r, 54, 42, 49, 47);
+src/platform/sdl_platform.cpp:462:    controller_ = SDL_GameControllerOpen(device_index);
+src/platform/sdl_platform.cpp:466:            SDL_GameControllerGetJoystick(controller_)
+src/platform/sdl_platform.cpp:473:        SDL_GameControllerClose(controller_);
+src/platform/sdl_platform.cpp:497:        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+src/platform/sdl_platform.cpp:499:        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+src/platform/sdl_platform.cpp:501:        case SDL_CONTROLLER_BUTTON_DPAD_UP:
+src/platform/sdl_platform.cpp:503:        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+src/platform/sdl_platform.cpp:505:        case SDL_CONTROLLER_BUTTON_A:
+src/platform/sdl_platform.cpp:507:        case SDL_CONTROLLER_BUTTON_X:
+src/platform/sdl_platform.cpp:509:        case SDL_CONTROLLER_BUTTON_B:
+src/platform/sdl_platform.cpp:553:            case SDL_CONTROLLERBUTTONDOWN:
+src/platform/sdl_platform.cpp:563:            case SDL_CONTROLLERDEVICEADDED:
+src/platform/sdl_platform.cpp:567:            case SDL_CONTROLLERDEVICEREMOVED:
+src/platform/sdl_platform.cpp:625:    SDL_RenderClear(renderer_);
+src/platform/sdl_platform.cpp:640:    const SDL_Rect side_left{25, 250, 190, 175};
+src/platform/sdl_platform.cpp:641:    const SDL_Rect side_right{505, 250, 190, 175};
+src/platform/sdl_platform.cpp:656:    const SDL_Rect center{145, 135, 430, 370};
+src/platform/sdl_platform.cpp:670:        SDL_Rect title{220, 525, 280, 42};
+src/platform/sdl_platform.cpp:671:        SDL_RenderCopy(renderer_, carousel_title_texture,
+src/platform/sdl_platform.cpp:681:void draw_action_label(SDL_Renderer* r, int index,
+src/platform/sdl_platform.cpp:684:    SDL_Texture* texture = action_label_textures[static_cast<std::size_t>(index)];
+src/platform/sdl_platform.cpp:687:    SDL_Rect destination{x, y, 350, 72};
+src/platform/sdl_platform.cpp:688:    SDL_RenderCopy(r, texture, nullptr, &destination);
+src/platform/sdl_platform.cpp:695:void draw_play_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:700:void draw_resume_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:708:void draw_restart_symbol(SDL_Renderer* r, int x, int y) {
+src/platform/sdl_platform.cpp:730:            SDL_RenderDrawLine(r, previous_x, previous_y, next_x, next_y);
+src/platform/sdl_platform.cpp:766:        SDL_Rect box{65, y, 590, box_height};
+src/platform/sdl_platform.cpp:805:    if (renderer_) SDL_RenderPresent(renderer_);
+include/kiddos/app/home_carousel_screen.hpp:18:    explicit HomeCarouselScreen(SDL_Renderer* renderer);
+src/ui/text.cpp:14:    SDL_Texture* texture =
+src/ui/text.cpp:20:    SDL_Rect destination{position.x, position.y, surface->w, surface->h};
+src/ui/text.cpp:22:        SDL_RenderCopy(renderer_.native(), texture, nullptr, &destination);
+include/kiddos/platform/sdl_platform.hpp:27:    SDL_Renderer* native_renderer() const noexcept override {
+include/kiddos/platform/sdl_platform.hpp:33:    SDL_Renderer* renderer_ = nullptr;
+include/kiddos/platform/sdl_platform.hpp:34:    SDL_GameController* controller_ = nullptr;
+include/kiddos/platform/platform.hpp:6:struct SDL_Renderer;
+include/kiddos/platform/platform.hpp:16:    virtual SDL_Renderer* native_renderer() const noexcept { return nullptr; }
+
+===== BUILD =====
+ninja: no work to do.
+BUILD_EXIT_CODE=0
+
+===== TEST SUITE =====
+Test project /home/hawk/KiddOS/build
+      Start  1: kiddos_app_ui_action_mapping
+ 1/26 Test  #1: kiddos_app_ui_action_mapping ................   Passed    0.01 sec
+      Start  2: kiddos_app_home_carousel_screen
+ 2/26 Test  #2: kiddos_app_home_carousel_screen .............Subprocess aborted***Exception:   0.07 sec
+kiddos_app_home_carousel_screen_test: /home/hawk/KiddOS/tests/app_home_carousel_screen_test.cpp:72: void {anonymous}::test_structure_and_selection(): Assertion `wordmark' failed.
+
+      Start  3: kiddos_platform_sdl_text_input_translator
+ 3/26 Test  #3: kiddos_platform_sdl_text_input_translator ...   Passed    0.00 sec
+      Start  4: kiddos_platform_text_input_interface
+ 4/26 Test  #4: kiddos_platform_text_input_interface ........   Passed    0.00 sec
+      Start  5: kiddos_platform_sdl_keyboard_policy
+ 5/26 Test  #5: kiddos_platform_sdl_keyboard_policy .........   Passed    0.00 sec
+      Start  6: kiddos_platform_text_input_event
+ 6/26 Test  #6: kiddos_platform_text_input_event ............   Passed    0.00 sec
+      Start  7: kiddos_ui_layout
+ 7/26 Test  #7: kiddos_ui_layout ............................   Passed    0.00 sec
+      Start  8: kiddos_ui_geometry
+ 8/26 Test  #8: kiddos_ui_geometry ..........................   Passed    0.00 sec
+      Start  9: kiddos_ui_focus
+ 9/26 Test  #9: kiddos_ui_focus .............................   Passed    0.00 sec
+      Start 10: kiddos_ui_button
+10/26 Test #10: kiddos_ui_button ............................   Passed    0.01 sec
+      Start 11: kiddos_ui_controller
+11/26 Test #11: kiddos_ui_controller ........................   Passed    0.00 sec
+      Start 12: kiddos_ui_renderer
+12/26 Test #12: kiddos_ui_renderer ..........................   Passed    0.01 sec
+      Start 13: kiddos_ui_image
+13/26 Test #13: kiddos_ui_image .............................   Passed    0.00 sec
+      Start 14: kiddos_ui_label
+14/26 Test #14: kiddos_ui_label .............................   Passed    0.00 sec
+      Start 15: kiddos_ui_panel
+15/26 Test #15: kiddos_ui_panel .............................   Passed    0.00 sec
+      Start 16: kiddos_ui_progress_bar
+16/26 Test #16: kiddos_ui_progress_bar ......................   Passed    0.00 sec
+      Start 17: kiddos_ui_toggle
+17/26 Test #17: kiddos_ui_toggle ............................   Passed    0.00 sec
+      Start 18: kiddos_ui_slider
+18/26 Test #18: kiddos_ui_slider ............................   Passed    0.00 sec
+      Start 19: kiddos_ui_theme
+19/26 Test #19: kiddos_ui_theme .............................   Passed    0.00 sec
+      Start 20: kiddos_ui_list_view
+20/26 Test #20: kiddos_ui_list_view .........................   Passed    0.01 sec
+      Start 21: kiddos_ui_checkbox
+21/26 Test #21: kiddos_ui_checkbox ..........................   Passed    0.00 sec
+      Start 22: kiddos_ui_radio_group
+22/26 Test #22: kiddos_ui_radio_group .......................   Passed    0.00 sec
+      Start 23: kiddos_ui_select
+23/26 Test #23: kiddos_ui_select ............................   Passed    0.00 sec
+      Start 24: kiddos_ui_text_input
+24/26 Test #24: kiddos_ui_text_input ........................   Passed    0.00 sec
+      Start 25: kiddos_ui_text_input_interaction
+25/26 Test #25: kiddos_ui_text_input_interaction ............   Passed    0.00 sec
+      Start 26: kiddos_ui_screen_manager
+26/26 Test #26: kiddos_ui_screen_manager ....................   Passed    0.00 sec
+
+96% tests passed, 1 tests failed out of 26
+
+Total Test time (real) =   0.18 sec
+
+The following tests FAILED:
+	  2 - kiddos_app_home_carousel_screen (Subprocess aborted)
+Errors while running CTest
+TEST_EXIT_CODE=8
