@@ -1,0 +1,230 @@
+===== SDL WINDOW CONFIGURATION =====
+    outline(r, {657, 27, 34, 19}, white);
+    rectangle(r, {691, 33, 4, 7}, white);
+    rectangle(r, {661, 31, 22, 11},
+              {67, 157, 255, 240});
+}
+
+} // namespace
+
+SDLPlatform::~SDLPlatform() {
+    shutdown();
+}
+
+bool SDLPlatform::initialize() {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
+        std::cerr << "SDL initialization failed: "
+                  << SDL_GetError() << '\n';
+        return false;
+    }
+
+    initialized_ = true;
+
+    window_ = SDL_CreateWindow(
+        "Retro KiddOS - Kid Mode",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        720,
+        720,
+        SDL_WINDOW_SHOWN
+    );
+
+    if (!window_) {
+        std::cerr << "Window creation failed: "
+                  << SDL_GetError() << '\n';
+        shutdown();
+        return false;
+    }
+
+    renderer_ = SDL_CreateRenderer(
+        window_, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    );
+
+    if (!renderer_) {
+        renderer_ = SDL_CreateRenderer(
+            window_, -1, SDL_RENDERER_SOFTWARE
+        );
+    }
+
+    if (!renderer_) {
+        std::cerr << "Renderer creation failed: "
+                  << SDL_GetError() << '\n';
+        shutdown();
+        return false;
+    }
+
+    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+
+    const char* artwork_paths[] = {
+        "assets/artwork/generated/carousel-star.bmp",
+        "assets/artwork/generated/carousel-mushroom.bmp",
+        "assets/artwork/generated/carousel-car.bmp"
+    };
+    const char* label_paths[] = {
+        "assets/artwork/generated/label-play.bmp",
+        "assets/artwork/generated/label-resume.bmp",
+        "assets/artwork/generated/label-start-over.bmp"
+    };
+
+    for (std::size_t i = 0; i < artwork_textures.size(); ++i) {
+        artwork_textures[i] = load_bitmap_texture(renderer_, artwork_paths[i], true);
+        if (!artwork_textures[i]) {
+
+===== APPLICATION RUN LOOP =====
+11-#include <memory>
+12-#include <thread>
+13-#include <SDL_ttf.h>
+14-
+15-namespace kiddos {
+16-
+17-Application::Application(Platform& platform)
+18-    : platform_(platform) {
+19-}
+20-
+21:int Application::run() {
+22-    if (!platform_.initialize()) {
+23-        platform_.shutdown();
+24-        return 1;
+25-    }
+26-
+27-    // The UI renderer is a non-owning adapter around the platform renderer.
+28-    ui_renderer_.attach(platform_.native_renderer());
+29-    IMG_Init(IMG_INIT_PNG);
+30-    if (TTF_Init() != 0) {
+31-        IMG_Quit();
+32-        platform_.shutdown();
+33-        return 1;
+34-    }
+35-
+36-    app::SharedShell shell;
+37-    if (!shell.initialize(platform_.native_renderer())) {
+38-        TTF_Quit();
+39-        IMG_Quit();
+40-        platform_.shutdown();
+41-        return 1;
+42-    }
+43-
+44-    screens_.push(std::make_unique<app::HomeCarouselScreen>(
+45-        platform_.native_renderer()));
+46-
+47-    running_ = true;
+48-
+49-    while (running_) {
+50-        Action action = Action::None;
+51-
+52-        while (platform_.poll_action(action)) {
+53-            handle_action(action);
+54-            if (!running_) break;
+55-        }
+56-
+57-        if (running_) {
+58-            screens_.update(0.008f);
+59-            render(shell);
+60-            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+61-        }
+62-    }
+63-
+64-    // Screens and their textures must be destroyed before the SDL renderer.
+65-    screens_.clear();
+66-    shell.reset();
+67-    TTF_Quit();
+68-    IMG_Quit();
+69-    platform_.shutdown();
+70-    return 0;
+71-}
+72-
+73-void Application::handle_action(Action action) {
+74-    if (action == Action::Quit) {
+75-        running_ = false;
+76-        return;
+77-    }
+78-
+79-    const auto ui_action = app::to_ui_action(action);
+80-    if (!ui_action) return;
+81-
+82-    // Back pops a child screen, but never removes the home screen.
+83-    if (*ui_action == ui::UIAction::Back) {
+84-        if (screens_.depth() > 1) {
+85-            screens_.handle_action(*ui_action);
+86-        }
+87-        return;
+88-    }
+89-
+90-    // Let the active screen handle its own controls first. This is how
+91-    // Confirm activates the Play button on Selected Game.
+92-    if (screens_.handle_action(*ui_action)) return;
+93-
+94-    auto* home = dynamic_cast<app::HomeCarouselScreen*>(screens_.current());
+95-    if (!home) return;
+96-
+97-    switch (*ui_action) {
+98-        case ui::UIAction::Left:
+99-            selected_game_ =
+100-                (selected_game_ + game_count_ - 1) % game_count_;
+101-            home->set_selected_game(selected_game_);
+102-            break;
+103-
+104-        case ui::UIAction::Right:
+105-            selected_game_ = (selected_game_ + 1) % game_count_;
+106-            home->set_selected_game(selected_game_);
+107-            break;
+108-
+109-        case ui::UIAction::Confirm:
+110-            screens_.push(std::make_unique<app::SelectedGameScreen>(
+111-                platform_.native_renderer(), selected_game_));
+112-            break;
+113-
+114-        case ui::UIAction::Up:
+115-        case ui::UIAction::Down:
+116-        case ui::UIAction::Back:
+117-            break;
+118-    }
+119-}
+120-
+121-void Application::render(app::SharedShell& shell) {
+
+===== PLATFORM SHUTDOWN =====
+803-
+804-void SDLPlatform::present() {
+805-    if (renderer_) SDL_RenderPresent(renderer_);
+806-}
+807-
+808:void SDLPlatform::shutdown() {
+809-    close_controller();
+810-
+811-    for (auto& texture : artwork_textures) {
+812-        if (texture) {
+813-            SDL_DestroyTexture(texture);
+814-            texture = nullptr;
+815-        }
+816-    }
+817-    for (auto& texture : action_label_textures) {
+818-        if (texture) {
+819-            SDL_DestroyTexture(texture);
+820-            texture = nullptr;
+821-        }
+822-    }
+823-    if (carousel_title_texture) {
+824-        SDL_DestroyTexture(carousel_title_texture);
+825-        carousel_title_texture = nullptr;
+826-    }
+827-    if (carousel_selected_texture) {
+828-        SDL_DestroyTexture(carousel_selected_texture);
+829-        carousel_selected_texture = nullptr;
+830-    }
+831-
+832-    if (renderer_) {
+833-        SDL_DestroyRenderer(renderer_);
+834-        renderer_ = nullptr;
+835-    }
+836-
+837-    if (window_) {
+838-        SDL_DestroyWindow(window_);
+839-        window_ = nullptr;
+840-    }
+841-
+842-    if (initialized_) {
+843-        SDL_Quit();
+
+===== APPLICATION ARGUMENT SUPPORT =====
