@@ -1,1 +1,1 @@
-research/milestones/kiddos-shell-visual-capture/runs/20261112T021928Z-inspect-sdl-window-dimensions-and-application-lifecycle
+research/milestones/kiddos-shell-visual-capture/runs/20261112T022009Z-launch-kiddos-and-capture-the-rendered-carousel
