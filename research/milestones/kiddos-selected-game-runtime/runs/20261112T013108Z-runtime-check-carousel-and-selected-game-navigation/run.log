@@ -1,0 +1,21 @@
+===== LAUNCH KIDDOS =====
+Use the controller or mapped keyboard controls:
+1. Move left and right through the carousel.
+2. Press A / Confirm on a game.
+3. Confirm Selected Game appears with Play focused.
+4. Press B / Back and confirm the same game remains selected.
+5. Repeat with another game.
+6. Exit the application normally.
+
+===== APPLICATION EXIT STATUS =====
+0
+
+===== WORKING TREE (PRESERVE ALL CHANGES) =====
+ M CMakeLists.txt
+ M include/kiddos/app/application.hpp
+ M src/app/application.cpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/selected_game_screen.hpp
+?? src/app/selected_game_screen.cpp
+?? tests/app_selected_game_screen_test.cpp
