@@ -1,1 +1,1 @@
-research/milestones/kiddos-shell-visual-capture/runs/20261112T022103Z-capture-kiddos-preview-through-x11-compatibility
+research/milestones/kiddos-shell-visual-capture/runs/20261112T022347Z-add-desktop-screenshot-for-visual-review
