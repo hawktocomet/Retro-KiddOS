@@ -1,1 +1,1 @@
-research/milestones/kiddos-selected-game-ui-footer/runs/20261112T032855Z-render-selected-game-footer-through-ui-image
+research/milestones/kiddos-selected-game-ui-footer/runs/20261112T032950Z-finish-selected-game-ui-footer-integration
