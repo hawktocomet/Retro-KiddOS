@@ -1,0 +1,467 @@
+===== WORKTREE =====
+ M CMakeLists.txt
+ M include/kiddos/app/application.hpp
+ M include/kiddos/app/home_carousel_screen.hpp
+ M src/app/application.cpp
+ M src/app/home_carousel_screen.cpp
+ M src/platform/sdl_platform.cpp
+ M tests/app_home_carousel_screen_test.cpp
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/selected_game_screen.hpp
+?? include/kiddos/app/shared_shell.hpp
+?? src/app/selected_game_screen.cpp
+?? src/app/shared_shell.cpp
+?? tests/app_selected_game_screen_test.cpp
+
+===== SELECTED GAME HEADER =====
+#pragma once
+
+#include "kiddos/ui/button.hpp"
+#include "kiddos/ui/font.hpp"
+#include "kiddos/ui/image.hpp"
+#include "kiddos/ui/screen.hpp"
+#include "kiddos/ui/texture.hpp"
+
+#include <SDL.h>
+
+namespace kiddos::app {
+
+class SelectedGameScreen final : public ui::Screen {
+public:
+    SelectedGameScreen(SDL_Renderer* renderer, int selected_game);
+    ~SelectedGameScreen() override;
+
+    int selected_game() const noexcept { return selected_game_; }
+    bool play_requested() const noexcept { return play_requested_; }
+
+private:
+    int selected_game_ = 0;
+    bool play_requested_ = false;
+
+    ui::Texture artwork_texture_;
+    ui::Image* artwork_ = nullptr;
+    ui::Font font_;
+    ui::Button* play_button_ = nullptr;
+};
+
+} // namespace kiddos::app
+
+===== SELECTED GAME IMPLEMENTATION =====
+#include "kiddos/app/selected_game_screen.hpp"
+
+#include "kiddos/app/platform.hpp"
+
+#include <array>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr std::array<const char*, platform_count> artwork_paths{{
+    "assets/artwork/generated/boxart/gb-tetris.png",
+    "assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png",
+    "assets/artwork/generated/boxart/snes-super-mario-world.png",
+    "assets/artwork/generated/boxart/arcade-pac-man.png"
+}};
+
+void load_ui_font(ui::Font& font, int size) {
+    constexpr std::array<const char*, 3> paths{{
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf"
+    }};
+
+    for (const char* path : paths) {
+        if (font.load(path, size)) return;
+    }
+}
+
+} // namespace
+
+SelectedGameScreen::SelectedGameScreen(
+    SDL_Renderer* renderer,
+    int selected_game
+) : selected_game_(selected_game) {
+    if (selected_game_ < 0 ||
+        selected_game_ >= static_cast<int>(platform_count)) {
+        selected_game_ = 0;
+    }
+
+    artwork_texture_.load(
+        renderer,
+        artwork_paths[static_cast<std::size_t>(selected_game_)],
+        false
+    );
+
+    auto& artwork = root().add<ui::Image>(&artwork_texture_);
+    artwork.set_bounds({90, 85, 540, 450});
+    artwork.set_fit(ui::ImageFit::contain);
+    artwork_ = &artwork;
+
+    load_ui_font(font_, 28);
+
+    auto& play = root().add<ui::Button>("A  PLAY");
+    play.set_bounds({190, 545, 340, 88});
+    play.set_font(&font_);
+    play.set_style({
+        {18, 43, 83, 255},
+        {35, 91, 165, 255},
+        {14, 55, 112, 255},
+        {35, 39, 50, 255},
+        {69, 151, 255, 255},
+        {125, 190, 255, 255},
+        {255, 255, 255, 255},
+        {150, 155, 165, 255}
+    });
+    play.set_on_activate([this] {
+        // This records the UI request; the game-launch backend is separate.
+        play_requested_ = true;
+    });
+    play_button_ = &play;
+}
+
+SelectedGameScreen::~SelectedGameScreen() {
+    if (artwork_) artwork_->set_texture(nullptr);
+}
+
+} // namespace kiddos::app
+
+===== SHARED SHELL =====
+#pragma once
+
+#include <SDL.h>
+#include <SDL_ttf.h>
+
+namespace kiddos::app {
+
+class SharedShell final {
+public:
+    SharedShell() = default;
+    ~SharedShell();
+
+    SharedShell(const SharedShell&) = delete;
+    SharedShell& operator=(const SharedShell&) = delete;
+
+    bool initialize(SDL_Renderer* renderer);
+    void render_header();
+    void render_footer(bool selected_game);
+    void reset() noexcept;
+
+private:
+    void draw_text(const char* text, int x, int y);
+
+    SDL_Renderer* renderer_ = nullptr;
+    SDL_Texture* logo_ = nullptr;
+    SDL_Texture* hints_ = nullptr;
+    TTF_Font* font_ = nullptr;
+};
+
+} // namespace kiddos::app
+#include "kiddos/app/shared_shell.hpp"
+
+#include <SDL_image.h>
+#include <algorithm>
+#include <cmath>
+
+namespace kiddos::app {
+namespace {
+
+constexpr SDL_Color navy{12, 22, 42, 255};
+constexpr SDL_Color blue{75, 174, 255, 255};
+constexpr SDL_Color white{235, 243, 255, 255};
+constexpr SDL_Color muted{145, 173, 207, 255};
+
+void set_color(SDL_Renderer* renderer, SDL_Color color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+}
+
+} // namespace
+
+SharedShell::~SharedShell() {
+    reset();
+}
+
+bool SharedShell::initialize(SDL_Renderer* renderer) {
+    reset();
+    if (!renderer) return false;
+
+    renderer_ = renderer;
+
+    SDL_Surface* logo_surface =
+        IMG_Load("assets/artwork/generated/kiddos-wordmark.png");
+    if (logo_surface) {
+        logo_ = SDL_CreateTextureFromSurface(renderer_, logo_surface);
+        SDL_FreeSurface(logo_surface);
+    }
+
+    SDL_Surface* hints_surface =
+        IMG_Load("assets/artwork/generated/navigation-hints.png");
+    if (hints_surface) {
+        hints_ = SDL_CreateTextureFromSurface(renderer_, hints_surface);
+        SDL_FreeSurface(hints_surface);
+    }
+
+    const char* font_paths[] = {
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf"
+    };
+
+    for (const char* path : font_paths) {
+        font_ = TTF_OpenFont(path, 20);
+        if (font_) break;
+    }
+
+    return true;
+}
+
+void SharedShell::draw_text(const char* text, int x, int y) {
+    if (!renderer_ || !font_ || !text) return;
+
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(font_, text, white);
+    if (!surface) return;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
+    if (texture) {
+        SDL_Rect destination{x, y, surface->w, surface->h};
+        SDL_RenderCopy(renderer_, texture, nullptr, &destination);
+        SDL_DestroyTexture(texture);
+    }
+    SDL_FreeSurface(surface);
+}
+
+void SharedShell::render_header() {
+    if (!renderer_) return;
+
+    const SDL_Color body{205, 222, 255, 220};
+    const SDL_Color waves{80, 157, 255, 220};
+    const SDL_Color charge{67, 157, 255, 240};
+
+    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+
+    // Original speaker cabinet and flared cone.
+    set_color(renderer_, body);
+    SDL_Rect cabinet{25, 33, 8, 14};
+    SDL_RenderFillRect(renderer_, &cabinet);
+
+    for (int y = 27; y <= 52; ++y) {
+        int left = 33;
+        if (y < 33) {
+            left += (33 - y) * 11 / 6;
+        } else if (y > 46) {
+            left += (y - 46) * 11 / 6;
+        }
+        SDL_RenderDrawLine(renderer_, left, y, 44, y);
+    }
+
+    // Original two curved sound waves.
+    const auto draw_arc = [&](int radius) {
+        constexpr double pi = 3.14159265358979323846;
+        const int steps = std::max(2, radius * 2);
+        SDL_Point previous{};
+        for (int step = 0; step <= steps; ++step) {
+            const double degrees = -50.0 + 100.0 * step / steps;
+            const double radians = degrees * pi / 180.0;
+            SDL_Point point{
+                47 + static_cast<int>(std::lround(radius * std::cos(radians))),
+                39 + static_cast<int>(std::lround(radius * std::sin(radians)))
+            };
+            if (step > 0) {
+                SDL_RenderDrawLine(renderer_, previous.x, previous.y,
+                                   point.x, point.y);
+            }
+            previous = point;
+        }
+    };
+    set_color(renderer_, waves);
+    draw_arc(6);
+    draw_arc(12);
+
+    // Original battery outline, terminal, and charge fill.
+    set_color(renderer_, body);
+    SDL_Rect battery{657, 27, 34, 19};
+    SDL_Rect terminal{691, 33, 4, 7};
+    SDL_RenderDrawRect(renderer_, &battery);
+    SDL_RenderFillRect(renderer_, &terminal);
+
+    set_color(renderer_, charge);
+    SDL_Rect fill{661, 31, 22, 11};
+    SDL_RenderFillRect(renderer_, &fill);
+
+    // Original wordmark dimensions and placement.
+    if (logo_) {
+        SDL_Rect destination{195, 5, 330, 61};
+        SDL_RenderCopy(renderer_, logo_, nullptr, &destination);
+    }
+}
+
+void SharedShell::render_footer(bool selected_game) {
+    if (!renderer_) return;
+
+    // The carousel uses its original full-width navigation artwork.
+    if (!selected_game) {
+        if (hints_) {
+            SDL_Rect destination{0, 682, 720, 34};
+            SDL_RenderCopy(renderer_, hints_, nullptr, &destination);
+        }
+        return;
+    }
+
+    // Selected Game keeps its Play / Back controls.
+    set_color(renderer_, navy);
+    SDL_Rect footer{0, 650, 720, 70};
+    SDL_RenderFillRect(renderer_, &footer);
+
+    set_color(renderer_, blue);
+    SDL_RenderDrawLine(renderer_, 0, 650, 720, 650);
+
+    draw_text("A  PLAY", 155, 674);
+    draw_text("B  BACK", 485, 674);
+}
+
+void SharedShell::reset() noexcept {
+    if (logo_) {
+        SDL_DestroyTexture(logo_);
+        logo_ = nullptr;
+    }
+    if (hints_) {
+        SDL_DestroyTexture(hints_);
+        hints_ = nullptr;
+    }
+    if (font_) {
+        TTF_CloseFont(font_);
+        font_ = nullptr;
+    }
+    renderer_ = nullptr;
+}
+
+} // namespace kiddos::app
+
+===== SCREEN TRANSITIONS =====
+src/app/application.cpp:4:#include "kiddos/app/selected_game_screen.hpp"
+src/app/application.cpp:44:    screens_.push(std::make_unique<app::HomeCarouselScreen>(
+src/app/application.cpp:82:    // Back pops a child screen, but never removes the home screen.
+src/app/application.cpp:83:    if (*ui_action == ui::UIAction::Back) {
+src/app/application.cpp:91:    // Confirm activates the Play button on Selected Game.
+src/app/application.cpp:99:            selected_game_ =
+src/app/application.cpp:100:                (selected_game_ + game_count_ - 1) % game_count_;
+src/app/application.cpp:101:            home->set_selected_game(selected_game_);
+src/app/application.cpp:105:            selected_game_ = (selected_game_ + 1) % game_count_;
+src/app/application.cpp:106:            home->set_selected_game(selected_game_);
+src/app/application.cpp:110:            screens_.push(std::make_unique<app::SelectedGameScreen>(
+src/app/application.cpp:111:                platform_.native_renderer(), selected_game_));
+src/app/application.cpp:116:        case ui::UIAction::Back:
+src/app/application.cpp:125:    const bool selected_game =
+src/app/application.cpp:126:        dynamic_cast<app::SelectedGameScreen*>(screens_.current()) != nullptr;
+src/app/application.cpp:129:    shell.render_footer(selected_game);
+src/app/home_carousel_screen.cpp:61:    set_selected_game(1);
+src/app/home_carousel_screen.cpp:71:void HomeCarouselScreen::set_selected_game(int index) {
+src/app/home_carousel_screen.cpp:73:    if (index == selected_game_) return;
+src/app/home_carousel_screen.cpp:75:    const int previous = selected_game_;
+src/app/home_carousel_screen.cpp:95:    selected_game_ = index;
+src/app/selected_game_screen.cpp:1:#include "kiddos/app/selected_game_screen.hpp"
+src/app/selected_game_screen.cpp:32:SelectedGameScreen::SelectedGameScreen(
+src/app/selected_game_screen.cpp:34:    int selected_game
+src/app/selected_game_screen.cpp:35:) : selected_game_(selected_game) {
+src/app/selected_game_screen.cpp:36:    if (selected_game_ < 0 ||
+src/app/selected_game_screen.cpp:37:        selected_game_ >= static_cast<int>(platform_count)) {
+src/app/selected_game_screen.cpp:38:        selected_game_ = 0;
+src/app/selected_game_screen.cpp:43:        artwork_paths[static_cast<std::size_t>(selected_game_)],
+src/app/selected_game_screen.cpp:74:SelectedGameScreen::~SelectedGameScreen() {
+src/app/shared_shell.cpp:139:void SharedShell::render_footer(bool selected_game) {
+src/app/shared_shell.cpp:143:    if (!selected_game) {
+src/app/shared_shell.cpp:151:    // Selected Game keeps its Play / Back controls.
+include/kiddos/app/application.hpp:22:    int selected_game_ = 1;
+include/kiddos/app/ui_action_mapping.hpp:24:        case Action::Back:
+include/kiddos/app/ui_action_mapping.hpp:25:            return ui::UIAction::Back;
+include/kiddos/app/home_carousel_screen.hpp:21:    void set_selected_game(int index);
+include/kiddos/app/home_carousel_screen.hpp:22:    int selected_game() const noexcept { return selected_game_; }
+include/kiddos/app/home_carousel_screen.hpp:33:    int selected_game_ = -1;
+include/kiddos/app/selected_game_screen.hpp:13:class SelectedGameScreen final : public ui::Screen {
+include/kiddos/app/selected_game_screen.hpp:15:    SelectedGameScreen(SDL_Renderer* renderer, int selected_game);
+include/kiddos/app/selected_game_screen.hpp:16:    ~SelectedGameScreen() override;
+include/kiddos/app/selected_game_screen.hpp:18:    int selected_game() const noexcept { return selected_game_; }
+include/kiddos/app/selected_game_screen.hpp:22:    int selected_game_ = 0;
+include/kiddos/app/shared_shell.hpp:18:    void render_footer(bool selected_game);
+
+===== SELECTED GAME TESTS =====
+tests/app_selected_game_screen_test.cpp
+tests/app_home_carousel_screen_test.cpp:70:    assert(screen.selected_game() == 1);
+tests/app_home_carousel_screen_test.cpp:72:    screen.set_selected_game(0);
+tests/app_home_carousel_screen_test.cpp:73:    assert(screen.selected_game() == 0);
+tests/app_home_carousel_screen_test.cpp:74:    assert(screen.selected_game() == 0);
+tests/app_home_carousel_screen_test.cpp:76:    screen.set_selected_game(3);
+tests/app_home_carousel_screen_test.cpp:77:    assert(screen.selected_game() == 3);
+tests/app_home_carousel_screen_test.cpp:79:    screen.set_selected_game(4);
+tests/app_home_carousel_screen_test.cpp:80:    assert(screen.selected_game() == 3);
+tests/app_home_carousel_screen_test.cpp:82:    screen.set_selected_game(0);
+tests/app_home_carousel_screen_test.cpp:83:    assert(screen.selected_game() == 0);
+tests/app_home_carousel_screen_test.cpp:119:        screen.set_selected_game(0);
+tests/app_selected_game_screen_test.cpp:1:#include "kiddos/app/selected_game_screen.hpp"
+tests/app_selected_game_screen_test.cpp:17:    kiddos::app::SelectedGameScreen screen(nullptr, 1);
+tests/app_selected_game_screen_test.cpp:19:    assert(screen.selected_game() == 1);
+tests/app_selected_game_screen_test.cpp:40:    assert(manager.push(std::make_unique<kiddos::app::SelectedGameScreen>(
+tests/app_selected_game_screen_test.cpp:45:        dynamic_cast<kiddos::app::SelectedGameScreen*>(manager.current());
+tests/app_selected_game_screen_test.cpp:51:    kiddos::app::SelectedGameScreen negative(nullptr, -1);
+tests/app_selected_game_screen_test.cpp:52:    kiddos::app::SelectedGameScreen too_large(nullptr, 999);
+tests/app_selected_game_screen_test.cpp:54:    assert(negative.selected_game() == 0);
+tests/app_selected_game_screen_test.cpp:55:    assert(too_large.selected_game() == 0);
+tests/app_selected_game_screen_test.cpp:72:        kiddos::app::SelectedGameScreen screen(native, 1);
+
+===== AVAILABLE ARTWORK =====
+assets/artwork/generated/boxart/arcade-pac-man.png
+assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png
+assets/artwork/generated/boxart/gb-tetris.png
+assets/artwork/generated/boxart/snes-super-mario-world.png
+assets/artwork/generated/boxart/SOURCES.txt
+assets/artwork/generated/carousel-car.bmp
+assets/artwork/generated/carousel-car.png
+assets/artwork/generated/carousel-mushroom.bmp
+assets/artwork/generated/carousel-mushroom.png
+assets/artwork/generated/carousel-selected.bmp
+assets/artwork/generated/carousel-star.bmp
+assets/artwork/generated/carousel-star.png
+assets/artwork/generated/carousel-title.bmp
+assets/artwork/generated/carousel-title-car.png
+assets/artwork/generated/carousel-title.png
+assets/artwork/generated/carousel-title-star.png
+assets/artwork/generated/cartridges/option-1/cartridge-01.png
+assets/artwork/generated/cartridges/option-1/cartridge-02.png
+assets/artwork/generated/cartridges/option-1/cartridge-03.png
+assets/artwork/generated/cartridges/option-1/cartridge-04.png
+assets/artwork/generated/cartridges/option-1/cartridge-05.png
+assets/artwork/generated/cartridges/option-1/cartridge-06.png
+assets/artwork/generated/cartridges/option-1/cartridge-07.png
+assets/artwork/generated/cartridges/option-1/cartridge-08.png
+assets/artwork/generated/cartridges/option-1/cartridge-09.png
+assets/artwork/generated/cartridges/option-2/cartridge-01.png
+assets/artwork/generated/cartridges/option-2/cartridge-02.png
+assets/artwork/generated/cartridges/option-2/cartridge-03.png
+assets/artwork/generated/cartridges/option-2/cartridge-04.png
+assets/artwork/generated/cartridges/option-2/cartridge-05.png
+assets/artwork/generated/cartridges/option-2/cartridge-06.png
+assets/artwork/generated/cartridges/option-2/cartridge-07.png
+assets/artwork/generated/cartridges/option-2/cartridge-08.png
+assets/artwork/generated/cartridges/option-2/cartridge-09.png
+assets/artwork/generated/forest.bmp
+assets/artwork/generated/kiddos-wordmark.png
+assets/artwork/generated/label-play.bmp
+assets/artwork/generated/label-resume.bmp
+assets/artwork/generated/label-start-over.bmp
+assets/artwork/generated/navigation-hints.png
+assets/artwork/generated/ocean.bmp
+assets/artwork/generated/space.bmp
+assets/artwork/source/branding/kiddos-wordmark.svg
+assets/artwork/source/branding/navigation-hints.svg
+assets/artwork/source/carousel/car.svg
+assets/artwork/source/carousel/mushroom.svg
+assets/artwork/source/carousel/selected.svg
+assets/artwork/source/carousel/star.svg
+assets/artwork/source/carousel/title-car.svg
+assets/artwork/source/carousel/title-star.svg
+assets/artwork/source/carousel/title.svg
+assets/artwork/source/cartridges/cart-option-1.png
+assets/artwork/source/cartridges/cart-option-2.png
+assets/artwork/source/forest.svg
+assets/artwork/source/ocean.svg
+assets/artwork/source/space.svg
