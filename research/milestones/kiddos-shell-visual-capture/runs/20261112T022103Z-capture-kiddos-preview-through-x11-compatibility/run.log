@@ -1,0 +1,14 @@
+===== X11 DISPLAY CHECK =====
+X11 display available: 127
+
+===== LAUNCH USING X11 =====
+
+===== CAPTURE =====
+import: missing an image filename `/tmp/kiddos-shell-preview.png' @ error/import.c/ImportImageCommand/1291.
+
+===== CLOSE APPLICATION =====
+
+===== RESULT =====
+No screenshot created.
+
+===== APPLICATION LOG =====

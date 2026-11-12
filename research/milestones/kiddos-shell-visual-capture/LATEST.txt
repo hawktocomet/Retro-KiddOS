@@ -1,1 +1,1 @@
-research/milestones/kiddos-shell-visual-capture/runs/20261112T022042Z-capture-carousel-preview-and-record-image-metadata
+research/milestones/kiddos-shell-visual-capture/runs/20261112T022103Z-capture-kiddos-preview-through-x11-compatibility
