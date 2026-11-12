@@ -1,0 +1,16 @@
+Shared shell source and application integration written.
+
+===== PATCH RESULT =====
+PASS: shared shell files and application integration created.
+
+===== BUILD =====
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/hawk/KiddOS/build
+[1/4] Building CXX object CMakeFiles/kiddos.dir/src/main.cpp.o
+[2/4] Building CXX object CMakeFiles/kiddos.dir/src/app/application.cpp.o
+[3/4] Building CXX object CMakeFiles/kiddos.dir/src/app/shared_shell.cpp.o
+[4/4] Linking CXX executable kiddos
+
+===== RESULT =====
+PASS: shared shell integrated and kiddos target built.
