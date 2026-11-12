@@ -1,0 +1,1566 @@
+===== CURRENT APPLICATION RENDER LOOP =====
+     1	#include "kiddos/app/application.hpp"
+     2	
+     3	#include "kiddos/app/home_carousel_screen.hpp"
+     4	#include "kiddos/app/selected_game_screen.hpp"
+     5	#include "kiddos/app/shared_shell.hpp"
+     6	#include "kiddos/app/ui_action_mapping.hpp"
+     7	
+     8	#include <SDL_image.h>
+     9	
+    10	#include <chrono>
+    11	#include <memory>
+    12	#include <thread>
+    13	#include <SDL_ttf.h>
+    14	
+    15	namespace kiddos {
+    16	
+    17	Application::Application(Platform& platform)
+    18	    : platform_(platform) {
+    19	}
+    20	
+    21	int Application::run() {
+    22	    IMG_Init(IMG_INIT_PNG);
+    23	    if (!platform_.initialize()) {
+    24	        platform_.shutdown();
+    25	        IMG_Quit();
+    26	        return 1;
+    27	    }
+    28	
+    29	    // The UI renderer is a non-owning adapter around the platform renderer.
+    30	    ui_renderer_.attach(platform_.native_renderer());
+    31	    if (TTF_Init() != 0) {
+    32	        IMG_Quit();
+    33	        platform_.shutdown();
+    34	        return 1;
+    35	    }
+    36	
+    37	    app::SharedShell shell;
+    38	    if (!shell.initialize(platform_.native_renderer())) {
+    39	        TTF_Quit();
+    40	        IMG_Quit();
+    41	        platform_.shutdown();
+    42	        return 1;
+    43	    }
+    44	
+    45	    screens_.push(std::make_unique<app::HomeCarouselScreen>(
+    46	        platform_.native_renderer()));
+    47	
+    48	    running_ = true;
+    49	
+    50	    while (running_) {
+    51	        Action action = Action::None;
+    52	
+    53	        while (platform_.poll_action(action)) {
+    54	            handle_action(action);
+    55	            if (!running_) break;
+    56	        }
+    57	
+    58	        if (running_) {
+    59	            screens_.update(0.008f);
+    60	            render(shell);
+    61	            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+    62	        }
+    63	    }
+    64	
+    65	    // Screens and their textures must be destroyed before the SDL renderer.
+    66	    screens_.clear();
+    67	    shell.reset();
+    68	    TTF_Quit();
+    69	    IMG_Quit();
+    70	    platform_.shutdown();
+    71	    return 0;
+    72	}
+    73	
+    74	void Application::handle_action(Action action) {
+    75	    if (action == Action::Quit) {
+    76	        running_ = false;
+    77	        return;
+    78	    }
+    79	
+    80	    const auto ui_action = app::to_ui_action(action);
+    81	    if (!ui_action) return;
+    82	
+    83	    // Back pops a child screen, but never removes the home screen.
+    84	    if (*ui_action == ui::UIAction::Back) {
+    85	        if (screens_.depth() > 1) {
+    86	            screens_.handle_action(*ui_action);
+    87	        }
+    88	        return;
+    89	    }
+    90	
+    91	    // Let the active screen handle its own controls first. This is how
+    92	    // Confirm activates the Play button on Selected Game.
+    93	    if (screens_.handle_action(*ui_action)) return;
+    94	
+    95	    auto* home = dynamic_cast<app::HomeCarouselScreen*>(screens_.current());
+    96	    if (!home) return;
+    97	
+    98	    switch (*ui_action) {
+    99	        case ui::UIAction::Left:
+   100	            selected_game_ =
+   101	                (selected_game_ + game_count_ - 1) % game_count_;
+   102	            home->set_selected_game(selected_game_);
+   103	            break;
+   104	
+   105	        case ui::UIAction::Right:
+   106	            selected_game_ = (selected_game_ + 1) % game_count_;
+   107	            home->set_selected_game(selected_game_);
+   108	            break;
+   109	
+   110	        case ui::UIAction::Confirm:
+   111	            screens_.push(std::make_unique<app::SelectedGameScreen>(
+   112	                platform_.native_renderer(), selected_game_));
+   113	            break;
+   114	
+   115	        case ui::UIAction::Up:
+   116	        case ui::UIAction::Down:
+   117	        case ui::UIAction::Back:
+   118	            break;
+   119	    }
+   120	}
+   121	
+   122	void Application::render(app::SharedShell& shell) {
+   123	    platform_.begin_frame();
+   124	    screens_.render(ui_renderer_);
+   125	
+   126	    const bool selected_game =
+   127	        dynamic_cast<app::SelectedGameScreen*>(screens_.current()) != nullptr;
+   128	
+   129	    shell.render_header();
+   130	    shell.render_footer(selected_game);
+   131	
+   132	    platform_.present();
+   133	}
+   134	
+   135	} // namespace kiddos
+
+===== SHARED SHELL IMPLEMENTATION =====
+     1	#include "kiddos/app/shared_shell.hpp"
+     2	
+     3	#include <SDL_image.h>
+     4	#include <algorithm>
+     5	#include <cmath>
+     6	
+     7	namespace kiddos::app {
+     8	namespace {
+     9	
+    10	constexpr SDL_Color navy{12, 22, 42, 255};
+    11	constexpr SDL_Color blue{75, 174, 255, 255};
+    12	constexpr SDL_Color white{235, 243, 255, 255};
+    13	constexpr SDL_Color muted{145, 173, 207, 255};
+    14	
+    15	void set_color(SDL_Renderer* renderer, SDL_Color color) {
+    16	    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    17	}
+    18	
+    19	} // namespace
+    20	
+    21	SharedShell::~SharedShell() {
+    22	    reset();
+    23	}
+    24	
+    25	bool SharedShell::initialize(SDL_Renderer* renderer) {
+    26	    reset();
+    27	    if (!renderer) return false;
+    28	
+    29	    renderer_ = renderer;
+    30	
+    31	    SDL_Surface* logo_surface =
+    32	        IMG_Load("assets/artwork/generated/kiddos-wordmark.png");
+    33	    if (logo_surface) {
+    34	        logo_ = SDL_CreateTextureFromSurface(renderer_, logo_surface);
+    35	        SDL_FreeSurface(logo_surface);
+    36	    }
+    37	
+    38	    SDL_Surface* hints_surface =
+    39	        IMG_Load("assets/artwork/generated/navigation-hints.png");
+    40	    if (hints_surface) {
+    41	        hints_ = SDL_CreateTextureFromSurface(renderer_, hints_surface);
+    42	        SDL_FreeSurface(hints_surface);
+    43	    }
+    44	
+    45	    const char* font_paths[] = {
+    46	        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+    47	        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    48	        "/usr/share/fonts/dejavu/DejaVuSans.ttf"
+    49	    };
+    50	
+    51	    for (const char* path : font_paths) {
+    52	        font_ = TTF_OpenFont(path, 20);
+    53	        if (font_) break;
+    54	    }
+    55	
+    56	    return true;
+    57	}
+    58	
+    59	void SharedShell::draw_text(const char* text, int x, int y) {
+    60	    if (!renderer_ || !font_ || !text) return;
+    61	
+    62	    SDL_Surface* surface = TTF_RenderUTF8_Blended(font_, text, white);
+    63	    if (!surface) return;
+    64	
+    65	    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
+    66	    if (texture) {
+    67	        SDL_Rect destination{x, y, surface->w, surface->h};
+    68	        SDL_RenderCopy(renderer_, texture, nullptr, &destination);
+    69	        SDL_DestroyTexture(texture);
+    70	    }
+    71	    SDL_FreeSurface(surface);
+    72	}
+    73	
+    74	void SharedShell::render_header() {
+    75	    if (!renderer_) return;
+    76	
+    77	    const SDL_Color body{205, 222, 255, 220};
+    78	    const SDL_Color waves{80, 157, 255, 220};
+    79	    const SDL_Color charge{67, 157, 255, 240};
+    80	
+    81	    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
+    82	
+    83	    // Original speaker cabinet and flared cone.
+    84	    set_color(renderer_, body);
+    85	    SDL_Rect cabinet{25, 33, 8, 14};
+    86	    SDL_RenderFillRect(renderer_, &cabinet);
+    87	
+    88	    for (int y = 27; y <= 52; ++y) {
+    89	        int left = 33;
+    90	        if (y < 33) {
+    91	            left += (33 - y) * 11 / 6;
+    92	        } else if (y > 46) {
+    93	            left += (y - 46) * 11 / 6;
+    94	        }
+    95	        SDL_RenderDrawLine(renderer_, left, y, 44, y);
+    96	    }
+    97	
+    98	    // Original two curved sound waves.
+    99	    const auto draw_arc = [&](int radius) {
+   100	        constexpr double pi = 3.14159265358979323846;
+   101	        const int steps = std::max(2, radius * 2);
+   102	        SDL_Point previous{};
+   103	        for (int step = 0; step <= steps; ++step) {
+   104	            const double degrees = -50.0 + 100.0 * step / steps;
+   105	            const double radians = degrees * pi / 180.0;
+   106	            SDL_Point point{
+   107	                47 + static_cast<int>(std::lround(radius * std::cos(radians))),
+   108	                39 + static_cast<int>(std::lround(radius * std::sin(radians)))
+   109	            };
+   110	            if (step > 0) {
+   111	                SDL_RenderDrawLine(renderer_, previous.x, previous.y,
+   112	                                   point.x, point.y);
+   113	            }
+   114	            previous = point;
+   115	        }
+   116	    };
+   117	    set_color(renderer_, waves);
+   118	    draw_arc(6);
+   119	    draw_arc(12);
+   120	
+   121	    // Original battery outline, terminal, and charge fill.
+   122	    set_color(renderer_, body);
+   123	    SDL_Rect battery{657, 27, 34, 19};
+   124	    SDL_Rect terminal{691, 33, 4, 7};
+   125	    SDL_RenderDrawRect(renderer_, &battery);
+   126	    SDL_RenderFillRect(renderer_, &terminal);
+   127	
+   128	    set_color(renderer_, charge);
+   129	    SDL_Rect fill{661, 31, 22, 11};
+   130	    SDL_RenderFillRect(renderer_, &fill);
+   131	
+   132	    // Original wordmark dimensions and placement.
+   133	    if (logo_) {
+   134	        SDL_Rect destination{195, 5, 330, 61};
+   135	        SDL_RenderCopy(renderer_, logo_, nullptr, &destination);
+   136	    }
+   137	}
+   138	
+   139	void SharedShell::render_footer(bool selected_game) {
+   140	    if (!renderer_ || selected_game) return;
+   141	
+   142	    // The carousel keeps its original full-width navigation artwork.
+   143	    if (hints_) {
+   144	        SDL_Rect destination{0, 682, 720, 34};
+   145	        SDL_RenderCopy(renderer_, hints_, nullptr, &destination);
+   146	    }
+   147	}
+   148	
+   149	void SharedShell::reset() noexcept {
+   150	    if (logo_) {
+   151	        SDL_DestroyTexture(logo_);
+   152	        logo_ = nullptr;
+   153	    }
+   154	    if (hints_) {
+   155	        SDL_DestroyTexture(hints_);
+   156	        hints_ = nullptr;
+   157	    }
+   158	    if (font_) {
+   159	        TTF_CloseFont(font_);
+   160	        font_ = nullptr;
+   161	    }
+   162	    renderer_ = nullptr;
+   163	}
+   164	
+   165	} // namespace kiddos::app
+
+===== HOME CAROUSEL IMPLEMENTATION =====
+     1	#include "kiddos/app/home_carousel_screen.hpp"
+     2	
+     3	#include <algorithm>
+     4	#include <array>
+     5	#include <cmath>
+     6	#include <string>
+     7	
+     8	namespace kiddos::app {
+     9	
+    10	namespace {
+    11	
+    12	constexpr ui::Color background{1, 1, 1, 255};
+    13	
+    14	constexpr ui::Rect left_art{24, 250, 128, 128};
+    15	constexpr ui::Rect center_art{180, 145, 360, 360};
+    16	constexpr ui::Rect right_art{568, 250, 128, 128};
+    17	
+    18	int interpolate(int current, int target, float amount) {
+    19	    return static_cast<int>(std::lround(
+    20	        current + (target - current) * amount));
+    21	}
+    22	
+    23	ui::Rect interpolate_rect(
+    24	    ui::Rect current,
+    25	    ui::Rect target,
+    26	    float amount
+    27	) {
+    28	    return {
+    29	        interpolate(current.x, target.x, amount),
+    30	        interpolate(current.y, target.y, amount),
+    31	        interpolate(current.w, target.w, amount),
+    32	        interpolate(current.h, target.h, amount)
+    33	    };
+    34	}
+    35	
+    36	} // namespace
+    37	
+    38	HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+    39	    constexpr std::array<const char*, game_count> game_cover_paths{{
+    40	        "assets/artwork/generated/boxart/gb-tetris.png",
+    41	        "assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png",
+    42	        "assets/artwork/generated/boxart/snes-super-mario-world.png",
+    43	        "assets/artwork/generated/boxart/arcade-pac-man.png"
+    44	    }};
+    45	
+    46	    for (std::size_t game = 0; game < game_textures_.size(); ++game) {
+    47	        game_textures_[game].load(renderer, game_cover_paths[game], false);
+    48	    }
+    49	
+    50	    const std::array<ui::Rect, 3> slot_bounds{
+    51	        left_art, center_art, right_art
+    52	    };
+    53	
+    54	    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+    55	        auto& image = root().add<ui::Image>();
+    56	        image.set_fit(ui::ImageFit::contain);
+    57	        image.set_bounds(slot_bounds[slot]);
+    58	        game_images_[slot] = &image;
+    59	    }
+    60	
+    61	    set_selected_game(1);
+    62	}
+    63	
+    64	HomeCarouselScreen::~HomeCarouselScreen() {
+    65	    for (auto* image : game_images_) {
+    66	        if (image) image->set_texture(nullptr);
+    67	    }
+    68	
+    69	}
+    70	
+    71	void HomeCarouselScreen::set_selected_game(int index) {
+    72	    if (index < 0 || index >= game_count) return;
+    73	    if (index == selected_game_) return;
+    74	
+    75	    const int previous = selected_game_;
+    76	    const bool moving_right =
+    77	        previous >= 0 && index == (previous + 1) % game_count;
+    78	    const bool moving_left =
+    79	        previous >= 0 && index == (previous + game_count - 1) % game_count;
+    80	
+    81	    if (moving_right) {
+    82	        auto* recycled = game_images_[0];
+    83	        game_images_[0] = game_images_[1];
+    84	        game_images_[1] = game_images_[2];
+    85	        game_images_[2] = recycled;
+    86	        recycled->set_bounds({720, right_art.y, right_art.w, right_art.h});
+    87	    } else if (moving_left) {
+    88	        auto* recycled = game_images_[2];
+    89	        game_images_[2] = game_images_[1];
+    90	        game_images_[1] = game_images_[0];
+    91	        game_images_[0] = recycled;
+    92	        recycled->set_bounds({-128, left_art.y, left_art.w, left_art.h});
+    93	    }
+    94	
+    95	    selected_game_ = index;
+    96	
+    97	    const std::array<int, 3> visible_games{
+    98	        (index + game_count - 1) % game_count,
+    99	        index,
+   100	        (index + 1) % game_count
+   101	    };
+   102	    const std::array<ui::Rect, 3> slot_bounds{
+   103	        left_art, center_art, right_art
+   104	    };
+   105	
+   106	    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+   107	        auto* image = game_images_[slot];
+   108	        image->set_texture(
+   109	            &game_textures_[static_cast<std::size_t>(visible_games[slot])]);
+   110	        target_bounds_[slot] = slot_bounds[slot];
+   111	        target_opacity_[slot] = slot == 1 ? 255 : 118;
+   112	
+   113	        if (!moving_right && !moving_left) {
+   114	            image->set_bounds(slot_bounds[slot]);
+   115	            image->set_opacity(
+   116	                static_cast<std::uint8_t>(target_opacity_[slot]));
+   117	        }
+   118	    }
+   119	}
+   120	
+   121	void HomeCarouselScreen::update(float delta_seconds) {
+   122	    if (delta_seconds <= 0.0f) return;
+   123	
+   124	    // A critically damped-feeling ease that settles quickly while allowing
+   125	    // another direction input to retarget the carousel mid-motion.
+   126	    const float amount = std::clamp(
+   127	        1.0f - std::exp(-delta_seconds * 7.0f), 0.0f, 1.0f);
+   128	
+   129	    for (std::size_t i = 0; i < game_images_.size(); ++i) {
+   130	        ui::Image* image = game_images_[i];
+   131	        if (!image) continue;
+   132	
+   133	        const ui::Rect current = image->bounds();
+   134	        const ui::Rect target = target_bounds_[i];
+   135	        const ui::Rect next = interpolate_rect(current, target, amount);
+   136	
+   137	        const int opacity = interpolate(
+   138	            image->opacity(), target_opacity_[i], amount);
+   139	
+   140	        image->set_bounds(next);
+   141	        image->set_opacity(static_cast<std::uint8_t>(
+   142	            std::clamp(opacity, 0, 255)));
+   143	
+   144	        if (std::abs(next.x - target.x) <= 1 &&
+   145	            std::abs(next.y - target.y) <= 1 &&
+   146	            std::abs(next.w - target.w) <= 1 &&
+   147	            std::abs(next.h - target.h) <= 1) {
+   148	            image->set_bounds(target);
+   149	        }
+   150	
+   151	        if (std::abs(opacity - target_opacity_[i]) <= 1) {
+   152	            image->set_opacity(
+   153	                static_cast<std::uint8_t>(target_opacity_[i]));
+   154	        }
+   155	    }
+   156	}
+   157	
+   158	} // namespace kiddos::app
+
+===== SELECTED GAME IMPLEMENTATION =====
+     1	#include "kiddos/app/selected_game_screen.hpp"
+     2	
+     3	#include "kiddos/app/platform.hpp"
+     4	
+     5	#include <array>
+     6	
+     7	namespace kiddos::app {
+     8	
+     9	namespace {
+    10	
+    11	constexpr std::array<const char*, platform_count> artwork_paths{{
+    12	    "assets/artwork/generated/boxart/gb-tetris.png",
+    13	    "assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png",
+    14	    "assets/artwork/generated/boxart/snes-super-mario-world.png",
+    15	    "assets/artwork/generated/boxart/arcade-pac-man.png"
+    16	}};
+    17	
+    18	void load_ui_font(ui::Font& font, int size) {
+    19	    constexpr std::array<const char*, 3> paths{{
+    20	        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+    21	        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    22	        "/usr/share/fonts/dejavu/DejaVuSans.ttf"
+    23	    }};
+    24	
+    25	    for (const char* path : paths) {
+    26	        if (font.load(path, size)) return;
+    27	    }
+    28	}
+    29	
+    30	} // namespace
+    31	
+    32	SelectedGameScreen::SelectedGameScreen(
+    33	    SDL_Renderer* renderer,
+    34	    int selected_game
+    35	) : selected_game_(selected_game) {
+    36	    if (selected_game_ < 0 ||
+    37	        selected_game_ >= static_cast<int>(platform_count)) {
+    38	        selected_game_ = 0;
+    39	    }
+    40	
+    41	    artwork_texture_.load(
+    42	        renderer,
+    43	        artwork_paths[static_cast<std::size_t>(selected_game_)],
+    44	        false
+    45	    );
+    46	
+    47	    auto& artwork = root().add<ui::Image>(&artwork_texture_);
+    48	    artwork.set_bounds({90, 85, 540, 450});
+    49	    artwork.set_fit(ui::ImageFit::contain);
+    50	    artwork_ = &artwork;
+    51	
+    52	    hints_texture_.load(
+    53	        renderer,
+    54	        "assets/artwork/generated/selected-game-hints.png",
+    55	        false
+    56	    );
+    57	
+    58	    auto& hints = root().add<ui::Image>(&hints_texture_);
+    59	    hints.set_bounds({0, 678, 720, 42});
+    60	    hints.set_fit(ui::ImageFit::contain);
+    61	    hints_ = &hints;
+    62	
+    63	    load_ui_font(font_, 28);
+    64	
+    65	    auto& play = root().add<ui::Button>("PLAY");
+    66	    play.set_bounds({190, 545, 340, 88});
+    67	    play.set_font(&font_);
+    68	    play.set_style({
+    69	        {18, 43, 83, 255},
+    70	        {35, 91, 165, 255},
+    71	        {14, 55, 112, 255},
+    72	        {35, 39, 50, 255},
+    73	        {69, 151, 255, 255},
+    74	        {125, 190, 255, 255},
+    75	        {255, 255, 255, 255},
+    76	        {150, 155, 165, 255}
+    77	    });
+    78	    play.set_on_activate([this] {
+    79	        // This records the UI request; the game-launch backend is separate.
+    80	        play_requested_ = true;
+    81	    });
+    82	    play_button_ = &play;
+    83	}
+    84	
+    85	SelectedGameScreen::~SelectedGameScreen() {
+    86	    if (hints_) hints_->set_texture(nullptr);
+    87	    if (artwork_) artwork_->set_texture(nullptr);
+    88	}
+    89	
+    90	} // namespace kiddos::app
+
+===== ELEMENT AND CONTAINER CAPABILITIES =====
+     1	#pragma once
+     2	
+     3	#include "kiddos/ui/geometry.hpp"
+     4	#include "kiddos/ui/renderer.hpp"
+     5	
+     6	namespace kiddos::ui {
+     7	
+     8	class Element {
+     9	public:
+    10	    virtual ~Element() = default;
+    11	
+    12	    void set_bounds(Rect bounds) noexcept { bounds_ = bounds; }
+    13	    Rect bounds() const noexcept { return bounds_; }
+    14	
+    15	    void set_visible(bool visible) noexcept { visible_ = visible; }
+    16	    bool visible() const noexcept { return visible_; }
+    17	
+    18	    void set_enabled(bool enabled) noexcept { enabled_ = enabled; }
+    19	    bool enabled() const noexcept { return enabled_; }
+    20	
+    21	    void set_focusable(bool focusable) noexcept {
+    22	        focusable_ = focusable;
+    23	    }
+    24	
+    25	    bool focusable() const noexcept { return focusable_; }
+    26	
+    27	    void set_focused(bool focused) noexcept { focused_ = focused; }
+    28	    bool focused() const noexcept { return focused_; }
+    29	
+    30	    void render(Renderer& renderer) {
+    31	        if (visible_) draw(renderer);
+    32	    }
+    33	
+    34	protected:
+    35	    virtual void draw(Renderer& renderer) = 0;
+    36	
+    37	private:
+    38	    Rect bounds_{};
+    39	    bool visible_ = true;
+    40	    bool enabled_ = true;
+    41	    bool focusable_ = false;
+    42	    bool focused_ = false;
+    43	};
+    44	
+    45	} // namespace kiddos::ui
+     1	#pragma once
+     2	
+     3	#include "kiddos/ui/element.hpp"
+     4	
+     5	#include <memory>
+     6	#include <type_traits>
+     7	#include <utility>
+     8	#include <vector>
+     9	
+    10	namespace kiddos::ui {
+    11	
+    12	class Container : public Element {
+    13	public:
+    14	    template<typename T, typename... Args>
+    15	    T& add(Args&&... args) {
+    16	        static_assert(std::is_base_of_v<Element, T>,
+    17	                      "Container children must derive from Element");
+    18	
+    19	        auto child = std::make_unique<T>(
+    20	            std::forward<Args>(args)...
+    21	        );
+    22	
+    23	        T& reference = *child;
+    24	        children_.push_back(std::move(child));
+    25	        return reference;
+    26	    }
+    27	
+    28	    std::size_t child_count() const noexcept {
+    29	        return children_.size();
+    30	    }
+    31	
+    32	    Element* child(std::size_t index) noexcept {
+    33	        if (index >= children_.size()) return nullptr;
+    34	        return children_[index].get();
+    35	    }
+    36	
+    37	    const Element* child(std::size_t index) const noexcept {
+    38	        if (index >= children_.size()) return nullptr;
+    39	        return children_[index].get();
+    40	    }
+    41	
+    42	protected:
+    43	    void draw(Renderer& renderer) override {
+    44	        for (auto& element : children_) {
+    45	            element->render(renderer);
+    46	        }
+    47	    }
+    48	
+    49	private:
+    50	    std::vector<std::unique_ptr<Element>> children_;
+    51	};
+    52	
+    53	} // namespace kiddos::ui
+     1	#include "kiddos/ui/screen.hpp"
+     2	namespace kiddos::ui {
+     3	Screen::Screen() noexcept : focus_(root_), controller_(focus_), text_input_(focus_) {}
+     4	Container& Screen::root() noexcept { return root_; }
+     5	FocusManager& Screen::focus() noexcept { return focus_; }
+     6	void Screen::render(Renderer& renderer) { root_.render(renderer); }
+     7	bool Screen::handle_action(UIAction action) {
+     8	    if (!focus_.focused()) focus_.focus_first();
+     9	    return controller_.handle(action);
+    10	}
+    11	bool Screen::handle_text_input(const ::kiddos::TextInputEvent& event) {
+    12	    switch (event.type) {
+    13	    case ::kiddos::TextInputEventType::Text: return text_input_.insert_text(event.text);
+    14	    case ::kiddos::TextInputEventType::Backspace: return text_input_.handle(TextInputKey::Backspace);
+    15	    case ::kiddos::TextInputEventType::Delete: return text_input_.handle(TextInputKey::Delete);
+    16	    case ::kiddos::TextInputEventType::Left: return text_input_.handle(TextInputKey::Left);
+    17	    case ::kiddos::TextInputEventType::Right: return text_input_.handle(TextInputKey::Right);
+    18	    case ::kiddos::TextInputEventType::Home: return text_input_.handle(TextInputKey::Home);
+    19	    case ::kiddos::TextInputEventType::End: return text_input_.handle(TextInputKey::End);
+    20	    }
+    21	    return false;
+    22	}
+    23	}
+     1	#pragma once
+     2	#include "kiddos/ui/container.hpp"
+     3	#include "kiddos/ui/controller.hpp"
+     4	#include "kiddos/ui/text_input_interaction.hpp"
+     5	#include "kiddos/platform/text_input_event.hpp"
+     6	
+     7	namespace kiddos::ui {
+     8	class Screen {
+     9	public:
+    10	    Screen() noexcept;
+    11	    virtual ~Screen() = default;
+    12	    Screen(const Screen&) = delete;
+    13	    Screen& operator=(const Screen&) = delete;
+    14	    Container& root() noexcept;
+    15	    FocusManager& focus() noexcept;
+    16	    virtual void on_enter() {}
+    17	    virtual void on_exit() {}
+    18	    virtual void on_suspend() {}
+    19	    virtual void on_resume() {}
+    20	    virtual void update(float) {}
+    21	    virtual void render(Renderer& renderer);
+    22	    bool handle_action(UIAction action);
+    23	    bool handle_text_input(const ::kiddos::TextInputEvent& event);
+    24	private:
+    25	    Container root_;
+    26	    FocusManager focus_;
+    27	    ControllerInteraction controller_;
+    28	    TextInputInteraction text_input_;
+    29	};
+    30	}
+
+===== LAYOUT API AND IMPLEMENTATION =====
+     1	#pragma once
+     2	
+     3	#include "kiddos/ui/container.hpp"
+     4	
+     5	namespace kiddos::ui {
+     6	
+     7	enum class Axis {
+     8	    Horizontal,
+     9	    Vertical
+    10	};
+    11	
+    12	struct Insets {
+    13	    int left = 0;
+    14	    int top = 0;
+    15	    int right = 0;
+    16	    int bottom = 0;
+    17	};
+    18	
+    19	class StackLayout final {
+    20	public:
+    21	    // Distributes available space equally between visible children.
+    22	    // Remaining pixels are distributed one at a time.
+    23	    static void apply(
+    24	        Container& container,
+    25	        Rect area,
+    26	        Axis axis,
+    27	        int gap = 0,
+    28	        Insets padding = {}
+    29	    ) noexcept;
+    30	};
+    31	
+    32	} // namespace kiddos::ui
+     1	#include "kiddos/ui/layout.hpp"
+     2	
+     3	#include <algorithm>
+     4	#include <vector>
+     5	
+     6	namespace kiddos::ui {
+     7	
+     8	void StackLayout::apply(
+     9	    Container& container,
+    10	    Rect area,
+    11	    Axis axis,
+    12	    int gap,
+    13	    Insets padding
+    14	) noexcept {
+    15	    container.set_bounds(area);
+    16	
+    17	    gap = std::max(0, gap);
+    18	
+    19	    const int left = std::clamp(padding.left, 0, area.w);
+    20	    const int right = std::clamp(padding.right, 0, area.w - left);
+    21	    const int top = std::clamp(padding.top, 0, area.h);
+    22	    const int bottom = std::clamp(padding.bottom, 0, area.h - top);
+    23	
+    24	    const int content_x = area.x + left;
+    25	    const int content_y = area.y + top;
+    26	    const int content_w = std::max(0, area.w - left - right);
+    27	    const int content_h = std::max(0, area.h - top - bottom);
+    28	
+    29	    std::vector<Element*> visible;
+    30	
+    31	    for (std::size_t i = 0; i < container.child_count(); ++i) {
+    32	        Element* item = container.child(i);
+    33	        if (item && item->visible()) {
+    34	            visible.push_back(item);
+    35	        }
+    36	    }
+    37	
+    38	    if (visible.empty()) return;
+    39	
+    40	    const int main_size =
+    41	        axis == Axis::Horizontal ? content_w : content_h;
+    42	
+    43	    const int cross_size =
+    44	        axis == Axis::Horizontal ? content_h : content_w;
+    45	
+    46	    const int total_gaps =
+    47	        gap * static_cast<int>(visible.size() - 1);
+    48	
+    49	    const int available = std::max(0, main_size - total_gaps);
+    50	    const int base_size = available / static_cast<int>(visible.size());
+    51	    const int remainder = available % static_cast<int>(visible.size());
+    52	
+    53	    int position = axis == Axis::Horizontal ? content_x : content_y;
+    54	
+    55	    for (std::size_t i = 0; i < visible.size(); ++i) {
+    56	        const int item_size =
+    57	            base_size + (static_cast<int>(i) < remainder ? 1 : 0);
+    58	
+    59	        if (axis == Axis::Horizontal) {
+    60	            visible[i]->set_bounds({
+    61	                position, content_y, item_size, cross_size
+    62	            });
+    63	        } else {
+    64	            visible[i]->set_bounds({
+    65	                content_x, position, cross_size, item_size
+    66	            });
+    67	        }
+    68	
+    69	        position += item_size + gap;
+    70	    }
+    71	}
+    72	
+    73	} // namespace kiddos::ui
+
+===== PANEL API AND IMPLEMENTATION =====
+     1	#pragma once
+     2	
+     3	#include "kiddos/ui/element.hpp"
+     4	
+     5	namespace kiddos::ui {
+     6	
+     7	struct PanelStyle {
+     8	    Color background{20, 30, 55, 255};
+     9	    Color border{55, 110, 190, 255};
+    10	    int border_thickness = 2;
+    11	    int corner_radius = 0;
+    12	};
+    13	
+    14	class Panel final : public Element {
+    15	public:
+    16	    Panel() = default;
+    17	    explicit Panel(PanelStyle style);
+    18	
+    19	    void set_style(PanelStyle style) noexcept;
+    20	    const PanelStyle& style() const noexcept;
+    21	
+    22	    void set_background(Color color) noexcept;
+    23	    void set_border(Color color) noexcept;
+    24	    void set_border_thickness(int thickness) noexcept;
+    25	    void set_corner_radius(int radius) noexcept;
+    26	
+    27	private:
+    28	    PanelStyle style_{};
+    29	
+    30	    void draw(Renderer& renderer) override;
+    31	};
+    32	
+    33	}
+     1	#include "kiddos/ui/panel.hpp"
+     2	
+     3	#include <algorithm>
+     4	#include <utility>
+     5	
+     6	namespace kiddos::ui {
+     7	
+     8	Panel::Panel(PanelStyle style)
+     9	    : style_(std::move(style)) {
+    10	    style_.border_thickness = std::max(0, style_.border_thickness);
+    11	    style_.corner_radius = std::max(0, style_.corner_radius);
+    12	}
+    13	
+    14	void Panel::set_style(PanelStyle style) noexcept {
+    15	    style.border_thickness = std::max(0, style.border_thickness);
+    16	    style.corner_radius = std::max(0, style.corner_radius);
+    17	    style_ = style;
+    18	}
+    19	
+    20	const PanelStyle& Panel::style() const noexcept {
+    21	    return style_;
+    22	}
+    23	
+    24	void Panel::set_background(Color color) noexcept {
+    25	    style_.background = color;
+    26	}
+    27	
+    28	void Panel::set_border(Color color) noexcept {
+    29	    style_.border = color;
+    30	}
+    31	
+    32	void Panel::set_border_thickness(int thickness) noexcept {
+    33	    style_.border_thickness = std::max(0, thickness);
+    34	}
+    35	
+    36	void Panel::set_corner_radius(int radius) noexcept {
+    37	    style_.corner_radius = std::max(0, radius);
+    38	}
+    39	
+    40	void Panel::draw(Renderer& renderer) {
+    41	    const Rect rect = bounds();
+    42	    if (rect.empty()) return;
+    43	
+    44	    const int radius = style_.corner_radius;
+    45	    const int thickness = std::min(
+    46	        style_.border_thickness, std::min(rect.w, rect.h) / 2
+    47	    );
+    48	
+    49	    // An opaque background allows a clean, uniform border: fill the card
+    50	    // with the border color, then the inset area with the background. This
+    51	    // avoids stacking nested outlines, which look crude at small radii.
+    52	    if (thickness > 0 && style_.background.a == 255) {
+    53	        renderer.fill_rounded_rect(rect, radius, style_.border);
+    54	
+    55	        const Rect inner{
+    56	            rect.x + thickness,
+    57	            rect.y + thickness,
+    58	            rect.w - thickness * 2,
+    59	            rect.h - thickness * 2
+    60	        };
+    61	
+    62	        if (!inner.empty()) {
+    63	            renderer.fill_rounded_rect(
+    64	                inner, std::max(0, radius - thickness), style_.background
+    65	            );
+    66	        }
+    67	        return;
+    68	    }
+    69	
+    70	    renderer.fill_rounded_rect(rect, radius, style_.background);
+    71	
+    72	    // Transparent backgrounds (for example glow outlines) draw the border
+    73	    // as clean rounded outlines instead of covering the content beneath.
+    74	    for (int inset = 0; inset < thickness; ++inset) {
+    75	        const Rect outline{
+    76	            rect.x + inset,
+    77	            rect.y + inset,
+    78	            rect.w - inset * 2,
+    79	            rect.h - inset * 2
+    80	        };
+    81	
+    82	        if (outline.empty()) break;
+    83	        renderer.outline_rounded_rect(
+    84	            outline,
+    85	            std::max(0, radius - inset),
+    86	            style_.border
+    87	        );
+    88	    }
+    89	}
+    90	
+    91	}
+
+===== IMAGE API AND IMPLEMENTATION =====
+     1	#pragma once
+     2	
+     3	#include "kiddos/ui/element.hpp"
+     4	#include "kiddos/ui/texture.hpp"
+     5	
+     6	#include <cstdint>
+     7	
+     8	namespace kiddos::ui {
+     9	
+    10	enum class ImageFit {
+    11	    contain,
+    12	    cover,
+    13	    stretch
+    14	};
+    15	
+    16	struct ImageGeometry {
+    17	    Rect source{};
+    18	    Rect destination{};
+    19	    bool valid = false;
+    20	};
+    21	
+    22	ImageGeometry calculate_image_geometry(
+    23	    int texture_width,
+    24	    int texture_height,
+    25	    Rect bounds,
+    26	    ImageFit fit
+    27	) noexcept;
+    28	
+    29	class Image final : public Element {
+    30	public:
+    31	    explicit Image(Texture* texture = nullptr) noexcept;
+    32	
+    33	    void set_texture(Texture* texture) noexcept;
+    34	    Texture* texture() const noexcept;
+    35	
+    36	    void set_fit(ImageFit fit) noexcept;
+    37	    ImageFit fit() const noexcept;
+    38	
+    39	    void set_opacity(std::uint8_t opacity) noexcept;
+    40	    std::uint8_t opacity() const noexcept;
+    41	
+    42	    ImageGeometry geometry() const noexcept;
+    43	
+    44	private:
+    45	    Texture* texture_ = nullptr;
+    46	    ImageFit fit_ = ImageFit::contain;
+    47	    std::uint8_t opacity_ = 255;
+    48	
+    49	    void draw(Renderer& renderer) override;
+    50	};
+    51	
+    52	}
+     1	#include "kiddos/ui/image.hpp"
+     2	
+     3	#include <algorithm>
+     4	#include <cmath>
+     5	
+     6	namespace kiddos::ui {
+     7	
+     8	ImageGeometry calculate_image_geometry(
+     9	    int texture_width,
+    10	    int texture_height,
+    11	    Rect bounds,
+    12	    ImageFit fit
+    13	) noexcept {
+    14	    ImageGeometry result{};
+    15	    if (texture_width <= 0 || texture_height <= 0 || bounds.empty()) {
+    16	        return result;
+    17	    }
+    18	
+    19	    result.source = {0, 0, texture_width, texture_height};
+    20	    result.destination = bounds;
+    21	
+    22	    if (fit == ImageFit::stretch) {
+    23	        result.valid = true;
+    24	        return result;
+    25	    }
+    26	
+    27	    const double sx = static_cast<double>(bounds.w) / texture_width;
+    28	    const double sy = static_cast<double>(bounds.h) / texture_height;
+    29	
+    30	    if (fit == ImageFit::contain) {
+    31	        const double scale = std::min(sx, sy);
+    32	        const int w = std::max(1, static_cast<int>(std::round(texture_width * scale)));
+    33	        const int h = std::max(1, static_cast<int>(std::round(texture_height * scale)));
+    34	        result.destination = {
+    35	            bounds.x + (bounds.w - w) / 2,
+    36	            bounds.y + (bounds.h - h) / 2,
+    37	            w,
+    38	            h
+    39	        };
+    40	    } else {
+    41	        const double scale = std::max(sx, sy);
+    42	        const int crop_w = std::max(1, static_cast<int>(std::round(bounds.w / scale)));
+    43	        const int crop_h = std::max(1, static_cast<int>(std::round(bounds.h / scale)));
+    44	        result.source = {
+    45	            (texture_width - crop_w) / 2,
+    46	            (texture_height - crop_h) / 2,
+    47	            crop_w,
+    48	            crop_h
+    49	        };
+    50	    }
+    51	
+    52	    result.valid = true;
+    53	    return result;
+    54	}
+    55	
+    56	Image::Image(Texture* texture) noexcept : texture_(texture) {}
+    57	
+    58	void Image::set_texture(Texture* texture) noexcept { texture_ = texture; }
+    59	Texture* Image::texture() const noexcept { return texture_; }
+    60	
+    61	void Image::set_fit(ImageFit fit) noexcept { fit_ = fit; }
+    62	ImageFit Image::fit() const noexcept { return fit_; }
+    63	
+    64	void Image::set_opacity(std::uint8_t opacity) noexcept { opacity_ = opacity; }
+    65	std::uint8_t Image::opacity() const noexcept { return opacity_; }
+    66	
+    67	ImageGeometry Image::geometry() const noexcept {
+    68	    if (!texture_ || !texture_->valid()) return {};
+    69	    return calculate_image_geometry(
+    70	        texture_->width(), texture_->height(), bounds(), fit_
+    71	    );
+    72	}
+    73	
+    74	void Image::draw(Renderer& renderer) {
+    75	    if (!texture_ || !texture_->valid()) return;
+    76	    const ImageGeometry g = geometry();
+    77	    if (!g.valid) return;
+    78	
+    79	    if (fit_ == ImageFit::cover) {
+    80	        renderer.set_clip(bounds());
+    81	        renderer.draw_texture(texture_->native(), g.source, g.destination, opacity_);
+    82	        renderer.clear_clip();
+    83	    } else {
+    84	        renderer.draw_texture(texture_->native(), g.source, g.destination, opacity_);
+    85	    }
+    86	}
+    87	
+    88	}
+
+===== BUTTON API AND IMPLEMENTATION =====
+     1	#pragma once
+     2	
+     3	#include "kiddos/ui/element.hpp"
+     4	#include "kiddos/ui/font.hpp"
+     5	
+     6	#include <functional>
+     7	#include <string>
+     8	
+     9	namespace kiddos::ui {
+    10	
+    11	struct ButtonStyle {
+    12	    Color normal{20, 34, 65, 255};
+    13	    Color focused{35, 83, 150, 255};
+    14	    Color pressed{18, 55, 105, 255};
+    15	    Color disabled{35, 39, 50, 255};
+    16	    Color border{69, 151, 255, 255};
+    17	    Color focused_border{125, 190, 255, 255};
+    18	    Color text{255, 255, 255, 255};
+    19	    Color disabled_text{150, 155, 165, 255};
+    20	};
+    21	
+    22	class Button final : public Element {
+    23	public:
+    24	    explicit Button(std::string label = {});
+    25	
+    26	    void set_label(std::string label);
+    27	    const std::string& label() const noexcept;
+    28	
+    29	    void set_style(ButtonStyle style) noexcept;
+    30	    const ButtonStyle& style() const noexcept;
+    31	
+    32	    void set_font(const Font* font) noexcept;
+    33	    const Font* font() const noexcept;
+    34	
+    35	    void set_pressed(bool pressed) noexcept;
+    36	    bool pressed() const noexcept;
+    37	
+    38	    void set_on_activate(std::function<void()> callback);
+    39	    bool activate();
+    40	
+    41	private:
+    42	    std::string label_;
+    43	    ButtonStyle style_{};
+    44	    const Font* font_ = nullptr;
+    45	    std::function<void()> on_activate_;
+    46	    bool pressed_ = false;
+    47	
+    48	    void draw(Renderer& renderer) override;
+    49	};
+    50	
+    51	} // namespace kiddos::ui
+     1	#include "kiddos/ui/button.hpp"
+     2	#include "kiddos/ui/text.hpp"
+     3	
+     4	#include <utility>
+     5	
+     6	namespace kiddos::ui {
+     7	
+     8	Button::Button(std::string label)
+     9	    : label_(std::move(label)) {
+    10	    set_focusable(true);
+    11	}
+    12	
+    13	void Button::set_label(std::string label) {
+    14	    label_ = std::move(label);
+    15	}
+    16	
+    17	const std::string& Button::label() const noexcept {
+    18	    return label_;
+    19	}
+    20	
+    21	void Button::set_style(ButtonStyle style) noexcept {
+    22	    style_ = style;
+    23	}
+    24	
+    25	const ButtonStyle& Button::style() const noexcept {
+    26	    return style_;
+    27	}
+    28	
+    29	void Button::set_font(const Font* font) noexcept {
+    30	    font_ = font;
+    31	}
+    32	
+    33	const Font* Button::font() const noexcept {
+    34	    return font_;
+    35	}
+    36	
+    37	void Button::set_pressed(bool pressed) noexcept {
+    38	    pressed_ = pressed;
+    39	}
+    40	
+    41	bool Button::pressed() const noexcept {
+    42	    return pressed_;
+    43	}
+    44	
+    45	void Button::set_on_activate(std::function<void()> callback) {
+    46	    on_activate_ = std::move(callback);
+    47	}
+    48	
+    49	bool Button::activate() {
+    50	    if (!visible() || !enabled() || !on_activate_) return false;
+    51	    on_activate_();
+    52	    return true;
+    53	}
+    54	
+    55	void Button::draw(Renderer& renderer) {
+    56	    const Rect rect = bounds();
+    57	    if (rect.empty()) return;
+    58	
+    59	    Color fill = style_.normal;
+    60	    Color border = style_.border;
+    61	    Color text_color = style_.text;
+    62	
+    63	    if (!enabled()) {
+    64	        fill = style_.disabled;
+    65	        text_color = style_.disabled_text;
+    66	    } else if (pressed_) {
+    67	        fill = style_.pressed;
+    68	    } else if (focused()) {
+    69	        fill = style_.focused;
+    70	        border = style_.focused_border;
+    71	    }
+    72	
+    73	    renderer.fill_rect(rect, fill);
+    74	    renderer.outline_rect(rect, border);
+    75	
+    76	    if (font_ && font_->valid() && !label_.empty()) {
+    77	        TextRenderer text(renderer);
+    78	        const int horizontal_padding = 16;
+    79	        const int vertical_padding = 8;
+    80	        Rect text_area{
+    81	            rect.x + horizontal_padding,
+    82	            rect.y + vertical_padding,
+    83	            rect.w - horizontal_padding * 2,
+    84	            rect.h - vertical_padding * 2
+    85	        };
+    86	        if (!text_area.empty()) {
+    87	            text.draw_centered(label_, *font_, text_area, text_color);
+    88	        }
+    89	    }
+    90	}
+    91	
+    92	} // namespace kiddos::ui
+
+===== UI RENDERER DRAWING CAPABILITIES =====
+     1	#pragma once
+     2	
+     3	#include "kiddos/ui/color.hpp"
+     4	#include "kiddos/ui/geometry.hpp"
+     5	
+     6	#include <SDL.h>
+     7	#include <cstdint>
+     8	
+     9	namespace kiddos::ui {
+    10	
+    11	// Non-owning SDL2 renderer adapter.
+    12	// The SDLPlatform remains responsible for creating and destroying SDL_Renderer.
+    13	class Renderer final {
+    14	public:
+    15	    explicit Renderer(SDL_Renderer* renderer = nullptr) noexcept;
+    16	
+    17	    void attach(SDL_Renderer* renderer) noexcept;
+    18	    bool valid() const noexcept;
+    19	
+    20	    bool clear(Color color) const;
+    21	    bool fill_rect(Rect rect, Color color) const;
+    22	    bool outline_rect(Rect rect, Color color) const;
+    23	    bool draw_line(Point from, Point to, Color color) const;
+    24	    bool draw_point(Point point, Color color) const;
+    25	    bool draw_texture(SDL_Texture* texture, Rect source, Rect destination,
+    26	                      std::uint8_t opacity = 255) const;
+    27	    bool fill_rounded_rect(Rect rect, int radius, Color color) const;
+    28	    bool outline_rounded_rect(Rect rect, int radius, Color color) const;
+    29	
+    30	    bool set_clip(Rect rect) const;
+    31	    bool clear_clip() const;
+    32	
+    33	    void present() const;
+    34	
+    35	    SDL_Renderer* native() const noexcept;
+    36	
+    37	private:
+    38	    SDL_Renderer* renderer_ = nullptr;
+    39	
+    40	    bool set_color(Color color) const;
+    41	};
+    42	
+    43	} // namespace kiddos::ui
+     1	#include "kiddos/ui/renderer.hpp"
+     2	
+     3	#include <algorithm>
+     4	#include <cmath>
+     5	
+     6	namespace kiddos::ui {
+     7	
+     8	Renderer::Renderer(SDL_Renderer* renderer) noexcept
+     9	    : renderer_(renderer) {
+    10	}
+    11	
+    12	void Renderer::attach(SDL_Renderer* renderer) noexcept {
+    13	    renderer_ = renderer;
+    14	}
+    15	
+    16	bool Renderer::valid() const noexcept {
+    17	    return renderer_ != nullptr;
+    18	}
+    19	
+    20	SDL_Renderer* Renderer::native() const noexcept {
+    21	    return renderer_;
+    22	}
+    23	
+    24	bool Renderer::set_color(Color color) const {
+    25	    if (!renderer_) return false;
+    26	
+    27	    return SDL_SetRenderDrawColor(
+    28	        renderer_,
+    29	        color.r,
+    30	        color.g,
+    31	        color.b,
+    32	        color.a
+    33	    ) == 0;
+    34	}
+    35	
+    36	bool Renderer::clear(Color color) const {
+    37	    if (!set_color(color)) return false;
+    38	    return SDL_RenderClear(renderer_) == 0;
+    39	}
+    40	
+    41	bool Renderer::fill_rect(Rect rect, Color color) const {
+    42	    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+    43	
+    44	    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+    45	    return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+    46	}
+    47	
+    48	bool Renderer::outline_rect(Rect rect, Color color) const {
+    49	    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+    50	
+    51	    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+    52	    return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+    53	}
+    54	
+    55	bool Renderer::draw_line(Point from, Point to, Color color) const {
+    56	    if (!renderer_ || !set_color(color)) return false;
+    57	
+    58	    return SDL_RenderDrawLine(
+    59	        renderer_, from.x, from.y, to.x, to.y
+    60	    ) == 0;
+    61	}
+    62	
+    63	bool Renderer::draw_point(Point point, Color color) const {
+    64	    if (!renderer_ || !set_color(color)) return false;
+    65	
+    66	    return SDL_RenderDrawPoint(
+    67	        renderer_, point.x, point.y
+    68	    ) == 0;
+    69	}
+    70	
+    71	bool Renderer::draw_texture(
+    72	    SDL_Texture* texture,
+    73	    Rect source,
+    74	    Rect destination,
+    75	    std::uint8_t opacity
+    76	) const {
+    77	    if (!renderer_ || !texture || source.empty() || destination.empty()) return false;
+    78	
+    79	    Uint8 previous_opacity = 255;
+    80	    if (SDL_GetTextureAlphaMod(texture, &previous_opacity) != 0) return false;
+    81	    if (SDL_SetTextureAlphaMod(texture, opacity) != 0) return false;
+    82	
+    83	    SDL_Rect src{source.x, source.y, source.w, source.h};
+    84	    SDL_Rect dst{destination.x, destination.y, destination.w, destination.h};
+    85	    const bool rendered = SDL_RenderCopy(renderer_, texture, &src, &dst) == 0;
+    86	    const bool restored = SDL_SetTextureAlphaMod(texture, previous_opacity) == 0;
+    87	
+    88	    return rendered && restored;
+    89	}
+    90	
+    91	namespace {
+    92	
+    93	// Distance from the rect edge to the rounded-corner boundary at the row or
+    94	// column `steps` in from the corner, sampled at the pixel center. Fills use
+    95	// this so corner arcs are smooth and evenly shaped.
+    96	int corner_inset(int radius, int steps) {
+    97	    const double dy = static_cast<double>(radius - steps) - 0.5;
+    98	    const double inside = std::max(
+    99	        0.0,
+   100	        static_cast<double>(radius) * radius - dy * dy
+   101	    );
+   102	    return radius - static_cast<int>(std::sqrt(inside));
+   103	}
+   104	
+   105	} // namespace
+   106	
+   107	bool Renderer::fill_rounded_rect(Rect rect, int radius, Color color) const {
+   108	    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+   109	
+   110	    radius = std::clamp(radius, 0, std::min(rect.w, rect.h) / 2);
+   111	    if (radius == 0) {
+   112	        SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+   113	        return SDL_RenderFillRect(renderer_, &native_rect) == 0;
+   114	    }
+   115	
+   116	    for (int y = 0; y < rect.h; ++y) {
+   117	        int inset = 0;
+   118	        if (y < radius) {
+   119	            inset = corner_inset(radius, y);
+   120	        } else if (y >= rect.h - radius) {
+   121	            inset = corner_inset(radius, rect.h - 1 - y);
+   122	        }
+   123	
+   124	        if (SDL_RenderDrawLine(
+   125	                renderer_,
+   126	                rect.x + inset,
+   127	                rect.y + y,
+   128	                rect.x + rect.w - 1 - inset,
+   129	                rect.y + y
+   130	            ) != 0) {
+   131	            return false;
+   132	        }
+   133	    }
+   134	
+   135	    return true;
+   136	}
+   137	
+   138	bool Renderer::outline_rounded_rect(Rect rect, int radius, Color color) const {
+   139	    if (!renderer_ || rect.empty() || !set_color(color)) return false;
+   140	
+   141	    radius = std::clamp(radius, 0, std::min(rect.w, rect.h) / 2);
+   142	    if (radius == 0) {
+   143	        SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+   144	        return SDL_RenderDrawRect(renderer_, &native_rect) == 0;
+   145	    }
+   146	
+   147	    // Straight edges between the corner arcs.
+   148	    if (SDL_RenderDrawLine(
+   149	            renderer_, rect.x + radius, rect.y,
+   150	            rect.x + rect.w - 1 - radius, rect.y
+   151	        ) != 0 ||
+   152	        SDL_RenderDrawLine(
+   153	            renderer_, rect.x + radius, rect.y + rect.h - 1,
+   154	            rect.x + rect.w - 1 - radius, rect.y + rect.h - 1
+   155	        ) != 0 ||
+   156	        SDL_RenderDrawLine(
+   157	            renderer_, rect.x, rect.y + radius,
+   158	            rect.x, rect.y + rect.h - 1 - radius
+   159	        ) != 0 ||
+   160	        SDL_RenderDrawLine(
+   161	            renderer_, rect.x + rect.w - 1, rect.y + radius,
+   162	            rect.x + rect.w - 1, rect.y + rect.h - 1 - radius
+   163	        ) != 0) {
+   164	        return false;
+   165	    }
+   166	
+   167	    // Corner arcs, traced along the true circle with dense angle steps so
+   168	    // every corner stays continuous with no gaps. Points that land on the
+   169	    // straight edge lines are skipped: the lines already cover them, and
+   170	    // re-drawing would blend semi-transparent borders twice on one pixel.
+   171	    constexpr double kPi = 3.14159265358979323846;
+   172	    const int steps = std::max(2, radius * 2);
+   173	    const int right = rect.x + rect.w - 1;
+   174	    const int bottom = rect.y + rect.h - 1;
+   175	
+   176	    const auto on_edge_line = [&](ui::Point point) {
+   177	        if (point.y == rect.y || point.y == bottom) {
+   178	            return point.x >= rect.x + radius && point.x <= right - radius;
+   179	        }
+   180	        if (point.x == rect.x || point.x == right) {
+   181	            return point.y >= rect.y + radius && point.y <= bottom - radius;
+   182	        }
+   183	        return false;
+   184	    };
+   185	
+   186	    const auto draw_corner = [&](int center_x, int center_y, int sign_x,
+   187	                                 int sign_y) {
+   188	        ui::Point previous{
+   189	            center_x + sign_x * radius,
+   190	            center_y
+   191	        };
+   192	
+   193	        for (int step = 1; step < steps; ++step) {
+   194	            const double angle = (kPi / 2.0) * step / steps;
+   195	            const ui::Point point{
+   196	                center_x + sign_x *
+   197	                    static_cast<int>(std::lround(radius * std::cos(angle))),
+   198	                center_y + sign_y *
+   199	                    static_cast<int>(std::lround(radius * std::sin(angle)))
+   200	            };
+   201	
+   202	            if ((point.x != previous.x || point.y != previous.y) &&
+   203	                !on_edge_line(point)) {
+   204	                if (SDL_RenderDrawPoint(
+   205	                        renderer_, point.x, point.y
+   206	                    ) != 0) {
+   207	                    return false;
+   208	                }
+   209	            }
+   210	            previous = point;
+   211	        }
+   212	
+   213	        return true;
+   214	    };
+   215	
+   216	    if (!draw_corner(rect.x + radius, rect.y + radius, -1, -1) ||
+   217	        !draw_corner(
+   218	            rect.x + rect.w - 1 - radius, rect.y + radius, 1, -1
+   219	        ) ||
+   220	        !draw_corner(
+   221	            rect.x + radius, rect.y + rect.h - 1 - radius, -1, 1
+   222	        ) ||
+   223	        !draw_corner(
+   224	            rect.x + rect.w - 1 - radius,
+   225	            rect.y + rect.h - 1 - radius,
+   226	            1,
+   227	            1
+   228	        )) {
+   229	        return false;
+   230	    }
+   231	
+   232	    return true;
+   233	}
+   234	
+   235	bool Renderer::set_clip(Rect rect) const {
+   236	    if (!renderer_) return false;
+   237	
+   238	    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+   239	    return SDL_RenderSetClipRect(renderer_, &native_rect) == 0;
+   240	}
+   241	
+   242	bool Renderer::clear_clip() const {
+   243	    if (!renderer_) return false;
+   244	
+   245	    return SDL_RenderSetClipRect(renderer_, nullptr) == 0;
+   246	}
+   247	
+   248	void Renderer::present() const {
+   249	    if (renderer_) {
+   250	        SDL_RenderPresent(renderer_);
+   251	    }
+   252	}
+   253	
+   254	} // namespace kiddos::ui
+
+===== SCREEN GEOMETRY AND HARD-CODED DIMENSIONS =====
+src/app/home_carousel_screen.cpp:15:constexpr ui::Rect center_art{180, 145, 360, 360};
+src/app/home_carousel_screen.cpp:57:        image.set_bounds(slot_bounds[slot]);
+src/app/home_carousel_screen.cpp:86:        recycled->set_bounds({720, right_art.y, right_art.w, right_art.h});
+src/app/home_carousel_screen.cpp:92:        recycled->set_bounds({-128, left_art.y, left_art.w, left_art.h});
+src/app/home_carousel_screen.cpp:114:            image->set_bounds(slot_bounds[slot]);
+src/app/home_carousel_screen.cpp:140:        image->set_bounds(next);
+src/app/home_carousel_screen.cpp:148:            image->set_bounds(target);
+src/app/selected_game_screen.cpp:48:    artwork.set_bounds({90, 85, 540, 450});
+src/app/selected_game_screen.cpp:59:    hints.set_bounds({0, 678, 720, 42});
+src/app/selected_game_screen.cpp:66:    play.set_bounds({190, 545, 340, 88});
+src/app/shared_shell.cpp:67:        SDL_Rect destination{x, y, surface->w, surface->h};
+src/app/shared_shell.cpp:85:    SDL_Rect cabinet{25, 33, 8, 14};
+src/app/shared_shell.cpp:123:    SDL_Rect battery{657, 27, 34, 19};
+src/app/shared_shell.cpp:124:    SDL_Rect terminal{691, 33, 4, 7};
+src/app/shared_shell.cpp:129:    SDL_Rect fill{661, 31, 22, 11};
+src/app/shared_shell.cpp:134:        SDL_Rect destination{195, 5, 330, 61};
+src/app/shared_shell.cpp:144:        SDL_Rect destination{0, 682, 720, 34};
+include/kiddos/app/application.hpp:23:    static constexpr int game_count_ = static_cast<int>(app::platform_count);
+include/kiddos/app/home_carousel_screen.hpp:16:    static constexpr int game_count = static_cast<int>(platform_count);
+src/ui/renderer.cpp:44:    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+src/ui/renderer.cpp:51:    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+src/ui/renderer.cpp:83:    SDL_Rect src{source.x, source.y, source.w, source.h};
+src/ui/renderer.cpp:84:    SDL_Rect dst{destination.x, destination.y, destination.w, destination.h};
+src/ui/renderer.cpp:112:        SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+src/ui/renderer.cpp:143:        SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+src/ui/renderer.cpp:238:    SDL_Rect native_rect{rect.x, rect.y, rect.w, rect.h};
+src/ui/layout.cpp:15:    container.set_bounds(area);
+src/ui/layout.cpp:60:            visible[i]->set_bounds({
+src/ui/layout.cpp:64:            visible[i]->set_bounds({
+src/ui/text.cpp:20:    SDL_Rect destination{position.x, position.y, surface->w, surface->h};
+include/kiddos/ui/element.hpp:12:    void set_bounds(Rect bounds) noexcept { bounds_ = bounds; }
+
+===== SHARED SHELL AND SCREEN HISTORY =====
+b314fe9 Finalize Kid Mode home carousel
+0d803f5 feat(ui): refine home carousel borders, titles, wordmark, and hints
+0284b5a feat: render home carousel through the KiddOS UI library
+3ff6d1e chore: record milestone run - kiddos-ui-widget-hierarchy-and-layout
