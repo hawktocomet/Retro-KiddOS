@@ -1,0 +1,829 @@
+===== APPLICATION HEADER =====
+#pragma once
+
+#include "kiddos/app/platform.hpp"
+#include "kiddos/platform/platform.hpp"
+#include "kiddos/ui/renderer.hpp"
+#include "kiddos/ui/screen_manager.hpp"
+
+namespace kiddos {
+
+class Application {
+public:
+    explicit Application(Platform& platform);
+    int run();
+
+private:
+    Platform& platform_;
+    ui::ScreenManager screens_;
+    ui::Renderer ui_renderer_;
+    bool running_ = true;
+    int selected_game_ = 1;
+    static constexpr int game_count_ = static_cast<int>(app::platform_count);
+
+    void handle_action(Action action);
+    void render();
+};
+
+} // namespace kiddos
+
+===== APPLICATION IMPLEMENTATION =====
+#include "kiddos/app/application.hpp"
+
+#include "kiddos/app/home_carousel_screen.hpp"
+#include "kiddos/app/selected_game_screen.hpp"
+#include "kiddos/app/ui_action_mapping.hpp"
+
+#include <SDL_image.h>
+
+#include <chrono>
+#include <memory>
+#include <thread>
+
+namespace kiddos {
+
+Application::Application(Platform& platform)
+    : platform_(platform) {
+}
+
+int Application::run() {
+    if (!platform_.initialize()) {
+        platform_.shutdown();
+        return 1;
+    }
+
+    // The UI renderer is a non-owning adapter around the platform renderer.
+    ui_renderer_.attach(platform_.native_renderer());
+    IMG_Init(IMG_INIT_PNG);
+
+    screens_.push(std::make_unique<app::HomeCarouselScreen>(
+        platform_.native_renderer()));
+
+    running_ = true;
+
+    while (running_) {
+        Action action = Action::None;
+
+        while (platform_.poll_action(action)) {
+            handle_action(action);
+            if (!running_) break;
+        }
+
+        if (running_) {
+            screens_.update(0.008f);
+            render();
+            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+        }
+    }
+
+    // Screens and their textures must be destroyed before the SDL renderer.
+    screens_.clear();
+    IMG_Quit();
+    platform_.shutdown();
+    return 0;
+}
+
+void Application::handle_action(Action action) {
+    if (action == Action::Quit) {
+        running_ = false;
+        return;
+    }
+
+    const auto ui_action = app::to_ui_action(action);
+    if (!ui_action) return;
+
+    // Back pops a child screen, but never removes the home screen.
+    if (*ui_action == ui::UIAction::Back) {
+        if (screens_.depth() > 1) {
+            screens_.handle_action(*ui_action);
+        }
+        return;
+    }
+
+    // Let the active screen handle its own controls first. This is how
+    // Confirm activates the Play button on Selected Game.
+    if (screens_.handle_action(*ui_action)) return;
+
+    auto* home = dynamic_cast<app::HomeCarouselScreen*>(screens_.current());
+    if (!home) return;
+
+    switch (*ui_action) {
+        case ui::UIAction::Left:
+            selected_game_ =
+                (selected_game_ + game_count_ - 1) % game_count_;
+            home->set_selected_game(selected_game_);
+            break;
+
+        case ui::UIAction::Right:
+            selected_game_ = (selected_game_ + 1) % game_count_;
+            home->set_selected_game(selected_game_);
+            break;
+
+        case ui::UIAction::Confirm:
+            screens_.push(std::make_unique<app::SelectedGameScreen>(
+                platform_.native_renderer(), selected_game_));
+            break;
+
+        case ui::UIAction::Up:
+        case ui::UIAction::Down:
+        case ui::UIAction::Back:
+            break;
+    }
+}
+
+void Application::render() {
+    platform_.begin_frame();
+    screens_.render(ui_renderer_);
+    platform_.present();
+}
+
+} // namespace kiddos
+
+===== CAROUSEL SCREEN =====
+#pragma once
+
+#include "kiddos/app/platform.hpp"
+#include "kiddos/ui/image.hpp"
+#include "kiddos/ui/screen.hpp"
+#include "kiddos/ui/texture.hpp"
+
+#include <SDL.h>
+
+#include <array>
+
+namespace kiddos::app {
+
+class HomeCarouselScreen final : public ui::Screen {
+public:
+    static constexpr int game_count = static_cast<int>(platform_count);
+
+    explicit HomeCarouselScreen(SDL_Renderer* renderer);
+    ~HomeCarouselScreen() override;
+
+    void set_selected_game(int index);
+    int selected_game() const noexcept { return selected_game_; }
+    void update(float delta_seconds) override;
+
+private:
+    std::array<ui::Texture, game_count> game_textures_{};
+
+    ui::Texture wordmark_texture_{};
+    ui::Texture hints_texture_{};
+
+    static constexpr std::size_t visible_slot_count_ = 3;
+    std::array<ui::Image*, visible_slot_count_> game_images_{};
+    std::array<ui::Rect, visible_slot_count_> target_bounds_{};
+    std::array<int, visible_slot_count_> target_opacity_{};
+
+    ui::Image* wordmark_ = nullptr;
+    ui::Image* hints_ = nullptr;
+
+    int selected_game_ = -1;
+};
+
+} // namespace kiddos::app
+#include "kiddos/app/home_carousel_screen.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <string>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr ui::Color background{1, 1, 1, 255};
+
+constexpr ui::Rect left_art{24, 268, 128, 128};
+constexpr ui::Rect center_art{180, 180, 360, 360};
+constexpr ui::Rect right_art{568, 268, 128, 128};
+
+constexpr ui::Rect title_rect{145, 465, 430, 54};
+constexpr ui::Rect wordmark_rect{185, 4, 350, 64};
+constexpr ui::Rect hints_rect{0, 662, 720, 42};
+
+
+
+constexpr const char* wordmark_path =
+    "assets/artwork/generated/kiddos-wordmark.png";
+constexpr const char* hints_path =
+    "assets/artwork/generated/navigation-hints.png";
+
+void fill_speaker_cone(
+    ui::Renderer& renderer,
+    int narrow_x,
+    int narrow_top,
+    int narrow_bottom,
+    int wide_x,
+    int wide_top,
+    int wide_bottom,
+    ui::Color color
+) {
+    for (int y = wide_top; y <= wide_bottom; ++y) {
+        int left = narrow_x;
+
+        if (y < narrow_top) {
+            left += (narrow_top - y) * (wide_x - narrow_x) /
+                    (narrow_top - wide_top);
+        } else if (y > narrow_bottom) {
+            left += (y - narrow_bottom) * (wide_x - narrow_x) /
+                    (wide_bottom - narrow_bottom);
+        }
+
+        renderer.draw_line({left, y}, {wide_x, y}, color);
+    }
+}
+
+void draw_arc(
+    ui::Renderer& renderer,
+    ui::Point center,
+    int radius,
+    double start_degrees,
+    double end_degrees,
+    ui::Color color
+) {
+    constexpr double pi = 3.14159265358979323846;
+    const int steps = std::max(2, radius * 2);
+    const double delta = (end_degrees - start_degrees) / steps;
+
+    auto point_at = [&](double degrees) {
+        const double radians = degrees * pi / 180.0;
+        return ui::Point{
+            center.x + static_cast<int>(std::lround(radius * std::cos(radians))),
+            center.y + static_cast<int>(std::lround(radius * std::sin(radians)))
+        };
+    };
+
+    ui::Point previous = point_at(start_degrees);
+    for (int i = 1; i <= steps; ++i) {
+        const ui::Point point = point_at(start_degrees + delta * i);
+        renderer.draw_line(previous, point, color);
+        previous = point;
+    }
+}
+
+class StatusIndicators final : public ui::Element {
+protected:
+    void draw(ui::Renderer& renderer) override {
+        const ui::Color primary{190, 208, 235, 210};
+        const ui::Color accent{105, 160, 225, 210};
+
+        // Compact speaker indicator.
+        renderer.fill_rect({25, 32, 7, 12}, primary);
+        fill_speaker_cone(renderer, 32, 32, 44, 42, 27, 49, primary);
+        draw_arc(renderer, {44, 38}, 7, -48.0, 48.0, accent);
+
+        // Quiet battery indicator.
+        renderer.outline_rect({660, 29, 30, 16}, primary);
+        renderer.fill_rect({691, 34, 3, 6}, primary);
+        renderer.fill_rect({664, 33, 20, 8}, accent);
+    }
+};
+
+int interpolate(int current, int target, float amount) {
+    return static_cast<int>(std::lround(
+        current + (target - current) * amount));
+}
+
+ui::Rect interpolate_rect(
+    ui::Rect current,
+    ui::Rect target,
+    float amount
+) {
+    return {
+        interpolate(current.x, target.x, amount),
+        interpolate(current.y, target.y, amount),
+        interpolate(current.w, target.w, amount),
+        interpolate(current.h, target.h, amount)
+    };
+}
+
+} // namespace
+
+HomeCarouselScreen::HomeCarouselScreen(SDL_Renderer* renderer) {
+    constexpr std::array<const char*, game_count> game_cover_paths{{
+        "assets/artwork/generated/boxart/gb-tetris.png",
+        "assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png",
+        "assets/artwork/generated/boxart/snes-super-mario-world.png",
+        "assets/artwork/generated/boxart/arcade-pac-man.png"
+    }};
+
+    for (std::size_t game = 0; game < game_textures_.size(); ++game) {
+        game_textures_[game].load(renderer, game_cover_paths[game], false);
+    }
+
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto& image = root().add<ui::Image>();
+        image.set_fit(ui::ImageFit::contain);
+        image.set_bounds(slot_bounds[slot]);
+        game_images_[slot] = &image;
+    }
+
+    wordmark_texture_.load(renderer, wordmark_path, false);
+    wordmark_ = &root().add<ui::Image>(&wordmark_texture_);
+    wordmark_->set_bounds(wordmark_rect);
+    wordmark_->set_fit(ui::ImageFit::contain);
+
+    hints_texture_.load(renderer, hints_path, false);
+    hints_ = &root().add<ui::Image>(&hints_texture_);
+    hints_->set_bounds(hints_rect);
+    hints_->set_fit(ui::ImageFit::contain);
+
+    root().add<StatusIndicators>();
+
+    set_selected_game(1);
+}
+
+HomeCarouselScreen::~HomeCarouselScreen() {
+    for (auto* image : game_images_) {
+        if (image) image->set_texture(nullptr);
+    }
+
+    if (wordmark_) wordmark_->set_texture(nullptr);
+    if (hints_) hints_->set_texture(nullptr);
+}
+
+void HomeCarouselScreen::set_selected_game(int index) {
+    if (index < 0 || index >= game_count) return;
+    if (index == selected_game_) return;
+
+    const int previous = selected_game_;
+    const bool moving_right =
+        previous >= 0 && index == (previous + 1) % game_count;
+    const bool moving_left =
+        previous >= 0 && index == (previous + game_count - 1) % game_count;
+
+    if (moving_right) {
+        auto* recycled = game_images_[0];
+        game_images_[0] = game_images_[1];
+        game_images_[1] = game_images_[2];
+        game_images_[2] = recycled;
+        recycled->set_bounds({720, right_art.y, right_art.w, right_art.h});
+    } else if (moving_left) {
+        auto* recycled = game_images_[2];
+        game_images_[2] = game_images_[1];
+        game_images_[1] = game_images_[0];
+        game_images_[0] = recycled;
+        recycled->set_bounds({-128, left_art.y, left_art.w, left_art.h});
+    }
+
+    selected_game_ = index;
+
+    const std::array<int, 3> visible_games{
+        (index + game_count - 1) % game_count,
+        index,
+        (index + 1) % game_count
+    };
+    const std::array<ui::Rect, 3> slot_bounds{
+        left_art, center_art, right_art
+    };
+
+    for (std::size_t slot = 0; slot < game_images_.size(); ++slot) {
+        auto* image = game_images_[slot];
+        image->set_texture(
+            &game_textures_[static_cast<std::size_t>(visible_games[slot])]);
+        target_bounds_[slot] = slot_bounds[slot];
+        target_opacity_[slot] = slot == 1 ? 255 : 118;
+
+        if (!moving_right && !moving_left) {
+            image->set_bounds(slot_bounds[slot]);
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[slot]));
+        }
+    }
+}
+
+void HomeCarouselScreen::update(float delta_seconds) {
+    if (delta_seconds <= 0.0f) return;
+
+    // A critically damped-feeling ease that settles quickly while allowing
+    // another direction input to retarget the carousel mid-motion.
+    const float amount = std::clamp(
+        1.0f - std::exp(-delta_seconds * 7.0f), 0.0f, 1.0f);
+
+    for (std::size_t i = 0; i < game_images_.size(); ++i) {
+        ui::Image* image = game_images_[i];
+        if (!image) continue;
+
+        const ui::Rect current = image->bounds();
+        const ui::Rect target = target_bounds_[i];
+        const ui::Rect next = interpolate_rect(current, target, amount);
+
+        const int opacity = interpolate(
+            image->opacity(), target_opacity_[i], amount);
+
+        image->set_bounds(next);
+        image->set_opacity(static_cast<std::uint8_t>(
+            std::clamp(opacity, 0, 255)));
+
+        if (std::abs(next.x - target.x) <= 1 &&
+            std::abs(next.y - target.y) <= 1 &&
+            std::abs(next.w - target.w) <= 1 &&
+            std::abs(next.h - target.h) <= 1) {
+            image->set_bounds(target);
+        }
+
+        if (std::abs(opacity - target_opacity_[i]) <= 1) {
+            image->set_opacity(
+                static_cast<std::uint8_t>(target_opacity_[i]));
+        }
+    }
+}
+
+} // namespace kiddos::app
+
+===== SELECTED GAME SCREEN =====
+#pragma once
+
+#include "kiddos/ui/button.hpp"
+#include "kiddos/ui/font.hpp"
+#include "kiddos/ui/image.hpp"
+#include "kiddos/ui/label.hpp"
+#include "kiddos/ui/screen.hpp"
+#include "kiddos/ui/texture.hpp"
+
+#include <SDL.h>
+
+namespace kiddos::app {
+
+class SelectedGameScreen final : public ui::Screen {
+public:
+    SelectedGameScreen(SDL_Renderer* renderer, int selected_game);
+    ~SelectedGameScreen() override;
+
+    int selected_game() const noexcept { return selected_game_; }
+    bool play_requested() const noexcept { return play_requested_; }
+
+private:
+    int selected_game_ = 0;
+    bool play_requested_ = false;
+
+    ui::Texture artwork_texture_;
+    ui::Image* artwork_ = nullptr;
+    ui::Font font_;
+    ui::Button* play_button_ = nullptr;
+    ui::Label* back_hint_ = nullptr;
+};
+
+} // namespace kiddos::app
+#include "kiddos/app/selected_game_screen.hpp"
+
+#include "kiddos/app/platform.hpp"
+#include "kiddos/ui/label.hpp"
+
+#include <array>
+
+namespace kiddos::app {
+
+namespace {
+
+constexpr std::array<const char*, platform_count> artwork_paths{{
+    "assets/artwork/generated/boxart/gb-tetris.png",
+    "assets/artwork/generated/boxart/gba-mario-kart-super-circuit.png",
+    "assets/artwork/generated/boxart/snes-super-mario-world.png",
+    "assets/artwork/generated/boxart/arcade-pac-man.png"
+}};
+
+void load_ui_font(ui::Font& font, int size) {
+    constexpr std::array<const char*, 3> paths{{
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf"
+    }};
+
+    for (const char* path : paths) {
+        if (font.load(path, size)) return;
+    }
+}
+
+} // namespace
+
+SelectedGameScreen::SelectedGameScreen(
+    SDL_Renderer* renderer,
+    int selected_game
+) : selected_game_(selected_game) {
+    if (selected_game_ < 0 ||
+        selected_game_ >= static_cast<int>(platform_count)) {
+        selected_game_ = 0;
+    }
+
+    artwork_texture_.load(
+        renderer,
+        artwork_paths[static_cast<std::size_t>(selected_game_)],
+        false
+    );
+
+    auto& artwork = root().add<ui::Image>(&artwork_texture_);
+    artwork.set_bounds({90, 42, 540, 450});
+    artwork.set_fit(ui::ImageFit::contain);
+    artwork_ = &artwork;
+
+    load_ui_font(font_, 28);
+
+    auto& play = root().add<ui::Button>("A  PLAY");
+    play.set_bounds({190, 525, 340, 88});
+    play.set_font(&font_);
+    play.set_style({
+        {18, 43, 83, 255},
+        {35, 91, 165, 255},
+        {14, 55, 112, 255},
+        {35, 39, 50, 255},
+        {69, 151, 255, 255},
+        {125, 190, 255, 255},
+        {255, 255, 255, 255},
+        {150, 155, 165, 255}
+    });
+    play.set_on_activate([this] {
+        // This records the UI request; the game-launch backend is separate.
+        play_requested_ = true;
+    });
+    play_button_ = &play;
+
+    auto& back = root().add<ui::Label>("B  BACK");
+    back.set_bounds({250, 655, 220, 36});
+    back.set_font(&font_);
+    back.set_color({190, 208, 235, 230});
+    back.set_alignment(ui::LabelAlignment::center);
+    back_hint_ = &back;
+}
+
+SelectedGameScreen::~SelectedGameScreen() {
+    if (artwork_) artwork_->set_texture(nullptr);
+}
+
+} // namespace kiddos::app
+
+===== UI ELEMENT AND IMAGE APIs =====
+#pragma once
+
+#include "kiddos/ui/geometry.hpp"
+#include "kiddos/ui/renderer.hpp"
+
+namespace kiddos::ui {
+
+class Element {
+public:
+    virtual ~Element() = default;
+
+    void set_bounds(Rect bounds) noexcept { bounds_ = bounds; }
+    Rect bounds() const noexcept { return bounds_; }
+
+    void set_visible(bool visible) noexcept { visible_ = visible; }
+    bool visible() const noexcept { return visible_; }
+
+    void set_enabled(bool enabled) noexcept { enabled_ = enabled; }
+    bool enabled() const noexcept { return enabled_; }
+
+    void set_focusable(bool focusable) noexcept {
+        focusable_ = focusable;
+    }
+
+    bool focusable() const noexcept { return focusable_; }
+
+    void set_focused(bool focused) noexcept { focused_ = focused; }
+    bool focused() const noexcept { return focused_; }
+
+    void render(Renderer& renderer) {
+        if (visible_) draw(renderer);
+    }
+
+protected:
+    virtual void draw(Renderer& renderer) = 0;
+
+private:
+    Rect bounds_{};
+    bool visible_ = true;
+    bool enabled_ = true;
+    bool focusable_ = false;
+    bool focused_ = false;
+};
+
+} // namespace kiddos::ui
+#pragma once
+
+#include "kiddos/ui/element.hpp"
+#include "kiddos/ui/texture.hpp"
+
+#include <cstdint>
+
+namespace kiddos::ui {
+
+enum class ImageFit {
+    contain,
+    cover,
+    stretch
+};
+
+struct ImageGeometry {
+    Rect source{};
+    Rect destination{};
+    bool valid = false;
+};
+
+ImageGeometry calculate_image_geometry(
+    int texture_width,
+    int texture_height,
+    Rect bounds,
+    ImageFit fit
+) noexcept;
+
+class Image final : public Element {
+public:
+    explicit Image(Texture* texture = nullptr) noexcept;
+
+    void set_texture(Texture* texture) noexcept;
+    Texture* texture() const noexcept;
+
+    void set_fit(ImageFit fit) noexcept;
+    ImageFit fit() const noexcept;
+
+    void set_opacity(std::uint8_t opacity) noexcept;
+    std::uint8_t opacity() const noexcept;
+
+    ImageGeometry geometry() const noexcept;
+
+private:
+    Texture* texture_ = nullptr;
+    ImageFit fit_ = ImageFit::contain;
+    std::uint8_t opacity_ = 255;
+
+    void draw(Renderer& renderer) override;
+};
+
+}
+#pragma once
+#include "kiddos/ui/color.hpp"
+#include "kiddos/ui/font.hpp"
+#include "kiddos/ui/geometry.hpp"
+#include "kiddos/ui/renderer.hpp"
+#include <string>
+
+namespace kiddos::ui {
+class TextRenderer final {
+public:
+    explicit TextRenderer(Renderer& renderer) noexcept;
+    bool draw(const std::string& text, const Font& font,
+              Point position, Color color);
+    bool draw_centered(const std::string& text, const Font& font,
+                       Rect area, Color color);
+private:
+    Renderer& renderer_;
+};
+}
+#pragma once
+
+#include <cstdint>
+
+namespace kiddos::ui {
+
+struct Color {
+    std::uint8_t r = 0;
+    std::uint8_t g = 0;
+    std::uint8_t b = 0;
+    std::uint8_t a = 255;
+};
+
+namespace colors {
+inline constexpr Color transparent{0, 0, 0, 0};
+inline constexpr Color navy{8, 15, 35, 255};
+inline constexpr Color blue{69, 151, 255, 255};
+inline constexpr Color white{255, 255, 255, 255};
+}
+
+} // namespace kiddos::ui
+
+===== AVAILABLE LOGO, STATUS, AND FONT ASSETS =====
+assets/artwork/generated/kiddos-wordmark.png
+assets/artwork/source/branding/kiddos-wordmark.svg
+
+===== BUILD SOURCE REGISTRATION =====
+cmake_minimum_required(VERSION 3.20)
+
+project(KiddOS
+    VERSION 0.2.0
+    DESCRIPTION "A child-friendly gaming environment for the Retro Pixel Pocket"
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
+pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
+
+add_library(kiddos_ui STATIC
+    src/ui/renderer.cpp
+    src/ui/layout.cpp
+    src/ui/focus.cpp
+    src/ui/button.cpp
+    src/ui/controller.cpp
+    src/ui/font.cpp
+    src/ui/text.cpp
+    src/ui/texture.cpp
+    src/ui/image.cpp
+    src/ui/label.cpp
+    src/ui/panel.cpp
+    src/ui/progress_bar.cpp
+    src/ui/toggle.cpp
+    src/ui/slider.cpp
+    src/ui/theme.cpp
+    src/ui/list_view.cpp
+    src/ui/checkbox.cpp
+    src/ui/radio_group.cpp
+    src/ui/select.cpp
+    src/ui/text_input.cpp
+    src/ui/text_input_interaction.cpp
+    src/ui/screen.cpp
+    src/ui/screen_manager.cpp
+)
+
+add_library(KiddOS::UI ALIAS kiddos_ui)
+target_include_directories(kiddos_ui PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(kiddos_ui PUBLIC PkgConfig::SDL2 PkgConfig::SDL2_TTF PkgConfig::SDL2_IMAGE)
+
+target_compile_options(kiddos_ui PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+add_executable(kiddos
+    src/main.cpp
+    src/app/application.cpp
+    src/app/home_carousel_screen.cpp
+    src/app/selected_game_screen.cpp
+    src/platform/sdl_platform.cpp
+)
+
+target_include_directories(kiddos PRIVATE include)
+target_link_libraries(kiddos PRIVATE kiddos_ui)
+
+target_compile_options(kiddos PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+include(CTest)
+
+if(BUILD_TESTING)
+    add_executable(kiddos_app_ui_action_mapping_test
+        tests/app_ui_action_mapping_test.cpp)
+    target_include_directories(kiddos_app_ui_action_mapping_test PRIVATE include)
+    target_link_libraries(kiddos_app_ui_action_mapping_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_app_ui_action_mapping
+        COMMAND kiddos_app_ui_action_mapping_test)
+
+    add_executable(kiddos_app_selected_game_screen_test
+        tests/app_selected_game_screen_test.cpp
+        src/app/selected_game_screen.cpp)
+    target_include_directories(kiddos_app_selected_game_screen_test PRIVATE include)
+    target_compile_definitions(kiddos_app_selected_game_screen_test PRIVATE
+        KIDDOS_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(kiddos_app_selected_game_screen_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_app_selected_game_screen
+        COMMAND kiddos_app_selected_game_screen_test)
+
+    add_executable(kiddos_app_home_carousel_screen_test
+        tests/app_home_carousel_screen_test.cpp
+        src/app/home_carousel_screen.cpp)
+    target_include_directories(kiddos_app_home_carousel_screen_test PRIVATE include)
+    target_compile_definitions(kiddos_app_home_carousel_screen_test PRIVATE
+        KIDDOS_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(kiddos_app_home_carousel_screen_test PRIVATE kiddos_ui)
+    add_test(NAME kiddos_app_home_carousel_screen
+        COMMAND kiddos_app_home_carousel_screen_test)
+
+    add_executable(kiddos_platform_sdl_text_input_translator_test
+        tests/platform_sdl_text_input_translator_test.cpp)
+    target_include_directories(kiddos_platform_sdl_text_input_translator_test PRIVATE include)
+    target_link_libraries(kiddos_platform_sdl_text_input_translator_test PRIVATE PkgConfig::SDL2)
+    add_test(NAME kiddos_platform_sdl_text_input_translator
+        COMMAND kiddos_platform_sdl_text_input_translator_test)
+
+    add_executable(kiddos_platform_text_input_interface_test
+        tests/platform_text_input_interface_test.cpp)
+    target_include_directories(kiddos_platform_text_input_interface_test PRIVATE include)
+    add_test(NAME kiddos_platform_text_input_interface
+        COMMAND kiddos_platform_text_input_interface_test)
+
+===== PRESERVE WORKING TREE =====
+ M CMakeLists.txt
+ M include/kiddos/app/application.hpp
+ M src/app/application.cpp
+ M src/platform/sdl_platform.cpp
+?? assets/artwork/generated/cartridges/
+?? include/kiddos/app/selected_game_screen.hpp
+?? src/app/selected_game_screen.cpp
+?? tests/app_selected_game_screen_test.cpp
