@@ -1,0 +1,9 @@
+=== VERIFY APPROVED REFERENCES ===
+
+=== STAGE DESIGN REFERENCES FOR MILESTONE COMMIT ===
+
+=== STAGED FILES ===
+ design/reference/README.md                             |  14 ++++++++++++++
+ .../reference/approved-screens/GameCarouselScreen.png  | Bin 0 -> 308482 bytes
+ .../reference/approved-screens/SelectedGameScreen.png  | Bin 0 -> 358769 bytes
+ 3 files changed, 14 insertions(+)
