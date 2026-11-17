@@ -3,6 +3,7 @@
 #include <SDL_image.h>
 #include <algorithm>
 #include <cstdio>
+#include <cstring>
 #include <cstdlib>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -42,6 +43,10 @@ struct UI {
     Text heading, subtitle, footer, labels[4];
     Text menuHeading, menuItem, menuFooter;
     Text confirmHeading, confirmBody, confirmFooter;
+    Text batteryLabel;
+    int batteryPercent = -1;
+    bool externalPower = false;
+    Uint32 batteryLastPoll = 0;
 };
 
 static Text makeText(SDL_Renderer* r, TTF_Font* f, const char* value, SDL_Color color) {
@@ -64,6 +69,98 @@ static void drawText(SDL_Renderer* r, const Text& t, int cx, int y) {
     SDL_RenderCopy(r, t.texture, nullptr, &dst);
 }
 
+static void destroyText(Text& t);
+static bool readSysfs(const char* path, char* value, size_t size) {
+    FILE* file = std::fopen(path, "r");
+    if (!file) return false;
+    bool ok = std::fgets(value, static_cast<int>(size), file) != nullptr;
+    std::fclose(file);
+    if (ok) value[std::strcspn(value, "\r\n")] = 0;
+    return ok;
+}
+
+static void updateBattery(UI& ui) {
+    Uint32 now = SDL_GetTicks();
+    if (ui.batteryLastPoll != 0 && now - ui.batteryLastPoll < 5000)
+        return;
+    ui.batteryLastPoll = now;
+
+    const char* base =
+        "/sys/devices/platform/ff180000.i2c/i2c-0/0-0020/";
+    char path[256];
+    char value[64];
+
+    std::snprintf(path, sizeof(path),
+        "%srk817-battery/power_supply/battery/capacity", base);
+    if (readSysfs(path, value, sizeof(value))) {
+        int percent = std::atoi(value);
+        if (percent >= 0 && percent <= 100)
+            ui.batteryPercent = percent;
+    }
+
+    ui.externalPower = false;
+    const char* sources[] = {"ac", "usb"};
+    for (const char* source : sources) {
+        std::snprintf(path, sizeof(path),
+            "%srk817-charger/power_supply/%s/online", base, source);
+        if (readSysfs(path, value, sizeof(value)) &&
+            std::atoi(value) > 0)
+            ui.externalPower = true;
+    }
+
+    destroyText(ui.batteryLabel);
+    if (ui.batteryPercent >= 0) {
+        char label[16];
+        std::snprintf(label, sizeof(label), "%d%%", ui.batteryPercent);
+        SDL_Color color = ui.batteryPercent <= 15
+            ? SDL_Color{255, 90, 90, 255}
+            : SDL_Color{245, 248, 255, 255};
+        ui.batteryLabel = makeText(
+            ui.renderer, ui.footerFont, label, color);
+    }
+}
+
+static void drawBattery(UI& ui) {
+    if (ui.batteryPercent < 0) return;
+
+    SDL_Renderer* r = ui.renderer;
+    const int x = 574;
+    const int y = 78;
+
+    SDL_Color color = ui.batteryPercent <= 15
+        ? SDL_Color{255, 90, 90, 255}
+        : SDL_Color{155, 177, 215, 255};
+
+    SDL_Rect outline = {x, y, 27, 14};
+    SDL_Rect cap = {x + 27, y + 4, 3, 6};
+    SDL_SetRenderDrawColor(r, color.r, color.g, color.b, 255);
+    SDL_RenderDrawRect(r, &outline);
+    SDL_RenderFillRect(r, &cap);
+
+    int fillWidth = (ui.batteryPercent * 21) / 100;
+    if (fillWidth > 0) {
+        SDL_Rect fill = {x + 3, y + 3, fillWidth, 8};
+        SDL_SetRenderDrawColor(r, color.r, color.g, color.b, 255);
+        SDL_RenderFillRect(r, &fill);
+    }
+
+    if (ui.externalPower) {
+        // Bright, larger charging bolt for visibility at a glance.
+        SDL_SetRenderDrawColor(r, 255, 225, 70, 255);
+        SDL_RenderDrawLine(r, x + 17, y + 1, x + 10, y + 8);
+        SDL_RenderDrawLine(r, x + 10, y + 8, x + 15, y + 8);
+        SDL_RenderDrawLine(r, x + 15, y + 8, x + 10, y + 14);
+        SDL_RenderDrawLine(r, x + 18, y + 1, x + 11, y + 8);
+    }
+
+    if (ui.batteryLabel.texture) {
+        SDL_Rect dst = {
+            615, y - 2, ui.batteryLabel.w, ui.batteryLabel.h
+        };
+        SDL_RenderCopy(r, ui.batteryLabel.texture, nullptr, &dst);
+    }
+}
+
 static void destroyText(Text& t) {
     if (t.texture) SDL_DestroyTexture(t.texture);
     t.texture = nullptr;
@@ -79,6 +176,7 @@ static void closeUI(UI& ui) {
     destroyText(ui.confirmHeading);
     destroyText(ui.confirmBody);
     destroyText(ui.confirmFooter);
+    destroyText(ui.batteryLabel);
     for (int i = 0; i < 4; ++i) {
         destroyText(ui.labels[i]);
         if (ui.images[i]) SDL_DestroyTexture(ui.images[i]);
@@ -191,6 +289,7 @@ static void drawUI(UI& ui, int selected) {
 
     drawText(r, ui.heading, 360, 68);
     drawText(r, ui.subtitle, 360, 119);
+    drawBattery(ui);
 
     const SDL_Rect tiles[4] = {
         {105, 175, 235, 180}, {380, 175, 235, 180},
@@ -242,6 +341,7 @@ static void drawSystemMenu(UI& ui) {
     drawSimplePanel(r);
     drawText(r, ui.heading, 360, 105);
     drawText(r, ui.menuHeading, 360, 245);
+    drawBattery(ui);
 
     SDL_Rect item = {170, 335, 380, 82};
     SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
@@ -262,6 +362,7 @@ static void drawShutdownConfirm(UI& ui) {
     drawSimplePanel(r);
     drawText(r, ui.heading, 360, 105);
     drawText(r, ui.confirmHeading, 360, 245);
+    drawBattery(ui);
     drawText(r, ui.confirmBody, 360, 345);
     drawText(r, ui.confirmFooter, 360, 625);
     SDL_RenderPresent(r);
@@ -409,6 +510,7 @@ int main() {
             }
 
             if (running && !launch) {
+                updateBattery(ui);
                 if (screen == Games) drawUI(ui, selected);
                 else if (screen == SystemMenu) drawSystemMenu(ui);
                 else drawShutdownConfirm(ui);
