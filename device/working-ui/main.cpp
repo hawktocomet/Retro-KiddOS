@@ -40,7 +40,8 @@ struct UI {
     TTF_Font* headingFont = nullptr;
     TTF_Font* labelFont = nullptr;
     TTF_Font* footerFont = nullptr;
-    Text heading, subtitle, footer, labels[4];
+    Text heading, subtitle, footer, selectedFooter;
+    Text selectedTitle, selectedPlatform, actionLabels[2], infoBody;
     Text menuHeading, menuItem, menuFooter;
     Text confirmHeading, confirmBody, confirmFooter;
     Text batteryLabel;
@@ -170,6 +171,11 @@ static void closeUI(UI& ui) {
     destroyText(ui.heading);
     destroyText(ui.subtitle);
     destroyText(ui.footer);
+    destroyText(ui.selectedFooter);
+    destroyText(ui.selectedTitle);
+    destroyText(ui.selectedPlatform);
+    destroyText(ui.infoBody);
+    for (int i = 0; i < 2; ++i) destroyText(ui.actionLabels[i]);
     destroyText(ui.menuHeading);
     destroyText(ui.menuItem);
     destroyText(ui.menuFooter);
@@ -178,7 +184,6 @@ static void closeUI(UI& ui) {
     destroyText(ui.confirmFooter);
     destroyText(ui.batteryLabel);
     for (int i = 0; i < 4; ++i) {
-        destroyText(ui.labels[i]);
         if (ui.images[i]) SDL_DestroyTexture(ui.images[i]);
     }
     if (ui.headingFont) TTF_CloseFont(ui.headingFont);
@@ -247,7 +252,14 @@ static bool openUI(UI& ui) {
     const SDL_Color muted = {155, 177, 215, 255};
     ui.heading = makeText(ui.renderer, ui.headingFont, "Retro KiddOS", white);
     ui.subtitle = makeText(ui.renderer, ui.footerFont, "CHOOSE A GAME", muted);
-    ui.footer = makeText(ui.renderer, ui.footerFont, "D-PAD  MOVE     A  PLAY", muted);
+    ui.footer = makeText(ui.renderer, ui.footerFont,
+        "D-PAD  MOVE     A  SELECT     START  MENU", muted);
+    ui.selectedFooter = makeText(ui.renderer, ui.footerFont,
+        "D-PAD MOVE   A SELECT   B BACK   START MENU", muted);
+    ui.actionLabels[0] = makeText(ui.renderer, ui.labelFont, "PLAY", white);
+    ui.actionLabels[1] = makeText(ui.renderer, ui.labelFont, "GAME INFO", white);
+    ui.infoBody = makeText(ui.renderer, ui.labelFont,
+        "Choose Play to start this game.", muted);
 
     ui.menuHeading = makeText(ui.renderer, ui.headingFont, "SYSTEM MENU", white);
     ui.menuItem = makeText(ui.renderer, ui.labelFont, "Shut Down", white);
@@ -268,7 +280,6 @@ static bool openUI(UI& ui) {
             closeUI(ui);
             return false;
         }
-        ui.labels[i] = makeText(ui.renderer, ui.labelFont, games[i].name, white);
     }
     std::puts("KiddOS: all four game images loaded.");
     std::fflush(stdout);
@@ -292,8 +303,8 @@ static void drawUI(UI& ui, int selected) {
     drawBattery(ui);
 
     const SDL_Rect tiles[4] = {
-        {105, 175, 235, 180}, {380, 175, 235, 180},
-        {105, 395, 235, 180}, {380, 395, 235, 180}
+        {88, 174, 252, 190}, {380, 174, 252, 190},
+        {88, 396, 252, 190}, {380, 396, 252, 190}
     };
 
     for (int i = 0; i < 4; ++i) {
@@ -303,14 +314,13 @@ static void drawUI(UI& ui, int selected) {
 
         int iw = 0, ih = 0;
         SDL_QueryTexture(ui.images[i], nullptr, nullptr, &iw, &ih);
-        float scale = std::min(195.0f / iw, 112.0f / ih);
+        float scale = std::min(224.0f / iw, 166.0f / ih);
         SDL_Rect image = {
             tile.x + (tile.w - static_cast<int>(iw * scale)) / 2,
-            tile.y + 8 + (112 - static_cast<int>(ih * scale)) / 2,
+            tile.y + (tile.h - static_cast<int>(ih * scale)) / 2,
             static_cast<int>(iw * scale), static_cast<int>(ih * scale)
         };
         SDL_RenderCopy(r, ui.images[i], nullptr, &image);
-        drawText(r, ui.labels[i], tile.x + tile.w / 2, tile.y + 130);
 
         if (i == selected) {
             SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
@@ -321,8 +331,27 @@ static void drawUI(UI& ui, int selected) {
             }
         }
     }
+
     drawText(r, ui.footer, 360, 625);
     SDL_RenderPresent(r);
+}
+
+static const char* platformName(const char* platform) {
+    if (std::strcmp(platform, "gb") == 0) return "GAME BOY";
+    if (std::strcmp(platform, "gbc") == 0) return "GAME BOY COLOR";
+    return "GAME";
+}
+
+static void updateSelectedGameText(UI& ui, int selected) {
+    const SDL_Color white = {245, 248, 255, 255};
+    const SDL_Color muted = {155, 177, 215, 255};
+
+    destroyText(ui.selectedTitle);
+    destroyText(ui.selectedPlatform);
+    ui.selectedTitle = makeText(
+        ui.renderer, ui.labelFont, games[selected].name, white);
+    ui.selectedPlatform = makeText(
+        ui.renderer, ui.footerFont, platformName(games[selected].platform), muted);
 }
 
 static void drawSimplePanel(SDL_Renderer* r) {
@@ -334,6 +363,61 @@ static void drawSimplePanel(SDL_Renderer* r) {
     SDL_Rect inner = {58, 58, 604, 604};
     SDL_SetRenderDrawColor(r, 12, 18, 42, 255);
     SDL_RenderFillRect(r, &inner);
+}
+
+static void drawSelectedGame(UI& ui, int selected, int action) {
+    SDL_Renderer* r = ui.renderer;
+    drawSimplePanel(r);
+    drawText(r, ui.heading, 360, 78);
+    drawText(r, ui.selectedTitle, 360, 133);
+    drawBattery(ui);
+
+    int iw = 0, ih = 0;
+    SDL_QueryTexture(ui.images[selected], nullptr, nullptr, &iw, &ih);
+    float scale = std::min(280.0f / iw, 350.0f / ih);
+    SDL_Rect image = {
+        88 + (280 - static_cast<int>(iw * scale)) / 2,
+        205 + (350 - static_cast<int>(ih * scale)) / 2,
+        static_cast<int>(iw * scale), static_cast<int>(ih * scale)
+    };
+    SDL_RenderCopy(r, ui.images[selected], nullptr, &image);
+
+    const SDL_Rect items[2] = {
+        {408, 286, 205, 76},
+        {408, 388, 205, 76}
+    };
+
+    for (int i = 0; i < 2; ++i) {
+        SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
+        SDL_RenderFillRect(r, &items[i]);
+
+        if (i == action) {
+            SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
+            for (int n = 0; n < 5; ++n) {
+                SDL_Rect outline = {
+                    items[i].x - n, items[i].y - n,
+                    items[i].w + n * 2, items[i].h + n * 2
+                };
+                SDL_RenderDrawRect(r, &outline);
+            }
+        }
+        drawText(r, ui.actionLabels[i], 510, items[i].y + 25);
+    }
+
+    drawText(r, ui.selectedFooter, 360, 625);
+    SDL_RenderPresent(r);
+}
+
+static void drawGameInfo(UI& ui) {
+    SDL_Renderer* r = ui.renderer;
+    drawSimplePanel(r);
+    drawText(r, ui.heading, 360, 92);
+    drawText(r, ui.selectedTitle, 360, 235);
+    drawText(r, ui.selectedPlatform, 360, 295);
+    drawText(r, ui.infoBody, 360, 390);
+    drawBattery(ui);
+    drawText(r, ui.menuFooter, 360, 625);
+    SDL_RenderPresent(r);
 }
 
 static void drawSystemMenu(UI& ui) {
@@ -437,15 +521,18 @@ static bool launchGame(int index) {
 }
 
 int main() {
-    enum Screen { Games, SystemMenu, ConfirmShutdown };
+    enum Screen { Games, SelectedGame, GameInfo, SystemMenu, ConfirmShutdown };
 
     int selected = 0;
+    int action = 0;
     Screen screen = Games;
+    Screen menuReturnScreen = Games;
     bool running = true;
 
     while (running) {
         UI ui;
         if (!openUI(ui)) return 1;
+        updateSelectedGameText(ui, selected);
 
         bool launch = false;
         while (running && !launch) {
@@ -463,6 +550,14 @@ int main() {
                         continue;
                     }
 
+                    if (key == SDLK_BACKSPACE) {
+                        if (screen == ConfirmShutdown) screen = SystemMenu;
+                        else if (screen == SystemMenu) screen = menuReturnScreen;
+                        else if (screen == GameInfo) screen = SelectedGame;
+                        else if (screen == SelectedGame) screen = Games;
+                        continue;
+                    }
+
                     if (screen == Games) {
                         switch (key) {
                             case SDLK_UP:    if (selected >= 2) selected -= 2; break;
@@ -470,41 +565,74 @@ int main() {
                             case SDLK_LEFT:  if (selected % 2) --selected; break;
                             case SDLK_RIGHT: if (!(selected % 2)) ++selected; break;
                             case SDLK_RETURN:
-                            case SDLK_SPACE: launch = true; break;
-                            case SDLK_s: screen = SystemMenu; break;
+                            case SDLK_SPACE:
+                                screen = SelectedGame;
+                                action = 0;
+                                break;
+                            case SDLK_s:
+                                menuReturnScreen = screen;
+                                screen = SystemMenu;
+                                break;
                         }
-                    } else if (key == SDLK_BACKSPACE) {
-                        screen = (screen == ConfirmShutdown) ? SystemMenu : Games;
+                        updateSelectedGameText(ui, selected);
+                    } else if (screen == SelectedGame) {
+                        if (key == SDLK_UP) action = (action + 1) % 2;
+                        else if (key == SDLK_DOWN) action = (action + 1) % 2;
+                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
+                            if (action == 0) launch = true;
+                            else if (action == 1) screen = GameInfo;
+                        }
+                    } else if (screen == GameInfo) {
+                        if (key == SDLK_RETURN || key == SDLK_SPACE)
+                            screen = SelectedGame;
                     } else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                        if (screen == SystemMenu) {
-                            screen = ConfirmShutdown;
-                        } else if (requestShutdown()) {
-                            running = false;
-                        }
+                        if (screen == SystemMenu) screen = ConfirmShutdown;
+                        else if (requestShutdown()) running = false;
                     }
                 }
 
                 if (event.type == SDL_JOYBUTTONDOWN) {
                     const int button = event.jbutton.button;
-                    if (screen == Games) {
-                        switch (button) {
-                            case 8:  if (selected >= 2) selected -= 2; break;
-                            case 9:  if (selected < 2) selected += 2; break;
-                            case 10: if (selected % 2) --selected; break;
-                            case 11: if (!(selected % 2)) ++selected; break;
-                            case 1:  launch = true; break;
-                            case 13: screen = SystemMenu; break;
+
+                    if (button == 0) { // B / Back
+                        if (screen == ConfirmShutdown) screen = SystemMenu;
+                        else if (screen == SystemMenu) screen = menuReturnScreen;
+                        else if (screen == GameInfo) screen = SelectedGame;
+                        else if (screen == SelectedGame) screen = Games;
+                    } else if (button == 1) { // A / Select
+                        if (screen == Games) {
+                            screen = SelectedGame;
+                            action = 0;
+                        } else if (screen == SelectedGame) {
+                            if (action == 0) launch = true;
+                            else if (action == 1) screen = GameInfo;
+                        } else if (screen == GameInfo) {
+                            screen = SelectedGame;
+                        } else if (screen == SystemMenu) {
+                            screen = ConfirmShutdown;
+                        } else if (screen == ConfirmShutdown && requestShutdown()) {
+                            running = false;
                         }
-                    } else {
-                        if (button == 0) {
-                            screen = (screen == ConfirmShutdown) ? SystemMenu : Games;
-                        } else if (button == 1) {
-                            if (screen == SystemMenu) {
-                                screen = ConfirmShutdown;
-                            } else if (screen == ConfirmShutdown && requestShutdown()) {
-                                running = false;
-                            }
-                        }
+                    } else if (button == 8) { // Up
+                        if (screen == Games) {
+                            if (selected >= 2) selected -= 2;
+                            updateSelectedGameText(ui, selected);
+                        } else if (screen == SelectedGame) action = (action + 1) % 2;
+                    } else if (button == 9) { // Down
+                        if (screen == Games) {
+                            if (selected < 2) selected += 2;
+                            updateSelectedGameText(ui, selected);
+                        } else if (screen == SelectedGame) action = (action + 1) % 2;
+                    } else if (button == 10 && screen == Games) { // Left
+                        if (selected % 2) --selected;
+                        updateSelectedGameText(ui, selected);
+                    } else if (button == 11 && screen == Games) { // Right
+                        if (!(selected % 2)) ++selected;
+                        updateSelectedGameText(ui, selected);
+                    } else if (button == 13 &&
+                               (screen == Games || screen == SelectedGame || screen == GameInfo)) { // Start
+                        menuReturnScreen = screen;
+                        screen = SystemMenu;
                     }
                 }
             }
@@ -512,6 +640,8 @@ int main() {
             if (running && !launch) {
                 updateBattery(ui);
                 if (screen == Games) drawUI(ui, selected);
+                else if (screen == SelectedGame) drawSelectedGame(ui, selected, action);
+                else if (screen == GameInfo) drawGameInfo(ui);
                 else if (screen == SystemMenu) drawSystemMenu(ui);
                 else drawShutdownConfirm(ui);
                 SDL_Delay(16);

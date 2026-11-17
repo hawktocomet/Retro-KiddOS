@@ -1,96 +1,146 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-WORKSPACE="${KIDDOS_BUILD_WORKSPACE:-$(cd "$PROJECT_ROOT/../Build-Workspace" && pwd)}"
+build_kiddos() {
+    local SCRIPT_DIR PROJECT_ROOT WORKSPACE
+    local SRC BUILD SDL CONFIG SYS OUT
+    local STAMP TMP NEXT BACKUP
+    local path lib
 
-SRC="$SCRIPT_DIR/main.cpp"
-BUILD="$WORKSPACE/build/arm64"
-SDL="$WORKSPACE/build/deps/SDL2-2.30.3"
-CONFIG="$BUILD/sdl2-config/include-config-release/SDL2"
-SYS="$WORKSPACE/build/device-sysroot/usr/lib"
-OUT="$BUILD/kiddos-ui"
+    SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || {
+        echo "ERROR: Cannot locate script directory."
+        return 1
+    }
+    PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)" || {
+        echo "ERROR: Cannot locate project root."
+        return 1
+    }
+    WORKSPACE="${KIDDOS_BUILD_WORKSPACE:-$PROJECT_ROOT/../Build-Workspace}"
 
-STAMP="$(date +%Y%m%d-%H%M%S)"
-TMP="$BUILD/kiddos-ui.tmp.$$"
-NEXT="$BUILD/kiddos-ui.next.$$"
-BACKUP="$BUILD/kiddos-ui.pre-build-$STAMP"
+    SRC="$SCRIPT_DIR/main.cpp"
+    BUILD="$WORKSPACE/build/arm64"
+    SDL="$WORKSPACE/build/deps/SDL2-2.30.3"
+    CONFIG="$BUILD/sdl2-config/include-config-release/SDL2"
+    SYS="$WORKSPACE/build/device-sysroot/usr/lib"
+    OUT="$BUILD/kiddos-ui"
 
-cleanup() {
-    rm -f "$TMP" "$NEXT"
+    STAMP="$(date +%Y%m%d-%H%M%S)"
+    TMP="$BUILD/kiddos-ui.tmp.$$"
+    NEXT="$BUILD/kiddos-ui.next.$$"
+    BACKUP="$BUILD/kiddos-ui.pre-build-$STAMP"
+
+    echo "===== CHECKING BUILD INPUTS ====="
+    for path in "$SRC" "$SDL/include" "$CONFIG/SDL_config.h" \
+        "$SYS/libSDL2-2.0.so.0.3000.3" \
+        "$SYS/libSDL2_image-2.0.so.0.800.2" \
+        "$SYS/libSDL2_ttf-2.0.so.0.2200.0"; do
+        if [[ ! -e "$path" ]]; then
+            echo "ERROR: Missing required input: $path"
+            return 1
+        fi
+    done
+
+    if ! command -v aarch64-linux-gnu-g++ >/dev/null 2>&1; then
+        echo "ERROR: ARM64 compiler not found."
+        return 1
+    fi
+    if ! command -v readelf >/dev/null 2>&1; then
+        echo "ERROR: readelf not found."
+        return 1
+    fi
+
+    if ! mkdir -p "$BUILD"; then
+        echo "ERROR: Cannot create build directory."
+        return 1
+    fi
+
+    echo "Source: $SRC"
+    echo "Workspace: $WORKSPACE"
+    aarch64-linux-gnu-g++ --version
+
+    echo
+    echo "===== COMPILING ARM64 ====="
+    if ! aarch64-linux-gnu-g++ \
+        -std=c++17 -O2 -mcpu=cortex-a35 \
+        -I"$SDL/include" \
+        -I"$CONFIG" \
+        -I/usr/include/SDL2 \
+        "$SRC" \
+        -L"$SYS" \
+        -Wl,-rpath-link,"$SYS" \
+        -Wl,--allow-shlib-undefined \
+        -Wl,--dynamic-linker=/usr/lib/ld-linux-aarch64.so.1 \
+        -Wl,-rpath,/usr/lib \
+        -Wl,--no-as-needed \
+        -l:libSDL2_image-2.0.so.0.800.2 \
+        -l:libSDL2_ttf-2.0.so.0.2200.0 \
+        -l:libSDL2-2.0.so.0.3000.3 \
+        -o "$TMP"; then
+        echo "ERROR: Compilation failed. Existing build untouched."
+        rm -f "$TMP" "$NEXT"
+        return 1
+    fi
+
+    echo
+    echo "===== VERIFYING OUTPUT ====="
+    if ! file "$TMP"; then
+        echo "ERROR: Cannot inspect compiled output."
+        rm -f "$TMP" "$NEXT"
+        return 1
+    fi
+    readelf -h "$TMP" | grep -E 'Class:|Machine:'
+    readelf -l "$TMP" | grep 'Requesting program interpreter'
+    readelf -d "$TMP" | grep NEEDED
+
+    if ! readelf -h "$TMP" | grep -q 'AArch64'; then
+        echo "ERROR: Output is not AArch64."
+        rm -f "$TMP" "$NEXT"
+        return 1
+    fi
+
+    for lib in libSDL2_image-2.0.so.0 libSDL2_ttf-2.0.so.0 libSDL2-2.0.so.0; do
+        if ! readelf -d "$TMP" | grep -q "$lib"; then
+            echo "ERROR: Missing expected dependency: $lib"
+            rm -f "$TMP" "$NEXT"
+            return 1
+        fi
+    done
+
+    echo
+    echo "===== PREPARING BUILD OUTPUT ====="
+    if [[ -f "$OUT" ]]; then
+        if ! cp -a "$OUT" "$BACKUP"; then
+            echo "ERROR: Could not back up previous build."
+            rm -f "$TMP" "$NEXT"
+            return 1
+        fi
+        echo "Previous build backed up to: $BACKUP"
+    fi
+
+    if ! install -m 755 "$TMP" "$NEXT"; then
+        echo "ERROR: Could not prepare verified output."
+        rm -f "$TMP" "$NEXT"
+        return 1
+    fi
+
+    if ! mv -f "$NEXT" "$OUT"; then
+        echo "ERROR: Could not install new build."
+        rm -f "$TMP" "$NEXT"
+        return 1
+    fi
+
+    rm -f "$TMP"
+
+    echo
+    echo "===== BUILD SUCCESS ====="
+    file "$OUT"
+    sha256sum "$OUT"
+    return 0
 }
-trap cleanup EXIT
 
-fail() {
-    echo "ERROR: $*" >&2
-    exit 1
-}
-
-echo "===== BUILD INPUTS ====="
-for path in "$SRC" "$SDL/include" "$CONFIG/SDL_config.h" \
-            "$SYS/libSDL2-2.0.so.0.3000.3" \
-            "$SYS/libSDL2_image-2.0.so.0.800.2" \
-            "$SYS/libSDL2_ttf-2.0.so.0.2200.0"; do
-    [[ -e "$path" ]] || fail "Missing required input: $path"
-done
-
-command -v aarch64-linux-gnu-g++ >/dev/null ||
-    fail "ARM64 compiler not found"
-command -v readelf >/dev/null ||
-    fail "readelf not found"
-
-mkdir -p "$BUILD"
-
-echo "Source: $SRC"
-echo "Workspace: $WORKSPACE"
-echo "Compiler: $(aarch64-linux-gnu-g++ --version | head -1)"
-
-echo
-echo "===== COMPILING ARM64 ====="
-aarch64-linux-gnu-g++ \
-    -std=c++17 -O2 -mcpu=cortex-a35 \
-    -I"$SDL/include" \
-    -I"$CONFIG" \
-    -I/usr/include/SDL2 \
-    "$SRC" \
-    -L"$SYS" \
-    -Wl,-rpath-link,"$SYS" \
-    -Wl,--allow-shlib-undefined \
-    -Wl,--dynamic-linker=/usr/lib/ld-linux-aarch64.so.1 \
-    -Wl,-rpath,/usr/lib \
-    -Wl,--no-as-needed \
-    -l:libSDL2_image-2.0.so.0.800.2 \
-    -l:libSDL2_ttf-2.0.so.0.2200.0 \
-    -l:libSDL2-2.0.so.0.3000.3 \
-    -o "$TMP"
-
-echo
-echo "===== VERIFYING OUTPUT ====="
-file "$TMP"
-readelf -h "$TMP" | grep -E 'Class:|Machine:'
-readelf -l "$TMP" | grep 'Requesting program interpreter'
-readelf -d "$TMP" | grep NEEDED
-
-readelf -h "$TMP" | grep -q 'AArch64' ||
-    fail "Output is not AArch64"
-
-for lib in libSDL2_image-2.0.so.0 libSDL2_ttf-2.0.so.0 libSDL2-2.0.so.0; do
-    readelf -d "$TMP" | grep -q "$lib" ||
-        fail "Missing expected dependency: $lib"
-done
-
-echo
-echo "===== INSTALLING BUILD OUTPUT ====="
-if [[ -f "$OUT" ]]; then
-    cp -a "$OUT" "$BACKUP"
-    echo "Previous build backed up to: $BACKUP"
+build_kiddos
+BUILD_STATUS=$?
+if [[ "$BUILD_STATUS" -ne 0 ]]; then
+    echo "Build finished with errors (status $BUILD_STATUS)."
 fi
 
-install -m 755 "$TMP" "$NEXT"
-mv -f "$NEXT" "$OUT"
-
-echo
-echo "===== BUILD SUCCESS ====="
-file "$OUT"
-sha256sum "$OUT"
+[[ "$BUILD_STATUS" -eq 0 ]]
