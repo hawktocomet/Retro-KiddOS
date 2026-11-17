@@ -18,7 +18,7 @@ The guiding principle is:
 
 The confirmed SDL frontend is in [`device/working-ui/`](device/working-ui/).
 
-Verified on the blue Retro Pixel Pocket on November 16, 2026:
+Core frontend verified November 16, 2026; battery monitoring verified November 17, 2026, on the blue Retro Pixel Pocket:
 
 - Boots directly into the KiddOS game carousel.
 - Displays four selected games with artwork.
@@ -28,6 +28,8 @@ Verified on the blue Retro Pixel Pocket on November 16, 2026:
 - Select + Start exits a game and returns to KiddOS.
 - Provides a system menu with shutdown confirmation.
 - Shuts down the device.
+- Displays battery percentage and charging status.
+- Shows a low-battery warning at 15% or below.
 
 The firmware startup hook is in [`firmware/boot/`](firmware/boot/).
 

@@ -9,10 +9,26 @@ Confirmed running on the FunnyPlaying Retro Pixel Pocket on November 16, 2026.
 - Stages the patched Gambatte link core.
 - Returns to KiddOS after exiting a game.
 - System menu, shutdown confirmation, and system shutdown.
+- Battery percentage display.
+- Charging indicator when AC or USB external power is connected.
+- Low-battery warning styling at 15% or below.
 
-Confirmed executable SHA-256:
+Battery monitoring reads the device's RK817 power-supply sysfs interfaces:
 
-`f2d4f0dad7be197fc927f43cd26f8b76b1858a18a15dc93183f7906e15713f18`
+- Battery capacity: `/sys/devices/platform/ff180000.i2c/i2c-0/0-0020/rk817-battery/power_supply/battery/capacity`
+- External power: the `online` files under the RK817 charger's `ac` and `usb` power-supply directories.
+
+The values are polled every five seconds. The charging indicator appears when
+either AC or USB reports online. Battery percentage is displayed whenever a
+valid capacity reading is available.
+
+The battery indicator was tested on the blue Retro Pixel Pocket on November
+17, 2026, including connecting and disconnecting external power. Its current
+size and visual prominence are intentionally left for the next UI redesign.
+
+Confirmed installed executable SHA-256:
+
+`26482a16c09f7266f48db6c62d22ac4643ce33794b1aef9239fa4bbdbda7e25b`
 
 ## Runtime requirements
 
