@@ -307,3 +307,39 @@ These questions are intentionally left open rather than prematurely specified:
 - Which multiplayer titles and emulator cores can reliably communicate?
 
 Resolve these when their implementation becomes the next useful step, not as prerequisites for keeping the current prototype usable.
+
+## Management Server v0.3.0 — Deployed and Validated
+
+**Status: deployed and tested on the blue Retro Pixel Pocket, November 17, 2026.**
+
+The independent LAN management server now provides a read-only inventory of the handheld's stored games and movies.
+
+Implemented:
+- Server version 0.3.0.
+- `GET /api/library` returns games, supported-system counts, movies, and summary counts.
+- Game inventory scans only the configured Round 1 systems: GB, GBC, GBA, arcade, SNES, Genesis/Mega Drive, Master System, and NES.
+- Genesis and Mega Drive directories are presented as one combined system.
+- XML game metadata is used when valid, with filename fallback.
+- Save files and unrelated embedded game audio are excluded.
+- Movie inventory scans `/storage/roms/movies`.
+- Music is explicitly shown as not configured; no unsupported music inventory is inferred.
+- Dashboard displays the handheld, network, battery, and management-server status alongside the media library.
+- The API remains read-only. No upload, delete, or active-slot modification operations have been introduced.
+
+Validation:
+- Local syntax and fixture tests passed.
+- Local API and dashboard checks passed.
+- Deployed to the blue handheld and verified version 0.3.0 and HTTP 200 dashboard response.
+- The live dashboard was opened successfully from the user's computer and independently from the user's wife's laptop.
+
+Deployment details:
+- Dashboard: `http://192.168.0.89:8081/`
+- Device service: transient `kiddos-management-test.service`
+- Live directory: `/storage/.kiddos-management-test-20261117`
+- v0.2 backup retained at `/storage/.kiddos-management-backup-v02-before-v03-20261117`
+
+The Android Chrome Nearby devices permission requirement remains deferred. The current LAN browser-management approach stays in place; do not start a companion-app or browser redesign effort without revisiting priorities with the user.
+
+The small Wi-Fi status icon beside the handheld battery indicator also remains deferred.
+
+This milestone validates the core architecture: the handheld stores and applies information, while a phone or computer provides the management interface.
