@@ -1,33 +1,35 @@
 # Contributing to Retro KiddOS
 
+## Project direction
+
+Retro KiddOS is a child-friendly gaming frontend for the FunnyPlaying
+Retro Pixel Pocket.
+
+The active implementation is device-first:
+- Reuse the device's existing Linux firmware.
+- Reuse its emulator, RetroArch, controller, and game-launching systems.
+- Keep the frontend simple and focused on choosing and playing games.
+- Avoid rebuilding functionality the firmware already provides.
+
+The original desktop SDL application is archived project history.
+It is not the active product or build target.
+
 ## Development principles
 
-- Treat `docs/PRODUCT_SPECIFICATION.md` as the central product baseline.
-- Keep the FunnyPlaying Retro Pixel Pocket as the sole initial product target.
-- Design handheld-first for a 720 × 720 display and physical controls.
-- The Arch Linux desktop build is a temporary development harness only.
-- Do not introduce a general desktop edition or desktop-first UX.
-- Document meaningful decisions and test results.
+- Prioritize improvements that make it easier for children to play.
 - Prefer small, reviewable changes.
+- Verify behavior on actual hardware when relevant.
 - Preserve existing game files and saves.
 - Avoid destructive device operations without explicit approval.
-- Verify hardware behavior rather than relying on assumptions.
-- Preserve approved UI and interaction decisions unless a change is agreed.
+- Document meaningful decisions, tests, and limitations.
+- Do not assume the tested blue-device setup is portable to other devices.
 
 ## Before submitting changes
 
-- Build the project.
-- Test the behavior affected by the change.
-- Test handheld behavior on actual hardware when relevant.
-- Do not treat desktop simulation as proof of handheld compatibility.
-- Update the product specification or relevant supporting documentation.
-- Record significant changes and limitations in
-  `docs/DEVELOPMENT_LOG.md`.
-
-## Scope
-
-KiddOS is a handheld product for the Retro Pixel Pocket. The desktop build
-exists to support development and testing; it is not a product edition.
+- Build using the documented device build process.
+- Test the affected behavior.
+- Test on actual hardware when relevant.
+- Update documentation when behavior or requirements change.
 
 ## License
 

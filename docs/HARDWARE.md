@@ -1,39 +1,50 @@
 # Hardware Target
 
-## Primary device
+## Device
 
 FunnyPlaying Retro Pixel Pocket.
 
-Reported specifications:
+Inspected device:
+- Firmware: v1.1.3
+- OS release: RetroPixel 20251127
+- Platform: CoreELEC / AmberELEC-derived firmware
+- Architecture: AArch64
+- Kernel: Linux 4.4.189
+- CPU: Rockchip RK3326, quad-core
+- Reported RAM: approximately 926 MiB
+- Display: 720 × 720
 
-- Rockchip RK3326
-- Quad-core ARM processor
-- 1 GB RAM
-- 3.1-inch IPS display
-- 720 × 720 resolution
-- 3000 mAh battery
-- Wi-Fi
-- microSD/TF storage
-- Customized EmuELEC Linux
+## Existing firmware infrastructure
 
-## Verification status
+KiddOS reuses the device's existing:
+- Linux firmware and startup process
+- SDL libraries
+- RetroArch and emulator cores
+- ROM storage and game files
+- Physical controller input
 
-These specifications are the current project baseline. The device has not
-yet been received or inspected by the development environment.
+The current frontend is a standalone SDL application. It is launched
+through a firmware startup hook that temporarily masks EmulationStation.
 
-The following must be verified on the actual device:
+## Validation
 
-- CPU architecture and userspace ABI
-- EmuELEC version and modifications
-- Kernel version and device tree
-- Available SDL version and libraries
-- GPU driver and hardware acceleration
-- Display orientation and scaling
-- Physical button mappings
-- Battery reporting and charger detection
-- Video decoding support
-- Existing frontend and emulator launch mechanisms
-- Available storage and filesystem layout
+The device-first frontend was tested successfully on the blue device
+on November 16, 2026.
 
-No firmware flashing or destructive storage operations are authorized by
-this document.
+Verified:
+- Direct startup into KiddOS
+- Game navigation and artwork
+- Game launching through the firmware
+- In-game controls
+- Select + Start return to KiddOS
+- System menu and shutdown confirmation
+- Device shutdown
+
+This validation applies to the tested blue device and its current
+firmware configuration. It does not establish that installation is
+portable to other devices.
+
+## Safety
+
+Do not flash firmware, repartition storage, or modify the original
+startup configuration without an explicit backup and recovery plan.

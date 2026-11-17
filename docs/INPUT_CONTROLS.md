@@ -1,33 +1,32 @@
 # Input Controls
 
-## Kid Mode
+This document describes the behavior verified in the current
+device-first SDL frontend.
 
-- Left / Right: browse games.
-- Up / Down: choose a game action.
-- A: confirm.
-- B: passed through as the normal in-game B button.
-- X / Y / L / R / START / SELECT: normal in-game controls, except for
-  the universal START + SELECT shortcut.
+## KiddOS frontend
 
-## Universal shortcut
+- D-pad: navigate the game carousel and menus.
+- A: confirm the selected action.
+- B: back/cancel where supported.
+- Start: open the system menu.
+- Select + Start: exit a running game and return to KiddOS.
 
-START + SELECT held continuously for approximately two seconds:
+## During gameplay
 
-- During gameplay: request the child-friendly exit confirmation.
-- On the game carousel: open the parent PIN screen.
+Normal game controls are passed to the emulator.
 
-A short press of either button individually must not trigger the shortcut.
+The Select + Start shortcut is configured as the game-exit combination.
+It was tested with the current RetroArch configuration and tested games.
 
-The shortcut must ultimately work across supported emulators. Its final
-implementation depends on auditing EmuELEC input handling and emulator
-integration; desktop input handling alone is not proof of handheld support.
+## System menu
 
-## Exit confirmation
+The current frontend provides a system menu with a shutdown option
+and a confirmation step before powering off the device.
 
-The child can choose:
+## Scope and limitations
 
-- Yes, return to games.
-- No, keep playing.
+These controls describe the tested implementation, not a promise that
+every emulator core or future firmware configuration behaves identically.
 
-The game should close gracefully when exit is confirmed, and the carousel
-should remember the previously selected game.
+Parent PIN controls, a parent-management interface, and a universal
+child-friendly exit-confirmation flow are not currently implemented.

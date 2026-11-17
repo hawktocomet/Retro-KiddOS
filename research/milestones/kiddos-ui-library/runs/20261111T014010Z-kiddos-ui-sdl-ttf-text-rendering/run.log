@@ -1,3 +1,0 @@
-===== CHECK SDL TTF =====
-SDL2_ttf development package is missing.
-Install it with: sudo pacman -S sdl2_ttf

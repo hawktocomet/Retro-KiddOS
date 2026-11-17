@@ -7,3 +7,18 @@
 *.log
 .DS_Store
 compile_commands.json
+
+# Game ROMs — keep copyrighted game files out of the repository.
+*.gb
+*.gbc
+*.gba
+*.nes
+*.sfc
+*.smc
+*.sms
+*.gen
+*.nds
+*.3ds
+*.iso
+*.chd
+*.cue

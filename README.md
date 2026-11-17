@@ -1,78 +1,89 @@
 # Retro KiddOS
 
-A child-friendly gaming environment for the **FunnyPlaying Retro Pixel
-Pocket**.
+A simple, child-friendly gaming frontend for the FunnyPlaying Retro Pixel Pocket.
 
-KiddOS is designed to make a handheld gaming device simple and safe for
-young children, with adult management controls.
+## Project direction
 
-## Product
+Retro KiddOS uses a device-first approach. Rather than replacing the
+handheld's firmware or rebuilding its emulator infrastructure, it reuses
+the existing system and provides a simpler interface for children.
 
-KiddOS provides one child-facing gaming experience. Its PIN-protected
-Parent Center exists to configure and manage that experience; it is not a
-separate adult gaming mode or frontend.
+The guiding principle is:
 
-The interface is designed for the device's 720 × 720 display and physical
-controls.
+> Every hour we spend developing should make it easier for you and your
+> kids to play games together. If it doesn't, we probably shouldn't be
+> building it.
 
-### Core goals
+## Current working implementation
 
-- A simple, predictable child interface.
-- Parent-controlled game selection and visibility.
-- An artwork-driven game carousel.
-- Play, Resume, and Start Over behavior.
-- Automatic gameplay checkpoints where emulator support permits.
-- Parent-managed artwork and gameplay previews.
-- Low-battery gameplay protection.
-- Parent management of available games, features, and settings.
-- Potential future controls such as playtime limits and schedules.
+The confirmed SDL frontend is in [`device/working-ui/`](device/working-ui/).
 
-## Target hardware
+Verified on the blue Retro Pixel Pocket on November 16, 2026:
+
+- Boots directly into the KiddOS game carousel.
+- Displays four selected games with artwork.
+- Navigates with the D-pad.
+- Launches games through the existing firmware.
+- Supports normal in-game controls.
+- Select + Start exits a game and returns to KiddOS.
+- Provides a system menu with shutdown confirmation.
+- Shuts down the device.
+
+The firmware startup hook is in [`firmware/boot/`](firmware/boot/).
+
+## Current game set
+
+- Mario Tennis
+- Pokemon Red
+- Super Mario Bros. Deluxe
+- Tetris
+
+The current game list and runtime paths are configured directly in the
+prototype. A parent-managed game library is a future goal, not an
+implemented feature.
+
+## Build
+
+See [`device/working-ui/README.md`](device/working-ui/README.md).
+
+The build script cross-compiles for ARM64 and uses a local
+`Build-Workspace` directory alongside this repository. That workspace
+contains the required SDL sources, device sysroot, and libraries; it is
+not included in this repository.
+
+## Current limitations
+
+This is a working prototype validated on one blue device.
+
+- Runtime paths and game configuration are device-specific.
+- The firmware hook is not a general-purpose installer.
+- Installation and rollback need a repeatable procedure.
+- Other devices have not yet been validated.
+- Parent controls and an editable game library are not implemented.
+- Multiplayer workflows remain future work.
+
+Do not assume the current firmware hook is safe to install on another
+device without reviewing its paths and recovery procedure.
+
+## Repository layout
+
+- `device/working-ui/` — working SDL frontend and build instructions.
+- `firmware/boot/` — tested device startup hook.
+- `docs/` — current hardware, controls, and game-library references.
+- `CONTRIBUTING.md` — project development principles.
+
+The original desktop SDL implementation and its research materials
+are preserved locally in the project's Archives directory. Earlier
+committed history remains available in Git.
+
+## Hardware
 
 - FunnyPlaying Retro Pixel Pocket
-- Reported Rockchip RK3326
-- Reported quad-core ARM processor and 1 GB RAM
-- Reported 720 × 720 IPS display
-- Customized EmuELEC Linux
+- 720 × 720 display
+- ARM64 Linux firmware
+- Existing RetroArch and emulator infrastructure
 
-Specifications and software compatibility must be verified on the actual
-device. See [Hardware](docs/HARDWARE.md).
-
-## Development
-
-Initial development takes place on Arch Linux using C++20, CMake, and SDL2.
-
-The Arch Linux build is a temporary development and testing harness. It
-simulates the handheld's logical 720 × 720 display and input during
-development. It is not a supported desktop edition or product target.
-
-The handheld implementation will be integrated with the actual Retro Pixel
-Pocket firmware after its software and hardware environment are inspected.
-
-## Project status
-
-Early development. Product requirements and architecture are being
-consolidated before hardware-specific implementation.
-
-## Documentation
-
-Start with the [Product Specification](docs/PRODUCT_SPECIFICATION.md).
-
-Additional requirements and design references:
-
-- [Project Vision](docs/PROJECT_VISION.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [UI Design](docs/UI_DESIGN.md)
-- [Input Controls](docs/INPUT_CONTROLS.md)
-- [Game Library](docs/GAME_LIBRARY.md)
-- [Save-State System](docs/SAVE_STATE_SYSTEM.md)
-- [Media Manager](docs/MEDIA_MANAGER.md)
-- [Low-Battery Protection](docs/LOW_BATTERY_PROTECTION.md)
-- [Hardware Verification](docs/HARDWARE.md)
-- [Development Log](docs/DEVELOPMENT_LOG.md)
-- [Contributing](CONTRIBUTING.md)
-- [KiddOS UI Library](docs/KIDDOS_UI_LIBRARY.md)
-- [Development Status](docs/DEVELOPMENT_STATUS.md)
+See [`docs/HARDWARE.md`](docs/HARDWARE.md) for verified device details.
 
 ## License
 

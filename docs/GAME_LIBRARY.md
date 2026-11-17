@@ -1,23 +1,36 @@
-# Game Library and Parental Visibility
+# Game Library
 
-The device's installed game collection is managed through parent controls.
+## Current prototype
 
-Parents selectively enable individual games for the child-facing KiddOS
-library. Only enabled games appear in the child's game carousel.
+The tested blue-device prototype currently presents four games:
 
-Hiding a game must not:
+- Mario Tennis
+- Pokemon Red
+- Super Mario Bros. Deluxe
+- Tetris
 
+The game list and artwork are currently configured directly in the
+frontend. This is a prototype configuration, not yet a parent-managed
+library.
+
+## Intended direction
+
+The long-term goal is for parents to choose which installed games appear
+in the child-facing KiddOS library.
+
+Hiding a game should never:
 - Uninstall the game.
 - Delete its ROM or game files.
 - Delete native in-game saves.
-- Delete automatic checkpoints.
+- Delete save states or automatic checkpoints.
 
-Parent-managed collections may help organize games by progression, age,
-or difficulty. These collections are organizational aids and do not
-automatically determine what a child can access.
+The library should favor games that children can realistically play,
+with simple controls, forgiving gameplay, and minimal reading.
 
-Only games enabled for the child-facing KiddOS library should be sent
-through the media-scraping workflow.
+Parent-managed collections may eventually organize games by age,
+difficulty, or progression.
 
-The parent area manages the library; it does not provide a separate
-adult gaming experience.
+## Current limitations
+
+A parent interface, game discovery workflow, editable library, and
+automated artwork management are not yet implemented.
