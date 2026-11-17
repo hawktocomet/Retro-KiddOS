@@ -1,18 +1,29 @@
 # Retro KiddOS
 
-A simple, child-friendly gaming frontend for the FunnyPlaying Retro Pixel Pocket.
+A simple, child-friendly entertainment frontend for the FunnyPlaying Retro Pixel Pocket, built around games, music, and movies.
+
+## Mission
+
+Make a small, personal, offline entertainment device that children can use independently at home and while traveling.
+
+The goal is for each child to be able to:
+- Play favorite games.
+- Listen to favorite music.
+- Watch favorite movies.
+
+The experience should be straightforward, reliable, and usable without Wi-Fi or constant adult help. Family multiplayer is an important part of the gaming goal.
+
+Our guiding principle is:
+
+> Every hour we spend developing should make it easier for you and your kids to play games together. If it doesn't, we probably shouldn't be building it.
+
+More broadly, every hour should make it easier for the kids to enjoy their own games, music, and movies. Prefer using playback and system capabilities already present in the firmware over building custom infrastructure. Do not add features just because they are technically interesting.
 
 ## Project direction
 
-Retro KiddOS uses a device-first approach. Rather than replacing the
-handheld's firmware or rebuilding its emulator infrastructure, it reuses
-the existing system and provides a simpler interface for children.
+Retro KiddOS uses a device-first approach. Rather than replacing the handheld's firmware or rebuilding its emulator and media infrastructure, it reuses the existing system and provides a simpler interface for children.
 
-The guiding principle is:
-
-> Every hour we spend developing should make it easier for you and your
-> kids to play games together. If it doesn't, we probably shouldn't be
-> building it.
+The current priority is a dependable family experience, not a large custom operating system. Keep the interface focused and the implementation as small as practical. Validate real use on the hardware before expanding the scope.
 
 ## Current working implementation
 
@@ -33,6 +44,12 @@ Core frontend verified November 16, 2026; battery monitoring verified November 1
 
 The firmware startup hook is in [`firmware/boot/`](firmware/boot/).
 
+## Media playback exploration
+
+The Pocket's existing MPV player has been confirmed to play video with sound. A 720×720 H.264/AAC test clip played smoothly and filled the square display after encoding the source to square pixels. Full-length movie playback and a simple music playback workflow still need to be validated.
+
+The direction is to use existing firmware tools for local, offline media wherever practical. Do not build a custom video or audio engine unless testing shows the built-in tools cannot provide the needed experience.
+
 ## Current game set
 
 - Mario Tennis
@@ -40,18 +57,13 @@ The firmware startup hook is in [`firmware/boot/`](firmware/boot/).
 - Super Mario Bros. Deluxe
 - Tetris
 
-The current game list and runtime paths are configured directly in the
-prototype. A parent-managed game library is a future goal, not an
-implemented feature.
+The current game list and runtime paths are configured directly in the prototype. A parent-managed game library is a future goal, not an implemented feature.
 
 ## Build
 
 See [`device/working-ui/README.md`](device/working-ui/README.md).
 
-The build script cross-compiles for ARM64 and uses a local
-`Build-Workspace` directory alongside this repository. That workspace
-contains the required SDL sources, device sysroot, and libraries; it is
-not included in this repository.
+The build script cross-compiles for ARM64 and uses a local `Build-Workspace` directory alongside this repository. That workspace contains the required SDL sources, device sysroot, and libraries; it is not included in this repository.
 
 ## Current limitations
 
@@ -63,9 +75,9 @@ This is a working prototype validated on one blue device.
 - Other devices have not yet been validated.
 - Parent controls and an editable game library are not implemented.
 - Multiplayer workflows remain future work.
+- Full-length movie playback and music-library usability are not yet validated.
 
-Do not assume the current firmware hook is safe to install on another
-device without reviewing its paths and recovery procedure.
+Do not assume the current firmware hook is safe to install on another device without reviewing its paths and recovery procedure.
 
 ## Repository layout
 
@@ -74,16 +86,14 @@ device without reviewing its paths and recovery procedure.
 - `docs/` — current hardware, controls, and game-library references.
 - `CONTRIBUTING.md` — project development principles.
 
-The original desktop SDL implementation and its research materials
-are preserved locally in the project's Archives directory. Earlier
-committed history remains available in Git.
+The original desktop SDL implementation and its research materials are preserved locally in the project's Archives directory. Earlier committed history remains available in Git.
 
 ## Hardware
 
 - FunnyPlaying Retro Pixel Pocket
 - 720 × 720 display
 - ARM64 Linux firmware
-- Existing RetroArch and emulator infrastructure
+- Existing RetroArch, emulator, and MPV infrastructure
 
 See [`docs/HARDWARE.md`](docs/HARDWARE.md) for verified device details.
 
