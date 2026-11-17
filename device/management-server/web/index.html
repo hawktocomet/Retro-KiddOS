@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retro KiddOS · Device Management</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #080e20;
+  --panel: #111c35;
+  --panel2: #172644;
+  --line: #263958;
+  --text: #edf4ff;
+  --muted: #9aacc8;
+  --blue: #3995ff;
+  --green: #52d6a0;
+  --yellow: #f5c76a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh;
+  background: radial-gradient(ellipse at top, #14294c 0, var(--bg) 65%);
+  color: var(--text); font: 16px/1.5 system-ui, sans-serif;
+}
+main { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 42px 0 32px; }
+header { margin-bottom: 28px; }
+.eyebrow { color: var(--blue); font-size: 12px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+h1 { margin: 6px 0; font-size: clamp(30px, 6vw, 42px); letter-spacing: -.04em; }
+.subtitle { color: var(--muted); margin: 0; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 24px 0 12px; }
+h2 { margin: 0; font-size: 19px; }
+button {
+  border: 1px solid #438ee8; border-radius: 10px; padding: 10px 16px;
+  color: white; background: #1766bd; font: inherit; font-weight: 700; cursor: pointer;
+}
+button:hover { background: #247bd7; }
+button:disabled { opacity: .55; cursor: wait; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.card { background: linear-gradient(145deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 16px; padding: 20px; min-width: 0; }
+.card h3 { margin: 0 0 18px; font-size: 15px; color: var(--muted); font-weight: 700; }
+.big { font-size: 30px; font-weight: 800; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.detail { color: var(--muted); font-size: 13px; margin-top: 5px; overflow-wrap: anywhere; }
+.metric { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.status { display: inline-flex; align-items: center; gap: 7px; color: var(--green); font-size: 13px; font-weight: 700; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.muted { color: var(--muted); }
+.meter { height: 9px; background: #263653; border-radius: 99px; overflow: hidden; margin-top: 15px; }
+.meter-fill { height: 100%; width: 0; background: linear-gradient(90deg, #2584ef, #52d6a0); border-radius: inherit; transition: width .2s; }
+dl { display: grid; grid-template-columns: 1fr auto; gap: 9px 16px; margin: 0; font-size: 14px; }
+dt { color: var(--muted); }
+dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.library-section { margin-top: 30px; }
+.library-group { margin-top: 20px; }
+.library-group h3 { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+.media-list { display: grid; gap: 8px; }
+.media-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 16px; min-width: 0;
+}
+.media-title { font-weight: 700; overflow-wrap: anywhere; }
+.media-meta { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.media-size { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.empty { color: var(--muted); padding: 14px 0; font-size: 14px; }
+#error, #library-error { color: var(--yellow); font-size: 13px; min-height: 20px; }
+footer { color: #7185a5; font-size: 12px; margin-top: 24px; text-align: center; }
+@media (max-width: 480px) {
+  main { padding-top: 26px; }
+  .section-head { align-items: flex-start; }
+  button { padding: 9px 12px; }
+  .media-item { align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Retro KiddOS</div>
+    <h1>Device Management</h1>
+    <p class="subtitle">Your handheld, at a glance.</p>
+  </header>
+
+  <div class="section-head">
+    <h2>Device Status</h2>
+    <button id="refresh" type="button">↻ Refresh</button>
+  </div>
+  <div id="error" role="status" aria-live="polite"></div>
+
+  <section class="grid">
+    <article class="card">
+      <h3>Handheld</h3>
+      <div class="big" id="device">—</div>
+      <div class="detail" id="platform">Waiting for device…</div>
+      <div class="detail" id="software">—</div>
+    </article>
+    <article class="card">
+      <h3>Network</h3>
+      <div class="status" id="network-state"><span class="dot"></span> Checking…</div>
+      <div class="big" id="ssid">—</div>
+      <div class="detail" id="ip">IP address unavailable</div>
+      <div class="detail" id="signal">Signal unavailable</div>
+    </article>
+    <article class="card">
+      <h3>Battery</h3>
+      <div class="metric">
+        <div class="big" id="battery">—</div>
+        <div class="status" id="power-state">Checking…</div>
+      </div>
+      <div class="meter"><div class="meter-fill" id="battery-fill"></div></div>
+      <div class="detail" id="battery-detail">Battery information unavailable</div>
+    </article>
+    <article class="card">
+      <h3>Management Server</h3>
+      <div class="status"><span class="dot"></span> Connected</div>
+      <dl style="margin-top:16px">
+        <dt>Version</dt><dd id="version">—</dd>
+        <dt>Python</dt><dd id="python">—</dd>
+        <dt>Last checked</dt><dd id="checked">—</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="library-section">
+    <div class="section-head">
+      <h2>Media Library</h2>
+      <span class="muted" id="library-updated">Loading…</span>
+    </div>
+    <div id="library-error" role="status" aria-live="polite"></div>
+    <div class="grid">
+      <article class="card">
+        <h3>Games Stored</h3>
+        <div class="big" id="game-count">—</div>
+        <div class="detail">Across supported systems</div>
+      </article>
+      <article class="card">
+        <h3>Movies Stored</h3>
+        <div class="big" id="movie-count">—</div>
+        <div class="detail">In the movies library</div>
+      </article>
+      <article class="card">
+        <h3>Music Stored</h3>
+        <div class="big" id="music-count">Not configured</div>
+        <div class="detail">Dedicated music library not set up</div>
+      </article>
+    </div>
+    <div class="library-group">
+      <h3>Games by System</h3>
+      <div id="system-list" class="media-list"><div class="empty">Loading inventory…</div></div>
+    </div>
+    <div class="library-group">
+      <h3>Stored Games</h3>
+      <div id="games-list" class="media-list"><div class="empty">Loading inventory…</div></div>
+    </div>
+    <div class="library-group">
+      <h3>Stored Movies</h3>
+      <div id="movies-list" class="media-list"><div class="empty">Loading inventory…</div></div>
+    </div>
+  </section>
+
+  <footer>Retro KiddOS Management · Read-only prototype</footer>
+</main>
+
+<script>
+const el = id => document.getElementById(id);
+function show(value) {
+  return value === null || value === undefined || value === "" ? "—" : value;
+}
+function formatSize(bytes) {
+  if (!Number.isFinite(bytes)) return "";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let size = bytes, unit = 0;
+  while (size >= 1024 && unit < units.length - 1) { size /= 1024; unit++; }
+  return `${size.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+function addMediaItem(container, title, detail, size) {
+  const item = document.createElement("div");
+  item.className = "media-item";
+  const info = document.createElement("div");
+  info.style.minWidth = "0";
+  const name = document.createElement("div");
+  name.className = "media-title";
+  name.textContent = title;
+  const meta = document.createElement("div");
+  meta.className = "media-meta";
+  meta.textContent = detail;
+  info.append(name, meta);
+  const sizeNode = document.createElement("div");
+  sizeNode.className = "media-size";
+  sizeNode.textContent = formatSize(size);
+  item.append(info, sizeNode);
+  container.append(item);
+}
+function renderList(id, items, emptyMessage, renderItem) {
+  const container = el(id);
+  container.replaceChildren();
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = emptyMessage;
+    container.append(empty);
+    return;
+  }
+  items.forEach(item => renderItem(container, item));
+}
+async function refreshStatus() {
+  const button = el("refresh");
+  button.disabled = true;
+  button.textContent = "Refreshing…";
+  el("error").textContent = "";
+  try {
+    const response = await fetch("/api/status", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    el("device").textContent = show(data.hostname);
+    el("platform").textContent = show(data.platform);
+    el("software").textContent = `Python ${show(data.python)}`;
+
+    const net = data.network || {};
+    el("network-state").replaceChildren();
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    el("network-state").append(dot, document.createTextNode(
+      net.connected ? "Connected" : "Not connected"
+    ));
+    el("network-state").style.color = net.connected ? "var(--green)" : "var(--yellow)";
+    el("ssid").textContent = show(net.ssid);
+    el("ip").textContent = `IP: ${show(net.ip_address)}`;
+    el("signal").textContent = net.signal_dbm == null
+      ? "Signal unavailable" : `Signal: ${net.signal_dbm} dBm`;
+
+    const battery = data.battery || {};
+    const percent = battery.percentage;
+    el("battery").textContent = percent == null ? "—" : `${percent}%`;
+    el("battery-fill").style.width = percent == null ? "0%" : `${percent}%`;
+    el("power-state").textContent = battery.charging ? "Charging"
+      : battery.external_power ? "External power" : "On battery";
+    el("battery-detail").textContent = show(battery.status);
+    el("version").textContent = show(data.version);
+    el("python").textContent = show(data.python);
+    el("checked").textContent = new Date(data.timestamp).toLocaleTimeString();
+  } catch (error) {
+    el("error").textContent = `Couldn't refresh device status: ${error.message}`;
+  } finally {
+    button.disabled = false;
+    button.textContent = "↻ Refresh";
+  }
+}
+async function refreshLibrary() {
+  el("library-error").textContent = "";
+  try {
+    const response = await fetch("/api/library", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    el("game-count").textContent = data.summary.game_count;
+    el("movie-count").textContent = data.summary.movie_count;
+    el("music-count").textContent = data.summary.music_count == null
+      ? "Not configured" : data.summary.music_count;
+    el("library-updated").textContent = `Updated ${new Date(data.timestamp).toLocaleTimeString()}`;
+
+    renderList("system-list", data.systems || [], "No supported game folders found.",
+      (container, system) => addMediaItem(container, system.name,
+        `${system.count} ${system.count === 1 ? "game" : "games"}`, null));
+
+    renderList("games-list", data.games || [], "No games found in supported systems.",
+      (container, game) => addMediaItem(container, game.title,
+        `${game.system} · ${game.filename}`, game.size_bytes));
+
+    renderList("movies-list", data.movies || [], "No movies found in the movies library.",
+      (container, movie) => addMediaItem(container, movie.title,
+        movie.filename, movie.size_bytes));
+  } catch (error) {
+    el("library-error").textContent = `Couldn't load media library: ${error.message}`;
+  }
+}
+el("refresh").addEventListener("click", () => {
+  refreshStatus();
+  refreshLibrary();
+});
+refreshStatus();
+refreshLibrary();
+</script>
+</body>
+</html>
