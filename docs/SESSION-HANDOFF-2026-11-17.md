@@ -220,3 +220,63 @@ Preserve originals and make aspect-ratio treatment an explicit per-source decisi
 6. Keep testing against the actual blue handheld and household devices.
 
 The user values practical progress and family validation over speculative architecture or large rewrites.
+
+
+## Latest milestone — Parent Mode controls deployed (November 17, 2026)
+
+The following update supersedes earlier statements in this handoff that Parent Mode and PIN entry were not implemented.
+
+### Verified on blue device
+
+- Parent Mode is hidden behind PIN entry.
+- PIN default initialization and local salted SHA-512 crypt storage are implemented.
+- PIN storage uses a private configuration directory and restrictive file permissions.
+- Change PIN requires the current PIN and confirms the new PIN.
+- Remote Management displays the actual LAN management server state.
+- The local control starts/stops the management server using the installed control script:
+  `/storage/.kiddos-management/control.sh`
+- Stopping Remote Management does not turn off Wi-Fi. The user verified continuous ping during toggle testing.
+- Both Remote Management and Change PIN were deployed and physically tested successfully.
+
+### Deployment record
+
+- Device: `RPPBLUE` (`192.168.0.89`)
+- UI service: `kiddos-ui.service`
+- Test executable:
+  `/storage/roms/.kiddos-ui-test-20261116/kiddos-ui`
+- Deployed executable SHA-256:
+  `d0942a6e2ebf0bfe336cdafde64aa839c71eb67de87a5bac05bdf0372068a53d`
+- Pre-deployment rollback executable:
+  `/storage/roms/.kiddos-ui-test-20261116/kiddos-ui.pre-deploy-20261117-160015`
+- Management control script on device:
+  `/storage/.kiddos-management/control.sh`
+
+The management server is independently controlled by the local Parent Mode toggle. Do not replace its service lifecycle implementation with duplicated C++ service-management logic; reuse the installed control script.
+
+### Relevant source files
+
+- `device/working-ui/main.cpp`
+- `device/working-ui/pin_store.h`
+- `device/working-ui/pin_store_test.cpp`
+- `device/management-server/control.sh`
+
+Native PIN helper tests passed (11 tests), including default initialization, PIN verification/change, file permissions, and fail-closed behavior for corrupted storage. The ARM64 cross-compile test passed.
+
+### Next development phase — Wi-Fi controls
+
+The next chat should focus on these user-requested features, in order:
+
+1. Add Parent Mode controls to turn Wi-Fi on and off.
+2. Add a way to connect to a Wi-Fi network, including selecting/entering credentials as appropriate.
+3. Add a small home-screen Wi-Fi indicator showing connected versus disconnected.
+
+Keep the existing Remote Management toggle separate from Wi-Fi controls. Turning off the management server must not turn off Wi-Fi. Avoid speculative network changes; inspect the current firmware networking tools and state first, then make one small, testable change at a time.
+
+### Licensing and distribution direction
+
+- Project license selected: GNU GPL-3.0-or-later.
+- Copyright holder in project notices: `hawktocomet`; do not publish the user's legal name.
+- The repository's own code can be licensed separately from the underlying RetroPixel firmware and third-party components.
+- Preferred initial distribution approach: a reversible KiddOS installer for an existing RetroPixel SD card.
+- A complete firmware image is a later possibility only after auditing the exact RetroPixel fork, component licenses, notices, and redistribution permissions.
+- Do not distribute game ROMs, BIOS files, or third-party artwork without redistribution rights.

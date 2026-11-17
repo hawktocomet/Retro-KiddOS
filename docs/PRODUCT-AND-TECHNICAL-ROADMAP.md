@@ -115,31 +115,28 @@ Aspect-ratio handling must be an explicit per-source choice; do not blindly stre
 
 ## 3. Parent Mode on the handheld
 
-Parent Mode is a hidden, PIN-protected area for essential on-device administration. It should be much smaller and simpler than the original broad Parent Center concept.
+Parent Mode is a hidden, PIN-protected area for essential on-device administration.
 
-Its primary purpose is to make the handheld reachable for browser-based management, including when the family is away from home.
+### Implemented and verified on the blue Retro Pixel Pocket (November 17, 2026)
 
-### Intended responsibilities
+- Parent Mode is accessible from the system menu and protected by a PIN.
+- The default PIN is initialized on first use; parents can change it after entering the current PIN.
+- PIN data is stored locally as a salted SHA-512 crypt hash, with restrictive directory/file permissions.
+- The Remote Management control reports whether the LAN management server is running.
+- Parents can start or stop the management server locally.
+- Remote Management is independent of Wi-Fi: stopping the server does not disconnect Wi-Fi.
+- The PIN and Remote Management flows were deployed and physically tested on the blue device.
 
-1. **Network Setup**
-   - Connect to a saved Wi-Fi network.
-   - Add a new network, such as a vacation house or grandparents' home.
-   - Retain previously saved networks when adding another.
-   - Select or manage saved networks as needed.
+The PIN is a practical child-proofing measure, not a security boundary against someone with root or physical filesystem access.
 
-2. **Connection Status**
-   - Show the connected network and basic connection state.
-   - Indicate whether the browser management interface should be reachable.
+### Next implementation phase
 
-3. **Device Information**
-   - Show basic device status, including battery/charging and firmware information.
+1. **Wi-Fi controls:** inspect connection state, turn Wi-Fi on/off, and connect to a selected or newly configured network.
+2. **Connection status:** add a small connected/disconnected Wi-Fi indicator beside the battery indicator on the child-facing home screen.
 
-4. **Exit**
-   - Return to the normal child-facing interface.
+Network changes must not interrupt an active game unnecessarily. Preserve saved networks and avoid disrupting a working connection during implementation and testing.
 
-Parent Mode should not become the place where parents organize the full media library or customize the entire interface. Those tasks belong in the browser.
-
-A physical shortcut to enter Parent Mode and the exact PIN-entry interaction have not yet been finalized or implemented.
+Parent Mode should remain small. Media-library administration and broader configuration belong in the browser management interface.
 
 ## 4. Phone/computer management interface
 
@@ -247,11 +244,15 @@ The management server should remain independent of the SDL process. Each handhel
 - Battery percentage and charging status are displayed.
 - The device has connected to the home Wi-Fi network.
 - MPV has played a 720 × 720 H.264/AAC test clip with sound.
+- Hidden, PIN-protected Parent Mode is deployed and working.
+- Parent Mode can start/stop the LAN management server through the installed control script.
+- Remote Management can be disabled without disconnecting Wi-Fi; continuous ping remained active during testing.
+- Change PIN flow is deployed and working.
 
 ### Not yet implemented or fully validated
 
-- Parent Mode and PIN entry.
-- Parent-facing HTTP server and browser UI.
+- Parent Mode Wi-Fi controls and saved-network selection.
+- Home-screen Wi-Fi connection indicator.
 - Browser-based media upload/library and slot assignment.
 - Browser-based theme customization.
 - Automatic network priority/fallback behavior.
@@ -267,12 +268,11 @@ The current frontend is a working prototype validated on one blue device. Do not
 
 ### Near-term priorities
 
-1. Keep the proven child-facing game experience stable.
-2. Continue focusing on reliable home Wi-Fi connectivity without risking the current working connection.
-3. Define and implement the minimal Parent Mode needed to configure networks and inspect connection status.
-4. Design a lightweight HTTP server that can run independently of the SDL frontend.
-5. Build a basic browser status page and verify phone/computer access over the home LAN.
-6. Expand the browser interface incrementally into media management, slot assignment, and theme customization.
+1. Keep the verified Parent Mode, PIN, and Remote Management features stable.
+2. Add Wi-Fi on/off and connect-to-network controls in Parent Mode, preserving saved networks.
+3. Add a connected/disconnected Wi-Fi indicator beside the home-screen battery indicator.
+4. Validate the changes on the blue handheld without disrupting the existing management service or gameplay.
+5. Continue the browser management experience incrementally after the on-device network controls are reliable.
 
 ### Deferred until the foundation is proven
 
@@ -343,3 +343,10 @@ The Android Chrome Nearby devices permission requirement remains deferred. The c
 The small Wi-Fi status icon beside the handheld battery indicator also remains deferred.
 
 This milestone validates the core architecture: the handheld stores and applies information, while a phone or computer provides the management interface.
+
+### Later distribution work
+
+- Build a reversible installer for an existing RetroPixel SD card rather than redistributing a complete firmware image by default.
+- Audit the exact RetroPixel fork and every bundled component before publishing any complete image.
+- Preserve third-party licenses, notices, and source-offer obligations.
+- Do not bundle ROMs, BIOS files, or artwork without explicit redistribution rights.

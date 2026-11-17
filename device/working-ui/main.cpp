@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 hawktocomet
+
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
@@ -8,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "pin_store.h"
 
 static const char* BASE = "/storage/roms/.kiddos-ui-test-20261116";
 static const char* CORE = "/storage/roms/.kiddos-ui-test-20261116/gambatte-link_libretro.so";
@@ -42,8 +46,10 @@ struct UI {
     TTF_Font* footerFont = nullptr;
     Text heading, subtitle, footer, selectedFooter;
     Text selectedTitle, selectedPlatform, actionLabels[2], infoBody;
-    Text menuHeading, menuItem, menuFooter;
+    Text menuHeading, menuItems[2], menuFooter;
     Text confirmHeading, confirmBody, confirmFooter;
+    Text pinPrompt, pinFooter, pinError;
+    Text parentHeading, parentBody, parentChangePin, parentFooter;
     Text batteryLabel;
     int batteryPercent = -1;
     bool externalPower = false;
@@ -167,6 +173,128 @@ static void destroyText(Text& t) {
     t.texture = nullptr;
 }
 
+static bool managementControl(
+    const char* action, char* output, size_t outputSize) {
+    if (!output || outputSize == 0) return false;
+    output[0] = '\0';
+
+    int pipefd[2];
+    if (pipe(pipefd) != 0) {
+        std::perror("KiddOS: management pipe");
+        return false;
+    }
+
+    pid_t pid = fork();
+    if (pid == 0) {
+        close(pipefd[0]);
+        if (dup2(pipefd[1], STDOUT_FILENO) < 0) _exit(127);
+        close(pipefd[1]);
+        execl("/storage/.kiddos-management/control.sh",
+              "control.sh", action, (char*)nullptr);
+        _exit(127);
+    }
+
+    close(pipefd[1]);
+    if (pid < 0) {
+        close(pipefd[0]);
+        std::perror("KiddOS: management fork");
+        return false;
+    }
+
+    size_t used = 0;
+    while (used + 1 < outputSize) {
+        ssize_t n = read(pipefd[0], output + used, outputSize - used - 1);
+        if (n <= 0) break;
+        used += static_cast<size_t>(n);
+    }
+    close(pipefd[0]);
+    output[used] = '\0';
+
+    int status = 0;
+    if (waitpid(pid, &status, 0) < 0) {
+        std::perror("KiddOS: management wait");
+        return false;
+    }
+
+    return WIFEXITED(status) && WEXITSTATUS(status) == 0;
+}
+
+static void setParentMessage(UI& ui, const char* message, SDL_Color color) {
+    destroyText(ui.parentBody);
+    ui.parentBody = makeText(ui.renderer, ui.labelFont, message, color);
+}
+
+static bool refreshParentStatus(UI& ui) {
+    char result[32];
+    if (!managementControl("status", result, sizeof(result))) {
+        setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
+                         {255, 115, 115, 255});
+        return false;
+    }
+
+    result[std::strcspn(result, "\r\n")] = '\0';
+    if (std::strcmp(result, "running") == 0) {
+        setParentMessage(ui, "REMOTE MANAGEMENT: ON",
+                         {110, 230, 160, 255});
+        return true;
+    }
+
+    if (std::strcmp(result, "stopped") == 0) {
+        setParentMessage(ui, "REMOTE MANAGEMENT: OFF",
+                         {190, 195, 210, 255});
+        return false;
+    }
+
+    setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
+                     {255, 115, 115, 255});
+    return false;
+}
+
+static void toggleParentManagement(UI& ui) {
+    char result[32];
+    if (!managementControl("status", result, sizeof(result))) {
+        setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
+                         {255, 115, 115, 255});
+        return;
+    }
+
+    result[std::strcspn(result, "\r\n")] = '\0';
+    const bool wasRunning = std::strcmp(result, "running") == 0;
+
+    if (!wasRunning && std::strcmp(result, "stopped") != 0) {
+        setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
+                         {255, 115, 115, 255});
+        return;
+    }
+
+    if (!managementControl(wasRunning ? "stop" : "start",
+                           result, sizeof(result))) {
+        setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
+                         {255, 115, 115, 255});
+        return;
+    }
+
+    if (wasRunning) {
+        refreshParentStatus(ui);
+        return;
+    }
+
+    for (int attempt = 0; attempt < 20; ++attempt) {
+        SDL_Delay(100);
+        char statusResult[32];
+        if (managementControl("status", statusResult, sizeof(statusResult))) {
+            statusResult[std::strcspn(statusResult, "\r\n")] = '\0';
+            if (std::strcmp(statusResult, "running") == 0) {
+                refreshParentStatus(ui);
+                return;
+            }
+        }
+    }
+
+    setParentMessage(ui, "REMOTE MANAGEMENT: STARTING",
+                     {255, 210, 110, 255});
+}
+
 static void closeUI(UI& ui) {
     destroyText(ui.heading);
     destroyText(ui.subtitle);
@@ -177,11 +305,18 @@ static void closeUI(UI& ui) {
     destroyText(ui.infoBody);
     for (int i = 0; i < 2; ++i) destroyText(ui.actionLabels[i]);
     destroyText(ui.menuHeading);
-    destroyText(ui.menuItem);
+    for (int i = 0; i < 2; ++i) destroyText(ui.menuItems[i]);
     destroyText(ui.menuFooter);
     destroyText(ui.confirmHeading);
     destroyText(ui.confirmBody);
     destroyText(ui.confirmFooter);
+    destroyText(ui.pinPrompt);
+    destroyText(ui.pinFooter);
+    destroyText(ui.pinError);
+    destroyText(ui.parentHeading);
+    destroyText(ui.parentBody);
+    destroyText(ui.parentChangePin);
+    destroyText(ui.parentFooter);
     destroyText(ui.batteryLabel);
     for (int i = 0; i < 4; ++i) {
         if (ui.images[i]) SDL_DestroyTexture(ui.images[i]);
@@ -262,13 +397,28 @@ static bool openUI(UI& ui) {
         "Choose Play to start this game.", muted);
 
     ui.menuHeading = makeText(ui.renderer, ui.headingFont, "SYSTEM MENU", white);
-    ui.menuItem = makeText(ui.renderer, ui.labelFont, "Shut Down", white);
+    ui.menuItems[0] = makeText(ui.renderer, ui.labelFont, "Parent Mode", white);
+    ui.menuItems[1] = makeText(ui.renderer, ui.labelFont, "Shut Down", white);
     ui.menuFooter = makeText(ui.renderer, ui.footerFont, "A  SELECT     B  BACK", muted);
     ui.confirmHeading = makeText(ui.renderer, ui.headingFont, "SHUT DOWN?", white);
     ui.confirmBody = makeText(ui.renderer, ui.labelFont,
         "Are you sure you want to turn off the system?", white);
     ui.confirmFooter = makeText(ui.renderer, ui.footerFont,
         "A  YES     B  CANCEL", muted);
+    ui.pinPrompt = makeText(ui.renderer, ui.labelFont,
+        "ENTER PARENT PIN", white);
+    ui.pinFooter = makeText(ui.renderer, ui.footerFont,
+        "D-PAD  EDIT     A  UNLOCK     B  BACK", muted);
+    ui.pinError = makeText(ui.renderer, ui.footerFont,
+        "INCORRECT PIN - TRY AGAIN", {255, 115, 115, 255});
+    ui.parentHeading = makeText(ui.renderer, ui.headingFont,
+        "PARENT MODE", white);
+    ui.parentBody = makeText(ui.renderer, ui.labelFont,
+        "REMOTE MANAGEMENT: UNKNOWN", muted);
+    ui.parentChangePin = makeText(ui.renderer, ui.labelFont,
+        "CHANGE PARENT PIN", white);
+    ui.parentFooter = makeText(ui.renderer, ui.footerFont,
+        "UP/DOWN  SELECT     A  OPEN     B  BACK", muted);
 
     for (int i = 0; i < 4; ++i) {
         char path[512];
@@ -420,23 +570,27 @@ static void drawGameInfo(UI& ui) {
     SDL_RenderPresent(r);
 }
 
-static void drawSystemMenu(UI& ui) {
+static void drawSystemMenu(UI& ui, int selected) {
     SDL_Renderer* r = ui.renderer;
     drawSimplePanel(r);
     drawText(r, ui.heading, 360, 105);
     drawText(r, ui.menuHeading, 360, 245);
     drawBattery(ui);
 
-    SDL_Rect item = {170, 335, 380, 82};
-    SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
-    SDL_RenderFillRect(r, &item);
-    SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
-    for (int n = 0; n < 4; ++n) {
-        SDL_Rect outline = {item.x - n, item.y - n,
-                            item.w + n * 2, item.h + n * 2};
-        SDL_RenderDrawRect(r, &outline);
+    for (int i = 0; i < 2; ++i) {
+        SDL_Rect item = {170, 320 + i * 105, 380, 82};
+        SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
+        SDL_RenderFillRect(r, &item);
+        if (i == selected) {
+            SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
+            for (int n = 0; n < 4; ++n) {
+                SDL_Rect outline = {item.x - n, item.y - n,
+                                    item.w + n * 2, item.h + n * 2};
+                SDL_RenderDrawRect(r, &outline);
+            }
+        }
+        drawText(r, ui.menuItems[i], 360, item.y + 25);
     }
-    drawText(r, ui.menuItem, 360, 363);
     drawText(r, ui.menuFooter, 360, 625);
     SDL_RenderPresent(r);
 }
@@ -449,6 +603,79 @@ static void drawShutdownConfirm(UI& ui) {
     drawBattery(ui);
     drawText(r, ui.confirmBody, 360, 345);
     drawText(r, ui.confirmFooter, 360, 625);
+    SDL_RenderPresent(r);
+}
+
+static void drawPinEntry(UI& ui, const char* digits, int position, bool error) {
+    SDL_Renderer* r = ui.renderer;
+    drawSimplePanel(r);
+    drawText(r, ui.heading, 360, 105);
+    drawText(r, ui.pinPrompt, 360, 245);
+    drawBattery(ui);
+
+    for (int i = 0; i < 4; ++i) {
+        SDL_Rect box = {190 + i * 90, 330, 70, 90};
+        SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
+        SDL_RenderFillRect(r, &box);
+
+        if (i == position) {
+            SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
+            for (int n = 0; n < 4; ++n) {
+                SDL_Rect outline = {box.x - n, box.y - n,
+                                    box.w + n * 2, box.h + n * 2};
+                SDL_RenderDrawRect(r, &outline);
+            }
+        }
+
+        char digitText[2] = {digits[i], '\0'};
+        SDL_Color digitColor = {245, 248, 255, 255};
+        SDL_Surface* digitSurface =
+            TTF_RenderUTF8_Blended(ui.labelFont, digitText, digitColor);
+        if (digitSurface) {
+            SDL_Texture* digitTexture =
+                SDL_CreateTextureFromSurface(r, digitSurface);
+            if (digitTexture) {
+                SDL_Rect digitRect = {
+                    box.x + (box.w - digitSurface->w) / 2,
+                    box.y + (box.h - digitSurface->h) / 2,
+                    digitSurface->w,
+                    digitSurface->h
+                };
+                SDL_RenderCopy(r, digitTexture, nullptr, &digitRect);
+                SDL_DestroyTexture(digitTexture);
+            }
+            SDL_FreeSurface(digitSurface);
+        }
+    }
+
+    if (error) drawText(r, ui.pinError, 360, 485);
+    drawText(r, ui.pinFooter, 360, 625);
+    SDL_RenderPresent(r);
+}
+
+static void drawParentCenter(UI& ui, int selected) {
+    SDL_Renderer* r = ui.renderer;
+    drawSimplePanel(r);
+    drawText(r, ui.heading, 360, 105);
+    drawText(r, ui.parentHeading, 360, 235);
+
+    SDL_Rect managementRow = {90, 300, 540, 82};
+    SDL_Rect pinRow = {90, 400, 540, 82};
+    SDL_Rect selectedRow = selected == 0 ? managementRow : pinRow;
+
+    SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
+    for (int n = 0; n < 3; ++n) {
+        SDL_Rect outline = {
+            selectedRow.x - n, selectedRow.y - n,
+            selectedRow.w + n * 2, selectedRow.h + n * 2
+        };
+        SDL_RenderDrawRect(r, &outline);
+    }
+
+    drawText(r, ui.parentBody, 360, 340);
+    drawText(r, ui.parentChangePin, 360, 440);
+    drawBattery(ui);
+    drawText(r, ui.parentFooter, 360, 625);
     SDL_RenderPresent(r);
 }
 
@@ -521,18 +748,129 @@ static bool launchGame(int index) {
 }
 
 int main() {
-    enum Screen { Games, SelectedGame, GameInfo, SystemMenu, ConfirmShutdown };
+    enum Screen {
+        Games, SelectedGame, GameInfo, SystemMenu,
+        PinEntry, ParentCenter, ConfirmShutdown
+    };
 
     int selected = 0;
     int action = 0;
+    int menuSelected = 0;
     Screen screen = Games;
     Screen menuReturnScreen = Games;
+    char pinDigits[5] = "0000";
+    int pinPosition = 0;
+    bool pinError = false;
+    enum class PinTask { Unlock, Current, New, Confirm };
+    PinTask pinTask = PinTask::Unlock;
+    char currentPin[5] = "";
+    char newPin[5] = "";
+    int parentSelected = 0;
     bool running = true;
+
+    if (!KiddosPin::initializePinStore("/storage/.config/kiddos")) {
+        std::fprintf(stderr,
+                     "KiddOS: PIN store initialization failed; refusing to start.\n");
+        return 1;
+    }
 
     while (running) {
         UI ui;
         if (!openUI(ui)) return 1;
         updateSelectedGameText(ui, selected);
+
+        const SDL_Color pinWhite = {245, 248, 255, 255};
+        const SDL_Color pinRed = {255, 115, 115, 255};
+
+        auto setPinPrompt = [&](const char* prompt, const char* error) {
+            destroyText(ui.pinPrompt);
+            destroyText(ui.pinError);
+            ui.pinPrompt = makeText(ui.renderer, ui.labelFont,
+                                    prompt, pinWhite);
+            ui.pinError = makeText(ui.renderer, ui.footerFont,
+                                   error, pinRed);
+        };
+
+        auto resetPinDigits = [&]() {
+            pinDigits[0] = pinDigits[1] = pinDigits[2] = pinDigits[3] = '0';
+            pinDigits[4] = '\0';
+            pinPosition = 0;
+            pinError = false;
+        };
+
+        auto beginPinChange = [&]() {
+            pinTask = PinTask::Current;
+            resetPinDigits();
+            setPinPrompt("ENTER CURRENT PIN", "INCORRECT PIN - TRY AGAIN");
+            screen = PinEntry;
+        };
+
+        auto cancelPinChange = [&]() {
+            pinTask = PinTask::Unlock;
+            currentPin[0] = newPin[0] = '\0';
+            resetPinDigits();
+            screen = ParentCenter;
+            refreshParentStatus(ui);
+        };
+
+        auto submitPin = [&]() {
+            if (pinTask == PinTask::Unlock) {
+                if (KiddosPin::verifyPin("/storage/.config/kiddos", pinDigits)) {
+                    screen = ParentCenter;
+                    parentSelected = 0;
+                    pinError = false;
+                    refreshParentStatus(ui);
+                } else {
+                    resetPinDigits();
+                    pinError = true;
+                }
+                return;
+            }
+
+            if (pinTask == PinTask::Current) {
+                if (!KiddosPin::verifyPin("/storage/.config/kiddos", pinDigits)) {
+                    resetPinDigits();
+                    pinError = true;
+                    return;
+                }
+                std::memcpy(currentPin, pinDigits, sizeof(currentPin));
+                pinTask = PinTask::New;
+                resetPinDigits();
+                setPinPrompt("ENTER NEW PIN", " ");
+                return;
+            }
+
+            if (pinTask == PinTask::New) {
+                std::memcpy(newPin, pinDigits, sizeof(newPin));
+                pinTask = PinTask::Confirm;
+                resetPinDigits();
+                setPinPrompt("CONFIRM NEW PIN", " ");
+                return;
+            }
+
+            if (std::strcmp(newPin, pinDigits) != 0) {
+                pinTask = PinTask::New;
+                resetPinDigits();
+                setPinPrompt("ENTER NEW PIN", "PINS DID NOT MATCH - TRY AGAIN");
+                pinError = true;
+                return;
+            }
+
+            if (KiddosPin::changePin(
+                    "/storage/.config/kiddos", currentPin, newPin)) {
+                pinTask = PinTask::Unlock;
+                currentPin[0] = newPin[0] = '\0';
+                resetPinDigits();
+                screen = ParentCenter;
+                parentSelected = 1;
+                refreshParentStatus(ui);
+            } else {
+                pinTask = PinTask::New;
+                resetPinDigits();
+                setPinPrompt("ENTER NEW PIN", "COULD NOT SAVE PIN - TRY AGAIN");
+                pinError = true;
+            }
+        };
 
         bool launch = false;
         while (running && !launch) {
@@ -545,16 +883,58 @@ int main() {
 
                 if (event.type == SDL_KEYDOWN) {
                     const SDL_Keycode key = event.key.keysym.sym;
+
                     if (key == SDLK_ESCAPE) {
                         running = false;
                         continue;
                     }
 
                     if (key == SDLK_BACKSPACE) {
-                        if (screen == ConfirmShutdown) screen = SystemMenu;
-                        else if (screen == SystemMenu) screen = menuReturnScreen;
-                        else if (screen == GameInfo) screen = SelectedGame;
-                        else if (screen == SelectedGame) screen = Games;
+                        if (screen == PinEntry && pinTask != PinTask::Unlock)
+                            cancelPinChange();
+                        else if (screen == ConfirmShutdown ||
+                                 screen == PinEntry || screen == ParentCenter)
+                            screen = SystemMenu;
+                        else if (screen == SystemMenu)
+                            screen = menuReturnScreen;
+                        else if (screen == GameInfo)
+                            screen = SelectedGame;
+                        else if (screen == SelectedGame)
+                            screen = Games;
+                        continue;
+                    }
+
+                    if (screen == PinEntry) {
+                        if (key == SDLK_UP) {
+                            pinDigits[pinPosition] = static_cast<char>(
+                                '0' + (pinDigits[pinPosition] - '0' + 1) % 10);
+                        } else if (key == SDLK_DOWN) {
+                            pinDigits[pinPosition] = static_cast<char>(
+                                '0' + (pinDigits[pinPosition] - '0' + 9) % 10);
+                        } else if (key == SDLK_LEFT) {
+                            pinPosition = (pinPosition + 3) % 4;
+                        } else if (key == SDLK_RIGHT) {
+                            pinPosition = (pinPosition + 1) % 4;
+                        } else if (key >= SDLK_0 && key <= SDLK_9) {
+                            pinDigits[pinPosition] =
+                                static_cast<char>('0' + (key - SDLK_0));
+                            if (pinPosition < 3) ++pinPosition;
+                            pinError = false;
+                        } else if (key == SDLK_RETURN || key == SDLK_SPACE) {
+                            submitPin();
+                        }
+                        continue;
+                    }
+
+                    if (screen == ParentCenter) {
+                        if (key == SDLK_UP || key == SDLK_DOWN)
+                            parentSelected = 1 - parentSelected;
+                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
+                            if (parentSelected == 0)
+                                toggleParentManagement(ui);
+                            else
+                                beginPinChange();
+                        }
                         continue;
                     }
 
@@ -576,8 +956,8 @@ int main() {
                         }
                         updateSelectedGameText(ui, selected);
                     } else if (screen == SelectedGame) {
-                        if (key == SDLK_UP) action = (action + 1) % 2;
-                        else if (key == SDLK_DOWN) action = (action + 1) % 2;
+                        if (key == SDLK_UP || key == SDLK_DOWN)
+                            action = (action + 1) % 2;
                         else if (key == SDLK_RETURN || key == SDLK_SPACE) {
                             if (action == 0) launch = true;
                             else if (action == 1) screen = GameInfo;
@@ -585,9 +965,23 @@ int main() {
                     } else if (screen == GameInfo) {
                         if (key == SDLK_RETURN || key == SDLK_SPACE)
                             screen = SelectedGame;
+                    } else if (screen == SystemMenu) {
+                        if (key == SDLK_UP || key == SDLK_DOWN)
+                            menuSelected = (menuSelected + 1) % 2;
+                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
+                            if (menuSelected == 1) {
+                                screen = ConfirmShutdown;
+                            } else {
+                                pinTask = PinTask::Unlock;
+                                currentPin[0] = newPin[0] = '\0';
+                                resetPinDigits();
+                                setPinPrompt("ENTER PARENT PIN",
+                                             "INCORRECT PIN - TRY AGAIN");
+                                screen = PinEntry;
+                            }
+                        }
                     } else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                        if (screen == SystemMenu) screen = ConfirmShutdown;
-                        else if (requestShutdown()) running = false;
+                        if (requestShutdown()) running = false;
                     }
                 }
 
@@ -595,10 +989,17 @@ int main() {
                     const int button = event.jbutton.button;
 
                     if (button == 0) { // B / Back
-                        if (screen == ConfirmShutdown) screen = SystemMenu;
-                        else if (screen == SystemMenu) screen = menuReturnScreen;
-                        else if (screen == GameInfo) screen = SelectedGame;
-                        else if (screen == SelectedGame) screen = Games;
+                        if (screen == PinEntry && pinTask != PinTask::Unlock)
+                            cancelPinChange();
+                        else if (screen == ConfirmShutdown ||
+                                 screen == PinEntry || screen == ParentCenter)
+                            screen = SystemMenu;
+                        else if (screen == SystemMenu)
+                            screen = menuReturnScreen;
+                        else if (screen == GameInfo)
+                            screen = SelectedGame;
+                        else if (screen == SelectedGame)
+                            screen = Games;
                     } else if (button == 1) { // A / Select
                         if (screen == Games) {
                             screen = SelectedGame;
@@ -609,30 +1010,94 @@ int main() {
                         } else if (screen == GameInfo) {
                             screen = SelectedGame;
                         } else if (screen == SystemMenu) {
-                            screen = ConfirmShutdown;
-                        } else if (screen == ConfirmShutdown && requestShutdown()) {
+                            if (menuSelected == 1) {
+                                screen = ConfirmShutdown;
+                            } else {
+                                pinTask = PinTask::Unlock;
+                                currentPin[0] = newPin[0] = '\0';
+                                resetPinDigits();
+                                setPinPrompt("ENTER PARENT PIN",
+                                             "INCORRECT PIN - TRY AGAIN");
+                                screen = PinEntry;
+                            }
+                        } else if (screen == PinEntry) {
+                            submitPin();
+                        } else if (screen == ParentCenter) {
+                            if (parentSelected == 0)
+                                toggleParentManagement(ui);
+                            else
+                                beginPinChange();
+                        } else if (screen == ConfirmShutdown &&
+                                   requestShutdown()) {
                             running = false;
                         }
                     } else if (button == 8) { // Up
                         if (screen == Games) {
                             if (selected >= 2) selected -= 2;
                             updateSelectedGameText(ui, selected);
-                        } else if (screen == SelectedGame) action = (action + 1) % 2;
+                        } else if (screen == SelectedGame) {
+                            action = (action + 1) % 2;
+                        } else if (screen == SystemMenu) {
+                            menuSelected = (menuSelected + 1) % 2;
+                        } else if (screen == ParentCenter) {
+                            parentSelected = 1 - parentSelected;
+                        } else if (screen == PinEntry) {
+                            pinDigits[pinPosition] = static_cast<char>(
+                                '0' + (pinDigits[pinPosition] - '0' + 1) % 10);
+                        }
                     } else if (button == 9) { // Down
                         if (screen == Games) {
                             if (selected < 2) selected += 2;
                             updateSelectedGameText(ui, selected);
-                        } else if (screen == SelectedGame) action = (action + 1) % 2;
-                    } else if (button == 10 && screen == Games) { // Left
-                        if (selected % 2) --selected;
-                        updateSelectedGameText(ui, selected);
-                    } else if (button == 11 && screen == Games) { // Right
-                        if (!(selected % 2)) ++selected;
-                        updateSelectedGameText(ui, selected);
+                        } else if (screen == SelectedGame) {
+                            action = (action + 1) % 2;
+                        } else if (screen == SystemMenu) {
+                            menuSelected = (menuSelected + 1) % 2;
+                        } else if (screen == ParentCenter) {
+                            parentSelected = 1 - parentSelected;
+                        } else if (screen == PinEntry) {
+                            pinDigits[pinPosition] = static_cast<char>(
+                                '0' + (pinDigits[pinPosition] - '0' + 9) % 10);
+                        }
+                    } else if (button == 10) { // Left
+                        if (screen == Games) {
+                            if (selected % 2) --selected;
+                            updateSelectedGameText(ui, selected);
+                        } else if (screen == PinEntry) {
+                            pinPosition = (pinPosition + 3) % 4;
+                        }
+                    } else if (button == 11) { // Right
+                        if (screen == Games) {
+                            if (!(selected % 2)) ++selected;
+                            updateSelectedGameText(ui, selected);
+                        } else if (screen == PinEntry) {
+                            pinPosition = (pinPosition + 1) % 4;
+                        }
                     } else if (button == 13 &&
-                               (screen == Games || screen == SelectedGame || screen == GameInfo)) { // Start
+                               (screen == Games || screen == SelectedGame ||
+                                screen == GameInfo)) { // Start
                         menuReturnScreen = screen;
                         screen = SystemMenu;
+                    }
+                }
+
+                if (event.type == SDL_JOYHATMOTION &&
+                    screen == PinEntry) {
+                    const Uint8 hat = event.jhat.value;
+
+                    if (hat & SDL_HAT_UP) {
+                        pinDigits[pinPosition] = static_cast<char>(
+                            '0' + (pinDigits[pinPosition] - '0' + 1) % 10);
+                    }
+                    if (hat & SDL_HAT_DOWN) {
+                        pinDigits[pinPosition] = static_cast<char>(
+                            '0' + (pinDigits[pinPosition] - '0' + 9) % 10);
+                    }
+                    if (hat & SDL_HAT_LEFT) {
+                        pinPosition = (pinPosition + 3) % 4;
+                    }
+                    if (hat & SDL_HAT_RIGHT) {
+                        pinPosition = (pinPosition + 1) % 4;
                     }
                 }
             }
@@ -642,7 +1107,11 @@ int main() {
                 if (screen == Games) drawUI(ui, selected);
                 else if (screen == SelectedGame) drawSelectedGame(ui, selected, action);
                 else if (screen == GameInfo) drawGameInfo(ui);
-                else if (screen == SystemMenu) drawSystemMenu(ui);
+                else if (screen == SystemMenu) drawSystemMenu(ui, menuSelected);
+                else if (screen == PinEntry)
+                    drawPinEntry(ui, pinDigits, pinPosition, pinError);
+                else if (screen == ParentCenter)
+                    drawParentCenter(ui, parentSelected);
                 else drawShutdownConfirm(ui);
                 SDL_Delay(16);
             }

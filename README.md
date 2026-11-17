@@ -41,6 +41,9 @@ Core frontend verified November 16, 2026; battery monitoring verified November 1
 - Shuts down the device.
 - Displays battery percentage and charging status.
 - Shows a low-battery warning at 15% or below.
+- Provides hidden, PIN-protected Parent Mode.
+- Parent Mode can show and toggle the LAN management server without disconnecting Wi-Fi.
+- Parents can change the Parent Mode PIN after verifying the current PIN.
 
 The firmware startup hook is in [`firmware/boot/`](firmware/boot/).
 
@@ -73,7 +76,8 @@ This is a working prototype validated on one blue device.
 - The firmware hook is not a general-purpose installer.
 - Installation and rollback need a repeatable procedure.
 - Other devices have not yet been validated.
-- Parent controls and an editable game library are not implemented.
+- Wi-Fi configuration controls in Parent Mode are not implemented yet.
+- The game library is still hardcoded; parent-managed library editing is future work.
 - Multiplayer workflows remain future work.
 - Full-length movie playback and music-library usability are not yet validated.
 
@@ -99,4 +103,4 @@ See [`docs/HARDWARE.md`](docs/HARDWARE.md) for verified device details.
 
 ## License
 
-Not yet selected.
+GNU General Public License v3.0 or later. See [LICENSE](LICENSE).
