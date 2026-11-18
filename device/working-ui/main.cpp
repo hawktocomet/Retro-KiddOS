@@ -36,6 +36,12 @@ struct Text {
     int w = 0, h = 0;
 };
 
+enum class WifiStatus {
+    Unknown,
+    Disconnected,
+    Connected
+};
+
 struct UI {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
@@ -49,10 +55,16 @@ struct UI {
     Text menuHeading, menuItems[2], menuFooter;
     Text confirmHeading, confirmBody, confirmFooter;
     Text pinPrompt, pinFooter, pinError;
-    Text parentHeading, parentBody, parentChangePin, parentFooter;
+    Text parentHeading, parentBody, parentWifi, parentChangePin, parentFooter;
+    Text wifiHeading, wifiPowerLabel, wifiConnectionLabel;
+    Text wifiActionLabel, wifiFooter;
     Text batteryLabel;
     int batteryPercent = -1;
     bool externalPower = false;
+    WifiStatus wifiStatus = WifiStatus::Unknown;
+    bool wifiPowered = false;
+    bool wifiPowerKnown = false;
+    bool wifiCommandError = false;
     Uint32 batteryLastPoll = 0;
 };
 
@@ -86,11 +98,163 @@ static bool readSysfs(const char* path, char* value, size_t size) {
     return ok;
 }
 
+static void updateWifiStatus(UI& ui) {
+    int pipefd[2];
+    if (pipe(pipefd) != 0) {
+        ui.wifiStatus = WifiStatus::Unknown;
+        ui.wifiPowerKnown = false;
+        return;
+    }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        close(pipefd[0]);
+        close(pipefd[1]);
+        ui.wifiStatus = WifiStatus::Unknown;
+        ui.wifiPowerKnown = false;
+        return;
+    }
+
+    if (pid == 0) {
+        close(pipefd[0]);
+        if (dup2(pipefd[1], STDOUT_FILENO) < 0) _exit(127);
+        close(pipefd[1]);
+        execl("/usr/bin/connmanctl", "connmanctl", "technologies",
+              static_cast<char*>(nullptr));
+        _exit(127);
+    }
+
+    close(pipefd[1]);
+    char output[4096];
+    size_t used = 0;
+    while (used + 1 < sizeof(output)) {
+        ssize_t n = read(pipefd[0], output + used,
+                         sizeof(output) - used - 1);
+        if (n <= 0) break;
+        used += static_cast<size_t>(n);
+    }
+    close(pipefd[0]);
+    output[used] = '\0';
+
+    int status = 0;
+    if (waitpid(pid, &status, 0) < 0 ||
+        !WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        ui.wifiStatus = WifiStatus::Unknown;
+        ui.wifiPowerKnown = false;
+        return;
+    }
+
+    const char* wifi = std::strstr(
+        output, "/net/connman/technology/wifi");
+    if (!wifi) {
+        ui.wifiStatus = WifiStatus::Unknown;
+        ui.wifiPowerKnown = false;
+        return;
+    }
+
+    const char* nextTechnology = std::strstr(wifi + 1, "\n/");
+    const char* sectionEnd = nextTechnology ? nextTechnology : output + used;
+
+    const char* poweredOn = std::strstr(wifi, "Powered = True");
+    const char* poweredOff = std::strstr(wifi, "Powered = False");
+    const char* connected = std::strstr(wifi, "Connected = True");
+    const char* disconnected = std::strstr(wifi, "Connected = False");
+
+    ui.wifiPowerKnown = false;
+    if (poweredOn && poweredOn < sectionEnd) {
+        ui.wifiPowered = true;
+        ui.wifiPowerKnown = true;
+    } else if (poweredOff && poweredOff < sectionEnd) {
+        ui.wifiPowered = false;
+        ui.wifiPowerKnown = true;
+    }
+
+    if (connected && connected < sectionEnd) {
+        ui.wifiStatus = WifiStatus::Connected;
+    } else if (disconnected && disconnected < sectionEnd) {
+        ui.wifiStatus = WifiStatus::Disconnected;
+    } else {
+        ui.wifiStatus = WifiStatus::Unknown;
+    }
+}
+
+static bool setWifiPower(bool enabled) {
+    pid_t pid = fork();
+    if (pid < 0) return false;
+
+    if (pid == 0) {
+        execl("/usr/bin/connmanctl", "connmanctl",
+              enabled ? "enable" : "disable", "wifi",
+              static_cast<char*>(nullptr));
+        _exit(127);
+    }
+
+    int status = 0;
+    return waitpid(pid, &status, 0) >= 0 &&
+           WIFEXITED(status) && WEXITSTATUS(status) == 0;
+}
+
+static void refreshWifiMenuText(UI& ui) {
+    const SDL_Color white = {245, 247, 255, 255};
+    const SDL_Color muted = {190, 195, 210, 255};
+    const SDL_Color green = {110, 230, 160, 255};
+    const SDL_Color red = {255, 115, 115, 255};
+
+    destroyText(ui.wifiPowerLabel);
+    destroyText(ui.wifiConnectionLabel);
+    destroyText(ui.wifiActionLabel);
+
+    const char* power = !ui.wifiPowerKnown ? "WI-FI POWER: UNKNOWN" :
+                        ui.wifiPowered ? "WI-FI POWER: ON" :
+                                         "WI-FI POWER: OFF";
+    const char* connection =
+        ui.wifiStatus == WifiStatus::Connected ? "CONNECTION: CONNECTED" :
+        ui.wifiStatus == WifiStatus::Disconnected ? "CONNECTION: NOT CONNECTED" :
+                                                    "CONNECTION: UNKNOWN";
+    const char* action = ui.wifiCommandError ? "WI-FI CHANGE FAILED" :
+                         !ui.wifiPowerKnown ? "WI-FI POWER UNAVAILABLE" :
+                         ui.wifiPowered ? "A  TURN WI-FI OFF" :
+                                          "A  TURN WI-FI ON";
+
+    ui.wifiPowerLabel = makeText(ui.renderer, ui.labelFont, power,
+        !ui.wifiPowerKnown ? muted : ui.wifiPowered ? green : muted);
+    ui.wifiConnectionLabel = makeText(ui.renderer, ui.labelFont,
+        connection, ui.wifiStatus == WifiStatus::Connected ? green : muted);
+    ui.wifiActionLabel = makeText(ui.renderer, ui.labelFont, action,
+        ui.wifiCommandError ? red : white);
+}
+
+static void toggleWifiPower(UI& ui) {
+    if (!ui.wifiPowerKnown) {
+        ui.wifiCommandError = true;
+        refreshWifiMenuText(ui);
+        return;
+    }
+
+    const bool requestedPower = !ui.wifiPowered;
+    ui.wifiCommandError = !setWifiPower(requestedPower);
+
+    // ConnMan updates its reported technology state asynchronously.
+    for (int attempt = 0; attempt < 10; ++attempt) {
+        SDL_Delay(100);
+        updateWifiStatus(ui);
+        if (ui.wifiPowerKnown &&
+            ui.wifiPowered == requestedPower) {
+            break;
+        }
+    }
+
+    ui.batteryLastPoll = 0;
+    updateWifiStatus(ui);
+    refreshWifiMenuText(ui);
+}
+
 static void updateBattery(UI& ui) {
     Uint32 now = SDL_GetTicks();
     if (ui.batteryLastPoll != 0 && now - ui.batteryLastPoll < 5000)
         return;
     ui.batteryLastPoll = now;
+    updateWifiStatus(ui);
 
     const char* base =
         "/sys/devices/platform/ff180000.i2c/i2c-0/0-0020/";
@@ -127,7 +291,10 @@ static void updateBattery(UI& ui) {
     }
 }
 
+static void drawWifiStatus(UI& ui);
+
 static void drawBattery(UI& ui) {
+    drawWifiStatus(ui);
     if (ui.batteryPercent < 0) return;
 
     SDL_Renderer* r = ui.renderer;
@@ -165,6 +332,36 @@ static void drawBattery(UI& ui) {
             615, y - 2, ui.batteryLabel.w, ui.batteryLabel.h
         };
         SDL_RenderCopy(r, ui.batteryLabel.texture, nullptr, &dst);
+    }
+}
+
+static void drawWifiStatus(UI& ui) {
+    SDL_Renderer* r = ui.renderer;
+    SDL_Color color = {155, 177, 215, 255};
+
+    SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
+
+    // Compact Wi-Fi indicator matching the battery's blue-gray styling.
+    const SDL_Point outer[] = {
+        {544, 82}, {548, 79}, {553, 78}, {558, 79}, {562, 82}
+    };
+    const SDL_Point middle[] = {
+        {548, 86}, {552, 83}, {555, 83}, {559, 86}
+    };
+    const SDL_Point inner[] = {
+        {551, 90}, {553, 88}, {556, 90}
+    };
+
+    SDL_RenderDrawLines(r, outer, sizeof(outer) / sizeof(outer[0]));
+    SDL_RenderDrawLines(r, middle, sizeof(middle) / sizeof(middle[0]));
+    SDL_RenderDrawLines(r, inner, sizeof(inner) / sizeof(inner[0]));
+
+    SDL_Rect dot = {553, 92, 3, 3};
+    SDL_RenderFillRect(r, &dot);
+
+    if (ui.wifiStatus == WifiStatus::Disconnected) {
+        SDL_SetRenderDrawColor(r, 255, 90, 90, 255);
+        SDL_RenderDrawLine(r, 544, 78, 562, 95);
     }
 }
 
@@ -315,8 +512,14 @@ static void closeUI(UI& ui) {
     destroyText(ui.pinError);
     destroyText(ui.parentHeading);
     destroyText(ui.parentBody);
+    destroyText(ui.parentWifi);
     destroyText(ui.parentChangePin);
     destroyText(ui.parentFooter);
+    destroyText(ui.wifiHeading);
+    destroyText(ui.wifiPowerLabel);
+    destroyText(ui.wifiConnectionLabel);
+    destroyText(ui.wifiActionLabel);
+    destroyText(ui.wifiFooter);
     destroyText(ui.batteryLabel);
     for (int i = 0; i < 4; ++i) {
         if (ui.images[i]) SDL_DestroyTexture(ui.images[i]);
@@ -415,10 +618,22 @@ static bool openUI(UI& ui) {
         "PARENT MODE", white);
     ui.parentBody = makeText(ui.renderer, ui.labelFont,
         "REMOTE MANAGEMENT: UNKNOWN", muted);
+    ui.parentWifi = makeText(ui.renderer, ui.labelFont,
+        "WI-FI SETTINGS", white);
     ui.parentChangePin = makeText(ui.renderer, ui.labelFont,
         "CHANGE PARENT PIN", white);
     ui.parentFooter = makeText(ui.renderer, ui.footerFont,
         "UP/DOWN  SELECT     A  OPEN     B  BACK", muted);
+    ui.wifiHeading = makeText(ui.renderer, ui.headingFont,
+        "WI-FI SETTINGS", white);
+    ui.wifiPowerLabel = makeText(ui.renderer, ui.labelFont,
+        "WI-FI POWER: UNKNOWN", muted);
+    ui.wifiConnectionLabel = makeText(ui.renderer, ui.labelFont,
+        "CONNECTION: UNKNOWN", muted);
+    ui.wifiActionLabel = makeText(ui.renderer, ui.labelFont,
+        "WI-FI POWER UNAVAILABLE", muted);
+    ui.wifiFooter = makeText(ui.renderer, ui.footerFont,
+        "A  TOGGLE WI-FI     B  BACK", muted);
 
     for (int i = 0; i < 4; ++i) {
         char path[512];
@@ -657,11 +872,14 @@ static void drawParentCenter(UI& ui, int selected) {
     SDL_Renderer* r = ui.renderer;
     drawSimplePanel(r);
     drawText(r, ui.heading, 360, 105);
-    drawText(r, ui.parentHeading, 360, 235);
+    drawText(r, ui.parentHeading, 360, 220);
 
-    SDL_Rect managementRow = {90, 300, 540, 82};
-    SDL_Rect pinRow = {90, 400, 540, 82};
-    SDL_Rect selectedRow = selected == 0 ? managementRow : pinRow;
+    SDL_Rect rows[3] = {
+        {90, 270, 540, 72},
+        {90, 370, 540, 72},
+        {90, 470, 540, 72}
+    };
+    SDL_Rect selectedRow = rows[selected];
 
     SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
     for (int n = 0; n < 3; ++n) {
@@ -672,10 +890,35 @@ static void drawParentCenter(UI& ui, int selected) {
         SDL_RenderDrawRect(r, &outline);
     }
 
-    drawText(r, ui.parentBody, 360, 340);
-    drawText(r, ui.parentChangePin, 360, 440);
+    drawText(r, ui.parentBody, 360, 294);
+    drawText(r, ui.parentWifi, 360, 394);
+    drawText(r, ui.parentChangePin, 360, 494);
     drawBattery(ui);
     drawText(r, ui.parentFooter, 360, 625);
+    SDL_RenderPresent(r);
+}
+
+static void drawWifiSettings(UI& ui) {
+    SDL_Renderer* r = ui.renderer;
+    drawSimplePanel(r);
+    drawText(r, ui.heading, 360, 105);
+    drawText(r, ui.wifiHeading, 360, 220);
+    drawText(r, ui.wifiPowerLabel, 360, 300);
+    drawText(r, ui.wifiConnectionLabel, 360, 370);
+
+    SDL_Rect actionRow = {90, 440, 540, 82};
+    SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
+    for (int n = 0; n < 3; ++n) {
+        SDL_Rect outline = {
+            actionRow.x - n, actionRow.y - n,
+            actionRow.w + n * 2, actionRow.h + n * 2
+        };
+        SDL_RenderDrawRect(r, &outline);
+    }
+
+    drawText(r, ui.wifiActionLabel, 360, 470);
+    drawBattery(ui);
+    drawText(r, ui.wifiFooter, 360, 625);
     SDL_RenderPresent(r);
 }
 
@@ -750,7 +993,7 @@ static bool launchGame(int index) {
 int main() {
     enum Screen {
         Games, SelectedGame, GameInfo, SystemMenu,
-        PinEntry, ParentCenter, ConfirmShutdown
+        PinEntry, ParentCenter, WifiSettings, ConfirmShutdown
     };
 
     int selected = 0;
@@ -862,7 +1105,7 @@ int main() {
                 currentPin[0] = newPin[0] = '\0';
                 resetPinDigits();
                 screen = ParentCenter;
-                parentSelected = 1;
+                parentSelected = 2;
                 refreshParentStatus(ui);
             } else {
                 pinTask = PinTask::New;
@@ -890,7 +1133,9 @@ int main() {
                     }
 
                     if (key == SDLK_BACKSPACE) {
-                        if (screen == PinEntry && pinTask != PinTask::Unlock)
+                        if (screen == WifiSettings)
+                            screen = ParentCenter;
+                        else if (screen == PinEntry && pinTask != PinTask::Unlock)
                             cancelPinChange();
                         else if (screen == ConfirmShutdown ||
                                  screen == PinEntry || screen == ParentCenter)
@@ -926,13 +1171,26 @@ int main() {
                         continue;
                     }
 
+                    if (screen == WifiSettings) {
+                        if (key == SDLK_RETURN || key == SDLK_SPACE)
+                            toggleWifiPower(ui);
+                        continue;
+                    }
+
                     if (screen == ParentCenter) {
-                        if (key == SDLK_UP || key == SDLK_DOWN)
-                            parentSelected = 1 - parentSelected;
+                        if (key == SDLK_UP)
+                            parentSelected = (parentSelected + 2) % 3;
+                        else if (key == SDLK_DOWN)
+                            parentSelected = (parentSelected + 1) % 3;
                         else if (key == SDLK_RETURN || key == SDLK_SPACE) {
                             if (parentSelected == 0)
                                 toggleParentManagement(ui);
-                            else
+                            else if (parentSelected == 1) {
+                                updateWifiStatus(ui);
+                                ui.wifiCommandError = false;
+                                refreshWifiMenuText(ui);
+                                screen = WifiSettings;
+                            } else
                                 beginPinChange();
                         }
                         continue;
@@ -989,7 +1247,9 @@ int main() {
                     const int button = event.jbutton.button;
 
                     if (button == 0) { // B / Back
-                        if (screen == PinEntry && pinTask != PinTask::Unlock)
+                        if (screen == WifiSettings)
+                            screen = ParentCenter;
+                        else if (screen == PinEntry && pinTask != PinTask::Unlock)
                             cancelPinChange();
                         else if (screen == ConfirmShutdown ||
                                  screen == PinEntry || screen == ParentCenter)
@@ -1025,8 +1285,15 @@ int main() {
                         } else if (screen == ParentCenter) {
                             if (parentSelected == 0)
                                 toggleParentManagement(ui);
-                            else
+                            else if (parentSelected == 1) {
+                                updateWifiStatus(ui);
+                                ui.wifiCommandError = false;
+                                refreshWifiMenuText(ui);
+                                screen = WifiSettings;
+                            } else
                                 beginPinChange();
+                        } else if (screen == WifiSettings) {
+                            toggleWifiPower(ui);
                         } else if (screen == ConfirmShutdown &&
                                    requestShutdown()) {
                             running = false;
@@ -1040,7 +1307,9 @@ int main() {
                         } else if (screen == SystemMenu) {
                             menuSelected = (menuSelected + 1) % 2;
                         } else if (screen == ParentCenter) {
-                            parentSelected = 1 - parentSelected;
+                            parentSelected = (parentSelected + 2) % 3;
+                        } else if (screen == WifiSettings) {
+                            // Wi-Fi Settings has one action; no vertical navigation.
                         } else if (screen == PinEntry) {
                             pinDigits[pinPosition] = static_cast<char>(
                                 '0' + (pinDigits[pinPosition] - '0' + 1) % 10);
@@ -1054,7 +1323,9 @@ int main() {
                         } else if (screen == SystemMenu) {
                             menuSelected = (menuSelected + 1) % 2;
                         } else if (screen == ParentCenter) {
-                            parentSelected = 1 - parentSelected;
+                            parentSelected = (parentSelected + 1) % 3;
+                        } else if (screen == WifiSettings) {
+                            // Wi-Fi Settings has one action; no vertical navigation.
                         } else if (screen == PinEntry) {
                             pinDigits[pinPosition] = static_cast<char>(
                                 '0' + (pinDigits[pinPosition] - '0' + 9) % 10);
@@ -1112,6 +1383,8 @@ int main() {
                     drawPinEntry(ui, pinDigits, pinPosition, pinError);
                 else if (screen == ParentCenter)
                     drawParentCenter(ui, parentSelected);
+                else if (screen == WifiSettings)
+                    drawWifiSettings(ui);
                 else drawShutdownConfirm(ui);
                 SDL_Delay(16);
             }

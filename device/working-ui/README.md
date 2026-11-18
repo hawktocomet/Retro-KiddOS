@@ -14,6 +14,9 @@ Confirmed running on the FunnyPlaying Retro Pixel Pocket on November 16, 2026.
 - Low-battery warning styling at 15% or below.
 - Hidden, PIN-protected Parent Mode.
 - Remote Management server status and local start/stop control.
+- Wi-Fi connection indicator beside the battery indicator.
+- Parent Center with Remote Management, Wi-Fi Settings, and Change Parent PIN.
+- Wi-Fi Settings reports radio power and connection state, and can turn Wi-Fi on/off through ConnMan.
 - Change PIN flow requiring the current PIN.
 
 Battery monitoring reads the device's RK817 power-supply sysfs interfaces:
@@ -66,6 +69,10 @@ It starts KiddOS as a systemd service and masks EmulationStation. It currently u
 
 ## Status
 
-This is the confirmed working November 17 device implementation on the blue Retro Pixel Pocket. Parent Mode, Remote Management control, and Change PIN were deployed and verified on November 17. The original desktop SDL application has been moved out of the active repository and preserved in the local Archives directory. This standalone frontend is the active development path.
+This is the confirmed working November 18 device implementation on the blue Retro Pixel Pocket. Parent Mode, Remote Management, Change PIN, Wi-Fi power controls, and the Wi-Fi indicator have been deployed and verified. Wi-Fi power control uses ConnMan and is tested locally on the handheld. Remote Management remains independent of Wi-Fi power and was re-tested after Wi-Fi was turned off and restored.
 
-The next planned UI work is Parent Mode Wi-Fi configuration and a connected/disconnected Wi-Fi indicator beside the battery indicator. These features are not implemented yet.
+Wi-Fi network scanning, joining networks, and credential entry are not implemented. The original desktop SDL application has been moved out of the active repository and preserved in the local Archives directory. This standalone frontend is the active development path.
+
+Deployed ARM64 executable SHA-256:
+
+`2531fa4d3d1376943fec0fbe4185f28450948dee060db1a93a0aef0fbceeb882`

@@ -41,8 +41,9 @@ Core frontend verified November 16, 2026; battery monitoring verified November 1
 - Shuts down the device.
 - Displays battery percentage and charging status.
 - Shows a low-battery warning at 15% or below.
-- Provides hidden, PIN-protected Parent Mode.
-- Parent Mode can show and toggle the LAN management server without disconnecting Wi-Fi.
+- Displays Wi-Fi connection status beside the battery indicator.
+- Provides hidden, PIN-protected Parent Mode with Remote Management, Wi-Fi Settings, and Change Parent PIN.
+- Parents can independently start/stop the LAN management server and turn Wi-Fi radio power on/off.
 - Parents can change the Parent Mode PIN after verifying the current PIN.
 
 The firmware startup hook is in [`firmware/boot/`](firmware/boot/).

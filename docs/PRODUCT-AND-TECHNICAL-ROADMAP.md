@@ -117,24 +117,25 @@ Aspect-ratio handling must be an explicit per-source choice; do not blindly stre
 
 Parent Mode is a hidden, PIN-protected area for essential on-device administration.
 
-### Implemented and verified on the blue Retro Pixel Pocket (November 17, 2026)
+### Implemented and verified on the blue Retro Pixel Pocket (November 17–18, 2026)
 
-- Parent Mode is accessible from the system menu and protected by a PIN.
+- Parent Mode is hidden and PIN-protected.
 - The default PIN is initialized on first use; parents can change it after entering the current PIN.
 - PIN data is stored locally as a salted SHA-512 crypt hash, with restrictive directory/file permissions.
-- The Remote Management control reports whether the LAN management server is running.
-- Parents can start or stop the management server locally.
-- Remote Management is independent of Wi-Fi: stopping the server does not disconnect Wi-Fi.
-- The PIN and Remote Management flows were deployed and physically tested on the blue device.
+- Parent Center has three entries: Remote Management, Wi-Fi Settings, and Change Parent PIN.
+- Remote Management reports whether the LAN management server is running and lets parents start or stop it locally.
+- Wi-Fi Settings reports Wi-Fi radio power and connection state, and provides a single action to turn Wi-Fi on/off.
+- Wi-Fi state is read from ConnMan; power changes use `connmanctl enable wifi` and `connmanctl disable wifi`.
+- A compact Wi-Fi connected/disconnected indicator appears beside the battery indicator.
+- Remote Management is independent of Wi-Fi power. This was tested by turning Wi-Fi off and back on locally, then confirming Remote Management still worked.
+- Parent Mode, Remote Management, Change PIN, Wi-Fi controls, and the indicator were deployed and physically tested on the blue device.
 
 The PIN is a practical child-proofing measure, not a security boundary against someone with root or physical filesystem access.
 
-### Next implementation phase
+### Remaining Wi-Fi work
 
-1. **Wi-Fi controls:** inspect connection state, turn Wi-Fi on/off, and connect to a selected or newly configured network.
-2. **Connection status:** add a small connected/disconnected Wi-Fi indicator beside the battery indicator on the child-facing home screen.
-
-Network changes must not interrupt an active game unnecessarily. Preserve saved networks and avoid disrupting a working connection during implementation and testing.
+- Network scanning, saved-network selection, joining networks, and credential entry are not implemented.
+- Do not add these until they are the next useful, carefully scoped improvement. Preserve saved networks and avoid disrupting a working connection.
 
 Parent Mode should remain small. Media-library administration and broader configuration belong in the browser management interface.
 
@@ -242,17 +243,20 @@ The management server should remain independent of the SDL process. Each handhel
 - Games launch through the existing firmware and return to KiddOS.
 - System menu and shutdown confirmation work.
 - Battery percentage and charging status are displayed.
+- Wi-Fi connection status is displayed beside the battery indicator.
+- Parent Mode Wi-Fi Settings reports radio power/connection state and turns Wi-Fi on/off through ConnMan.
 - The device has connected to the home Wi-Fi network.
 - MPV has played a 720 × 720 H.264/AAC test clip with sound.
 - Hidden, PIN-protected Parent Mode is deployed and working.
 - Parent Mode can start/stop the LAN management server through the installed control script.
 - Remote Management can be disabled without disconnecting Wi-Fi; continuous ping remained active during testing.
 - Change PIN flow is deployed and working.
+- Wi-Fi power controls and the Wi-Fi indicator are deployed and working on the blue device.
+- Remote Management was re-tested after Wi-Fi was switched off and restored; the controls remain independent.
 
 ### Not yet implemented or fully validated
 
-- Parent Mode Wi-Fi controls and saved-network selection.
-- Home-screen Wi-Fi connection indicator.
+- Wi-Fi network scanning, saved-network selection, joining networks, and credential entry.
 - Browser-based media upload/library and slot assignment.
 - Browser-based theme customization.
 - Automatic network priority/fallback behavior.
@@ -268,11 +272,10 @@ The current frontend is a working prototype validated on one blue device. Do not
 
 ### Near-term priorities
 
-1. Keep the verified Parent Mode, PIN, and Remote Management features stable.
-2. Add Wi-Fi on/off and connect-to-network controls in Parent Mode, preserving saved networks.
-3. Add a connected/disconnected Wi-Fi indicator beside the home-screen battery indicator.
-4. Validate the changes on the blue handheld without disrupting the existing management service or gameplay.
-5. Continue the browser management experience incrementally after the on-device network controls are reliable.
+1. Keep the verified Parent Mode, PIN, Remote Management, and Wi-Fi power controls stable.
+2. Continue toward the Christmas goal: make game selection and play easy for the children.
+3. Validate future changes on actual hardware before expanding scope.
+4. Continue the browser management experience incrementally when it provides practical value.
 
 ### Deferred until the foundation is proven
 

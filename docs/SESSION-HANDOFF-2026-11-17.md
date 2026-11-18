@@ -181,8 +181,7 @@ Network diagnostics must remain read-only. Never modify wireless config, restart
 Android Chrome access:
 The user confirmed Chrome's app-level Nearby devices permission is the blocker for accessing the local handheld management server. Enabling it allowed access. The user considers this poor UX and has explicitly deferred a solution. Do not pursue a companion app or redesign now; retain the current LAN browser approach.
 
-Deferred UI item:
-- Small Wi-Fi connected/disconnected icon beside battery indicator.
+The Wi-Fi indicator is now implemented and verified beside the battery indicator. Wi-Fi radio power control is also implemented in Parent Mode; network scanning/joining and credential entry remain future work.
 
 ## Game curation scope
 
@@ -262,15 +261,23 @@ The management server is independently controlled by the local Parent Mode toggl
 
 Native PIN helper tests passed (11 tests), including default initialization, PIN verification/change, file permissions, and fail-closed behavior for corrupted storage. The ARM64 cross-compile test passed.
 
-### Next development phase — Wi-Fi controls
+### Latest milestone — Parent Mode Wi-Fi controls deployed (November 18, 2026)
 
-The next chat should focus on these user-requested features, in order:
+Verified on the blue device (`RPPBLUE`, `192.168.0.89`):
 
-1. Add Parent Mode controls to turn Wi-Fi on and off.
-2. Add a way to connect to a Wi-Fi network, including selecting/entering credentials as appropriate.
-3. Add a small home-screen Wi-Fi indicator showing connected versus disconnected.
+- Parent Center now has Remote Management, Wi-Fi Settings, and Change Parent PIN.
+- Wi-Fi Settings displays radio power (ON/OFF) and connection state (Connected/Not connected).
+- Its action toggles Wi-Fi power using ConnMan (`connmanctl enable wifi` / `connmanctl disable wifi`).
+- The Wi-Fi indicator is displayed beside the battery indicator and shows disconnected state with a red slash.
+- The user tested Wi-Fi off/on locally on the handheld.
+- Remote Management was confirmed to continue working independently after Wi-Fi was turned off and restored.
+- No network scanning, joining, or credential-entry workflow was added.
 
-Keep the existing Remote Management toggle separate from Wi-Fi controls. Turning off the management server must not turn off Wi-Fi. Avoid speculative network changes; inspect the current firmware networking tools and state first, then make one small, testable change at a time.
+Deployed ARM64 executable SHA-256:
+
+`2531fa4d3d1376943fec0fbe4185f28450948dee060db1a93a0aef0fbceeb882`
+
+The next development step should be selected based on practical value to the Christmas family-gaming goal, not automatically assumed to be more networking work. Keep the current implementation stable unless a concrete need emerges.
 
 ### Licensing and distribution direction
 
