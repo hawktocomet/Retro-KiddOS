@@ -132,10 +132,14 @@ Parent Mode is a hidden, PIN-protected area for essential on-device administrati
 
 The PIN is a practical child-proofing measure, not a security boundary against someone with root or physical filesystem access.
 
-### Remaining Wi-Fi work
+### Wi-Fi configuration — complete and frozen
 
-- Network scanning, saved-network selection, joining networks, and credential entry are not implemented.
-- Do not add these until they are the next useful, carefully scoped improvement. Preserve saved networks and avoid disrupting a working connection.
+- Parent Mode can scan for available Wi-Fi networks and display selectable results.
+- Parents can select open or secured networks and connect through ConnMan.
+- Secured-network password entry uses an on-screen QWERTY keyboard with letter-case and symbol layouts, space, backspace, clear, and connect actions.
+- Connection progress and results are reported in the UI.
+- The complete flow—scanning, selection, password entry, and connection—was tested on the blue Retro Pixel Pocket.
+- Deployed and verified November 18, 2026. Further edge-case work is deferred unless real-world use exposes a problem.
 
 Parent Mode should remain small. Media-library administration and broader configuration belong in the browser management interface.
 
@@ -256,7 +260,7 @@ The management server should remain independent of the SDL process. Each handhel
 
 ### Not yet implemented or fully validated
 
-- Wi-Fi network scanning, saved-network selection, joining networks, and credential entry.
+- Additional Wi-Fi edge cases and reconnection behavior, deferred unless real-world use exposes a problem.
 - Browser-based media upload/library and slot assignment.
 - Browser-based theme customization.
 - Automatic network priority/fallback behavior.

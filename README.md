@@ -44,6 +44,7 @@ Core frontend verified November 16, 2026; battery monitoring verified November 1
 - Displays Wi-Fi connection status beside the battery indicator.
 - Provides hidden, PIN-protected Parent Mode with Remote Management, Wi-Fi Settings, and Change Parent PIN.
 - Parents can independently start/stop the LAN management server and turn Wi-Fi radio power on/off.
+- Parents can scan for Wi-Fi networks, select open or secured networks, enter passwords with an on-screen QWERTY keyboard, and connect.
 - Parents can change the Parent Mode PIN after verifying the current PIN.
 
 The firmware startup hook is in [`firmware/boot/`](firmware/boot/).
@@ -77,7 +78,6 @@ This is a working prototype validated on one blue device.
 - The firmware hook is not a general-purpose installer.
 - Installation and rollback need a repeatable procedure.
 - Other devices have not yet been validated.
-- Wi-Fi configuration controls in Parent Mode are not implemented yet.
 - The game library is still hardcoded; parent-managed library editing is future work.
 - Multiplayer workflows remain future work.
 - Full-length movie playback and music-library usability are not yet validated.

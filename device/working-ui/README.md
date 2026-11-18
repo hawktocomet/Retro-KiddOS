@@ -17,6 +17,10 @@ Confirmed running on the FunnyPlaying Retro Pixel Pocket on November 16, 2026.
 - Wi-Fi connection indicator beside the battery indicator.
 - Parent Center with Remote Management, Wi-Fi Settings, and Change Parent PIN.
 - Wi-Fi Settings reports radio power and connection state, and can turn Wi-Fi on/off through ConnMan.
+- Scans for available Wi-Fi networks and displays selectable results.
+- Supports joining both open and secured networks through ConnMan.
+- Secured network passwords are entered with an on-screen QWERTY keyboard, including letter-case and symbol layouts.
+- Provides keyboard navigation, password editing, connection progress, and connection-result feedback.
 - Change PIN flow requiring the current PIN.
 
 Battery monitoring reads the device's RK817 power-supply sysfs interfaces:
@@ -71,8 +75,10 @@ It starts KiddOS as a systemd service and masks EmulationStation. It currently u
 
 This is the confirmed working November 18 device implementation on the blue Retro Pixel Pocket. Parent Mode, Remote Management, Change PIN, Wi-Fi power controls, and the Wi-Fi indicator have been deployed and verified. Wi-Fi power control uses ConnMan and is tested locally on the handheld. Remote Management remains independent of Wi-Fi power and was re-tested after Wi-Fi was turned off and restored.
 
-Wi-Fi network scanning, joining networks, and credential entry are not implemented. The original desktop SDL application has been moved out of the active repository and preserved in the local Archives directory. This standalone frontend is the active development path.
+Wi-Fi configuration is complete for the current milestone. Network scanning, network selection, open-network connections, secured-network password entry, and connection handling were tested on the blue Retro Pixel Pocket. The on-screen QWERTY keyboard was also tested and confirmed working. This feature is intentionally frozen; defer further edge-case work unless real-world use exposes a problem.
 
-Deployed ARM64 executable SHA-256:
+The original desktop SDL application has been moved out of the active repository and preserved in the local Archives directory. This standalone frontend is the active development path.
 
-`2531fa4d3d1376943fec0fbe4185f28450948dee060db1a93a0aef0fbceeb882`
+Deployed ARM64 executable SHA-256 (November 18, 2026):
+
+`cccc2ae0b9ed951b52db107805ec3ae080f5964e77e34e1dbff5a2c395257347`

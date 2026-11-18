@@ -7,6 +7,12 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <cerrno>
+#include <fcntl.h>
+#include <signal.h>
+#include <string>
+#include <sstream>
+#include <vector>
 #include <cstdlib>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -42,6 +48,14 @@ enum class WifiStatus {
     Connected
 };
 
+struct WifiNetwork {
+    std::string path;
+    std::string name;
+    int strength = 0;
+    std::string security;
+    std::string state;
+};
+
 struct UI {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
@@ -58,6 +72,11 @@ struct UI {
     Text parentHeading, parentBody, parentWifi, parentChangePin, parentFooter;
     Text wifiHeading, wifiPowerLabel, wifiConnectionLabel;
     Text wifiActionLabel, wifiFooter;
+    std::vector<WifiNetwork> wifiNetworks;
+    int wifiSelectedRow = 0;
+    int wifiScrollOffset = 0;
+    std::string wifiListMessage = "SCAN FOR NETWORKS";
+    bool wifiScanAttempted = false;
     Text batteryLabel;
     int batteryPercent = -1;
     bool externalPower = false;
@@ -65,6 +84,16 @@ struct UI {
     bool wifiPowered = false;
     bool wifiPowerKnown = false;
     bool wifiCommandError = false;
+    std::string wifiPassword;
+    int wifiPasswordCursor = 0;
+    int wifiPasswordChar = 0;
+    int wifiKeyboardRow = 0;
+    int wifiKeyboardCol = 0;
+    bool wifiKeyboardShift = false;
+    bool wifiKeyboardSymbols = false;
+    pid_t wifiConnectPid = -1;
+    int wifiConnectOutput = -1;
+    std::string wifiConnectOutputText;
     Uint32 batteryLastPoll = 0;
 };
 
@@ -86,6 +115,22 @@ static void drawText(SDL_Renderer* r, const Text& t, int cx, int y) {
     if (!t.texture) return;
     SDL_Rect dst = {cx - t.w / 2, y, t.w, t.h};
     SDL_RenderCopy(r, t.texture, nullptr, &dst);
+}
+
+static void drawWifiLine(SDL_Renderer* r, TTF_Font* font,
+                         const std::string& value, int x, int y,
+                         SDL_Color color) {
+    SDL_Surface* surface =
+        TTF_RenderUTF8_Blended(font, value.c_str(), color);
+    if (!surface) return;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(r, surface);
+    if (texture) {
+        SDL_Rect destination = {x, y, surface->w, surface->h};
+        SDL_RenderCopy(r, texture, nullptr, &destination);
+        SDL_DestroyTexture(texture);
+    }
+    SDL_FreeSurface(surface);
 }
 
 static void destroyText(Text& t);
@@ -192,6 +237,235 @@ static bool setWifiPower(bool enabled) {
     int status = 0;
     return waitpid(pid, &status, 0) >= 0 &&
            WIFEXITED(status) && WEXITSTATUS(status) == 0;
+}
+
+static bool loadWifiNetworks(UI& ui, bool scan) {
+    int pipefd[2];
+    if (pipe(pipefd) != 0) {
+        ui.wifiListMessage = "COULD NOT START WI-FI HELPER";
+        return false;
+    }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        close(pipefd[0]);
+        close(pipefd[1]);
+        ui.wifiListMessage = "COULD NOT START WI-FI HELPER";
+        return false;
+    }
+
+    if (pid == 0) {
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[0]);
+        close(pipefd[1]);
+
+        const char* command = scan ? "ui-scan" : "ui-list";
+        char helperPath[512];
+        std::snprintf(helperPath, sizeof(helperPath),
+                      "%s/wifi_helper.py", BASE);
+        execl("/usr/bin/python3", "python3",
+              helperPath, command,
+              static_cast<char*>(nullptr));
+        _exit(127);
+    }
+
+    close(pipefd[1]);
+
+    std::string output;
+    char buffer[512];
+    ssize_t count;
+    while ((count = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+        output.append(buffer, static_cast<size_t>(count));
+    }
+    close(pipefd[0]);
+
+    int status = 0;
+    while (waitpid(pid, &status, 0) < 0) {
+        if (errno != EINTR) {
+            ui.wifiListMessage = "WI-FI HELPER FAILED";
+            return false;
+        }
+    }
+
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        ui.wifiListMessage = "WI-FI SCAN FAILED";
+        return false;
+    }
+
+    std::vector<WifiNetwork> networks;
+    std::istringstream lines(output);
+    std::string line;
+
+    while (std::getline(lines, line)) {
+        if (line.empty()) continue;
+
+        std::istringstream fields(line);
+        WifiNetwork network;
+        std::string strength;
+
+        if (!std::getline(fields, network.path, '\t') ||
+            !std::getline(fields, network.name, '\t') ||
+            !std::getline(fields, strength, '\t') ||
+            !std::getline(fields, network.security, '\t') ||
+            !std::getline(fields, network.state)) {
+            continue;
+        }
+
+        try {
+            network.strength = std::stoi(strength);
+        } catch (...) {
+            network.strength = 0;
+        }
+
+        networks.push_back(std::move(network));
+    }
+
+    ui.wifiNetworks = std::move(networks);
+    ui.wifiSelectedRow = 0;
+    ui.wifiScrollOffset = 0;
+    ui.wifiListMessage = ui.wifiNetworks.empty()
+        ? "NO NETWORKS FOUND"
+        : "";
+
+    return true;
+}
+
+
+static const std::string WIFI_PASSWORD_CHARS =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "0123456789 "
+    "!@#$%^&*()-_=+[]{};:',.<>/?\\|~`\"";
+
+static void startWifiConnection(UI& ui, const WifiNetwork& network,
+                                const std::string& password) {
+    if (ui.wifiConnectPid > 0) return;
+
+    int inputPipe[2] = {-1, -1};
+    int outputPipe[2] = {-1, -1};
+    if (pipe(inputPipe) != 0) {
+        ui.wifiListMessage = "COULD NOT START CONNECTION";
+        return;
+    }
+    if (pipe(outputPipe) != 0) {
+        close(inputPipe[0]); close(inputPipe[1]);
+        ui.wifiListMessage = "COULD NOT START CONNECTION";
+        return;
+    }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        close(inputPipe[0]); close(inputPipe[1]);
+        close(outputPipe[0]); close(outputPipe[1]);
+        ui.wifiListMessage = "COULD NOT START CONNECTION";
+        return;
+    }
+
+    if (pid == 0) {
+        dup2(inputPipe[0], STDIN_FILENO);
+        dup2(outputPipe[1], STDOUT_FILENO);
+        dup2(outputPipe[1], STDERR_FILENO);
+        close(inputPipe[0]); close(inputPipe[1]);
+        close(outputPipe[0]); close(outputPipe[1]);
+
+        char helperPath[512];
+        std::snprintf(helperPath, sizeof(helperPath),
+                      "%s/wifi_helper.py", BASE);
+        execl("/usr/bin/python3", "python3", helperPath,
+              "connect", network.path.c_str(),
+              static_cast<char*>(nullptr));
+        _exit(127);
+    }
+
+    close(inputPipe[0]);
+    close(outputPipe[1]);
+
+    std::string secret = password + "\n";
+    size_t sent = 0;
+    while (sent < secret.size()) {
+        ssize_t n = write(inputPipe[1], secret.data() + sent,
+                          secret.size() - sent);
+        if (n < 0) {
+            if (errno == EINTR) continue;
+            break;
+        }
+        sent += static_cast<size_t>(n);
+    }
+    close(inputPipe[1]);
+    std::fill(secret.begin(), secret.end(), '\0');
+
+    int flags = fcntl(outputPipe[0], F_GETFL, 0);
+    if (flags >= 0) fcntl(outputPipe[0], F_SETFL, flags | O_NONBLOCK);
+
+    ui.wifiConnectPid = pid;
+    ui.wifiConnectOutput = outputPipe[0];
+    ui.wifiConnectOutputText.clear();
+    ui.wifiListMessage = "CONNECTING...";
+}
+
+static void pollWifiConnection(UI& ui) {
+    if (ui.wifiConnectPid <= 0) return;
+
+    char buffer[256];
+    for (;;) {
+        ssize_t n = read(ui.wifiConnectOutput, buffer, sizeof(buffer));
+        if (n > 0) {
+            ui.wifiConnectOutputText.append(buffer, static_cast<size_t>(n));
+            if (ui.wifiConnectOutputText.size() > 1024)
+                ui.wifiConnectOutputText.erase(
+                    0, ui.wifiConnectOutputText.size() - 1024);
+        } else {
+            if (n < 0 && errno == EINTR) continue;
+            break;
+        }
+    }
+
+    int status = 0;
+    pid_t result = waitpid(ui.wifiConnectPid, &status, WNOHANG);
+    if (result == 0) return;
+
+    close(ui.wifiConnectOutput);
+    ui.wifiConnectOutput = -1;
+    ui.wifiConnectPid = -1;
+
+    if (result > 0 && WIFEXITED(status) && WEXITSTATUS(status) == 0 &&
+        ui.wifiConnectOutputText.find("CONNECTED") != std::string::npos) {
+        ui.wifiListMessage = "CONNECTED";
+        updateWifiStatus(ui);
+    } else {
+        ui.wifiListMessage = "CONNECTION FAILED - CHECK PASSWORD";
+    }
+    ui.wifiConnectOutputText.clear();
+}
+
+static void cancelWifiConnection(UI& ui) {
+    if (ui.wifiConnectPid > 0) {
+        kill(ui.wifiConnectPid, SIGTERM);
+        int status = 0;
+        while (waitpid(ui.wifiConnectPid, &status, 0) < 0 &&
+               errno == EINTR) {}
+        ui.wifiConnectPid = -1;
+    }
+    if (ui.wifiConnectOutput >= 0) {
+        close(ui.wifiConnectOutput);
+        ui.wifiConnectOutput = -1;
+    }
+    ui.wifiConnectOutputText.clear();
+}
+
+static void moveWifiSelection(UI& ui, int direction) {
+    const int itemCount = 2 + static_cast<int>(ui.wifiNetworks.size());
+    ui.wifiSelectedRow += direction;
+
+    if (ui.wifiSelectedRow < 0)
+        ui.wifiSelectedRow = 0;
+    if (ui.wifiSelectedRow >= itemCount)
+        ui.wifiSelectedRow = itemCount - 1;
+
+    constexpr int visibleRows = 8;
+    if (ui.wifiSelectedRow < ui.wifiScrollOffset)
+        ui.wifiScrollOffset = ui.wifiSelectedRow;
+    if (ui.wifiSelectedRow >= ui.wifiScrollOffset + visibleRows)
+        ui.wifiScrollOffset = ui.wifiSelectedRow - visibleRows + 1;
 }
 
 static void refreshWifiMenuText(UI& ui) {
@@ -623,7 +897,7 @@ static bool openUI(UI& ui) {
     ui.parentChangePin = makeText(ui.renderer, ui.labelFont,
         "CHANGE PARENT PIN", white);
     ui.parentFooter = makeText(ui.renderer, ui.footerFont,
-        "UP/DOWN  SELECT     A  OPEN     B  BACK", muted);
+        "UP/DOWN MOVE   A SELECT   B BACK", muted);
     ui.wifiHeading = makeText(ui.renderer, ui.headingFont,
         "WI-FI SETTINGS", white);
     ui.wifiPowerLabel = makeText(ui.renderer, ui.labelFont,
@@ -633,7 +907,7 @@ static bool openUI(UI& ui) {
     ui.wifiActionLabel = makeText(ui.renderer, ui.labelFont,
         "WI-FI POWER UNAVAILABLE", muted);
     ui.wifiFooter = makeText(ui.renderer, ui.footerFont,
-        "A  TOGGLE WI-FI     B  BACK", muted);
+        "UP/DOWN MOVE   A SELECT   B BACK", muted);
 
     for (int i = 0; i < 4; ++i) {
         char path[512];
@@ -901,22 +1175,59 @@ static void drawParentCenter(UI& ui, int selected) {
 static void drawWifiSettings(UI& ui) {
     SDL_Renderer* r = ui.renderer;
     drawSimplePanel(r);
-    drawText(r, ui.heading, 360, 105);
-    drawText(r, ui.wifiHeading, 360, 220);
-    drawText(r, ui.wifiPowerLabel, 360, 300);
-    drawText(r, ui.wifiConnectionLabel, 360, 370);
+    drawText(r, ui.heading, 360, 85);
+    drawText(r, ui.wifiHeading, 360, 155);
+    drawText(r, ui.wifiConnectionLabel, 360, 220);
 
-    SDL_Rect actionRow = {90, 440, 540, 82};
-    SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
-    for (int n = 0; n < 3; ++n) {
-        SDL_Rect outline = {
-            actionRow.x - n, actionRow.y - n,
-            actionRow.w + n * 2, actionRow.h + n * 2
-        };
-        SDL_RenderDrawRect(r, &outline);
+    const SDL_Color normal = {235, 240, 250, 255};
+    const SDL_Color muted = {165, 180, 200, 255};
+    const int rowHeight = 32;
+    constexpr int visibleRows = 8;
+
+    for (int visible = 0; visible < visibleRows; ++visible) {
+        const int index = ui.wifiScrollOffset + visible;
+        const int itemCount = 2 + static_cast<int>(ui.wifiNetworks.size());
+        if (index >= itemCount) break;
+
+        SDL_Rect row = {78, 250 + visible * rowHeight, 564, 28};
+
+        if (index == ui.wifiSelectedRow) {
+            SDL_SetRenderDrawColor(r, 65, 165, 235, 255);
+            for (int n = 0; n < 2; ++n) {
+                SDL_Rect outline = {
+                    row.x - n, row.y - n,
+                    row.w + n * 2, row.h + n * 2
+                };
+                SDL_RenderDrawRect(r, &outline);
+            }
+        }
+
+        std::string label;
+        if (index == 0) {
+            label = std::string("WI-FI POWER: ") +
+                    (ui.wifiPowered ? "ON" : "OFF");
+        } else if (index == 1) {
+            label = "SCAN FOR NETWORKS";
+        } else {
+            const WifiNetwork& network = ui.wifiNetworks[index - 2];
+            label = network.name + "   " +
+                    std::to_string(network.strength) + "%   " +
+                    (network.security == "open" ? "OPEN" : "SECURED");
+            if (network.state == "online")
+                label += "   CONNECTED";
+        }
+
+        drawWifiLine(r, ui.labelFont, label, row.x + 14, row.y + 5,
+                     index == ui.wifiSelectedRow ? normal : muted);
     }
 
-    drawText(r, ui.wifiActionLabel, 360, 470);
+    if (!ui.wifiListMessage.empty()) {
+        int messageWidth = 0;
+        TTF_SizeUTF8(ui.footerFont, ui.wifiListMessage.c_str(),
+                     &messageWidth, nullptr);
+        drawWifiLine(r, ui.footerFont, ui.wifiListMessage,
+                     (720 - messageWidth) / 2, 540, muted);
+    }
     drawBattery(ui);
     drawText(r, ui.wifiFooter, 360, 625);
     SDL_RenderPresent(r);
@@ -990,10 +1301,153 @@ static bool launchGame(int index) {
     return true;
 }
 
+
+
+static std::vector<std::vector<std::string>> wifiKeyboardRows(const UI& ui) {
+    std::vector<std::vector<std::string>> rows;
+    if (ui.wifiKeyboardSymbols) {
+        rows = {
+            {"1","2","3","4","5","6","7","8","9","0"},
+            {"@","#","$","%","&","-","+","(",")"},
+            {"!","?",":",";","'","\"",",",".","/"}
+        };
+    } else {
+        rows = {
+            {"q","w","e","r","t","y","u","i","o","p"},
+            {"a","s","d","f","g","h","j","k","l"},
+            {"z","x","c","v","b","n","m"}
+        };
+        if (ui.wifiKeyboardShift) {
+            for (auto& row : rows)
+                for (auto& key : row)
+                    for (char& ch : key)
+                        ch = static_cast<char>(ch - 'a' + 'A');
+        }
+    }
+    rows.push_back({"SHIFT","123","SPACE","BKSP","CLEAR","CONNECT"});
+    return rows;
+}
+
+static void moveWifiKeyboard(UI& ui, int dx, int dy) {
+    const auto rows = wifiKeyboardRows(ui);
+    ui.wifiKeyboardRow =
+        (ui.wifiKeyboardRow + dy + static_cast<int>(rows.size())) %
+        static_cast<int>(rows.size());
+    const int count = static_cast<int>(
+        rows[static_cast<size_t>(ui.wifiKeyboardRow)].size());
+    ui.wifiKeyboardCol =
+        std::max(0, std::min(ui.wifiKeyboardCol + dx, count - 1));
+}
+
+static bool activateWifiKeyboardKey(UI& ui) {
+    const auto rows = wifiKeyboardRows(ui);
+    const auto& key = rows[static_cast<size_t>(ui.wifiKeyboardRow)]
+                           [static_cast<size_t>(ui.wifiKeyboardCol)];
+
+    if (ui.wifiKeyboardRow == 3) {
+        if (key == "SHIFT") {
+            ui.wifiKeyboardShift = !ui.wifiKeyboardShift;
+        } else if (key == "123") {
+            ui.wifiKeyboardSymbols = !ui.wifiKeyboardSymbols;
+            ui.wifiKeyboardRow = ui.wifiKeyboardCol = 0;
+        } else if (key == "SPACE") {
+            if (ui.wifiPassword.size() < 63) ui.wifiPassword.push_back(' ');
+        } else if (key == "BKSP") {
+            if (!ui.wifiPassword.empty()) ui.wifiPassword.pop_back();
+        } else if (key == "CLEAR") {
+            std::fill(ui.wifiPassword.begin(), ui.wifiPassword.end(), '\0');
+            ui.wifiPassword.clear();
+        } else if (key == "CONNECT") {
+            if (!ui.wifiPassword.empty() && ui.wifiSelectedRow >= 2 &&
+                ui.wifiSelectedRow - 2 < static_cast<int>(ui.wifiNetworks.size())) {
+                const auto& network =
+                    ui.wifiNetworks[static_cast<size_t>(ui.wifiSelectedRow - 2)];
+                startWifiConnection(ui, network, ui.wifiPassword);
+                std::fill(ui.wifiPassword.begin(), ui.wifiPassword.end(), '\0');
+                ui.wifiPassword.clear();
+                ui.wifiPasswordCursor = 0;
+                return true;
+            }
+        }
+    } else if (ui.wifiPassword.size() < 63 && !key.empty()) {
+        ui.wifiPassword.push_back(key[0]);
+        if (ui.wifiKeyboardShift && !ui.wifiKeyboardSymbols)
+            ui.wifiKeyboardShift = false;
+    }
+
+    ui.wifiPasswordCursor = static_cast<int>(ui.wifiPassword.size());
+    return false;
+}
+
+static void drawWifiPassword(UI& ui) {
+    SDL_Renderer* r = ui.renderer;
+    drawSimplePanel(r);
+
+    auto centered = [&](TTF_Font* font, const std::string& value,
+                        int y, SDL_Color color) {
+        int w = 0, h = 0;
+        if (TTF_SizeUTF8(font, value.c_str(), &w, &h) == 0)
+            drawWifiLine(r, font, value, (720 - w) / 2, y, color);
+    };
+
+    const SDL_Color white = {245,248,255,255};
+    const SDL_Color muted = {155,177,215,255};
+    const SDL_Color blue = {80,190,255,255};
+    const SDL_Color selected = {35,105,175,255};
+    const SDL_Color fill = {22,38,65,255};
+
+    centered(ui.headingFont, "WI-FI PASSWORD", 82, white);
+    std::string masked(ui.wifiPassword.size(), '*');
+    centered(ui.headingFont,
+             masked.empty() ? "(ENTER PASSWORD)" : masked, 137, white);
+
+    const auto rows = wifiKeyboardRows(ui);
+    for (size_t row = 0; row < rows.size(); ++row) {
+        const bool actions = row == 3;
+        const int kw = actions ? 94 : 48;
+        const int kh = 46;
+        const int gap = 7;
+        const int total = static_cast<int>(rows[row].size()) * kw +
+                          (static_cast<int>(rows[row].size()) - 1) * gap;
+        const int x0 = (720 - total) / 2;
+        const int y = actions ? 430 : 205 + static_cast<int>(row) * 65;
+
+        for (size_t col = 0; col < rows[row].size(); ++col) {
+            SDL_Rect rect{x0 + static_cast<int>(col) * (kw + gap), y, kw, kh};
+            const bool active =
+                static_cast<int>(row) == ui.wifiKeyboardRow &&
+                static_cast<int>(col) == ui.wifiKeyboardCol;
+
+            SDL_SetRenderDrawColor(r,
+                active ? selected.r : fill.r,
+                active ? selected.g : fill.g,
+                active ? selected.b : fill.b, 255);
+            SDL_RenderFillRect(r, &rect);
+            SDL_SetRenderDrawColor(r, blue.r, blue.g, blue.b,
+                                   active ? 255 : 100);
+            SDL_RenderDrawRect(r, &rect);
+
+            const auto& label = rows[row][col];
+            TTF_Font* font = actions ? ui.footerFont : ui.labelFont;
+            int tw = 0, th = 0;
+            if (TTF_SizeUTF8(font, label.c_str(), &tw, &th) == 0)
+                drawWifiLine(r, font, label,
+                    rect.x + (rect.w - tw) / 2,
+                    rect.y + (rect.h - th) / 2, white);
+        }
+    }
+
+    centered(ui.footerFont,
+        "D-PAD MOVE   A SELECT   B DELETE/BACK   START CONNECT",
+        555, muted);
+    drawBattery(ui);
+    SDL_RenderPresent(r);
+}
+
 int main() {
     enum Screen {
         Games, SelectedGame, GameInfo, SystemMenu,
-        PinEntry, ParentCenter, WifiSettings, ConfirmShutdown
+        PinEntry, ParentCenter, WifiSettings, WifiPassword, ConfirmShutdown
     };
 
     int selected = 0;
@@ -1133,7 +1587,11 @@ int main() {
                     }
 
                     if (key == SDLK_BACKSPACE) {
-                        if (screen == WifiSettings)
+                        if (screen == WifiPassword) {
+                            if (ui.wifiPasswordCursor > 0) {
+                                ui.wifiPassword.erase(ui.wifiPassword.begin() + --ui.wifiPasswordCursor);
+                            } else screen = WifiSettings;
+                        } else if (screen == WifiSettings)
                             screen = ParentCenter;
                         else if (screen == PinEntry && pinTask != PinTask::Unlock)
                             cancelPinChange();
@@ -1171,9 +1629,54 @@ int main() {
                         continue;
                     }
 
+                    if (screen == WifiPassword) {
+                        if (key == SDLK_UP) moveWifiKeyboard(ui, 0, -1);
+                        else if (key == SDLK_DOWN) moveWifiKeyboard(ui, 0, 1);
+                        else if (key == SDLK_LEFT) moveWifiKeyboard(ui, -1, 0);
+                        else if (key == SDLK_RIGHT) moveWifiKeyboard(ui, 1, 0);
+                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
+                            if (activateWifiKeyboardKey(ui))
+                                screen = WifiSettings;
+                        } else if (key == SDLK_BACKSPACE ||
+                                   key == SDLK_DELETE) {
+                            if (!ui.wifiPassword.empty())
+                                ui.wifiPassword.pop_back();
+                            ui.wifiPasswordCursor =
+                                static_cast<int>(ui.wifiPassword.size());
+                        } else if (key == SDLK_ESCAPE) {
+                            screen = WifiSettings;
+                        }
+                        continue;
+                    }
+
                     if (screen == WifiSettings) {
-                        if (key == SDLK_RETURN || key == SDLK_SPACE)
-                            toggleWifiPower(ui);
+                        if (key == SDLK_UP)
+                            moveWifiSelection(ui, -1);
+                        else if (key == SDLK_DOWN)
+                            moveWifiSelection(ui, 1);
+                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
+                            if (ui.wifiSelectedRow == 0) {
+                                toggleWifiPower(ui);
+                            } else if (ui.wifiSelectedRow == 1) {
+                                loadWifiNetworks(ui, true);
+                            } else {
+                                const auto& network =
+                                    ui.wifiNetworks[ui.wifiSelectedRow - 2];
+                                if (network.security == "open" ||
+                                    network.security == "OPEN") {
+                                    startWifiConnection(ui, network, "");
+                                } else {
+                                    ui.wifiPassword.clear();
+                                    ui.wifiPasswordCursor = 0;
+                                    ui.wifiPasswordChar = 0;
+                                    ui.wifiKeyboardRow = 0;
+                                    ui.wifiKeyboardCol = 0;
+                                    ui.wifiKeyboardShift = false;
+                                    ui.wifiKeyboardSymbols = false;
+                                    screen = WifiPassword;
+                                }
+                            }
+                        }
                         continue;
                     }
 
@@ -1189,6 +1692,7 @@ int main() {
                                 updateWifiStatus(ui);
                                 ui.wifiCommandError = false;
                                 refreshWifiMenuText(ui);
+                                loadWifiNetworks(ui, true);
                                 screen = WifiSettings;
                             } else
                                 beginPinChange();
@@ -1247,7 +1751,14 @@ int main() {
                     const int button = event.jbutton.button;
 
                     if (button == 0) { // B / Back
-                        if (screen == WifiSettings)
+                        if (screen == WifiPassword) {
+                            if (!ui.wifiPassword.empty())
+                                ui.wifiPassword.pop_back();
+                            else
+                                screen = WifiSettings;
+                            ui.wifiPasswordCursor =
+                                static_cast<int>(ui.wifiPassword.size());
+                        } else if (screen == WifiSettings)
                             screen = ParentCenter;
                         else if (screen == PinEntry && pinTask != PinTask::Unlock)
                             cancelPinChange();
@@ -1261,7 +1772,10 @@ int main() {
                         else if (screen == SelectedGame)
                             screen = Games;
                     } else if (button == 1) { // A / Select
-                        if (screen == Games) {
+                        if (screen == WifiPassword) {
+                            if (activateWifiKeyboardKey(ui))
+                                screen = WifiSettings;
+                        } else if (screen == Games) {
                             screen = SelectedGame;
                             action = 0;
                         } else if (screen == SelectedGame) {
@@ -1289,11 +1803,32 @@ int main() {
                                 updateWifiStatus(ui);
                                 ui.wifiCommandError = false;
                                 refreshWifiMenuText(ui);
+                                loadWifiNetworks(ui, true);
                                 screen = WifiSettings;
                             } else
                                 beginPinChange();
                         } else if (screen == WifiSettings) {
-                            toggleWifiPower(ui);
+                            if (ui.wifiSelectedRow == 0) {
+                                toggleWifiPower(ui);
+                            } else if (ui.wifiSelectedRow == 1) {
+                                loadWifiNetworks(ui, true);
+                            } else {
+                                const auto& network =
+                                    ui.wifiNetworks[ui.wifiSelectedRow - 2];
+                                if (network.security == "open" ||
+                                    network.security == "OPEN") {
+                                    startWifiConnection(ui, network, "");
+                                } else {
+                                    ui.wifiPassword.clear();
+                                    ui.wifiPasswordCursor = 0;
+                                    ui.wifiPasswordChar = 0;
+                                    ui.wifiKeyboardRow = 0;
+                                    ui.wifiKeyboardCol = 0;
+                                    ui.wifiKeyboardShift = false;
+                                    ui.wifiKeyboardSymbols = false;
+                                    screen = WifiPassword;
+                                }
+                            }
                         } else if (screen == ConfirmShutdown &&
                                    requestShutdown()) {
                             running = false;
@@ -1309,7 +1844,9 @@ int main() {
                         } else if (screen == ParentCenter) {
                             parentSelected = (parentSelected + 2) % 3;
                         } else if (screen == WifiSettings) {
-                            // Wi-Fi Settings has one action; no vertical navigation.
+                            moveWifiSelection(ui, -1);
+                        } else if (screen == WifiPassword) {
+                            moveWifiKeyboard(ui, 0, -1);
                         } else if (screen == PinEntry) {
                             pinDigits[pinPosition] = static_cast<char>(
                                 '0' + (pinDigits[pinPosition] - '0' + 1) % 10);
@@ -1325,7 +1862,9 @@ int main() {
                         } else if (screen == ParentCenter) {
                             parentSelected = (parentSelected + 1) % 3;
                         } else if (screen == WifiSettings) {
-                            // Wi-Fi Settings has one action; no vertical navigation.
+                            moveWifiSelection(ui, 1);
+                        } else if (screen == WifiPassword) {
+                            moveWifiKeyboard(ui, 0, 1);
                         } else if (screen == PinEntry) {
                             pinDigits[pinPosition] = static_cast<char>(
                                 '0' + (pinDigits[pinPosition] - '0' + 9) % 10);
@@ -1334,6 +1873,8 @@ int main() {
                         if (screen == Games) {
                             if (selected % 2) --selected;
                             updateSelectedGameText(ui, selected);
+                        } else if (screen == WifiPassword) {
+                            moveWifiKeyboard(ui, -1, 0);
                         } else if (screen == PinEntry) {
                             pinPosition = (pinPosition + 3) % 4;
                         }
@@ -1341,9 +1882,16 @@ int main() {
                         if (screen == Games) {
                             if (!(selected % 2)) ++selected;
                             updateSelectedGameText(ui, selected);
+                        } else if (screen == WifiPassword) {
+                            moveWifiKeyboard(ui, 1, 0);
                         } else if (screen == PinEntry) {
                             pinPosition = (pinPosition + 1) % 4;
                         }
+                    } else if (button == 13 && screen == WifiPassword) {
+                        ui.wifiKeyboardRow = 3;
+                        ui.wifiKeyboardCol = 5;
+                        if (activateWifiKeyboardKey(ui))
+                            screen = WifiSettings;
                     } else if (button == 13 &&
                                (screen == Games || screen == SelectedGame ||
                                 screen == GameInfo)) { // Start
@@ -1375,6 +1923,7 @@ int main() {
 
             if (running && !launch) {
                 updateBattery(ui);
+                pollWifiConnection(ui);
                 if (screen == Games) drawUI(ui, selected);
                 else if (screen == SelectedGame) drawSelectedGame(ui, selected, action);
                 else if (screen == GameInfo) drawGameInfo(ui);
@@ -1385,11 +1934,15 @@ int main() {
                     drawParentCenter(ui, parentSelected);
                 else if (screen == WifiSettings)
                     drawWifiSettings(ui);
+                else if (screen == WifiPassword)
+                    drawWifiPassword(ui);
                 else drawShutdownConfirm(ui);
                 SDL_Delay(16);
             }
         }
 
+        cancelWifiConnection(ui);
+        std::fill(ui.wifiPassword.begin(), ui.wifiPassword.end(), '\0');
         closeUI(ui);
         if (running && launch) {
             if (!launchGame(selected))

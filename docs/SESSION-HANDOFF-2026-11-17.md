@@ -181,7 +181,7 @@ Network diagnostics must remain read-only. Never modify wireless config, restart
 Android Chrome access:
 The user confirmed Chrome's app-level Nearby devices permission is the blocker for accessing the local handheld management server. Enabling it allowed access. The user considers this poor UX and has explicitly deferred a solution. Do not pursue a companion app or redesign now; retain the current LAN browser approach.
 
-The Wi-Fi indicator is now implemented and verified beside the battery indicator. Wi-Fi radio power control is also implemented in Parent Mode; network scanning/joining and credential entry remain future work.
+The Wi-Fi indicator and radio power control are implemented and verified. Parent Mode Wi-Fi Settings now also scans for networks, supports selecting open and secured networks, provides an on-screen QWERTY password keyboard, and connects through ConnMan. The complete scanning-to-connection flow was tested on the blue device. This milestone is complete and frozen unless real-world use exposes a problem.
 
 ## Game curation scope
 
@@ -271,7 +271,7 @@ Verified on the blue device (`RPPBLUE`, `192.168.0.89`):
 - The Wi-Fi indicator is displayed beside the battery indicator and shows disconnected state with a red slash.
 - The user tested Wi-Fi off/on locally on the handheld.
 - Remote Management was confirmed to continue working independently after Wi-Fi was turned off and restored.
-- No network scanning, joining, or credential-entry workflow was added.
+- Network scanning, selection, open and secured network connections, and on-screen password entry are now implemented and verified.
 
 Deployed ARM64 executable SHA-256:
 
@@ -287,3 +287,8 @@ The next development step should be selected based on practical value to the Chr
 - Preferred initial distribution approach: a reversible KiddOS installer for an existing RetroPixel SD card.
 - A complete firmware image is a later possibility only after auditing the exact RetroPixel fork, component licenses, notices, and redistribution permissions.
 - Do not distribute game ROMs, BIOS files, or third-party artwork without redistribution rights.
+
+
+### Wi-Fi configuration completion — November 18, 2026
+
+The full Parent Mode Wi-Fi workflow was deployed and tested on RPPBLUE. The on-screen QWERTY keyboard was confirmed to work and look good. Deployed ARM64 executable SHA-256: `cccc2ae0b9ed951b52db107805ec3ae080f5964e77e34e1dbff5a2c395257347`. Rollback backup: `/storage/roms/.kiddos-ui-test-20261116/kiddos-ui.pre-deploy-20261117-222355`. No further Wi-Fi polish is planned unless real-world use reveals a problem.
