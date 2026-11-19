@@ -25,10 +25,17 @@ Confirmed running on the FunnyPlaying Retro Pixel Pocket on November 16, 2026.
 
 ## Source organization
 
-The SDL frontend is split into a small UI/controller and focused service
-implementations:
+The SDL frontend is split into an application coordinator, screen renderers,
+UI/resource ownership, and focused device services:
 
-- `main.cpp` — SDL screens, input handling, and UI state.
+- `main.cpp` — process entry point only.
+- `Application.hpp/.cpp` — application state, event loop, navigation orchestration, and game launch/return lifecycle.
+- `Input.hpp` — semantic physical-button actions; desktop keyboard events remain a compatibility path.
+- `Navigation.hpp` — active screen and System Menu return destination.
+- `LibraryGrid.hpp` / `LibraryNavigator.hpp` — reusable grid selection and Games/Music/Movies section order without a generic media model.
+- `PinWorkflow.hpp` — Parent PIN entry/change state machine; `pin_store.h` remains the persistence implementation.
+- `UI.hpp/.cpp` — SDL resource lifecycle, shared UI state, and service/UI coordination.
+- `screens/` — screen-specific rendering and Wi-Fi on-screen keyboard behavior.
 - `models/Models.hpp` — shared `Game`, `WifiStatus`, and `WifiNetwork` types.
 - `models/Games.hpp` — the current four-game prototype catalog.
 - `services/GameLauncher.*` — launches a selected game through the firmware.
@@ -38,6 +45,10 @@ implementations:
 - `services/ParentManagementService.*` — delegates management-server controls
   to the existing device-side control mechanism.
 - `services/PowerService.*` — requests system shutdown.
+
+See [`../../docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) for the full
+responsibility map and remaining integration boundaries. Run
+`./run-architecture-tests.sh` for the SDL-independent architecture tests.
 
 Both `CMakeLists.txt` and `build-kiddos-ui.sh` include the extracted service
 implementations in the executable. The build still targets the existing ARM64

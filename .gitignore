@@ -22,3 +22,7 @@ compile_commands.json
 *.iso
 *.chd
 *.cue
+
+# Local safety backups and Python bytecode are not source files.
+__pycache__/
+*.pre-*
