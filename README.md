@@ -49,6 +49,12 @@ Core frontend verified November 16, 2026; battery monitoring verified November 1
 
 The firmware startup hook is in [`firmware/boot/`](firmware/boot/).
 
+The frontend now keeps the SDL screen/controller in `main.cpp` and separates
+device operations into small services under `device/working-ui/services/`.
+Shared game and Wi-Fi data structures live under `device/working-ui/models/`.
+This is an internal organization of the existing prototype, not a replacement
+for the firmware's emulator, networking, or power-management infrastructure.
+
 ## Media playback exploration
 
 The Pocket's existing MPV player has been confirmed to play video with sound. A 720×720 H.264/AAC test clip played smoothly and filled the square display after encoding the source to square pixels. Full-length movie playback and a simple music playback workflow still need to be validated.

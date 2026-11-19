@@ -18,42 +18,20 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include "pin_store.h"
+#include "models/Models.hpp"
+#include "models/Games.hpp"
+#include "services/GameLauncher.hpp"
+#include "services/BatteryService.hpp"
+#include "services/WifiService.hpp"
+#include "services/ParentManagementService.hpp"
+#include "services/PowerService.hpp"
 
 static const char* BASE = "/storage/roms/.kiddos-ui-test-20261116";
-static const char* CORE = "/storage/roms/.kiddos-ui-test-20261116/gambatte-link_libretro.so";
 static const char* FONT = "/storage/.config/emulationstation/themes/rp-pocket/art/fonts/Cabin-Bold.ttf";
-
-struct Game {
-    const char* name;
-    const char* rom;
-    const char* platform;
-    const char* image;
-};
-
-static const Game games[] = {
-    {"Mario Tennis", "Mario Tennis.gbc", "gbc", "Mario Tennis.png"},
-    {"Pokemon Red", "Pokemon Red Version.gb", "gb", "Pokemon Red Version.png"},
-    {"Super Mario Bros. Deluxe", "Super Mario Bros. Deluxe.gbc", "gbc", "Super Mario Bros. Deluxe.png"},
-    {"Tetris", "Tetris.gb", "gb", "Tetris.png"}
-};
 
 struct Text {
     SDL_Texture* texture = nullptr;
     int w = 0, h = 0;
-};
-
-enum class WifiStatus {
-    Unknown,
-    Disconnected,
-    Connected
-};
-
-struct WifiNetwork {
-    std::string path;
-    std::string name;
-    int strength = 0;
-    std::string security;
-    std::string state;
 };
 
 struct UI {
@@ -91,9 +69,8 @@ struct UI {
     int wifiKeyboardCol = 0;
     bool wifiKeyboardShift = false;
     bool wifiKeyboardSymbols = false;
-    pid_t wifiConnectPid = -1;
-    int wifiConnectOutput = -1;
-    std::string wifiConnectOutputText;
+    bool wifiNeedsPassword = false;
+    KiddosServices::WifiConnection wifiConnection;
     Uint32 batteryLastPoll = 0;
 };
 
@@ -134,193 +111,42 @@ static void drawWifiLine(SDL_Renderer* r, TTF_Font* font,
 }
 
 static void destroyText(Text& t);
-static bool readSysfs(const char* path, char* value, size_t size) {
-    FILE* file = std::fopen(path, "r");
-    if (!file) return false;
-    bool ok = std::fgets(value, static_cast<int>(size), file) != nullptr;
-    std::fclose(file);
-    if (ok) value[std::strcspn(value, "\r\n")] = 0;
-    return ok;
-}
-
 static void updateWifiStatus(UI& ui) {
-    int pipefd[2];
-    if (pipe(pipefd) != 0) {
-        ui.wifiStatus = WifiStatus::Unknown;
-        ui.wifiPowerKnown = false;
-        return;
-    }
+    const KiddosServices::WifiReading reading =
+        KiddosServices::readWifiStatus();
 
-    pid_t pid = fork();
-    if (pid < 0) {
-        close(pipefd[0]);
-        close(pipefd[1]);
-        ui.wifiStatus = WifiStatus::Unknown;
-        ui.wifiPowerKnown = false;
-        return;
-    }
-
-    if (pid == 0) {
-        close(pipefd[0]);
-        if (dup2(pipefd[1], STDOUT_FILENO) < 0) _exit(127);
-        close(pipefd[1]);
-        execl("/usr/bin/connmanctl", "connmanctl", "technologies",
-              static_cast<char*>(nullptr));
-        _exit(127);
-    }
-
-    close(pipefd[1]);
-    char output[4096];
-    size_t used = 0;
-    while (used + 1 < sizeof(output)) {
-        ssize_t n = read(pipefd[0], output + used,
-                         sizeof(output) - used - 1);
-        if (n <= 0) break;
-        used += static_cast<size_t>(n);
-    }
-    close(pipefd[0]);
-    output[used] = '\0';
-
-    int status = 0;
-    if (waitpid(pid, &status, 0) < 0 ||
-        !WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        ui.wifiStatus = WifiStatus::Unknown;
-        ui.wifiPowerKnown = false;
-        return;
-    }
-
-    const char* wifi = std::strstr(
-        output, "/net/connman/technology/wifi");
-    if (!wifi) {
-        ui.wifiStatus = WifiStatus::Unknown;
-        ui.wifiPowerKnown = false;
-        return;
-    }
-
-    const char* nextTechnology = std::strstr(wifi + 1, "\n/");
-    const char* sectionEnd = nextTechnology ? nextTechnology : output + used;
-
-    const char* poweredOn = std::strstr(wifi, "Powered = True");
-    const char* poweredOff = std::strstr(wifi, "Powered = False");
-    const char* connected = std::strstr(wifi, "Connected = True");
-    const char* disconnected = std::strstr(wifi, "Connected = False");
-
-    ui.wifiPowerKnown = false;
-    if (poweredOn && poweredOn < sectionEnd) {
-        ui.wifiPowered = true;
-        ui.wifiPowerKnown = true;
-    } else if (poweredOff && poweredOff < sectionEnd) {
-        ui.wifiPowered = false;
-        ui.wifiPowerKnown = true;
-    }
-
-    if (connected && connected < sectionEnd) {
-        ui.wifiStatus = WifiStatus::Connected;
-    } else if (disconnected && disconnected < sectionEnd) {
-        ui.wifiStatus = WifiStatus::Disconnected;
-    } else {
-        ui.wifiStatus = WifiStatus::Unknown;
-    }
-}
-
-static bool setWifiPower(bool enabled) {
-    pid_t pid = fork();
-    if (pid < 0) return false;
-
-    if (pid == 0) {
-        execl("/usr/bin/connmanctl", "connmanctl",
-              enabled ? "enable" : "disable", "wifi",
-              static_cast<char*>(nullptr));
-        _exit(127);
-    }
-
-    int status = 0;
-    return waitpid(pid, &status, 0) >= 0 &&
-           WIFEXITED(status) && WEXITSTATUS(status) == 0;
+    ui.wifiStatus = reading.status;
+    ui.wifiPowerKnown = reading.powerKnown;
+    if (reading.powerKnown)
+        ui.wifiPowered = reading.powered;
 }
 
 static bool loadWifiNetworks(UI& ui, bool scan) {
-    int pipefd[2];
-    if (pipe(pipefd) != 0) {
-        ui.wifiListMessage = "COULD NOT START WI-FI HELPER";
+    char helperPath[512];
+    std::snprintf(helperPath, sizeof(helperPath),
+                  "%s/wifi_helper.py", BASE);
+
+    const KiddosServices::WifiScanResult result =
+        KiddosServices::loadWifiNetworks(helperPath, scan);
+
+    if (!result.success()) {
+        switch (result.error) {
+            case KiddosServices::WifiScanError::StartFailed:
+                ui.wifiListMessage = "COULD NOT START WI-FI HELPER";
+                break;
+            case KiddosServices::WifiScanError::HelperFailed:
+                ui.wifiListMessage = "WI-FI HELPER FAILED";
+                break;
+            case KiddosServices::WifiScanError::ScanFailed:
+                ui.wifiListMessage = "WI-FI SCAN FAILED";
+                break;
+            case KiddosServices::WifiScanError::None:
+                break;
+        }
         return false;
     }
 
-    pid_t pid = fork();
-    if (pid < 0) {
-        close(pipefd[0]);
-        close(pipefd[1]);
-        ui.wifiListMessage = "COULD NOT START WI-FI HELPER";
-        return false;
-    }
-
-    if (pid == 0) {
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[0]);
-        close(pipefd[1]);
-
-        const char* command = scan ? "ui-scan" : "ui-list";
-        char helperPath[512];
-        std::snprintf(helperPath, sizeof(helperPath),
-                      "%s/wifi_helper.py", BASE);
-        execl("/usr/bin/python3", "python3",
-              helperPath, command,
-              static_cast<char*>(nullptr));
-        _exit(127);
-    }
-
-    close(pipefd[1]);
-
-    std::string output;
-    char buffer[512];
-    ssize_t count;
-    while ((count = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
-        output.append(buffer, static_cast<size_t>(count));
-    }
-    close(pipefd[0]);
-
-    int status = 0;
-    while (waitpid(pid, &status, 0) < 0) {
-        if (errno != EINTR) {
-            ui.wifiListMessage = "WI-FI HELPER FAILED";
-            return false;
-        }
-    }
-
-    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        ui.wifiListMessage = "WI-FI SCAN FAILED";
-        return false;
-    }
-
-    std::vector<WifiNetwork> networks;
-    std::istringstream lines(output);
-    std::string line;
-
-    while (std::getline(lines, line)) {
-        if (line.empty()) continue;
-
-        std::istringstream fields(line);
-        WifiNetwork network;
-        std::string strength;
-
-        if (!std::getline(fields, network.path, '\t') ||
-            !std::getline(fields, network.name, '\t') ||
-            !std::getline(fields, strength, '\t') ||
-            !std::getline(fields, network.security, '\t') ||
-            !std::getline(fields, network.state)) {
-            continue;
-        }
-
-        try {
-            network.strength = std::stoi(strength);
-        } catch (...) {
-            network.strength = 0;
-        }
-
-        networks.push_back(std::move(network));
-    }
-
-    ui.wifiNetworks = std::move(networks);
+    ui.wifiNetworks = result.networks;
     ui.wifiSelectedRow = 0;
     ui.wifiScrollOffset = 0;
     ui.wifiListMessage = ui.wifiNetworks.empty()
@@ -330,7 +156,6 @@ static bool loadWifiNetworks(UI& ui, bool scan) {
     return true;
 }
 
-
 static const std::string WIFI_PASSWORD_CHARS =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "0123456789 "
@@ -338,118 +163,71 @@ static const std::string WIFI_PASSWORD_CHARS =
 
 static void startWifiConnection(UI& ui, const WifiNetwork& network,
                                 const std::string& password) {
-    if (ui.wifiConnectPid > 0) return;
+    ui.wifiNeedsPassword = false;
 
-    int inputPipe[2] = {-1, -1};
-    int outputPipe[2] = {-1, -1};
-    if (pipe(inputPipe) != 0) {
-        ui.wifiListMessage = "COULD NOT START CONNECTION";
-        return;
-    }
-    if (pipe(outputPipe) != 0) {
-        close(inputPipe[0]); close(inputPipe[1]);
-        ui.wifiListMessage = "COULD NOT START CONNECTION";
-        return;
-    }
+    char helperPath[512];
+    std::snprintf(helperPath, sizeof(helperPath),
+                  "%s/wifi_helper.py", BASE);
 
-    pid_t pid = fork();
-    if (pid < 0) {
-        close(inputPipe[0]); close(inputPipe[1]);
-        close(outputPipe[0]); close(outputPipe[1]);
+    if (!KiddosServices::startWifiConnection(
+            ui.wifiConnection, helperPath, network, password)) {
         ui.wifiListMessage = "COULD NOT START CONNECTION";
         return;
     }
 
-    if (pid == 0) {
-        dup2(inputPipe[0], STDIN_FILENO);
-        dup2(outputPipe[1], STDOUT_FILENO);
-        dup2(outputPipe[1], STDERR_FILENO);
-        close(inputPipe[0]); close(inputPipe[1]);
-        close(outputPipe[0]); close(outputPipe[1]);
-
-        char helperPath[512];
-        std::snprintf(helperPath, sizeof(helperPath),
-                      "%s/wifi_helper.py", BASE);
-        execl("/usr/bin/python3", "python3", helperPath,
-              "connect", network.path.c_str(),
-              static_cast<char*>(nullptr));
-        _exit(127);
-    }
-
-    close(inputPipe[0]);
-    close(outputPipe[1]);
-
-    std::string secret = password + "\n";
-    size_t sent = 0;
-    while (sent < secret.size()) {
-        ssize_t n = write(inputPipe[1], secret.data() + sent,
-                          secret.size() - sent);
-        if (n < 0) {
-            if (errno == EINTR) continue;
-            break;
-        }
-        sent += static_cast<size_t>(n);
-    }
-    close(inputPipe[1]);
-    std::fill(secret.begin(), secret.end(), '\0');
-
-    int flags = fcntl(outputPipe[0], F_GETFL, 0);
-    if (flags >= 0) fcntl(outputPipe[0], F_SETFL, flags | O_NONBLOCK);
-
-    ui.wifiConnectPid = pid;
-    ui.wifiConnectOutput = outputPipe[0];
-    ui.wifiConnectOutputText.clear();
     ui.wifiListMessage = "CONNECTING...";
 }
 
+static void refreshWifiMenuText(UI& ui);
+
 static void pollWifiConnection(UI& ui) {
-    if (ui.wifiConnectPid <= 0) return;
+    const KiddosServices::WifiConnectionResult result =
+        KiddosServices::pollWifiConnection(ui.wifiConnection);
 
-    char buffer[256];
-    for (;;) {
-        ssize_t n = read(ui.wifiConnectOutput, buffer, sizeof(buffer));
-        if (n > 0) {
-            ui.wifiConnectOutputText.append(buffer, static_cast<size_t>(n));
-            if (ui.wifiConnectOutputText.size() > 1024)
-                ui.wifiConnectOutputText.erase(
-                    0, ui.wifiConnectOutputText.size() - 1024);
-        } else {
-            if (n < 0 && errno == EINTR) continue;
-            break;
-        }
+    if (result == KiddosServices::WifiConnectionResult::Running ||
+        result == KiddosServices::WifiConnectionResult::Idle)
+        return;
+
+    if (result == KiddosServices::WifiConnectionResult::NeedsPassword) {
+        ui.wifiNeedsPassword = true;
+        ui.wifiListMessage = "PASSWORD REQUIRED";
+        return;
     }
 
-    int status = 0;
-    pid_t result = waitpid(ui.wifiConnectPid, &status, WNOHANG);
-    if (result == 0) return;
+    const int selectedRow = ui.wifiSelectedRow;
+    const int scrollOffset = ui.wifiScrollOffset;
 
-    close(ui.wifiConnectOutput);
-    ui.wifiConnectOutput = -1;
-    ui.wifiConnectPid = -1;
+    updateWifiStatus(ui);
+    refreshWifiMenuText(ui);
 
-    if (result > 0 && WIFEXITED(status) && WEXITSTATUS(status) == 0 &&
-        ui.wifiConnectOutputText.find("CONNECTED") != std::string::npos) {
+    char helperPath[512];
+    std::snprintf(helperPath, sizeof(helperPath),
+                  "%s/wifi_helper.py", BASE);
+
+    if (loadWifiNetworks(ui, false)) {
+        const int itemCount = 2 + static_cast<int>(ui.wifiNetworks.size());
+        constexpr int visibleRows = 8;
+
+        ui.wifiSelectedRow = std::min(
+            selectedRow, std::max(0, itemCount - 1));
+        ui.wifiScrollOffset = std::min(
+            scrollOffset, std::max(0, itemCount - visibleRows));
+
+        if (ui.wifiSelectedRow < ui.wifiScrollOffset)
+            ui.wifiScrollOffset = ui.wifiSelectedRow;
+        if (ui.wifiSelectedRow >= ui.wifiScrollOffset + visibleRows)
+            ui.wifiScrollOffset =
+                ui.wifiSelectedRow - visibleRows + 1;
+    }
+
+    if (result == KiddosServices::WifiConnectionResult::Connected)
         ui.wifiListMessage = "CONNECTED";
-        updateWifiStatus(ui);
-    } else {
+    else
         ui.wifiListMessage = "CONNECTION FAILED - CHECK PASSWORD";
-    }
-    ui.wifiConnectOutputText.clear();
 }
 
 static void cancelWifiConnection(UI& ui) {
-    if (ui.wifiConnectPid > 0) {
-        kill(ui.wifiConnectPid, SIGTERM);
-        int status = 0;
-        while (waitpid(ui.wifiConnectPid, &status, 0) < 0 &&
-               errno == EINTR) {}
-        ui.wifiConnectPid = -1;
-    }
-    if (ui.wifiConnectOutput >= 0) {
-        close(ui.wifiConnectOutput);
-        ui.wifiConnectOutput = -1;
-    }
-    ui.wifiConnectOutputText.clear();
+    KiddosServices::cancelWifiConnection(ui.wifiConnection);
 }
 
 static void moveWifiSelection(UI& ui, int direction) {
@@ -498,6 +276,11 @@ static void refreshWifiMenuText(UI& ui) {
         ui.wifiCommandError ? red : white);
 }
 
+static void refreshWifiSettings(UI& ui) {
+    updateWifiStatus(ui);
+    refreshWifiMenuText(ui);
+}
+
 static void toggleWifiPower(UI& ui) {
     if (!ui.wifiPowerKnown) {
         ui.wifiCommandError = true;
@@ -506,7 +289,7 @@ static void toggleWifiPower(UI& ui) {
     }
 
     const bool requestedPower = !ui.wifiPowered;
-    ui.wifiCommandError = !setWifiPower(requestedPower);
+    ui.wifiCommandError = !KiddosServices::setWifiPower(requestedPower);
 
     // ConnMan updates its reported technology state asynchronously.
     for (int attempt = 0; attempt < 10; ++attempt) {
@@ -530,28 +313,11 @@ static void updateBattery(UI& ui) {
     ui.batteryLastPoll = now;
     updateWifiStatus(ui);
 
-    const char* base =
-        "/sys/devices/platform/ff180000.i2c/i2c-0/0-0020/";
-    char path[256];
-    char value[64];
-
-    std::snprintf(path, sizeof(path),
-        "%srk817-battery/power_supply/battery/capacity", base);
-    if (readSysfs(path, value, sizeof(value))) {
-        int percent = std::atoi(value);
-        if (percent >= 0 && percent <= 100)
-            ui.batteryPercent = percent;
-    }
-
-    ui.externalPower = false;
-    const char* sources[] = {"ac", "usb"};
-    for (const char* source : sources) {
-        std::snprintf(path, sizeof(path),
-            "%srk817-charger/power_supply/%s/online", base, source);
-        if (readSysfs(path, value, sizeof(value)) &&
-            std::atoi(value) > 0)
-            ui.externalPower = true;
-    }
+    const KiddosServices::BatteryReading reading =
+        KiddosServices::readBattery();
+    if (reading.capacityValid)
+        ui.batteryPercent = reading.percent;
+    ui.externalPower = reading.externalPower;
 
     destroyText(ui.batteryLabel);
     if (ui.batteryPercent >= 0) {
@@ -644,52 +410,6 @@ static void destroyText(Text& t) {
     t.texture = nullptr;
 }
 
-static bool managementControl(
-    const char* action, char* output, size_t outputSize) {
-    if (!output || outputSize == 0) return false;
-    output[0] = '\0';
-
-    int pipefd[2];
-    if (pipe(pipefd) != 0) {
-        std::perror("KiddOS: management pipe");
-        return false;
-    }
-
-    pid_t pid = fork();
-    if (pid == 0) {
-        close(pipefd[0]);
-        if (dup2(pipefd[1], STDOUT_FILENO) < 0) _exit(127);
-        close(pipefd[1]);
-        execl("/storage/.kiddos-management/control.sh",
-              "control.sh", action, (char*)nullptr);
-        _exit(127);
-    }
-
-    close(pipefd[1]);
-    if (pid < 0) {
-        close(pipefd[0]);
-        std::perror("KiddOS: management fork");
-        return false;
-    }
-
-    size_t used = 0;
-    while (used + 1 < outputSize) {
-        ssize_t n = read(pipefd[0], output + used, outputSize - used - 1);
-        if (n <= 0) break;
-        used += static_cast<size_t>(n);
-    }
-    close(pipefd[0]);
-    output[used] = '\0';
-
-    int status = 0;
-    if (waitpid(pid, &status, 0) < 0) {
-        std::perror("KiddOS: management wait");
-        return false;
-    }
-
-    return WIFEXITED(status) && WEXITSTATUS(status) == 0;
-}
-
 static void setParentMessage(UI& ui, const char* message, SDL_Color color) {
     destroyText(ui.parentBody);
     ui.parentBody = makeText(ui.renderer, ui.labelFont, message, color);
@@ -697,7 +417,7 @@ static void setParentMessage(UI& ui, const char* message, SDL_Color color) {
 
 static bool refreshParentStatus(UI& ui) {
     char result[32];
-    if (!managementControl("status", result, sizeof(result))) {
+    if (!KiddosServices::managementControl("status", result, sizeof(result))) {
         setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
                          {255, 115, 115, 255});
         return false;
@@ -723,7 +443,7 @@ static bool refreshParentStatus(UI& ui) {
 
 static void toggleParentManagement(UI& ui) {
     char result[32];
-    if (!managementControl("status", result, sizeof(result))) {
+    if (!KiddosServices::managementControl("status", result, sizeof(result))) {
         setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
                          {255, 115, 115, 255});
         return;
@@ -738,7 +458,7 @@ static void toggleParentManagement(UI& ui) {
         return;
     }
 
-    if (!managementControl(wasRunning ? "stop" : "start",
+    if (!KiddosServices::managementControl(wasRunning ? "stop" : "start",
                            result, sizeof(result))) {
         setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
                          {255, 115, 115, 255});
@@ -753,7 +473,7 @@ static void toggleParentManagement(UI& ui) {
     for (int attempt = 0; attempt < 20; ++attempt) {
         SDL_Delay(100);
         char statusResult[32];
-        if (managementControl("status", statusResult, sizeof(statusResult))) {
+        if (KiddosServices::managementControl("status", statusResult, sizeof(statusResult))) {
             statusResult[std::strcspn(statusResult, "\r\n")] = '\0';
             if (std::strcmp(statusResult, "running") == 0) {
                 refreshParentStatus(ui);
@@ -1233,76 +953,6 @@ static void drawWifiSettings(UI& ui) {
     SDL_RenderPresent(r);
 }
 
-static bool requestShutdown() {
-    pid_t pid = fork();
-    if (pid == 0) {
-        execl("/bin/systemctl", "systemctl", "poweroff", (char*)nullptr);
-        _exit(127);
-    }
-    if (pid < 0) {
-        std::perror("Retro KiddOS: shutdown fork failed");
-        return false;
-    }
-
-    int status = 0;
-    if (waitpid(pid, &status, 0) < 0) {
-        std::perror("Retro KiddOS: shutdown wait failed");
-        return false;
-    }
-    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        std::fprintf(stderr, "Retro KiddOS: systemctl poweroff failed (status %d)\n", status);
-        return false;
-    }
-    return true;
-}
-
-static bool launchGame(int index) {
-    char rom[512];
-    std::snprintf(rom, sizeof(rom), "%s/%s", BASE, games[index].rom);
-
-    std::printf("KiddOS: launching %s\n", games[index].name);
-    std::fflush(stdout);
-
-    pid_t pid = fork();
-    if (pid == 0) {
-        execlp("cp", "cp", CORE, "/tmp/cores/gambatte_libretro.so", (char*)nullptr);
-        _exit(127);
-    }
-    if (pid < 0) {
-        std::perror("KiddOS: fork for core copy");
-        return false;
-    }
-    int status = 0;
-    if (waitpid(pid, &status, 0) < 0 || !WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        std::fprintf(stderr, "KiddOS: patched core staging failed\n");
-        return false;
-    }
-
-    pid = fork();
-    if (pid == 0) {
-        execl("/usr/bin/runemu.py", "runemu.py",
-              "--rom", rom,
-              "--platform", games[index].platform,
-              "--emulator", "retroarch",
-              "--core", "gambatte",
-              (char*)nullptr);
-        _exit(127);
-    }
-    if (pid < 0) {
-        std::perror("KiddOS: fork for game");
-        return false;
-    }
-    if (waitpid(pid, &status, 0) < 0) {
-        std::perror("KiddOS: wait for game");
-        return false;
-    }
-    std::printf("KiddOS: game exited (status %d); returning to menu\n", status);
-    std::fflush(stdout);
-    return true;
-}
-
-
-
 static std::vector<std::vector<std::string>> wifiKeyboardRows(const UI& ui) {
     std::vector<std::vector<std::string>> rows;
     if (ui.wifiKeyboardSymbols) {
@@ -1590,7 +1240,10 @@ int main() {
                         if (screen == WifiPassword) {
                             if (ui.wifiPasswordCursor > 0) {
                                 ui.wifiPassword.erase(ui.wifiPassword.begin() + --ui.wifiPasswordCursor);
-                            } else screen = WifiSettings;
+                            } else {
+                                screen = WifiSettings;
+                                refreshWifiSettings(ui);
+                            }
                         } else if (screen == WifiSettings)
                             screen = ParentCenter;
                         else if (screen == PinEntry && pinTask != PinTask::Unlock)
@@ -1635,8 +1288,10 @@ int main() {
                         else if (key == SDLK_LEFT) moveWifiKeyboard(ui, -1, 0);
                         else if (key == SDLK_RIGHT) moveWifiKeyboard(ui, 1, 0);
                         else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                            if (activateWifiKeyboardKey(ui))
+                            if (activateWifiKeyboardKey(ui)) {
                                 screen = WifiSettings;
+                                refreshWifiSettings(ui);
+                            }
                         } else if (key == SDLK_BACKSPACE ||
                                    key == SDLK_DELETE) {
                             if (!ui.wifiPassword.empty())
@@ -1645,6 +1300,7 @@ int main() {
                                 static_cast<int>(ui.wifiPassword.size());
                         } else if (key == SDLK_ESCAPE) {
                             screen = WifiSettings;
+                            refreshWifiSettings(ui);
                         }
                         continue;
                     }
@@ -1662,19 +1318,7 @@ int main() {
                             } else {
                                 const auto& network =
                                     ui.wifiNetworks[ui.wifiSelectedRow - 2];
-                                if (network.security == "open" ||
-                                    network.security == "OPEN") {
-                                    startWifiConnection(ui, network, "");
-                                } else {
-                                    ui.wifiPassword.clear();
-                                    ui.wifiPasswordCursor = 0;
-                                    ui.wifiPasswordChar = 0;
-                                    ui.wifiKeyboardRow = 0;
-                                    ui.wifiKeyboardCol = 0;
-                                    ui.wifiKeyboardShift = false;
-                                    ui.wifiKeyboardSymbols = false;
-                                    screen = WifiPassword;
-                                }
+                                startWifiConnection(ui, network, "");
                             }
                         }
                         continue;
@@ -1743,7 +1387,7 @@ int main() {
                             }
                         }
                     } else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                        if (requestShutdown()) running = false;
+                        if (KiddosServices::requestShutdown()) running = false;
                     }
                 }
 
@@ -1754,8 +1398,10 @@ int main() {
                         if (screen == WifiPassword) {
                             if (!ui.wifiPassword.empty())
                                 ui.wifiPassword.pop_back();
-                            else
+                            else {
                                 screen = WifiSettings;
+                                refreshWifiSettings(ui);
+                            }
                             ui.wifiPasswordCursor =
                                 static_cast<int>(ui.wifiPassword.size());
                         } else if (screen == WifiSettings)
@@ -1773,8 +1419,10 @@ int main() {
                             screen = Games;
                     } else if (button == 1) { // A / Select
                         if (screen == WifiPassword) {
-                            if (activateWifiKeyboardKey(ui))
+                            if (activateWifiKeyboardKey(ui)) {
                                 screen = WifiSettings;
+                                refreshWifiSettings(ui);
+                            }
                         } else if (screen == Games) {
                             screen = SelectedGame;
                             action = 0;
@@ -1815,22 +1463,10 @@ int main() {
                             } else {
                                 const auto& network =
                                     ui.wifiNetworks[ui.wifiSelectedRow - 2];
-                                if (network.security == "open" ||
-                                    network.security == "OPEN") {
-                                    startWifiConnection(ui, network, "");
-                                } else {
-                                    ui.wifiPassword.clear();
-                                    ui.wifiPasswordCursor = 0;
-                                    ui.wifiPasswordChar = 0;
-                                    ui.wifiKeyboardRow = 0;
-                                    ui.wifiKeyboardCol = 0;
-                                    ui.wifiKeyboardShift = false;
-                                    ui.wifiKeyboardSymbols = false;
-                                    screen = WifiPassword;
-                                }
+                                startWifiConnection(ui, network, "");
                             }
                         } else if (screen == ConfirmShutdown &&
-                                   requestShutdown()) {
+                                   KiddosServices::requestShutdown()) {
                             running = false;
                         }
                     } else if (button == 8) { // Up
@@ -1890,8 +1526,10 @@ int main() {
                     } else if (button == 13 && screen == WifiPassword) {
                         ui.wifiKeyboardRow = 3;
                         ui.wifiKeyboardCol = 5;
-                        if (activateWifiKeyboardKey(ui))
+                        if (activateWifiKeyboardKey(ui)) {
                             screen = WifiSettings;
+                            refreshWifiSettings(ui);
+                        }
                     } else if (button == 13 &&
                                (screen == Games || screen == SelectedGame ||
                                 screen == GameInfo)) { // Start
@@ -1924,6 +1562,19 @@ int main() {
             if (running && !launch) {
                 updateBattery(ui);
                 pollWifiConnection(ui);
+                if (ui.wifiNeedsPassword) {
+                    ui.wifiNeedsPassword = false;
+                    if (screen == WifiSettings) {
+                        ui.wifiPassword.clear();
+                        ui.wifiPasswordCursor = 0;
+                        ui.wifiPasswordChar = 0;
+                        ui.wifiKeyboardRow = 0;
+                        ui.wifiKeyboardCol = 0;
+                        ui.wifiKeyboardShift = false;
+                        ui.wifiKeyboardSymbols = false;
+                        screen = WifiPassword;
+                    }
+                }
                 if (screen == Games) drawUI(ui, selected);
                 else if (screen == SelectedGame) drawSelectedGame(ui, selected, action);
                 else if (screen == GameInfo) drawGameInfo(ui);
@@ -1945,7 +1596,7 @@ int main() {
         std::fill(ui.wifiPassword.begin(), ui.wifiPassword.end(), '\0');
         closeUI(ui);
         if (running && launch) {
-            if (!launchGame(selected))
+            if (!KiddosServices::launchGame(games[selected]))
                 SDL_Delay(1500);
             screen = Games;
         }

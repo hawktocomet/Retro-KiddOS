@@ -76,8 +76,33 @@ def print_ui_services(services):
 AGENT_PATH = "/org/retro_kiddos/ConnManAgent"
 
 
+def is_authentication_error(error):
+    name = ""
+    get_name = getattr(error, "get_dbus_name", None)
+    if callable(get_name):
+        try:
+            name = str(get_name())
+        except Exception:
+            pass
+
+    message = (name + " " + str(error)).lower()
+    normalized = "".join(char for char in message if char.isalnum())
+
+    markers = (
+        "invalidkey",
+        "invalidpassword",
+        "invalidpassphrase",
+        "authenticationfailed",
+        "authenticationfailure",
+        "badpassword",
+        "wrongpassword",
+    )
+    return any(marker in normalized for marker in markers)
+
+
 def connect_service(service_path, password):
     import ctypes
+    import time
     import dbus.service
     import dbus.mainloop.glib
 
@@ -95,7 +120,13 @@ def connect_service(service_path, password):
     glib.g_main_loop_quit.argtypes = [ctypes.c_void_p]
     loop = glib.g_main_loop_new(None, False)
 
-    result = {"done": False, "error": None}
+    result = {
+        "done": False,
+        "error": None,
+        "error_name": "",
+        "needs_password": False,
+        "already_connected": False,
+    }
 
     class Agent(dbus.service.Object):
         @dbus.service.method(
@@ -109,6 +140,9 @@ def connect_service(service_path, password):
 
             response = {}
             if "Passphrase" in fields:
+                if not password:
+                    result["needs_password"] = True
+                    raise dbus.DBusException("Password required")
                 response["Passphrase"] = dbus.String(password)
             if "Identity" in fields or "Username" in fields:
                 raise dbus.DBusException(
@@ -121,6 +155,8 @@ def connect_service(service_path, password):
         )
         def ReportError(self, requested_path, error):
             result["error"] = "Network authentication failed: " + str(error)
+            if is_authentication_error(error):
+                result["needs_password"] = True
             result["done"] = True
             glib.g_main_loop_quit(loop)
 
@@ -154,7 +190,24 @@ def connect_service(service_path, password):
         glib.g_main_loop_quit(loop)
 
     def failed(error):
-        result["error"] = str(error)
+        error_name = ""
+        get_name = getattr(error, "get_dbus_name", None)
+        if callable(get_name):
+            try:
+                error_name = str(get_name() or "")
+            except Exception:
+                pass
+
+        result["error_name"] = error_name
+        if error_name:
+            result["error"] = "D-Bus error " + error_name + ": " + str(error)
+        else:
+            result["error"] = str(error)
+
+        if error_name == "net.connman.Error.AlreadyConnected":
+            result["already_connected"] = True
+        if is_authentication_error(error):
+            result["needs_password"] = True
         result["done"] = True
         glib.g_main_loop_quit(loop)
 
@@ -166,12 +219,52 @@ def connect_service(service_path, password):
             bus.get_object("net.connman", service_path),
             "net.connman.Service",
         )
+
+        # Respect ConnMan's existing connection attempt.
+        state = str(service.GetProperties().get("State", ""))
+        if state in ("ready", "online"):
+            return True
+
+        if state in ("association", "configuration", "disconnect"):
+            deadline = time.monotonic() + 30.0
+            while time.monotonic() < deadline:
+                time.sleep(0.5)
+                state = str(service.GetProperties().get("State", ""))
+                if state in ("ready", "online"):
+                    return True
+                if state not in ("association", "configuration", "disconnect"):
+                    break
+            else:
+                raise RuntimeError(
+                    "Existing Wi-Fi connection attempt timed out"
+                )
+
         service.Connect(
             reply_handler=connected,
             error_handler=failed,
         )
         glib.g_main_loop_run(loop)
 
+        if result["already_connected"]:
+            state = str(service.GetProperties().get("State", ""))
+            if state in ("ready", "online"):
+                return True
+
+        # ConnMan may complete a Wi-Fi handoff after its D-Bus
+        # Connect() request times out. Verify the requested service.
+        if result["error_name"] == "org.freedesktop.DBus.Error.NoReply":
+            deadline = time.monotonic() + 15.0
+            while time.monotonic() < deadline:
+                try:
+                    state = str(service.GetProperties().get("State", ""))
+                    if state in ("ready", "online"):
+                        return True
+                except Exception:
+                    pass
+                time.sleep(0.5)
+
+        if result["needs_password"]:
+            raise PasswordRequired("Password required")
         if result["error"]:
             raise RuntimeError(result["error"])
 
@@ -184,6 +277,10 @@ def connect_service(service_path, password):
                 pass
         agent.remove_from_connection()
 
+class PasswordRequired(Exception):
+    pass
+
+
 def main():
     if len(sys.argv) == 3 and sys.argv[1] == "connect":
         try:
@@ -194,6 +291,9 @@ def main():
             connect_service(service_path, password)
             print("CONNECTED", flush=True)
             return 0
+        except PasswordRequired:
+            print("NEEDS_PASSWORD", flush=True)
+            return 3
         except Exception as exc:
             print("CONNECTION FAILED: " + str(exc), file=sys.stderr, flush=True)
             return 1

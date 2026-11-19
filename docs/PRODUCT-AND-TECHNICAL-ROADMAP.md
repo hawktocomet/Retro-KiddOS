@@ -139,7 +139,10 @@ The PIN is a practical child-proofing measure, not a security boundary against s
 - Secured-network password entry uses an on-screen QWERTY keyboard with letter-case and symbol layouts, space, backspace, clear, and connect actions.
 - Connection progress and results are reported in the UI.
 - The complete flow—scanning, selection, password entry, and connection—was tested on the blue Retro Pixel Pocket.
-- Deployed and verified November 18, 2026. Further edge-case work is deferred unless real-world use exposes a problem.
+- A saved-network switching test exposed a ConnMan D-Bus `NoReply` timing case: the connection could complete at the wireless layer even though the request callback timed out.
+- The helper now polls the requested service after `NoReply` and reports success only when ConnMan reaches `ready` or `online`; it does not reinterpret `NoReply` as an authentication failure.
+- Switching between the two saved home networks was re-tested successfully on the blue device on November 19, 2026.
+- Deployed and verified November 18–19, 2026. The workflow is frozen unless real-world use exposes another problem.
 
 Parent Mode should remain small. Media-library administration and broader configuration belong in the browser management interface.
 
@@ -257,10 +260,12 @@ The management server should remain independent of the SDL process. Each handhel
 - Change PIN flow is deployed and working.
 - Wi-Fi power controls and the Wi-Fi indicator are deployed and working on the blue device.
 - Remote Management was re-tested after Wi-Fi was switched off and restored; the controls remain independent.
+- Saved-network switching was re-tested successfully after correcting delayed ConnMan `NoReply` handling.
+- The SDL frontend source has been reorganized into focused battery, game-launch, Wi-Fi, parent-management, and power services, with shared models separated from the UI controller.
 
 ### Not yet implemented or fully validated
 
-- Additional Wi-Fi edge cases and reconnection behavior, deferred unless real-world use exposes a problem.
+- Further Wi-Fi edge cases and automatic reconnection behavior, deferred unless real-world use exposes a problem.
 - Browser-based media upload/library and slot assignment.
 - Browser-based theme customization.
 - Automatic network priority/fallback behavior.

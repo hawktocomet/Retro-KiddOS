@@ -4,7 +4,8 @@
 
 build_kiddos() {
     local SCRIPT_DIR PROJECT_ROOT WORKSPACE
-    local SRC BUILD SDL CONFIG SYS OUT
+    local BUILD SDL CONFIG SYS OUT
+    local -a SOURCES
     local STAMP TMP NEXT BACKUP
     local path lib
 
@@ -18,7 +19,14 @@ build_kiddos() {
     }
     WORKSPACE="${KIDDOS_BUILD_WORKSPACE:-$PROJECT_ROOT/../Build-Workspace}"
 
-    SRC="$SCRIPT_DIR/main.cpp"
+    SOURCES=(
+        "$SCRIPT_DIR/main.cpp"
+        "$SCRIPT_DIR/services/GameLauncher.cpp"
+        "$SCRIPT_DIR/services/BatteryService.cpp"
+        "$SCRIPT_DIR/services/WifiService.cpp"
+        "$SCRIPT_DIR/services/ParentManagementService.cpp"
+        "$SCRIPT_DIR/services/PowerService.cpp"
+    )
     BUILD="$WORKSPACE/build/arm64"
     SDL="$WORKSPACE/build/deps/SDL2-2.30.3"
     CONFIG="$BUILD/sdl2-config/include-config-release/SDL2"
@@ -31,7 +39,7 @@ build_kiddos() {
     BACKUP="$BUILD/kiddos-ui.pre-build-$STAMP"
 
     echo "===== CHECKING BUILD INPUTS ====="
-    for path in "$SRC" "$SDL/include" "$CONFIG/SDL_config.h" \
+    for path in "${SOURCES[@]}" "$SDL/include" "$CONFIG/SDL_config.h" \
         "$SYS/libSDL2-2.0.so.0.3000.3" \
         "$SYS/libSDL2_image-2.0.so.0.800.2" \
         "$SYS/libSDL2_ttf-2.0.so.0.2200.0"; do
@@ -55,7 +63,7 @@ build_kiddos() {
         return 1
     fi
 
-    echo "Source: $SRC"
+    echo "Sources: ${SOURCES[*]}"
     echo "Workspace: $WORKSPACE"
     aarch64-linux-gnu-g++ --version
 
@@ -66,7 +74,7 @@ build_kiddos() {
         -I"$SDL/include" \
         -I"$CONFIG" \
         -I/usr/include/SDL2 \
-        "$SRC" \
+        "${SOURCES[@]}" \
         -L"$SYS" \
         -Wl,-rpath-link,"$SYS" \
         -Wl,--allow-shlib-undefined \

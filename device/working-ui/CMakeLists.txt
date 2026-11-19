@@ -9,7 +9,16 @@ pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 
-add_executable(kiddos-ui main.cpp)
+set(KIDDOS_SOURCES
+    main.cpp
+    services/GameLauncher.cpp
+    services/BatteryService.cpp
+    services/WifiService.cpp
+    services/ParentManagementService.cpp
+    services/PowerService.cpp
+)
+
+add_executable(kiddos-ui ${KIDDOS_SOURCES})
 
 target_include_directories(kiddos-ui PRIVATE
     ${SDL2_INCLUDE_DIRS}

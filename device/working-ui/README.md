@@ -23,6 +23,30 @@ Confirmed running on the FunnyPlaying Retro Pixel Pocket on November 16, 2026.
 - Provides keyboard navigation, password editing, connection progress, and connection-result feedback.
 - Change PIN flow requiring the current PIN.
 
+## Source organization
+
+The SDL frontend is split into a small UI/controller and focused service
+implementations:
+
+- `main.cpp` — SDL screens, input handling, and UI state.
+- `models/Models.hpp` — shared `Game`, `WifiStatus`, and `WifiNetwork` types.
+- `models/Games.hpp` — the current four-game prototype catalog.
+- `services/GameLauncher.*` — launches a selected game through the firmware.
+- `services/BatteryService.*` — reads battery capacity and external-power state.
+- `services/WifiService.*` — reads Wi-Fi state, controls radio power, loads scan
+  results, and manages asynchronous connection attempts.
+- `services/ParentManagementService.*` — delegates management-server controls
+  to the existing device-side control mechanism.
+- `services/PowerService.*` — requests system shutdown.
+
+Both `CMakeLists.txt` and `build-kiddos-ui.sh` include the extracted service
+implementations in the executable. The build still targets the existing ARM64
+device environment and its SDL dependencies.
+
+The game catalog remains intentionally hardcoded for this prototype. A
+parent-managed library and slot configuration are not implemented by this
+refactor.
+
 Battery monitoring reads the device's RK817 power-supply sysfs interfaces:
 
 - Battery capacity: `/sys/devices/platform/ff180000.i2c/i2c-0/0-0020/rk817-battery/power_supply/battery/capacity`
@@ -75,7 +99,11 @@ It starts KiddOS as a systemd service and masks EmulationStation. It currently u
 
 This is the confirmed working November 18 device implementation on the blue Retro Pixel Pocket. Parent Mode, Remote Management, Change PIN, Wi-Fi power controls, and the Wi-Fi indicator have been deployed and verified. Wi-Fi power control uses ConnMan and is tested locally on the handheld. Remote Management remains independent of Wi-Fi power and was re-tested after Wi-Fi was turned off and restored.
 
-Wi-Fi configuration is complete for the current milestone. Network scanning, network selection, open-network connections, secured-network password entry, and connection handling were tested on the blue Retro Pixel Pocket. The on-screen QWERTY keyboard was also tested and confirmed working. This feature is intentionally frozen; defer further edge-case work unless real-world use exposes a problem.
+Wi-Fi configuration is complete for the current milestone. Network scanning, network selection, open-network connections, secured-network password entry, and connection handling were tested on the blue Retro Pixel Pocket. The on-screen QWERTY keyboard was also tested and confirmed working.
+
+A subsequent saved-network switching test exposed a ConnMan/D-Bus timing case: a connection request could return `org.freedesktop.DBus.Error.NoReply` even though the wireless association was completing. The helper now treats that specific result as a possible delayed completion and polls the requested ConnMan service state; it reports success only after the service reaches `ready` or `online`. Other failures remain failures, and `NoReply` is not treated as a password error. Switching between the two saved home networks was re-tested successfully on the blue device on November 19, 2026.
+
+The current Wi-Fi workflow is considered complete and frozen. Defer further edge-case work unless real-world use exposes another problem.
 
 The original desktop SDL application has been moved out of the active repository and preserved in the local Archives directory. This standalone frontend is the active development path.
 
