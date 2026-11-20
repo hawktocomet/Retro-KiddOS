@@ -31,7 +31,8 @@ place. This refactor does not replace the operating system or emulator stack.
 | `PinWorkflow.hpp` | Parent PIN unlock/change state machine |
 | `pin_store.h` | Existing PIN persistence and hash verification; retained unchanged |
 | `UI.hpp/.cpp` | SDL resource ownership, UI initialization/cleanup, shared status, and device-service/UI coordination |
-| `screens/GameScreens.cpp` | Games carousel, selected-game screen, and game information rendering |
+| `screens/GameScreens.cpp` | Games carousel, selected-game screen, game information, and artwork refresh |
+| `services/GameCatalog.cpp/.hpp` | Loads the shared device-side Python catalog and maps its four slot assignments into frontend game models |
 | `screens/SystemScreens.cpp` | System Menu, shutdown confirmation, and PIN rendering |
 | `screens/ParentScreen.cpp` | Parent Center rendering |
 | `screens/WifiScreen.cpp` | Wi-Fi settings/password rendering and on-screen keyboard interaction |
@@ -68,6 +69,29 @@ Each future section is expected to own its own content model and rendering; no
 generic media model is introduced. Only Games is currently implemented. The
 section model is ready, but physical L/R switching is not wired until the
 handheld's shoulder-button IDs are identified and verified.
+
+## Device-side game catalog integration
+
+The Python module in `device/management-server/catalog.py` is the shared
+authority for ROM discovery, slot eligibility, artwork association, and
+persistent slot assignments. The management server and frontend use this
+same module rather than maintaining independent game lists.
+
+The frontend's `GameCatalog` service invokes the installed module locally
+using `/storage/roms` as the ROM root and
+`/storage/.kiddos-management` as the state root. It maps the four stable slot
+records into frontend `Game` models.
+
+While KiddOS is running, the application checks the slot file once per
+second. When it detects a change, it reloads the catalog and refreshes
+carousel artwork and selected-game text. If the selected slot is now empty,
+it returns to the Games carousel. A failed reload is retried on a later poll.
+Parent slot changes therefore do not require a frontend restart or manual
+refresh.
+
+The four slots currently accept raw `.gb` and `.gbc` ROMs with artwork.
+Broader library discovery does not mean other systems are currently
+slot-eligible.
 
 ## State and resource ownership
 
@@ -124,11 +148,10 @@ up the existing executable before replacement and verifies the staged SHA-256.
 Keep the printed backup path for manual rollback if a visual or input
 regression is found.
 
-The following are not implemented by this refactor:
-- A parent-managed/editable game library.
+The following remain outside the current implementation:
 - Music or Movies browsing/playback screens.
 - Physical L/R library section switching; shoulder-button IDs remain unverified.
-- Multiplayer workflows.
+- Multiplayer workflows, including Pokémon trading and head-to-head play.
 
 Do not add generic frameworks or media abstractions ahead of a concrete
 user-facing need. Preserve existing firmware services and prioritize changes

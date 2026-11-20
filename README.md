@@ -24,15 +24,17 @@ The active SDL frontend is in [`device/working-ui/`](device/working-ui/). Its ap
 
 The frontend currently provides:
 
-- A four-game carousel with artwork and D-pad navigation.
+- A four-slot game carousel populated from the device-side game catalog.
 - Game launching through the existing firmware and return to KiddOS after exiting.
+- Live carousel updates when slots change in Remote Management, without restarting KiddOS.
+- Artwork-aware game assignment, browser-side cover-art discovery, preview, and upload, plus manual artwork upload.
 - A System Menu with shutdown confirmation.
 - Battery percentage, charging status, and low-battery warning.
 - Wi-Fi connection status.
 - Hidden, PIN-protected Parent Mode.
-- Parent Center controls for the existing Remote Management service, Wi-Fi radio, network scanning and selection, secured-network password entry, and Parent PIN changes.
+- Parent Center controls for Remote Management, Wi-Fi radio, network scanning and selection, secured-network password entry, and Parent PIN changes.
 
-The architecture separates the application coordinator, semantic input, navigation, screen rendering and state, SDL resource ownership, PIN workflow, and device services. This organizes the existing frontend; it does not replace firmware services or introduce a generic media framework.
+The Python catalog module is the shared authority for game discovery, slot assignments, and artwork matching. The SDL frontend reads that catalog locally; it does not maintain a separate hardcoded game list. The architecture separates the application coordinator, semantic input, navigation, screen rendering and state, SDL resource ownership, PIN workflow, and device services.
 
 ## Verification status
 
@@ -49,9 +51,15 @@ The following were verified on that device:
 - Wi-Fi settings and the on-screen password keyboard.
 - Battery and charging indicator.
 
-The deployed executable SHA-256 was:
+The November 19 architecture-refactor executable had SHA-256:
 
 `1238648b823a2f09342bb646d5aee6f135a8d426647ea2b7bd6c7b5825bb3508`
+
+The subsequent live-catalog frontend build had SHA-256:
+
+`209edf4c07e2f16227d41c5969650182b410f9ef26eb8a3bf05bc9d6353ab10c`
+
+That live-catalog build was deployed to RPPBLUE and verified on-device. The later artwork workflow update changed the management web page, not the frontend executable.
 
 This validation applies to RPPBLUE and its current firmware/configuration. Purple and green devices have not been approved or validated as deployment targets.
 
@@ -75,7 +83,8 @@ playback tools over building custom media infrastructure.
 
 ## Current scope and limitations
 
-- The game catalog remains hardcoded; parent-managed library editing is not implemented.
+- The four-slot carousel currently accepts only raw `.gb` and `.gbc` ROMs. Other discovered systems are not currently slot-assignable.
+- Browser-side automatic artwork search supports Game Boy and Game Boy Color; other artwork can be supplied manually.
 - Games is the only implemented library section. Music and Movies exist only as prepared section-navigation structure; their browsing and playback workflows are not implemented.
 - Physical L/R library switching is not wired because shoulder-button IDs have not been verified.
 - Multiplayer workflows, including Pokémon trading and head-to-head play, remain future work.
@@ -88,7 +97,8 @@ Keep future work focused on making it easier for the kids to play and enjoy game
 
 - `device/working-ui/` — active SDL frontend, build/deploy scripts, and device-specific instructions.
 - `firmware/boot/` — tested device startup hook.
-- `docs/` — architecture, hardware, and game-library references.
+- `device/management-server/` — shared game catalog, Remote Management API, browser interface, and tests.
+- `docs/` — architecture, hardware, game-library, and management references.
 - `CONTRIBUTING.md` — development principles.
 
 Earlier committed history, including the pre-refactor baseline, remains available in Git.

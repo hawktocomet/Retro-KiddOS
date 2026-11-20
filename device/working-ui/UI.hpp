@@ -23,6 +23,7 @@ struct UI {
     SDL_Renderer* renderer = nullptr;
     SDL_Joystick* joystick = nullptr;
     SDL_Texture* images[4] = {};
+    Text slotLabels[4];
     TTF_Font* headingFont = nullptr;
     TTF_Font* labelFont = nullptr;
     TTF_Font* footerFont = nullptr;
@@ -70,6 +71,7 @@ void updateBattery(UI& ui);
 bool refreshParentStatus(UI& ui);
 void toggleParentManagement(UI& ui);
 void updateSelectedGameText(UI& ui, int selected);
+void refreshGameArtwork(UI& ui);
 
 void drawUI(UI& ui, int selected);
 void drawSelectedGame(UI& ui, int selected, int action);

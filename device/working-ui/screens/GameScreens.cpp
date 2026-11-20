@@ -37,15 +37,22 @@ void drawUI(UI& ui, int selected) {
         SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
         SDL_RenderFillRect(r, &tile);
 
-        int iw = 0, ih = 0;
-        SDL_QueryTexture(ui.images[i], nullptr, nullptr, &iw, &ih);
-        float scale = std::min(224.0f / iw, 166.0f / ih);
-        SDL_Rect image = {
-            tile.x + (tile.w - static_cast<int>(iw * scale)) / 2,
-            tile.y + (tile.h - static_cast<int>(ih * scale)) / 2,
-            static_cast<int>(iw * scale), static_cast<int>(ih * scale)
-        };
-        SDL_RenderCopy(r, ui.images[i], nullptr, &image);
+        if (ui.images[i]) {
+            int iw = 0, ih = 0;
+            if (SDL_QueryTexture(ui.images[i], nullptr, nullptr, &iw, &ih) == 0 &&
+                iw > 0 && ih > 0) {
+                const float scale = std::min(224.0f / iw, 166.0f / ih);
+                SDL_Rect image = {
+                    tile.x + (tile.w - static_cast<int>(iw * scale)) / 2,
+                    tile.y + (tile.h - static_cast<int>(ih * scale)) / 2,
+                    static_cast<int>(iw * scale), static_cast<int>(ih * scale)
+                };
+                SDL_RenderCopy(r, ui.images[i], nullptr, &image);
+            }
+        } else {
+            drawText(r, ui.slotLabels[i], tile.x + tile.w / 2,
+                     tile.y + tile.h / 2 - ui.slotLabels[i].h / 2);
+        }
 
         if (i == selected) {
             SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
@@ -61,9 +68,9 @@ void drawUI(UI& ui, int selected) {
     SDL_RenderPresent(r);
 }
 
-static const char* platformName(const char* platform) {
-    if (std::strcmp(platform, "gb") == 0) return "GAME BOY";
-    if (std::strcmp(platform, "gbc") == 0) return "GAME BOY COLOR";
+static const char* platformName(const std::string& platform) {
+    if (platform == "gb") return "GAME BOY";
+    if (platform == "gbc") return "GAME BOY COLOR";
     return "GAME";
 }
 
@@ -73,10 +80,54 @@ void updateSelectedGameText(UI& ui, int selected) {
 
     destroyText(ui.selectedTitle);
     destroyText(ui.selectedPlatform);
+    const bool available = games[selected].available;
     ui.selectedTitle = makeText(
-        ui.renderer, ui.labelFont, games[selected].name, white);
+        ui.renderer, ui.labelFont,
+        available ? games[selected].name.c_str() : "EMPTY SLOT", white);
     ui.selectedPlatform = makeText(
-        ui.renderer, ui.footerFont, platformName(games[selected].platform), muted);
+        ui.renderer, ui.footerFont,
+        available ? platformName(games[selected].platform) : "", muted);
+}
+
+
+void refreshGameArtwork(UI& ui) {
+    SDL_Texture* nextImages[4] = {};
+    Text nextLabels[4];
+    const SDL_Color labelColor = {155, 177, 215, 255};
+
+    // Prepare all replacement resources before touching the visible ones.
+    for (int i = 0; i < 4; ++i) {
+        if (games[i].available && !games[i].image.empty()) {
+            nextImages[i] =
+                IMG_LoadTexture(ui.renderer, games[i].image.c_str());
+
+            if (!nextImages[i]) {
+                std::fprintf(stderr,
+                    "KiddOS: refreshed artwork unavailable for %s: %s\n",
+                    games[i].name.c_str(), IMG_GetError());
+            }
+        }
+
+        if (!nextImages[i]) {
+            const char* fallback =
+                games[i].available ? "NO ARTWORK" : "EMPTY SLOT";
+            nextLabels[i] = makeText(
+                ui.renderer, ui.footerFont, fallback, labelColor);
+        }
+    }
+
+    // Swap the complete set on the SDL/UI thread.
+    for (int i = 0; i < 4; ++i) {
+        if (ui.images[i])
+            SDL_DestroyTexture(ui.images[i]);
+        destroyText(ui.slotLabels[i]);
+
+        ui.images[i] = nextImages[i];
+        ui.slotLabels[i] = nextLabels[i];
+    }
+
+    std::puts("KiddOS: game carousel artwork refreshed.");
+    std::fflush(stdout);
 }
 
 void drawSimplePanel(SDL_Renderer* r) {
@@ -97,15 +148,22 @@ void drawSelectedGame(UI& ui, int selected, int action) {
     drawText(r, ui.selectedTitle, 360, 133);
     drawBattery(ui);
 
-    int iw = 0, ih = 0;
-    SDL_QueryTexture(ui.images[selected], nullptr, nullptr, &iw, &ih);
-    float scale = std::min(280.0f / iw, 350.0f / ih);
-    SDL_Rect image = {
-        88 + (280 - static_cast<int>(iw * scale)) / 2,
-        205 + (350 - static_cast<int>(ih * scale)) / 2,
-        static_cast<int>(iw * scale), static_cast<int>(ih * scale)
-    };
-    SDL_RenderCopy(r, ui.images[selected], nullptr, &image);
+    if (ui.images[selected]) {
+        int iw = 0, ih = 0;
+        if (SDL_QueryTexture(ui.images[selected], nullptr, nullptr, &iw, &ih) == 0 &&
+            iw > 0 && ih > 0) {
+            const float scale = std::min(280.0f / iw, 350.0f / ih);
+            SDL_Rect image = {
+                88 + (280 - static_cast<int>(iw * scale)) / 2,
+                205 + (350 - static_cast<int>(ih * scale)) / 2,
+                static_cast<int>(iw * scale), static_cast<int>(ih * scale)
+            };
+            SDL_RenderCopy(r, ui.images[selected], nullptr, &image);
+        }
+    } else {
+        drawText(r, ui.slotLabels[selected], 228,
+                 380 - ui.slotLabels[selected].h / 2);
+    }
 
     const SDL_Rect items[2] = {
         {408, 286, 205, 76},

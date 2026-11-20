@@ -4,19 +4,31 @@
 
 import argparse
 import json
+import os
 import platform
 import re
 import socket
 import subprocess
+import tempfile
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
+
+from catalog import (
+    GAME_SYSTEMS as CATALOG_GAME_SYSTEMS,
+    assign_game,
+    delete_game,
+    discover_games,
+    game_catalog,
+    unassign_game,
+)
 
 VERSION = "0.3.0"
 WEB_ROOT = Path(__file__).resolve().parent / "web"
 ROM_ROOT = Path("/storage/roms")
+STATE_ROOT = Path("/storage/.kiddos-management")
 
 GAME_SYSTEMS = {
     "gb": ("Game Boy", {".gb", ".zip"}),
@@ -32,6 +44,7 @@ GAME_SYSTEMS = {
 
 MOVIE_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".m4v"}
 
+MAX_ARTWORK_BYTES = 20 * 1024 * 1024
 
 def read_text(path):
     try:
@@ -282,6 +295,17 @@ class Handler(BaseHTTPRequestHandler):
             self.send_bytes(200, "application/json; charset=utf-8", body)
             return
 
+        if path == "/api/catalog":
+            try:
+                data = game_catalog(ROM_ROOT, STATE_ROOT)
+                body = json.dumps(data, indent=2).encode("utf-8")
+            except (OSError, ValueError) as exc:
+                message = json.dumps({"error": str(exc)}).encode("utf-8")
+                self.send_bytes(500, "application/json; charset=utf-8", message)
+                return
+            self.send_bytes(200, "application/json; charset=utf-8", body)
+            return
+
         if path == "/":
             page = WEB_ROOT / "index.html"
             try:
@@ -295,22 +319,254 @@ class Handler(BaseHTTPRequestHandler):
 
         self.send_bytes(404, "text/plain; charset=utf-8", b"Not found")
 
+    def read_json(self):
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            raise ValueError("Invalid Content-Length")
+
+        if length <= 0 or length > 65536:
+            raise ValueError("Request body must be between 1 and 65536 bytes")
+
+        try:
+            data = json.loads(self.rfile.read(length))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            raise ValueError("Request body must be valid JSON")
+
+        if not isinstance(data, dict):
+            raise ValueError("Request body must be a JSON object")
+        return data
+
+    def send_catalog(self):
+        data = game_catalog(ROM_ROOT, STATE_ROOT)
+        body = json.dumps(data).encode("utf-8")
+        self.send_bytes(200, "application/json; charset=utf-8", body)
+
+    def send_api_error(self, status, message):
+        body = json.dumps({"error": str(message)}).encode("utf-8")
+        self.send_bytes(status, "application/json; charset=utf-8", body)
+
     def do_POST(self):
-        self.send_bytes(405, "text/plain; charset=utf-8",
-                        b"Read-only prototype")
+        parsed = urlparse(self.path)
+        path = parsed.path
+
+        if path == "/api/upload":
+            self.handle_upload(parsed.query)
+            return
+
+        if path == "/api/artwork/upload":
+            self.handle_artwork_upload(parsed.query)
+            return
+
+        if path in ("/api/slots/assign", "/api/slots/unassign",
+                    "/api/games/delete"):
+            try:
+                data = self.read_json()
+
+                if path == "/api/slots/assign":
+                    result = assign_game(
+                        ROM_ROOT, STATE_ROOT,
+                        data.get("slot"), data.get("game_id"),
+                        replace=data.get("replace") is True,
+                    )
+                elif path == "/api/slots/unassign":
+                    result = unassign_game(
+                        ROM_ROOT, STATE_ROOT, data.get("slot")
+                    )
+                else:
+                    result = delete_game(
+                        ROM_ROOT, STATE_ROOT, data.get("game_id")
+                    )
+
+                body = json.dumps(result).encode("utf-8")
+                self.send_bytes(200, "application/json; charset=utf-8", body)
+            except ValueError as exc:
+                self.send_api_error(400, exc)
+            except OSError as exc:
+                self.send_api_error(500, exc)
+            return
+
+        if path in ("/api/status", "/api/library", "/api/catalog"):
+            self.send_bytes(405, "text/plain; charset=utf-8",
+                            b"Method not allowed")
+        else:
+            self.send_bytes(404, "text/plain; charset=utf-8", b"Not found")
+
+    def handle_upload(self, query):
+        temporary = None
+        try:
+            params = parse_qs(query, strict_parsing=True)
+            system_id = params.get("system", [""])[0]
+            filename = params.get("filename", [""])[0]
+
+            system = next(
+                (entry for entry in CATALOG_GAME_SYSTEMS if entry[0] == system_id),
+                None,
+            )
+            if system is None:
+                raise ValueError("Unsupported game system")
+
+            if (not filename or filename in (".", "..")
+                    or "/" in filename or "\\" in filename
+                    or filename.startswith(".")):
+                raise ValueError("Invalid filename")
+
+            extension = Path(filename).suffix.lower()
+            if extension not in system[2]:
+                allowed = ", ".join(sorted(system[2]))
+                raise ValueError(f"Unsupported file type; allowed: {allowed}")
+
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+            except ValueError:
+                raise ValueError("Invalid Content-Length")
+
+            max_upload = 512 * 1024 * 1024
+            if length <= 0 or length > max_upload:
+                raise ValueError("Upload must be between 1 byte and 512 MiB")
+
+            destination_dir = ROM_ROOT / system_id
+            if system_id == "genesis-megadrive":
+                destination_dir = ROM_ROOT / "genesis"
+
+            destination_dir.mkdir(parents=True, exist_ok=True)
+            destination = destination_dir / filename
+
+            if destination.exists():
+                raise ValueError("A file with that name already exists")
+
+            fd, temporary = tempfile.mkstemp(
+                prefix=".kiddos-upload-", suffix=".tmp",
+                dir=str(destination_dir),
+            )
+            received = 0
+            with os.fdopen(fd, "wb") as output:
+                while received < length:
+                    chunk = self.rfile.read(min(1024 * 1024, length - received))
+                    if not chunk:
+                        raise ValueError("Upload ended before all bytes arrived")
+                    output.write(chunk)
+                    received += len(chunk)
+                output.flush()
+                os.fsync(output.fileno())
+
+            if destination.exists():
+                raise ValueError("A file with that name already exists")
+            os.replace(temporary, destination)
+            temporary = None
+
+            body = json.dumps({
+                "success": True,
+                "filename": filename,
+                "system": system[1],
+                "size_bytes": received,
+                "catalog": game_catalog(ROM_ROOT, STATE_ROOT),
+            }).encode("utf-8")
+            self.send_bytes(201, "application/json; charset=utf-8", body)
+
+        except (ValueError, OSError) as exc:
+            self.send_api_error(400 if isinstance(exc, ValueError) else 500, exc)
+        finally:
+            if temporary:
+                try:
+                    os.unlink(temporary)
+                except OSError:
+                    pass
+
+    def handle_artwork_upload(self, query):
+        temporary = None
+        try:
+            params = parse_qs(query, strict_parsing=True)
+            game_id = params.get("game_id", [""])[0]
+            filename = params.get("filename", [""])[0]
+
+            if not game_id:
+                raise ValueError("Missing game ID")
+            if (not filename or "/" in filename or "\\" in filename
+                    or filename.startswith(".")):
+                raise ValueError("Invalid artwork filename")
+
+            extension = Path(filename).suffix.lower()
+            if extension not in (".png", ".jpg", ".webp"):
+                raise ValueError("Artwork must be PNG, JPG, or WebP")
+
+            game = next(
+                (item for item in discover_games(ROM_ROOT)
+                 if item["id"] == game_id),
+                None,
+            )
+            if game is None:
+                raise ValueError("Game not found")
+
+            rom_path = Path(game["path"])
+            destination = rom_path.with_suffix(extension)
+
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+            except ValueError:
+                raise ValueError("Invalid Content-Length")
+            if length <= 0 or length > MAX_ARTWORK_BYTES:
+                raise ValueError("Artwork must be between 1 byte and 20 MiB")
+
+            fd, temporary = tempfile.mkstemp(
+                prefix=".kiddos-artwork-", suffix=".tmp",
+                dir=str(rom_path.parent),
+            )
+            received = 0
+            with os.fdopen(fd, "wb") as output:
+                while received < length:
+                    chunk = self.rfile.read(min(1024 * 1024, length - received))
+                    if not chunk:
+                        raise ValueError("Upload ended before all bytes arrived")
+                    output.write(chunk)
+                    received += len(chunk)
+                output.flush()
+                os.fsync(output.fileno())
+
+            with open(temporary, "rb") as image:
+                header = image.read(12)
+            valid = (
+                (extension == ".png" and header.startswith(b"\x89PNG\r\n\x1a\n"))
+                or (extension == ".jpg" and header.startswith(b"\xff\xd8\xff"))
+                or (extension == ".webp" and
+                    header.startswith(b"RIFF") and header[8:12] == b"WEBP")
+            )
+            if not valid:
+                raise ValueError("File contents do not match the image type")
+
+            os.replace(temporary, destination)
+            temporary = None
+
+            body = json.dumps({
+                "success": True,
+                "filename": destination.name,
+                "catalog": game_catalog(ROM_ROOT, STATE_ROOT),
+            }).encode("utf-8")
+            self.send_bytes(201, "application/json; charset=utf-8", body)
+
+        except (ValueError, OSError) as exc:
+            self.send_api_error(400 if isinstance(exc, ValueError) else 500, exc)
+        finally:
+            if temporary:
+                try:
+                    os.unlink(temporary)
+                except OSError:
+                    pass
 
     def log_message(self, fmt, *args):
         print("%s - %s" % (self.address_string(), fmt % args))
 
 
 def main():
-    global ROM_ROOT
+    global ROM_ROOT, STATE_ROOT
     parser = argparse.ArgumentParser(description="Retro KiddOS management server")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8081)
     parser.add_argument("--rom-root", default=str(ROM_ROOT))
+    parser.add_argument("--state-root", default=str(STATE_ROOT))
     args = parser.parse_args()
     ROM_ROOT = Path(args.rom_root)
+    STATE_ROOT = Path(args.state_root)
 
     try:
         server = ThreadingHTTPServer((args.host, args.port), Handler)

@@ -27,6 +27,7 @@ build_kiddos() {
         "$SCRIPT_DIR/screens/SystemScreens.cpp"
         "$SCRIPT_DIR/screens/ParentScreen.cpp"
         "$SCRIPT_DIR/screens/WifiScreen.cpp"
+        "$SCRIPT_DIR/services/GameCatalog.cpp"
         "$SCRIPT_DIR/services/GameLauncher.cpp"
         "$SCRIPT_DIR/services/BatteryService.cpp"
         "$SCRIPT_DIR/services/WifiService.cpp"

@@ -6,11 +6,13 @@
 #include <SDL.h>
 #include <algorithm>
 #include <cstdio>
+#include <sys/stat.h>
 
 #include "UI.hpp"
 #include "PinWorkflow.hpp"
 #include "models/Games.hpp"
 #include "services/GameLauncher.hpp"
+#include "services/GameCatalog.hpp"
 #include "services/PowerService.hpp"
 
 Application::Application()
@@ -39,9 +41,22 @@ int Application::run() {
     }
 
     while (running) {
+        if (!KiddosServices::loadGameSlots()) {
+            std::fprintf(stderr,
+                         "KiddOS: game catalog load failed; refusing to open carousel.\n");
+            return 1;
+        }
         UI ui;
         if (!openUI(ui)) return 1;
         updateSelectedGameText(ui, selected);
+
+        // The management server atomically replaces slots.json on assignment.
+        // Track inode and nanosecond mtime to detect each replacement.
+        constexpr const char* slotsPath =
+            "/storage/.kiddos-management/slots.json";
+        struct stat lastSlotsStat {};
+        bool haveSlotsStat = stat(slotsPath, &lastSlotsStat) == 0;
+        Uint32 lastCatalogPoll = SDL_GetTicks();
 
         const SDL_Color pinWhite = {245, 248, 255, 255};
         const SDL_Color pinRed = {255, 115, 115, 255};
@@ -213,8 +228,10 @@ int Application::run() {
                             case SDLK_RIGHT: gameGrid.moveRight(); break;
                             case SDLK_RETURN:
                             case SDLK_SPACE:
-                                screen = SelectedGame;
-                                action = 0;
+                                if (games[selected].available) {
+                                    screen = SelectedGame;
+                                    action = 0;
+                                }
                                 break;
                             case SDLK_s:
                                 navigation.openSystemMenu();
@@ -222,9 +239,11 @@ int Application::run() {
                         }
                         updateSelectedGameText(ui, selected);
                     } else if (screen == SelectedGame) {
-                        if (key == SDLK_UP || key == SDLK_DOWN)
+                        if (!games[selected].available) {
+                            screen = Games;
+                        } else if (key == SDLK_UP || key == SDLK_DOWN) {
                             action = (action + 1) % 2;
-                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
+                        } else if (key == SDLK_RETURN || key == SDLK_SPACE) {
                             if (action == 0) launch = true;
                             else if (action == 1) screen = GameInfo;
                         }
@@ -282,11 +301,18 @@ int Application::run() {
                                 refreshWifiSettings(ui);
                             }
                         } else if (screen == Games) {
-                            screen = SelectedGame;
-                            action = 0;
+                            if (games[selected].available) {
+                                screen = SelectedGame;
+                                action = 0;
+                            }
                         } else if (screen == SelectedGame) {
-                            if (action == 0) launch = true;
-                            else if (action == 1) screen = GameInfo;
+                            if (!games[selected].available) {
+                                screen = Games;
+                            } else if (action == 0) {
+                                launch = true;
+                            } else if (action == 1) {
+                                screen = GameInfo;
+                            }
                         } else if (screen == GameInfo) {
                             screen = SelectedGame;
                         } else if (screen == SystemMenu) {
@@ -409,6 +435,40 @@ int Application::run() {
                 }
             }
 
+            // Refresh the live carousel when remote slot assignments change.
+            const Uint32 now = SDL_GetTicks();
+            if (SDL_TICKS_PASSED(now, lastCatalogPoll + 1000)) {
+                lastCatalogPoll = now;
+
+                struct stat currentSlotsStat {};
+                if (stat(slotsPath, &currentSlotsStat) == 0) {
+                    const bool changed =
+                        !haveSlotsStat ||
+                        currentSlotsStat.st_ino != lastSlotsStat.st_ino ||
+                        currentSlotsStat.st_mtim.tv_sec !=
+                            lastSlotsStat.st_mtim.tv_sec ||
+                        currentSlotsStat.st_mtim.tv_nsec !=
+                            lastSlotsStat.st_mtim.tv_nsec;
+
+                    if (changed && KiddosServices::loadGameSlots()) {
+                        lastSlotsStat = currentSlotsStat;
+                        haveSlotsStat = true;
+
+                        refreshGameArtwork(ui);
+                        updateSelectedGameText(ui, selected);
+
+                        if ((screen == SelectedGame || screen == GameInfo) &&
+                            !games[selected].available) {
+                            screen = Games;
+                        }
+                    } else if (changed) {
+                        std::fprintf(stderr,
+                            "KiddOS: changed catalog could not be loaded; "
+                            "will retry.\n");
+                    }
+                }
+            }
+
             if (running && !launch) {
                 updateBattery(ui);
                 pollWifiConnection(ui);
@@ -446,7 +506,7 @@ int Application::run() {
         cancelWifiConnection(ui);
         std::fill(ui.wifi.password.begin(), ui.wifi.password.end(), '\0');
         closeUI(ui);
-        if (running && launch) {
+        if (running && launch && games[selected].available) {
             if (!KiddosServices::launchGame(games[selected]))
                 SDL_Delay(1500);
             screen = Games;

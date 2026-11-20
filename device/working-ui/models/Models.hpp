@@ -6,10 +6,11 @@
 #include <string>
 
 struct Game {
-    const char* name;
-    const char* rom;
-    const char* platform;
-    const char* image;
+    std::string name;
+    std::string rom;
+    std::string platform;
+    std::string image;
+    bool available = false;
 };
 
 enum class WifiStatus {

@@ -67,6 +67,55 @@ dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
 .empty { color: var(--muted); padding: 14px 0; font-size: 14px; }
 #error, #library-error { color: var(--yellow); font-size: 13px; min-height: 20px; }
 footer { color: #7185a5; font-size: 12px; margin-top: 24px; text-align: center; }
+
+.game-section { margin-top: 30px; }
+.game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.game-card { background: linear-gradient(145deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+.game-card h3 { margin: 0 0 6px; color: var(--text); font-size: 16px; overflow-wrap: anywhere; }
+.game-card .detail { margin-bottom: 12px; }
+.game-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.game-actions button { padding: 8px 12px; font-size: 13px; }
+button.secondary { background: #263958; border-color: #405777; }
+button.danger { background: #8d3444; border-color: #bd5265; }
+select, input[type="file"] {
+  max-width: 100%; border: 1px solid var(--line); border-radius: 9px;
+  padding: 9px; color: var(--text); background: #0d1830; font: inherit;
+}
+.upload-panel { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+.upload-field { display: grid; gap: 5px; min-width: 150px; }
+.upload-field label { color: var(--muted); font-size: 12px; font-weight: 700; }
+.upload-note { color: var(--muted); font-size: 12px; margin-top: 12px; }
+#catalog-error { color: var(--yellow); font-size: 13px; min-height: 20px; }
+.game-count { color: var(--muted); font-size: 12px; }
+
+.artwork-needed { color: var(--yellow); font-size: 12px; margin-top: 5px; }
+.artwork-ready { color: var(--green); font-size: 12px; margin-top: 5px; }
+.artwork-file { display: none; }
+
+#artwork-preview {
+  width: min(440px, calc(100% - 28px));
+  max-height: 90vh;
+  overflow: auto;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+}
+#artwork-preview::backdrop { background: #020713dd; }
+#artwork-preview h2 { margin-bottom: 8px; }
+#artwork-preview p { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+#artwork-preview img {
+  display: block;
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  margin: 14px auto;
+  background: #080e20;
+  border-radius: 10px;
+}
+.preview-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+
 @media (max-width: 480px) {
   main { padding-top: 26px; }
   .section-head { align-items: flex-start; }
@@ -123,6 +172,69 @@ footer { color: #7185a5; font-size: 12px; margin-top: 24px; text-align: center; 
     </article>
   </section>
 
+
+  <section class="game-section">
+    <div class="section-head">
+      <h2>Game Management</h2>
+      <span class="game-count" id="catalog-summary">Loading games…</span>
+    </div>
+    <div id="catalog-error" role="status" aria-live="polite"></div>
+
+    <div class="library-group">
+      <h3>Active Slots</h3>
+      <div id="active-slots" class="game-grid">
+        <div class="empty">Loading active slots…</div>
+      </div>
+    </div>
+
+    <div class="library-group">
+      <h3>Available Games</h3>
+      <div id="available-games" class="game-grid">
+        <div class="empty">Loading available games…</div>
+      </div>
+    </div>
+
+    <div class="library-group">
+      <h3>Upload a Game</h3>
+      <article class="card">
+        <form id="upload-form">
+          <div class="upload-panel">
+            <div class="upload-field">
+              <label for="upload-system">System</label>
+              <select id="upload-system" required>
+                <option value="gb">Game Boy</option>
+                <option value="gbc">Game Boy Color</option>
+                <option value="gba">Game Boy Advance</option>
+                <option value="arcade">Arcade</option>
+                <option value="snes">Super Nintendo</option>
+                <option value="genesis-megadrive">Genesis / Mega Drive</option>
+                <option value="mastersystem">Master System</option>
+                <option value="nes">Nintendo Entertainment System</option>
+              </select>
+            </div>
+            <div class="upload-field" style="flex:1">
+              <label for="upload-file">ROM file</label>
+              <input id="upload-file" type="file" required>
+            </div>
+            <button id="upload-button" type="submit">Upload Game</button>
+          </div>
+          <div class="upload-note">
+            Uploads are added to the device library. Only raw .gb and .gbc files
+            are currently eligible for the four active slots; other supported
+            formats remain stored in the library.
+          </div>
+        </form>
+      </article>
+    </div>
+
+    <div class="library-group">
+      <h3>Installed Games</h3>
+      <div id="installed-games" class="media-list">
+        <div class="empty">Loading installed games…</div>
+      </div>
+    </div>
+  </section>
+
   <section class="library-section">
     <div class="section-head">
       <h2>Media Library</h2>
@@ -160,7 +272,17 @@ footer { color: #7185a5; font-size: 12px; margin-top: 24px; text-align: center; 
     </div>
   </section>
 
-  <footer>Retro KiddOS Management · Read-only prototype</footer>
+  <dialog id="artwork-preview" aria-labelledby="artwork-preview-title">
+    <h2 id="artwork-preview-title">Preview Artwork</h2>
+    <p id="artwork-preview-name"></p>
+    <img id="artwork-preview-image" alt="Candidate game cover artwork">
+    <div class="preview-actions">
+      <button id="artwork-preview-cancel" class="secondary" type="button">Cancel</button>
+      <button id="artwork-preview-confirm" type="button">Use This Artwork</button>
+    </div>
+  </dialog>
+
+  <footer>Retro KiddOS Management · Home network game management</footer>
 </main>
 
 <script>
@@ -205,6 +327,463 @@ function renderList(id, items, emptyMessage, renderItem) {
   }
   items.forEach(item => renderItem(container, item));
 }
+
+let currentCatalog = null;
+
+async function postJson(path, data) {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+  return result;
+}
+
+function gameMeta(game) {
+  return `${game.system} · ${game.filename} · ${formatSize(game.size_bytes)}`;
+}
+
+function makeActionButton(label, className, action) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = label;
+  if (className) button.className = className;
+  button.addEventListener("click", action);
+  return button;
+}
+
+function makeGameCard(game) {
+  const card = document.createElement("article");
+  card.className = "game-card";
+  const title = document.createElement("h3");
+  title.textContent = game.title;
+  const detail = document.createElement("div");
+  detail.className = "detail";
+  detail.textContent = gameMeta(game);
+  card.append(title, detail);
+  return card;
+}
+
+function renderSlots(slots) {
+  const container = el("active-slots");
+  container.replaceChildren();
+
+  slots.forEach(slot => {
+    const card = document.createElement("article");
+    card.className = "game-card";
+
+    const heading = document.createElement("h3");
+    heading.textContent = `Slot ${slot.number}`;
+    card.append(heading);
+
+    if (slot.game) {
+      const title = document.createElement("div");
+      title.style.fontWeight = "800";
+      title.textContent = slot.game.title;
+
+      const detail = document.createElement("div");
+      detail.className = "detail";
+      detail.textContent = gameMeta(slot.game);
+
+      const button = makeActionButton("Remove from Slot", "secondary", async () => {
+        if (!confirm(`Remove "${slot.game.title}" from Slot ${slot.number}? The ROM will stay on the device.`)) return;
+        try {
+          await postJson("/api/slots/unassign", { slot: slot.number });
+          await refreshCatalog();
+          await refreshLibrary();
+        } catch (error) {
+          el("catalog-error").textContent = `Couldn't unassign game: ${error.message}`;
+        }
+      });
+      card.append(title, detail, button);
+    } else {
+      const empty = document.createElement("div");
+      empty.className = "detail";
+      empty.textContent = "Empty slot";
+      card.append(empty);
+    }
+    container.append(card);
+  });
+}
+
+function renderAvailable(games, slots) {
+  const container = el("available-games");
+  container.replaceChildren();
+
+  if (!games.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "No additional slot-ready games. Add a raw .gb or .gbc ROM, then find or upload its artwork.";
+    container.append(empty);
+    return;
+  }
+
+  games.forEach(game => {
+    const card = makeGameCard(game);
+    const actions = document.createElement("div");
+    actions.className = "game-actions";
+
+    const select = document.createElement("select");
+    select.setAttribute("aria-label", `Target slot for ${game.title}`);
+    slots.forEach(slot => {
+      const option = document.createElement("option");
+      option.value = String(slot.number);
+      option.textContent = slot.game
+        ? `Slot ${slot.number} · Replace ${slot.game.title}`
+        : `Slot ${slot.number} · Empty`;
+      select.append(option);
+    });
+
+    const assign = makeActionButton("Assign to Slot", "", async () => {
+      const number = Number(select.value);
+      const target = slots.find(slot => slot.number === number);
+      const replacing = Boolean(target && target.game);
+      if (replacing && !confirm(
+        `Replace "${target.game.title}" in Slot ${number} with "${game.title}"? The old ROM will remain in the library.`
+      )) return;
+
+      try {
+        await postJson("/api/slots/assign", {
+          slot: number,
+          game_id: game.id,
+          replace: replacing
+        });
+        await refreshCatalog();
+        await refreshLibrary();
+      } catch (error) {
+        el("catalog-error").textContent = `Couldn't assign game: ${error.message}`;
+      }
+    });
+
+    actions.append(select, assign);
+    card.append(actions);
+    container.append(card);
+  });
+}
+
+
+const BOXART_REPOSITORIES = {
+  gb: "Nintendo_-_Game_Boy",
+  gbc: "Nintendo_-_Game_Boy_Color"
+};
+const MAX_ARTWORK_BYTES = 20 * 1024 * 1024;
+const REGION_SUFFIX = /\s+\((?:USA|Europe|World|Japan|Australia|En|Fr|De|Es|It|Nl|Sv|No|Da|Fi|Pt|Korea|Asia|Brazil|Canada)(?:,\s*(?:USA|Europe|World|Japan|Australia|En|Fr|De|Es|It|Nl|Sv|No|Da|Fi|Pt|Korea|Asia|Brazil|Canada))*\)(?:\s+\((?:SGB Enhanced|GB Compatible)\))*$/i;
+
+function normalizedBoxartTitle(value) {
+  const filename = value.split("/").pop().replace(/\.[^.]+$/, "");
+  return filename
+    .replace(REGION_SUFFIX, "")
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+async function fetchGitHubTree(url) {
+  const response = await fetch(url, {
+    headers: { Accept: "application/vnd.github+json" }
+  });
+  if (!response.ok) {
+    throw new Error(`GitHub artwork search failed (HTTP ${response.status}).`);
+  }
+  const result = await response.json();
+  if (!result || !Array.isArray(result.tree)) {
+    throw new Error("GitHub returned an invalid artwork listing.");
+  }
+  return result;
+}
+
+async function findBrowserBoxart(game) {
+  const repository = BOXART_REPOSITORIES[game.system_id];
+  if (!repository) {
+    throw new Error("Automatic artwork search currently supports Game Boy and Game Boy Color. Please upload artwork manually.");
+  }
+
+  const api = `https://api.github.com/repos/libretro-thumbnails/${repository}/git/trees`;
+  const root = await fetchGitHubTree(`${api}/master`);
+  const directory = root.tree.find(item =>
+    item.path === "Named_Boxarts" && item.type === "tree"
+  );
+  if (!directory) {
+    throw new Error("The artwork archive has no Named_Boxarts directory. Please upload artwork manually.");
+  }
+
+  const listing = await fetchGitHubTree(`${api}/${encodeURIComponent(directory.sha)}?recursive=1`);
+  if (listing.truncated) {
+    throw new Error("GitHub returned an incomplete artwork listing. Please upload artwork manually.");
+  }
+
+  const wanted = normalizedBoxartTitle(game.title);
+  const matches = listing.tree.filter(item =>
+    item.type === "blob" &&
+    item.path.toLowerCase().endsWith(".png") &&
+    normalizedBoxartTitle(item.path) === wanted
+  );
+
+  if (!matches.length) {
+    throw new Error(`No exact cover-art match was found for "${game.title}". Please upload artwork manually.`);
+  }
+
+  const priority = filename => {
+    const stem = filename.split("/").pop().replace(/\.png$/i, "");
+    const base = game.title.replace(/\.[^.]+$/, "");
+    const suffix = stem.toLocaleLowerCase().startsWith(base.toLocaleLowerCase())
+      ? stem.slice(base.length).trim().toLocaleLowerCase()
+      : "";
+    return suffix === "" ? 0 : suffix === "(usa)" ? 1 : 2;
+  };
+  matches.sort((a, b) =>
+    priority(a.path) - priority(b.path) ||
+    a.path.localeCompare(b.path)
+  );
+
+  const encodedPath = matches[0].path.split("/").map(encodeURIComponent).join("/");
+  const imageUrl = `https://raw.githubusercontent.com/libretro-thumbnails/${repository}/master/Named_Boxarts/${encodedPath}`;
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    throw new Error(`Couldn't download the selected cover art (HTTP ${response.status}).`);
+  }
+
+  const blob = await response.blob();
+  if (!blob.size || blob.size > MAX_ARTWORK_BYTES) {
+    throw new Error("The artwork image is empty or exceeds the 20 MiB limit.");
+  }
+
+  const signature = new Uint8Array(await blob.slice(0, 8).arrayBuffer());
+  const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10];
+  if (!pngSignature.every((value, index) => signature[index] === value)) {
+    throw new Error("The artwork archive returned an invalid PNG image.");
+  }
+
+  return { blob, filename: matches[0].path.split("/").pop() };
+}
+
+function previewArtwork(game, blob, filename) {
+  return new Promise(resolve => {
+    const dialog = el("artwork-preview");
+    const image = el("artwork-preview-image");
+    const objectUrl = URL.createObjectURL(blob);
+    let settled = false;
+
+    const finish = accepted => {
+      if (settled) return;
+      settled = true;
+      dialog.removeEventListener("close", onClose);
+      URL.revokeObjectURL(objectUrl);
+      resolve(accepted);
+    };
+    const onClose = () => finish(false);
+
+    image.src = objectUrl;
+    el("artwork-preview-name").textContent =
+      `${game.title} · ${filename}`;
+    el("artwork-preview-confirm").onclick = () => {
+      dialog.close();
+      finish(true);
+    };
+    el("artwork-preview-cancel").onclick = () => dialog.close();
+    dialog.addEventListener("close", onClose);
+    dialog.showModal();
+  });
+}
+
+async function uploadArtworkBlob(game, blob, filename) {
+  const query = new URLSearchParams({ game_id: game.id, filename });
+  const response = await fetch(`/api/artwork/upload?${query}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/octet-stream" },
+    body: blob
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result.error || `Artwork upload failed (HTTP ${response.status}).`);
+  }
+  await refreshCatalog();
+  await refreshLibrary();
+}
+
+function renderInstalled(games) {
+  const container = el("installed-games");
+  container.replaceChildren();
+
+  if (!games.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "No installed games found.";
+    container.append(empty);
+    return;
+  }
+
+  games.forEach(game => {
+    const item = document.createElement("div");
+    item.className = "media-item";
+
+    const info = document.createElement("div");
+    info.style.minWidth = "0";
+    const title = document.createElement("div");
+    title.className = "media-title";
+    title.textContent = game.title;
+    const detail = document.createElement("div");
+    detail.className = "media-meta";
+    detail.textContent = gameMeta(game);
+    info.append(title, detail);
+
+    const artworkStatus = document.createElement("div");
+    artworkStatus.className = game.artwork ? "artwork-ready" : "artwork-needed";
+    artworkStatus.textContent = game.artwork
+      ? "Artwork ready"
+      : "Artwork required before slot assignment";
+    info.append(artworkStatus);
+
+    const actions = document.createElement("div");
+    actions.className = "game-actions";
+
+    if (!game.artwork) {
+      if (game.slottable) {
+        const find = makeActionButton("Find Artwork", "secondary", async () => {
+          find.disabled = true;
+          find.textContent = "Searching…";
+          el("catalog-error").textContent = "";
+          try {
+            const candidate = await findBrowserBoxart(game);
+            const accepted = await previewArtwork(
+              game, candidate.blob, candidate.filename
+            );
+            if (!accepted) {
+              el("catalog-error").textContent = "Artwork preview cancelled.";
+              return;
+            }
+            find.textContent = "Uploading…";
+            await uploadArtworkBlob(game, candidate.blob, candidate.filename);
+            el("catalog-error").textContent = `Artwork saved for ${game.title}.`;
+          } catch (error) {
+            el("catalog-error").textContent = error.message;
+          } finally {
+            find.disabled = false;
+            find.textContent = "Find Artwork";
+          }
+        });
+        actions.append(find);
+      }
+
+      const file = document.createElement("input");
+      file.type = "file";
+      file.accept = ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp";
+      file.className = "artwork-file";
+      file.setAttribute("aria-label", `Choose artwork for ${game.title}`);
+
+      const uploadArtwork = makeActionButton("Upload Artwork", "secondary", () => file.click());
+      file.addEventListener("change", async () => {
+        const image = file.files[0];
+        if (!image) return;
+        uploadArtwork.disabled = true;
+        uploadArtwork.textContent = "Uploading…";
+        el("catalog-error").textContent = "";
+        try {
+          const query = new URLSearchParams({
+            game_id: game.id,
+            filename: image.name
+          });
+          const response = await fetch(`/api/artwork/upload?${query}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/octet-stream" },
+            body: image
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+          await refreshCatalog();
+          await refreshLibrary();
+          el("catalog-error").textContent = `Uploaded artwork for ${game.title}.`;
+        } catch (error) {
+          el("catalog-error").textContent = `Artwork upload failed: ${error.message}`;
+        } finally {
+          uploadArtwork.disabled = false;
+          uploadArtwork.textContent = "Upload Artwork";
+          file.value = "";
+        }
+      });
+      actions.append(uploadArtwork, file);
+    }
+
+    const remove = makeActionButton("Delete ROM", "danger", async () => {
+      if (!confirm(
+        `Permanently delete "${game.title}" from the device? This cannot be undone. If it is assigned to a slot, that slot will become empty.`
+      )) return;
+      try {
+        await postJson("/api/games/delete", { game_id: game.id });
+        await refreshCatalog();
+        await refreshLibrary();
+      } catch (error) {
+        el("catalog-error").textContent = `Couldn't delete game: ${error.message}`;
+      }
+    });
+    actions.append(remove);
+    item.append(info, actions);
+    container.append(item);
+  });
+}
+
+async function refreshCatalog() {
+  el("catalog-error").textContent = "";
+  try {
+    const response = await fetch("/api/catalog", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    currentCatalog = data;
+
+    renderSlots(data.slots || []);
+    renderAvailable(data.available || [], data.slots || []);
+    renderInstalled(data.games || []);
+
+    const summary = data.summary || {};
+    el("catalog-summary").textContent =
+      `${summary.assigned_count ?? 0}/4 slots filled · ` +
+      `${summary.available_count ?? 0} available · ` +
+      `${summary.installed_count ?? 0} installed`;
+  } catch (error) {
+    el("catalog-error").textContent = `Couldn't load game catalog: ${error.message}`;
+  }
+}
+
+async function uploadGame(event) {
+  event.preventDefault();
+  const file = el("upload-file").files[0];
+  if (!file) {
+    el("catalog-error").textContent = "Choose a ROM file first.";
+    return;
+  }
+
+  const system = el("upload-system").value;
+  const button = el("upload-button");
+  button.disabled = true;
+  button.textContent = "Uploading…";
+  el("catalog-error").textContent = "";
+
+  try {
+    const query = new URLSearchParams({
+      system,
+      filename: file.name
+    });
+    const response = await fetch(`/api/upload?${query.toString()}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/octet-stream" },
+      body: file
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+
+    el("upload-file").value = "";
+    await refreshCatalog();
+    await refreshLibrary();
+    el("catalog-error").textContent = `Uploaded ${file.name} successfully.`;
+  } catch (error) {
+    el("catalog-error").textContent = `Upload failed: ${error.message}`;
+  } finally {
+    button.disabled = false;
+    button.textContent = "Upload Game";
+  }
+}
+
 async function refreshStatus() {
   const button = el("refresh");
   button.disabled = true;
@@ -278,9 +857,12 @@ async function refreshLibrary() {
 el("refresh").addEventListener("click", () => {
   refreshStatus();
   refreshLibrary();
+  refreshCatalog();
 });
+el("upload-form").addEventListener("submit", uploadGame);
 refreshStatus();
 refreshLibrary();
+refreshCatalog();
 </script>
 </body>
 </html>

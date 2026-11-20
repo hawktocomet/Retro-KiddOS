@@ -11,16 +11,17 @@
 
 namespace KiddosServices {
 
-static const char* BASE =
-    "/storage/roms/.kiddos-ui-test-20261116";
 static const char* CORE =
     "/storage/roms/.kiddos-ui-test-20261116/gambatte-link_libretro.so";
 
 bool launchGame(const Game& game) {
-    char rom[512];
-    std::snprintf(rom, sizeof(rom), "%s/%s", BASE, game.rom);
+    if (!game.available || game.rom.empty() || game.platform.empty()) {
+        std::fprintf(stderr, "KiddOS: refusing to launch an empty game slot\n");
+        return false;
+    }
 
-    std::printf("KiddOS: launching %s\n", game.name);
+    const char* rom = game.rom.c_str();
+    std::printf("KiddOS: launching %s\n", game.name.c_str());
     std::fflush(stdout);
 
     pid_t pid = fork();
@@ -42,7 +43,7 @@ bool launchGame(const Game& game) {
     if (pid == 0) {
         execl("/usr/bin/runemu.py", "runemu.py",
               "--rom", rom,
-              "--platform", game.platform,
+              "--platform", game.platform.c_str(),
               "--emulator", "retroarch",
               "--core", "gambatte",
               (char*)nullptr);
