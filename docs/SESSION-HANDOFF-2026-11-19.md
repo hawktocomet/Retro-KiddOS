@@ -158,3 +158,37 @@ With this refactor and Wi-Fi milestone documented, review the intended source
 and documentation changes, run appropriate local checks, then commit and push
 the reviewed files. Keep the next development slice tied to making it easier
 for the children to play games together.
+
+## SDL frontend architecture refactor — archive work in progress
+
+The source-level architecture refactor was performed from the uploaded project
+archive at baseline `ff1b344cd962bc23af1413fd31e01f5338d1a27a`. The SDL frontend
+is now divided into:
+
+- `main.cpp` as a minimal entry point and `Application` as the application
+  coordinator/state owner.
+- `Input.hpp` for semantic physical joystick actions. Desktop SDL keyboard
+  compatibility remains separate; the on-screen Wi-Fi keyboard remains intact.
+- `Navigation.hpp` for active-screen state and System Menu return behavior.
+- `UI.hpp/.cpp` for SDL resources, initialization/cleanup, shared UI state, and
+  coordination with existing device services.
+- Individual renderer/interaction modules under `screens/` for Games,
+  System Menu/PIN, Parent Center, and Wi-Fi.
+- `PinWorkflow.hpp` for PIN entry/change behavior; `pin_store.h` remains the
+  unchanged persistence boundary.
+- `LibraryGrid.hpp` and `LibraryNavigator.hpp` for grid selection and the
+  Games/Music/Movies section order without a generalized media-item model.
+- `screens/ScreenState.hpp` for grouped Wi-Fi and status-bar state.
+
+The existing device services and firmware/emulator lifecycle are retained.
+The section navigator resets selection when changing categories, but physical
+L/R shoulder-button mapping is not wired because their SDL button IDs have not
+been verified. Games remains the only implemented library section.
+
+Host architecture tests and the existing PIN-store tests pass. All frontend
+and service translation units pass a strict C++17 syntax-only check against
+SDL API declaration stubs. The uploaded archive did not contain the external
+ARM64 `Build-Workspace`, SDL sysroot, or cross-compiler, so no ARM64 binary was
+built and no device was changed. Before deployment, build with the user's
+existing ARM64 workspace, then run the complete regression checklist on
+RPPBLUE only. Purple and green remain out of scope.
