@@ -1,113 +1,107 @@
 # Retro KiddOS
 
-A simple, child-friendly entertainment frontend for the FunnyPlaying Retro Pixel Pocket, built around games, music, and movies.
+A simple, child-friendly entertainment frontend for the FunnyPlaying Retro Pixel Pocket.
 
 ## Mission
 
-Make a small, personal, offline entertainment device that children can use independently at home and while traveling.
+Make a small, personal, offline entertainment device that children can use independently at home and while traveling. Family multiplayer is an important part of the gaming goal.
 
-The goal is for each child to be able to:
-- Play favorite games.
-- Listen to favorite music.
-- Watch favorite movies.
-
-The experience should be straightforward, reliable, and usable without Wi-Fi or constant adult help. Family multiplayer is an important part of the gaming goal.
-
-Our guiding principle is:
+Our guiding principle:
 
 > Every hour we spend developing should make it easier for you and your kids to play games together. If it doesn't, we probably shouldn't be building it.
 
-More broadly, every hour should make it easier for the kids to enjoy their own games, music, and movies. Prefer using playback and system capabilities already present in the firmware over building custom infrastructure. Do not add features just because they are technically interesting.
+Prefer using playback and system capabilities already present in the firmware over building custom infrastructure. Do not add features just because they are technically interesting.
 
 ## Project direction
 
-Retro KiddOS uses a device-first approach. Rather than replacing the handheld's firmware or rebuilding its emulator and media infrastructure, it reuses the existing system and provides a simpler interface for children.
+Retro KiddOS is a device-first frontend, not a replacement operating system. It reuses the handheld's existing Linux firmware, SDL libraries, emulator stack, game files, controller, networking, and power-management facilities.
 
-The current priority is a dependable family experience, not a large custom operating system. Keep the interface focused and the implementation as small as practical. Validate real use on the hardware before expanding the scope.
+The current priority is a dependable family gaming experience. Keep the interface focused and the implementation as small as practical. Validate real use on hardware before expanding scope.
 
-## Current working implementation
+## Current implementation
 
-The confirmed SDL frontend is in [`device/working-ui/`](device/working-ui/).
+The active SDL frontend is in [`device/working-ui/`](device/working-ui/). Its application architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-Core frontend verified November 16, 2026; battery monitoring verified November 17, 2026, on the blue Retro Pixel Pocket:
+The frontend currently provides:
 
-- Boots directly into the KiddOS game carousel.
-- Displays four selected games with artwork.
-- Navigates with the D-pad.
-- Launches games through the existing firmware.
-- Supports normal in-game controls.
-- Select + Start exits a game and returns to KiddOS.
-- Provides a system menu with shutdown confirmation.
-- Shuts down the device.
-- Displays battery percentage and charging status.
-- Shows a low-battery warning at 15% or below.
-- Displays Wi-Fi connection status beside the battery indicator.
-- Provides hidden, PIN-protected Parent Mode with Remote Management, Wi-Fi Settings, and Change Parent PIN.
-- Parents can independently start/stop the LAN management server and turn Wi-Fi radio power on/off.
-- Parents can scan for Wi-Fi networks, select open or secured networks, enter passwords with an on-screen QWERTY keyboard, and connect.
-- Parents can change the Parent Mode PIN after verifying the current PIN.
+- A four-game carousel with artwork and D-pad navigation.
+- Game launching through the existing firmware and return to KiddOS after exiting.
+- A System Menu with shutdown confirmation.
+- Battery percentage, charging status, and low-battery warning.
+- Wi-Fi connection status.
+- Hidden, PIN-protected Parent Mode.
+- Parent Center controls for the existing Remote Management service, Wi-Fi radio, network scanning and selection, secured-network password entry, and Parent PIN changes.
 
-The firmware startup hook is in [`firmware/boot/`](firmware/boot/).
+The architecture separates the application coordinator, semantic input, navigation, screen rendering and state, SDL resource ownership, PIN workflow, and device services. This organizes the existing frontend; it does not replace firmware services or introduce a generic media framework.
 
-The frontend now keeps the SDL screen/controller in `main.cpp` and separates
-device operations into small services under `device/working-ui/services/`.
-Shared game and Wi-Fi data structures live under `device/working-ui/models/`.
-This is an internal organization of the existing prototype, not a replacement
-for the firmware's emulator, networking, or power-management infrastructure.
+## Verification status
 
-## Media playback exploration
+The refactored frontend was built for ARM64 and deployed to the **blue device (RPPBLUE)** on November 19, 2026.
 
-The Pocket's existing MPV player has been confirmed to play video with sound. A 720×720 H.264/AAC test clip played smoothly and filled the square display after encoding the source to square pixels. Full-length movie playback and a simple music playback workflow still need to be validated.
+The following were verified on that device:
 
-The direction is to use existing firmware tools for local, offline media wherever practical. Do not build a custom video or audio engine unless testing shows the built-in tools cannot provide the needed experience.
+- Startup and Games screen rendering.
+- D-pad navigation, A/Confirm, and B/Back.
+- Start/System Menu navigation and correct return destination.
+- Game launch and return to KiddOS.
+- Shutdown confirmation.
+- Parent Mode and PIN unlock, change, cancellation, and error handling.
+- Wi-Fi settings and the on-screen password keyboard.
+- Battery and charging indicator.
 
-## Current game set
+The deployed executable SHA-256 was:
 
-- Mario Tennis
-- Pokemon Red
-- Super Mario Bros. Deluxe
-- Tetris
+`1238648b823a2f09342bb646d5aee6f135a8d426647ea2b7bd6c7b5825bb3508`
 
-The current game list and runtime paths are configured directly in the prototype. A parent-managed game library is a future goal, not an implemented feature.
+This validation applies to RPPBLUE and its current firmware/configuration. Purple and green devices have not been approved or validated as deployment targets.
 
-## Build
+## Build and deployment
 
-See [`device/working-ui/README.md`](device/working-ui/README.md).
+See [`device/working-ui/README.md`](device/working-ui/README.md) for prerequisites, the ARM64 build, deployment target, backup, and rollback procedure.
 
-The build script cross-compiles for ARM64 and uses a local `Build-Workspace` directory alongside this repository. That workspace contains the required SDL sources, device sysroot, and libraries; it is not included in this repository.
+The build uses an external `Build-Workspace` alongside the repository, or the path supplied through `KIDDOS_BUILD_WORKSPACE`. The workspace contains the ARM64 compiler dependencies, SDL sources, and device sysroot; it is not included in this repository.
 
-## Current limitations
+Deployment is device-specific and defaults to RPPBLUE. Verify the target and local build path before running it. The deployment script backs up the existing executable and verifies the staged checksum. Its automated startup check only verifies that the service remains active; visual and input regression testing on the handheld is still required.
 
-This is a working prototype validated on one blue device.
+The tested firmware startup hook is in [`firmware/boot/`](firmware/boot/). It is not a general-purpose installer. Do not install it on another device without reviewing its paths and recovery procedure.
 
-- Runtime paths and game configuration are device-specific.
-- The firmware hook is not a general-purpose installer.
-- Installation and rollback need a repeatable procedure.
-- Other devices have not yet been validated.
-- The game library is still hardcoded; parent-managed library editing is future work.
-- Multiplayer workflows remain future work.
-- Full-length movie playback and music-library usability are not yet validated.
+## Existing media playback
 
-Do not assume the current firmware hook is safe to install on another device without reviewing its paths and recovery procedure.
+The handheld's existing MPV player has been confirmed to play a 720×720
+H.264/AAC test clip with sound. The test clip filled the square display after
+the source was encoded to square pixels. This is a playback experiment, not a
+completed Movies or Music interface. Continue to prefer existing firmware
+playback tools over building custom media infrastructure.
+
+## Current scope and limitations
+
+- The game catalog remains hardcoded; parent-managed library editing is not implemented.
+- Games is the only implemented library section. Music and Movies exist only as prepared section-navigation structure; their browsing and playback workflows are not implemented.
+- Physical L/R library switching is not wired because shoulder-button IDs have not been verified.
+- Multiplayer workflows, including Pokémon trading and head-to-head play, remain future work.
+- Full-length movie playback and a simple music-library workflow have not been validated.
+- Runtime paths and the firmware hook are specific to the tested device setup.
+
+Keep future work focused on making it easier for the kids to play and enjoy games together.
 
 ## Repository layout
 
-- `device/working-ui/` — working SDL frontend and build instructions.
+- `device/working-ui/` — active SDL frontend, build/deploy scripts, and device-specific instructions.
 - `firmware/boot/` — tested device startup hook.
-- `docs/` — current hardware, controls, and game-library references.
-- `CONTRIBUTING.md` — project development principles.
+- `docs/` — architecture, hardware, and game-library references.
+- `CONTRIBUTING.md` — development principles.
 
-The original desktop SDL implementation and its research materials are preserved locally in the project's Archives directory. Earlier committed history remains available in Git.
+Earlier committed history, including the pre-refactor baseline, remains available in Git.
 
 ## Hardware
 
 - FunnyPlaying Retro Pixel Pocket
 - 720 × 720 display
 - ARM64 Linux firmware
-- Existing RetroArch, emulator, and MPV infrastructure
+- Existing RetroArch, emulator, SDL, and MPV infrastructure
 
-See [`docs/HARDWARE.md`](docs/HARDWARE.md) for verified device details.
+See [`docs/HARDWARE.md`](docs/HARDWARE.md) for the inspected device configuration.
 
 ## License
 
-GNU General Public License v3.0 or later. See [LICENSE](LICENSE).
+GNU General Public License v3.0 or later. See [`LICENSE`](LICENSE).

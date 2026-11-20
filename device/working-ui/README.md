@@ -1,6 +1,6 @@
 # Retro KiddOS — Working Device UI
 
-Confirmed running on the FunnyPlaying Retro Pixel Pocket on November 16, 2026.
+Refactored ARM64 frontend built and verified on the blue FunnyPlaying Retro Pixel Pocket (RPPBLUE) on November 19, 2026.
 
 ## Working features
 
@@ -71,7 +71,7 @@ The battery indicator was tested on the blue Retro Pixel Pocket on November
 17, 2026, including connecting and disconnecting external power. Its current
 size and visual prominence are intentionally left for the next UI redesign.
 
-Confirmed installed executable SHA-256:
+Historical installed executable SHA-256 (November 17, 2026; superseded by the November 19 refactor build):
 
 `d0942a6e2ebf0bfe336cdafde64aa839c71eb67de87a5bac05bdf0372068a53d`
 
@@ -98,7 +98,7 @@ Run `./build-kiddos-ui.sh` from this directory.
 
 The script expects the local Build-Workspace directory alongside the KiddOS repository, with the ARM64 SDL2 dependencies and device sysroot. It requires aarch64-linux-gnu-g++ and readelf.
 
-The output is written to `Build-Workspace/build/arm64/kiddos-ui`. Existing output is backed up before replacement.
+The output is written to `Build-Workspace/build/arm64/kiddos-ui` by default. Set `KIDDOS_BUILD_WORKSPACE` to use a separate workspace, as was done for the November 19 refactor build. Existing output is backed up before replacement.
 
 ## Firmware integration
 
@@ -106,9 +106,23 @@ The tested boot hook is at `../../firmware/boot/custom_start.sh`.
 
 It starts KiddOS as a systemd service and masks EmulationStation. It currently uses the dated runtime directory above and should not be installed on another device without reviewing its paths and rollback procedure.
 
+## Current architecture and scope
+
+The application coordinator is `Application`; `main.cpp` is only the process
+entry point. Semantic physical-button translation, navigation, screen modules,
+library navigation, PIN workflow, and SDL resource ownership are separated
+into focused components. See `../../docs/ARCHITECTURE.md` for the responsibility
+map and verification record.
+
+Games is the only implemented library section. Music and Movies are prepared
+navigation extension points, not implemented browsing or playback screens.
+Physical L/R section switching is not wired because shoulder-button IDs have
+not been verified. The game catalog remains hardcoded; parent-managed library
+editing is not implemented.
+
 ## Status
 
-This is the confirmed working November 18 device implementation on the blue Retro Pixel Pocket. Parent Mode, Remote Management, Change PIN, Wi-Fi power controls, and the Wi-Fi indicator have been deployed and verified. Wi-Fi power control uses ConnMan and is tested locally on the handheld. Remote Management remains independent of Wi-Fi power and was re-tested after Wi-Fi was turned off and restored.
+The November 19 architecture-refactor build is deployed and running on RPPBLUE. The application architecture, input handling, navigation, screen modules, SDL resource ownership, and PIN workflow have been refactored while preserving the existing device features. Wi-Fi power control uses ConnMan and is tested locally on the handheld. Remote Management remains independent of Wi-Fi power and was re-tested after Wi-Fi was turned off and restored.
 
 Wi-Fi configuration is complete for the current milestone. Network scanning, network selection, open-network connections, secured-network password entry, and connection handling were tested on the blue Retro Pixel Pocket. The on-screen QWERTY keyboard was also tested and confirmed working.
 
@@ -116,8 +130,22 @@ A subsequent saved-network switching test exposed a ConnMan/D-Bus timing case: a
 
 The current Wi-Fi workflow is considered complete and frozen. Defer further edge-case work unless real-world use exposes another problem.
 
-The original desktop SDL application has been moved out of the active repository and preserved in the local Archives directory. This standalone frontend is the active development path.
+The original desktop SDL application is archived project history. The device-first SDL frontend documented here is the active development path.
 
-Deployed ARM64 executable SHA-256 (November 18, 2026):
+Deployed refactored ARM64 executable SHA-256 (November 19, 2026):
 
-`cccc2ae0b9ed951b52db107805ec3ae080f5964e77e34e1dbff5a2c395257347`
+`1238648b823a2f09342bb646d5aee6f135a8d426647ea2b7bd6c7b5825bb3508`
+
+The previous November 18 build checksum is historical and is not the currently deployed executable.
+
+## Deployment and rollback
+
+The deployment script defaults to the approved blue device (`root@192.168.0.89`) and expects the executable at `Build-Workspace/build/arm64/kiddos-ui` alongside the repository. If using a separate build workspace, make its output available at that expected path before deploying.
+
+Deploy with `KIDDOS_DEVICE=root@192.168.0.89 ./deploy-kiddos-ui.sh deploy`.
+
+The script stages the executable, verifies its SHA-256, creates a timestamped backup of the installed executable, replaces it, and starts the `kiddos-ui` service. If the new service fails its four-second active check, it attempts automatic rollback.
+
+Keep the backup path printed by deployment. Manual rollback uses `KIDDOS_DEVICE=root@192.168.0.89 ./deploy-kiddos-ui.sh rollback BACKUP_PATH`, replacing `BACKUP_PATH` with the exact printed path.
+
+The automated service check does not verify screen rendering, controller input, game launching, or other UI workflows. Perform the on-device regression checks after deployment. Do not deploy to the purple or green devices without explicit approval.
