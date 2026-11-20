@@ -37,6 +37,7 @@ class GameCatalogTests(unittest.TestCase):
         (legacy / "Mario Tennis.png").write_bytes(b"artwork")
         (self.roms / "gb").mkdir()
         (self.roms / "gb" / "Donkey Kong.gb").write_bytes(b"another-rom")
+        (self.roms / "gb" / "Donkey Kong.png").write_bytes(b"artwork")
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -119,6 +120,51 @@ class GameCatalogTests(unittest.TestCase):
         self.assertTrue(Path(mario["path"]).is_file())
         self.assertTrue(Path(mario["artwork"]).is_file())
 
+    def test_uppercase_artwork_extension_is_discovered(self):
+        rom = self.roms / "gb" / "Uppercase Art.gb"
+        artwork = rom.with_suffix(".PNG")
+        rom.write_bytes(b"rom")
+        artwork.write_bytes(b"artwork")
+
+        game = next(
+            item for item in discover_games(self.roms)
+            if item["filename"] == rom.name
+        )
+        self.assertEqual(Path(game["artwork"]), artwork)
+
+    def test_artwork_format_preference_is_png_then_jpg_then_webp(self):
+        rom = self.roms / "gb" / "Format Preference.gb"
+        rom.write_bytes(b"rom")
+        png = rom.with_suffix(".png")
+        rom.with_suffix(".jpg").write_bytes(b"jpg")
+        rom.with_suffix(".webp").write_bytes(b"webp")
+        png.write_bytes(b"png")
+
+        game = next(
+            item for item in discover_games(self.roms)
+            if item["filename"] == rom.name
+        )
+        self.assertEqual(Path(game["artwork"]), png)
+
+    def test_games_without_artwork_remain_installed_but_not_assignable(self):
+        missing = self.roms / "gb" / "Missing Art.gb"
+        missing.write_bytes(b"rom")
+
+        catalog = game_catalog(self.roms, self.state)
+        game = next(item for item in catalog["games"]
+                    if item["filename"] == "Missing Art.gb")
+
+        self.assertIsNone(game["artwork"])
+        self.assertNotIn(game["id"], {
+            item["id"] for item in catalog["available"]
+        })
+        with self.assertRaisesRegex(ValueError, "needs artwork"):
+            assign_game(self.roms, self.state, 1, game["id"], replace=True)
+
+        self.assertEqual(
+            catalog["slots"][0]["game"]["title"], "Mario Tennis"
+        )
+
     def test_corrupt_slot_configuration_fails_safely(self):
         self.state.mkdir()
         (self.state / "slots.json").write_text("{broken")
@@ -189,10 +235,16 @@ class GameCatalogTests(unittest.TestCase):
         initial = game_catalog(self.roms, self.state)
         original = initial["slots"][0]["game"]
         rom_path = Path(original["path"])
+        artwork_path = rom_path.with_suffix(".png")
+        uppercase_artwork_path = rom_path.with_suffix(".JPG")
+        artwork_path.write_bytes(b"png")
+        uppercase_artwork_path.write_bytes(b"jpg")
 
         result = delete_game(self.roms, self.state, original["id"])
 
         self.assertFalse(rom_path.exists())
+        self.assertFalse(artwork_path.exists())
+        self.assertFalse(uppercase_artwork_path.exists())
         self.assertIsNone(result["slots"][0]["game"])
         self.assertNotIn(
             original["id"], {game["id"] for game in result["games"]}

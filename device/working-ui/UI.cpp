@@ -453,6 +453,7 @@ void closeUI(UI& ui) {
     destroyText(ui.wifiFooter);
     destroyText(ui.batteryLabel);
     for (int i = 0; i < 4; ++i) {
+        destroyText(ui.slotLabels[i]);
         if (ui.images[i]) SDL_DestroyTexture(ui.images[i]);
     }
     if (ui.headingFont) TTF_CloseFont(ui.headingFont);
@@ -566,18 +567,22 @@ bool openUI(UI& ui) {
     ui.wifiFooter = makeText(ui.renderer, ui.footerFont,
         "UP/DOWN MOVE   A SELECT   B BACK", muted);
 
+    const SDL_Color slotLabelColor = {155, 177, 215, 255};
     for (int i = 0; i < 4; ++i) {
-        char path[512];
-        std::snprintf(path, sizeof(path), "%s/%s", BASE, games[i].image);
-        ui.images[i] = IMG_LoadTexture(ui.renderer, path);
+        if (games[i].available && !games[i].image.empty()) {
+            ui.images[i] = IMG_LoadTexture(ui.renderer, games[i].image.c_str());
+            if (!ui.images[i]) {
+                std::fprintf(stderr, "KiddOS: artwork unavailable for %s: %s\n",
+                             games[i].name.c_str(), IMG_GetError());
+            }
+        }
+        const char* fallback = games[i].available ? "NO ARTWORK" : "EMPTY SLOT";
         if (!ui.images[i]) {
-            std::fprintf(stderr, "KiddOS: artwork missing for %s: %s\n",
-                         games[i].name, IMG_GetError());
-            closeUI(ui);
-            return false;
+            ui.slotLabels[i] = makeText(
+                ui.renderer, ui.footerFont, fallback, slotLabelColor);
         }
     }
-    std::puts("KiddOS: all four game images loaded.");
+    std::puts("KiddOS: game artwork loading complete.");
     std::fflush(stdout);
     return true;
 }

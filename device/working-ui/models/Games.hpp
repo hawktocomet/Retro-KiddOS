@@ -3,11 +3,8 @@
 
 #pragma once
 
+#include <array>
 #include "Models.hpp"
 
-static const Game games[] = {
-    {"Mario Tennis", "Mario Tennis.gbc", "gbc", "Mario Tennis.png"},
-    {"Pokemon Red", "Pokemon Red Version.gb", "gb", "Pokemon Red Version.png"},
-    {"Super Mario Bros. Deluxe", "Super Mario Bros. Deluxe.gbc", "gbc", "Super Mario Bros. Deluxe.png"},
-    {"Tetris", "Tetris.gb", "gb", "Tetris.png"}
-};
+// Four fixed carousel positions, populated from the device-side slot catalog.
+inline std::array<Game, 4> games{};

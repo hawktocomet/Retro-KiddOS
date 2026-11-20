@@ -125,6 +125,19 @@ class ManagementApiTests(unittest.TestCase):
         )
         return urlopen(request)
 
+    def upload_artwork(self, game_id, filename="cover.png", content=None):
+        if content is None:
+            content = bytes.fromhex("89504e470d0a1a0a") + bytes(8)
+        request = Request(
+            self.base_url + (
+                f"/api/artwork/upload?game_id={game_id}&filename={filename}"
+            ),
+            data=content,
+            headers={"Content-Type": "application/octet-stream"},
+            method="POST",
+        )
+        return urlopen(request)
+
     def test_upload_adds_rom_to_library(self):
         with self.upload("gb", "NewGame.gb", b"new-rom") as response:
             self.assertEqual(response.status, 201)
@@ -134,10 +147,45 @@ class ManagementApiTests(unittest.TestCase):
         self.assertEqual(data["filename"], "NewGame.gb")
         self.assertEqual(data["size_bytes"], 7)
         self.assertTrue((self.roms / "gb" / "NewGame.gb").is_file())
-        self.assertIn(
+        self.assertNotIn(
             "NewGame",
             [game["title"] for game in data["catalog"]["available"]],
         )
+
+        game = next(
+            item for item in data["catalog"]["games"]
+            if item["filename"] == "NewGame.gb"
+        )
+        with self.upload_artwork(game["id"]) as response:
+            self.assertEqual(response.status, 201)
+            artwork_data = json.loads(response.read())
+
+        self.assertTrue((self.roms / "gb" / "NewGame.png").is_file())
+        self.assertIn(
+            "NewGame",
+            [item["title"] for item in artwork_data["catalog"]["available"]],
+        )
+
+    def test_artwork_upload_rejects_invalid_image_contents(self):
+        with self.upload("gb", "NoArt.gb", b"rom"):
+            pass
+        catalog = json.loads(urlopen(self.base_url + "/api/catalog").read())
+        game = next(
+            item for item in catalog["games"]
+            if item["filename"] == "NoArt.gb"
+        )
+
+        with self.assertRaises(HTTPError) as error:
+            self.upload_artwork(game["id"], content=b"not-an-image")
+        self.assertEqual(error.exception.code, 400)
+        error.exception.close()
+        self.assertFalse((self.roms / "gb" / "NoArt.png").exists())
+
+    def test_artwork_upload_rejects_unknown_game(self):
+        with self.assertRaises(HTTPError) as error:
+            self.upload_artwork("not-a-real-game")
+        self.assertEqual(error.exception.code, 400)
+        error.exception.close()
 
     def test_upload_rejects_duplicate_filename(self):
         with self.upload("gb", "Duplicate.gb", b"first"):
@@ -181,6 +229,16 @@ class ManagementApiTests(unittest.TestCase):
             urlopen(self.base_url + "/api/catalog").read()
         )
         uploaded = next(
+            game for game in catalog["games"]
+            if game["filename"] == "RemoteGame.gb"
+        )
+        with self.upload_artwork(uploaded["id"]):
+            pass
+
+        catalog = json.loads(
+            urlopen(self.base_url + "/api/catalog").read()
+        )
+        uploaded = next(
             game for game in catalog["available"]
             if game["filename"] == "RemoteGame.gb"
         )
@@ -193,7 +251,7 @@ class ManagementApiTests(unittest.TestCase):
         self.assertEqual(
             assigned["slots"][0]["game"]["filename"], "RemoteGame.gb"
         )
-        self.assertIn(
+        self.assertNotIn(
             "Mario Tennis",
             [game["title"] for game in assigned["available"]],
         )
@@ -208,11 +266,16 @@ class ManagementApiTests(unittest.TestCase):
             [game["title"] for game in unassigned["available"]],
         )
 
+        rom_path = self.roms / "gb" / "RemoteGame.gb"
+        artwork_path = rom_path.with_suffix(".png")
+        self.assertTrue(artwork_path.is_file())
+
         status, deleted = self.post_json(
             "/api/games/delete", {"game_id": uploaded["id"]}
         )
         self.assertEqual(status, 200)
-        self.assertFalse((self.roms / "gb" / "RemoteGame.gb").exists())
+        self.assertFalse(rom_path.exists())
+        self.assertFalse(artwork_path.exists())
         self.assertNotIn(
             "RemoteGame",
             [game["title"] for game in deleted["games"]],
@@ -222,6 +285,15 @@ class ManagementApiTests(unittest.TestCase):
         with self.upload("gb", "ReplacementCandidate.gb", b"candidate"):
             pass
 
+        catalog = json.loads(
+            urlopen(self.base_url + "/api/catalog").read()
+        )
+        game = next(
+            item for item in catalog["games"]
+            if item["filename"] == "ReplacementCandidate.gb"
+        )
+        with self.upload_artwork(game["id"]):
+            pass
         catalog = json.loads(
             urlopen(self.base_url + "/api/catalog").read()
         )
@@ -253,6 +325,19 @@ class ManagementApiTests(unittest.TestCase):
         self.assertIn(
             game["id"], [item["id"] for item in after["available"]]
         )
+
+
+    def test_device_side_artwork_find_endpoint_is_removed(self):
+        request = Request(
+            self.base_url + "/api/artwork/find",
+            data=b"",
+            method="POST",
+        )
+        with self.assertRaises(HTTPError) as error:
+            urlopen(request)
+
+        self.assertEqual(error.exception.code, 404)
+        error.exception.close()
 
 
 if __name__ == "__main__":

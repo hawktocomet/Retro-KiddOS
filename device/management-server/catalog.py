@@ -62,6 +62,29 @@ def discover_games(rom_root):
             except OSError:
                 continue
 
+            artwork_by_stem = {}
+            artwork_priority = {".png": 0, ".jpg": 1, ".webp": 2}
+            artwork_files = sorted(
+                files,
+                key=lambda item: (
+                    artwork_priority.get(item.suffix.lower(), 99),
+                    item.name.casefold(),
+                ),
+            )
+            for candidate in artwork_files:
+                if (candidate.name.startswith(".")
+                        or candidate.suffix.lower() not in
+                        (".png", ".jpg", ".webp")
+                        or not candidate.is_file()):
+                    continue
+                try:
+                    candidate.resolve().relative_to(root.resolve())
+                    artwork_by_stem.setdefault(
+                        candidate.stem.casefold(), str(candidate)
+                    )
+                except (OSError, ValueError):
+                    continue
+
             for path in files:
                 if path.name.startswith(".") or not path.is_file():
                     continue
@@ -86,16 +109,7 @@ def discover_games(rom_root):
                 if title == "Pokemon Red Version":
                     title = "Pokemon Red"
 
-                artwork = None
-                for extension in (".png", ".jpg", ".webp"):
-                    candidate = path.with_suffix(extension)
-                    if candidate.is_file():
-                        try:
-                            candidate.resolve().relative_to(root.resolve())
-                            artwork = str(candidate)
-                            break
-                        except (OSError, ValueError):
-                            pass
+                artwork = artwork_by_stem.get(path.stem.casefold())
 
                 slottable = (
                     (actual_system == "gb" and path.suffix.lower() == ".gb")
@@ -110,6 +124,7 @@ def discover_games(rom_root):
                     "filename": path.name,
                     "path": str(path),
                     "artwork": artwork,
+                    "needs_artwork": artwork is None,
                     "size_bytes": size,
                     "slottable": slottable,
                 })
@@ -192,6 +207,11 @@ def assign_game(rom_root, state_root, slot_number, game_id,
     game = next((item for item in games if item["id"] == game_id), None)
     if game is None or not game["slottable"]:
         raise ValueError("Game is not available for a KiddOS slot")
+    if not game["artwork"]:
+        raise ValueError(
+            "Game needs artwork before it can be assigned. "
+            "Upload artwork or find matching cover art first."
+        )
 
     assignments = _load_or_initialize_slots(state_root, games)
     key = str(slot_number)
@@ -254,6 +274,24 @@ def delete_game(rom_root, state_root, game_id):
     # Persist the slot change before unlinking; never delete arbitrary paths.
     _save_assignments(state_root, assignments)
     resolved.unlink()
+
+    # Remove any artwork sidecar belonging to the deleted ROM.
+    try:
+        artwork_files = list(resolved.parent.iterdir())
+    except OSError:
+        artwork_files = []
+
+    for artwork in artwork_files:
+        if (artwork.stem.casefold() != resolved.stem.casefold()
+                or artwork.suffix.lower() not in (".png", ".jpg", ".webp")
+                or not artwork.is_file()):
+            continue
+        try:
+            artwork.resolve(strict=True).relative_to(root)
+            artwork.unlink()
+        except (OSError, ValueError):
+            pass
+
     return game_catalog(root, state_root)
 
 def game_catalog(rom_root, state_root):
@@ -278,7 +316,8 @@ def game_catalog(rom_root, state_root):
 
     available = [
         game for game in games
-        if game["slottable"] and game["id"] not in assigned_ids
+        if (game["slottable"] and game["artwork"]
+            and game["id"] not in assigned_ids)
     ]
 
     return {

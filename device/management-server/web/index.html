@@ -88,6 +88,34 @@ select, input[type="file"] {
 #catalog-error { color: var(--yellow); font-size: 13px; min-height: 20px; }
 .game-count { color: var(--muted); font-size: 12px; }
 
+.artwork-needed { color: var(--yellow); font-size: 12px; margin-top: 5px; }
+.artwork-ready { color: var(--green); font-size: 12px; margin-top: 5px; }
+.artwork-file { display: none; }
+
+#artwork-preview {
+  width: min(440px, calc(100% - 28px));
+  max-height: 90vh;
+  overflow: auto;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+}
+#artwork-preview::backdrop { background: #020713dd; }
+#artwork-preview h2 { margin-bottom: 8px; }
+#artwork-preview p { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+#artwork-preview img {
+  display: block;
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  margin: 14px auto;
+  background: #080e20;
+  border-radius: 10px;
+}
+.preview-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+
 @media (max-width: 480px) {
   main { padding-top: 26px; }
   .section-head { align-items: flex-start; }
@@ -244,6 +272,16 @@ select, input[type="file"] {
     </div>
   </section>
 
+  <dialog id="artwork-preview" aria-labelledby="artwork-preview-title">
+    <h2 id="artwork-preview-title">Preview Artwork</h2>
+    <p id="artwork-preview-name"></p>
+    <img id="artwork-preview-image" alt="Candidate game cover artwork">
+    <div class="preview-actions">
+      <button id="artwork-preview-cancel" class="secondary" type="button">Cancel</button>
+      <button id="artwork-preview-confirm" type="button">Use This Artwork</button>
+    </div>
+  </dialog>
+
   <footer>Retro KiddOS Management · Home network game management</footer>
 </main>
 
@@ -377,7 +415,7 @@ function renderAvailable(games, slots) {
   if (!games.length) {
     const empty = document.createElement("div");
     empty.className = "empty";
-    empty.textContent = "No additional slot-ready games. Upload a raw .gb or .gbc ROM to add one.";
+    empty.textContent = "No additional slot-ready games. Add a raw .gb or .gbc ROM, then find or upload its artwork.";
     container.append(empty);
     return;
   }
@@ -425,6 +463,145 @@ function renderAvailable(games, slots) {
   });
 }
 
+
+const BOXART_REPOSITORIES = {
+  gb: "Nintendo_-_Game_Boy",
+  gbc: "Nintendo_-_Game_Boy_Color"
+};
+const MAX_ARTWORK_BYTES = 20 * 1024 * 1024;
+const REGION_SUFFIX = /\s+\((?:USA|Europe|World|Japan|Australia|En|Fr|De|Es|It|Nl|Sv|No|Da|Fi|Pt|Korea|Asia|Brazil|Canada)(?:,\s*(?:USA|Europe|World|Japan|Australia|En|Fr|De|Es|It|Nl|Sv|No|Da|Fi|Pt|Korea|Asia|Brazil|Canada))*\)(?:\s+\((?:SGB Enhanced|GB Compatible)\))*$/i;
+
+function normalizedBoxartTitle(value) {
+  const filename = value.split("/").pop().replace(/\.[^.]+$/, "");
+  return filename
+    .replace(REGION_SUFFIX, "")
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+async function fetchGitHubTree(url) {
+  const response = await fetch(url, {
+    headers: { Accept: "application/vnd.github+json" }
+  });
+  if (!response.ok) {
+    throw new Error(`GitHub artwork search failed (HTTP ${response.status}).`);
+  }
+  const result = await response.json();
+  if (!result || !Array.isArray(result.tree)) {
+    throw new Error("GitHub returned an invalid artwork listing.");
+  }
+  return result;
+}
+
+async function findBrowserBoxart(game) {
+  const repository = BOXART_REPOSITORIES[game.system_id];
+  if (!repository) {
+    throw new Error("Automatic artwork search currently supports Game Boy and Game Boy Color. Please upload artwork manually.");
+  }
+
+  const api = `https://api.github.com/repos/libretro-thumbnails/${repository}/git/trees`;
+  const root = await fetchGitHubTree(`${api}/master`);
+  const directory = root.tree.find(item =>
+    item.path === "Named_Boxarts" && item.type === "tree"
+  );
+  if (!directory) {
+    throw new Error("The artwork archive has no Named_Boxarts directory. Please upload artwork manually.");
+  }
+
+  const listing = await fetchGitHubTree(`${api}/${encodeURIComponent(directory.sha)}?recursive=1`);
+  if (listing.truncated) {
+    throw new Error("GitHub returned an incomplete artwork listing. Please upload artwork manually.");
+  }
+
+  const wanted = normalizedBoxartTitle(game.title);
+  const matches = listing.tree.filter(item =>
+    item.type === "blob" &&
+    item.path.toLowerCase().endsWith(".png") &&
+    normalizedBoxartTitle(item.path) === wanted
+  );
+
+  if (!matches.length) {
+    throw new Error(`No exact cover-art match was found for "${game.title}". Please upload artwork manually.`);
+  }
+
+  const priority = filename => {
+    const stem = filename.split("/").pop().replace(/\.png$/i, "");
+    const base = game.title.replace(/\.[^.]+$/, "");
+    const suffix = stem.toLocaleLowerCase().startsWith(base.toLocaleLowerCase())
+      ? stem.slice(base.length).trim().toLocaleLowerCase()
+      : "";
+    return suffix === "" ? 0 : suffix === "(usa)" ? 1 : 2;
+  };
+  matches.sort((a, b) =>
+    priority(a.path) - priority(b.path) ||
+    a.path.localeCompare(b.path)
+  );
+
+  const encodedPath = matches[0].path.split("/").map(encodeURIComponent).join("/");
+  const imageUrl = `https://raw.githubusercontent.com/libretro-thumbnails/${repository}/master/Named_Boxarts/${encodedPath}`;
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    throw new Error(`Couldn't download the selected cover art (HTTP ${response.status}).`);
+  }
+
+  const blob = await response.blob();
+  if (!blob.size || blob.size > MAX_ARTWORK_BYTES) {
+    throw new Error("The artwork image is empty or exceeds the 20 MiB limit.");
+  }
+
+  const signature = new Uint8Array(await blob.slice(0, 8).arrayBuffer());
+  const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10];
+  if (!pngSignature.every((value, index) => signature[index] === value)) {
+    throw new Error("The artwork archive returned an invalid PNG image.");
+  }
+
+  return { blob, filename: matches[0].path.split("/").pop() };
+}
+
+function previewArtwork(game, blob, filename) {
+  return new Promise(resolve => {
+    const dialog = el("artwork-preview");
+    const image = el("artwork-preview-image");
+    const objectUrl = URL.createObjectURL(blob);
+    let settled = false;
+
+    const finish = accepted => {
+      if (settled) return;
+      settled = true;
+      dialog.removeEventListener("close", onClose);
+      URL.revokeObjectURL(objectUrl);
+      resolve(accepted);
+    };
+    const onClose = () => finish(false);
+
+    image.src = objectUrl;
+    el("artwork-preview-name").textContent =
+      `${game.title} · ${filename}`;
+    el("artwork-preview-confirm").onclick = () => {
+      dialog.close();
+      finish(true);
+    };
+    el("artwork-preview-cancel").onclick = () => dialog.close();
+    dialog.addEventListener("close", onClose);
+    dialog.showModal();
+  });
+}
+
+async function uploadArtworkBlob(game, blob, filename) {
+  const query = new URLSearchParams({ game_id: game.id, filename });
+  const response = await fetch(`/api/artwork/upload?${query}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/octet-stream" },
+    body: blob
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result.error || `Artwork upload failed (HTTP ${response.status}).`);
+  }
+  await refreshCatalog();
+  await refreshLibrary();
+}
+
 function renderInstalled(games) {
   const container = el("installed-games");
   container.replaceChildren();
@@ -451,8 +628,83 @@ function renderInstalled(games) {
     detail.textContent = gameMeta(game);
     info.append(title, detail);
 
+    const artworkStatus = document.createElement("div");
+    artworkStatus.className = game.artwork ? "artwork-ready" : "artwork-needed";
+    artworkStatus.textContent = game.artwork
+      ? "Artwork ready"
+      : "Artwork required before slot assignment";
+    info.append(artworkStatus);
+
     const actions = document.createElement("div");
     actions.className = "game-actions";
+
+    if (!game.artwork) {
+      if (game.slottable) {
+        const find = makeActionButton("Find Artwork", "secondary", async () => {
+          find.disabled = true;
+          find.textContent = "Searching…";
+          el("catalog-error").textContent = "";
+          try {
+            const candidate = await findBrowserBoxart(game);
+            const accepted = await previewArtwork(
+              game, candidate.blob, candidate.filename
+            );
+            if (!accepted) {
+              el("catalog-error").textContent = "Artwork preview cancelled.";
+              return;
+            }
+            find.textContent = "Uploading…";
+            await uploadArtworkBlob(game, candidate.blob, candidate.filename);
+            el("catalog-error").textContent = `Artwork saved for ${game.title}.`;
+          } catch (error) {
+            el("catalog-error").textContent = error.message;
+          } finally {
+            find.disabled = false;
+            find.textContent = "Find Artwork";
+          }
+        });
+        actions.append(find);
+      }
+
+      const file = document.createElement("input");
+      file.type = "file";
+      file.accept = ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp";
+      file.className = "artwork-file";
+      file.setAttribute("aria-label", `Choose artwork for ${game.title}`);
+
+      const uploadArtwork = makeActionButton("Upload Artwork", "secondary", () => file.click());
+      file.addEventListener("change", async () => {
+        const image = file.files[0];
+        if (!image) return;
+        uploadArtwork.disabled = true;
+        uploadArtwork.textContent = "Uploading…";
+        el("catalog-error").textContent = "";
+        try {
+          const query = new URLSearchParams({
+            game_id: game.id,
+            filename: image.name
+          });
+          const response = await fetch(`/api/artwork/upload?${query}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/octet-stream" },
+            body: image
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+          await refreshCatalog();
+          await refreshLibrary();
+          el("catalog-error").textContent = `Uploaded artwork for ${game.title}.`;
+        } catch (error) {
+          el("catalog-error").textContent = `Artwork upload failed: ${error.message}`;
+        } finally {
+          uploadArtwork.disabled = false;
+          uploadArtwork.textContent = "Upload Artwork";
+          file.value = "";
+        }
+      });
+      actions.append(uploadArtwork, file);
+    }
+
     const remove = makeActionButton("Delete ROM", "danger", async () => {
       if (!confirm(
         `Permanently delete "${game.title}" from the device? This cannot be undone. If it is assigned to a slot, that slot will become empty.`

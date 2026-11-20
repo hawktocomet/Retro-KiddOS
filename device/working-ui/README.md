@@ -4,7 +4,8 @@ Refactored ARM64 frontend built and verified on the blue FunnyPlaying Retro Pixe
 
 ## Working features
 
-- Four-game carousel with D-pad navigation.
+- Four-slot carousel populated from the device-side game catalog.
+- Detects slot configuration changes while running and refreshes game names, platforms, and artwork without restarting KiddOS.
 - Launches games through the firmware's runemu.py.
 - Stages the patched Gambatte link core.
 - Returns to KiddOS after exiting a game.
@@ -37,7 +38,8 @@ UI/resource ownership, and focused device services:
 - `UI.hpp/.cpp` — SDL resource lifecycle, shared UI state, and service/UI coordination.
 - `screens/` — screen-specific rendering and Wi-Fi on-screen keyboard behavior.
 - `models/Models.hpp` — shared `Game`, `WifiStatus`, and `WifiNetwork` types.
-- `models/Games.hpp` — the current four-game prototype catalog.
+- `models/Games.hpp` — frontend game models for the four catalog-backed slots.
+- `services/GameCatalog.cpp/.hpp` — loads the shared device-side Python catalog and maps its slot assignments into frontend models.
 - `services/GameLauncher.*` — launches a selected game through the firmware.
 - `services/BatteryService.*` — reads battery capacity and external-power state.
 - `services/WifiService.*` — reads Wi-Fi state, controls radio power, loads scan
@@ -54,9 +56,20 @@ Both `CMakeLists.txt` and `build-kiddos-ui.sh` include the extracted service
 implementations in the executable. The build still targets the existing ARM64
 device environment and its SDL dependencies.
 
-The game catalog remains intentionally hardcoded for this prototype. A
-parent-managed library and slot configuration are not implemented by this
-refactor.
+The frontend does not maintain a separate game catalog. `GameCatalog`
+invokes the shared device-side Python catalog, which discovers ROMs under
+`/storage/roms` and reads persistent assignments from
+`/storage/.kiddos-management/slots.json`.
+
+While the carousel is running, the application checks the slot file once per
+second. When the file changes, it reloads the catalog and refreshes game
+names, platform labels, and artwork. If the selected game is no longer
+assigned, the application returns to the Games carousel. Failed reloads are
+retried on a later poll.
+
+The four slots currently accept only raw `.gb` and `.gbc` ROMs, and new
+assignments require artwork. Other discovered systems remain visible in the
+management library but are not currently slot-assignable.
 
 Battery monitoring reads the device's RK817 power-supply sysfs interfaces:
 
@@ -77,16 +90,13 @@ Historical installed executable SHA-256 (November 17, 2026; superseded by the No
 
 ## Runtime requirements
 
-The current application expects these files under:
+The ROM library is rooted at `/storage/roms`. The shared catalog and
+persistent slot assignments are stored under
+`/storage/.kiddos-management/`. Each assigned ROM requires matching sidecar
+artwork (`.png`, `.jpg`, or `.webp`).
 
-`/storage/roms/.kiddos-ui-test-20261116/`
-
-- Mario Tennis.gbc
-- Pokemon Red Version.gb
-- Super Mario Bros. Deluxe.gbc
-- Tetris.gb
-- Matching PNG artwork
-- gambatte-link_libretro.so
+The patched `gambatte-link_libretro.so` remains required for the existing
+Game Boy link-launch path.
 
 It also requires the firmware's runemu.py, systemctl, SDL2 libraries, and Cabin Bold font at:
 
@@ -104,7 +114,7 @@ The output is written to `Build-Workspace/build/arm64/kiddos-ui` by default. Set
 
 The tested boot hook is at `../../firmware/boot/custom_start.sh`.
 
-It starts KiddOS as a systemd service and masks EmulationStation. It currently uses the dated runtime directory above and should not be installed on another device without reviewing its paths and rollback procedure.
+It starts KiddOS as a systemd service and masks EmulationStation. Review the hook's device-specific paths and rollback procedure before installing it on another device.
 
 ## Current architecture and scope
 
@@ -117,12 +127,13 @@ map and verification record.
 Games is the only implemented library section. Music and Movies are prepared
 navigation extension points, not implemented browsing or playback screens.
 Physical L/R section switching is not wired because shoulder-button IDs have
-not been verified. The game catalog remains hardcoded; parent-managed library
-editing is not implemented.
+not been verified. The four-slot catalog and parent-managed game assignments
+are implemented; see `../../docs/GAME_LIBRARY.md` and
+`../management-server/README.md`.
 
 ## Status
 
-The November 19 architecture-refactor build is deployed and running on RPPBLUE. The application architecture, input handling, navigation, screen modules, SDL resource ownership, and PIN workflow have been refactored while preserving the existing device features. Wi-Fi power control uses ConnMan and is tested locally on the handheld. Remote Management remains independent of Wi-Fi power and was re-tested after Wi-Fi was turned off and restored.
+The November 19 architecture-refactor build and subsequent live-catalog frontend build are deployed and running on RPPBLUE. The application architecture, input handling, navigation, screen modules, SDL resource ownership, and PIN workflow have been refactored while preserving the existing device features. Wi-Fi power control uses ConnMan and is tested locally on the handheld. Remote Management remains independent of Wi-Fi power and was re-tested after Wi-Fi was turned off and restored.
 
 Wi-Fi configuration is complete for the current milestone. Network scanning, network selection, open-network connections, secured-network password entry, and connection handling were tested on the blue Retro Pixel Pocket. The on-screen QWERTY keyboard was also tested and confirmed working.
 
@@ -135,6 +146,10 @@ The original desktop SDL application is archived project history. The device-fir
 Deployed refactored ARM64 executable SHA-256 (November 19, 2026):
 
 `1238648b823a2f09342bb646d5aee6f135a8d426647ea2b7bd6c7b5825bb3508`
+
+The subsequent live-catalog frontend build deployed to RPPBLUE had SHA-256:
+
+`209edf4c07e2f16227d41c5969650182b410f9ef26eb8a3bf05bc9d6353ab10c`
 
 The previous November 18 build checksum is historical and is not the currently deployed executable.
 
