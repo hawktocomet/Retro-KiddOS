@@ -11,14 +11,20 @@ Family multiplayer is an important part of the gaming goal.
 
 ## Project direction
 
-The active implementation is device-first:
+The active implementation is device-first, and the current delivery milestone is a reproducible, flashable firmware image:
 
-- Reuse the device's existing Linux firmware.
+- Use the existing RetroPixel/AmberELEC firmware as the base; do not build a Linux distribution from scratch.
+- Preserve proven bootloader, kernel, device-tree, driver, emulator, and hardware support.
+- Package the maintained KiddOS frontend, hardware service, and management server as proper firmware components.
+- Make image builds reproducible from documented source revisions and dependencies.
+- Preserve writable user data across normal upgrades.
 - Reuse its emulator, RetroArch, controller, and game-launching systems.
 - Keep the child-facing gaming experience simple and focused.
 - Prefer existing firmware playback capabilities for other media.
 - Avoid rebuilding functionality the firmware already provides.
 - Prefer a small, reliable solution over a large custom operating system.
+- Keep feature development frozen until the first complete image has been built, inspected, and validated.
+- Preserve dirty working trees, local backups, and device recovery paths; never use destructive cleanup as routine investigation.
 
 Our guiding principle:
 

@@ -1,10 +1,22 @@
 # Retro KiddOS Product & Technical Roadmap
 
 **Status:** Living design document  
-**Last consolidated:** November 17, 2026  
-**Scope:** Product and technical decisions discussed November 16–17, 2026
+**Last consolidated:** November 20, 2026
+**Scope:** Product and technical decisions discussed November 16–20, 2026
 
-This document is the central reference for the product direction, architecture, priorities, and deferred ideas. Recording an idea here does not automatically make it an implementation commitment. Implementation status is called out separately.
+This document records product direction, architecture, historical decisions, and deferred ideas. Recording an idea here does not automatically make it an implementation commitment.
+
+## Current milestone — reproducible flashable firmware image
+
+**This milestone supersedes the earlier installer-first distribution direction and the feature-development priorities below.**
+
+The deliverable is one reproducible, flashable Retro KiddOS image based on the existing RetroPixel/AmberELEC firmware. Retain proven bootloader, kernel, device-tree, drivers, hardware support, emulator infrastructure, and runtime components wherever practical. Do not build a Linux distribution from scratch.
+
+The active firmware integration checkout is `Firmware-NinohFOX/`. `Firmware-FunnyPlaying/` is retained as the manufacturer source baseline for comparison. The exact release source revision and provenance remain subject to audit.
+
+The maintained KiddOS frontend, hardware service, and management server are existing software to package and integrate—not invitations to restart feature development. Resolve the missing `extpackage` inputs, package dependencies, service integration, boot behavior, persistence, reproducibility, image inspection, and physical acceptance tests.
+
+**Feature freeze:** until a complete image has been built and inspected, work should be limited to blockers required to produce and validate that image. Preserve existing source changes, backups, and working device state. Do not perform destructive cleanup without explicit approval.
 
 ## 1. Product vision
 
@@ -94,7 +106,7 @@ Curate games for realistic independent play by a three-year-old and/or six-year-
 
 Pokémon is an important consideration for the six-year-old. Distinguish titles currently manageable with limited reading from reading-heavy titles that may become more rewarding as reading skills improve.
 
-The current prototype's game list is hardcoded. A parent-managed game library and editable active slots are future work, not implemented functionality.
+Historical note: this paragraph described an earlier prototype. The maintained implementation now has a shared device-side game catalog, parent-managed game assignment, artwork workflows, and live carousel updates. See the current README and custom-image architecture document for implementation and packaging status.
 
 ### Music and movies
 
@@ -240,7 +252,10 @@ Conceptually:
 
 The management server should remain independent of the SDL process. Each handheld manages its own local library and configuration; the same phone or computer can manage each device separately.
 
-## 8. Current implementation status
+## 8. Historical implementation status snapshot
+
+The following records the state documented during the earlier device-first development phase. It is not a complete description of the current frontend, hardware service, or management server. For current software and firmware integration status, see `README.md` and `docs/CUSTOM-IMAGE-ARCHITECTURE.md`.
+
 
 ### Verified on the blue Retro Pixel Pocket
 
@@ -266,7 +281,7 @@ The management server should remain independent of the SDL process. Each handhel
 ### Not yet implemented or fully validated
 
 - Further Wi-Fi edge cases and automatic reconnection behavior, deferred unless real-world use exposes a problem.
-- Browser-based media upload/library and slot assignment.
+- Full media-library administration beyond the currently implemented game catalog, artwork, and active-slot workflows.
 - Browser-based theme customization.
 - Automatic network priority/fallback behavior.
 - Phone-hotspot fallback.
@@ -279,12 +294,11 @@ The current frontend is a working prototype validated on one blue device. Do not
 
 ## 9. Priorities and deferred work
 
-### Near-term priorities
+### Current priority
 
-1. Keep the verified Parent Mode, PIN, Remote Management, and Wi-Fi power controls stable.
-2. Continue toward the Christmas goal: make game selection and play easy for the children.
-3. Validate future changes on actual hardware before expanding scope.
-4. Continue the browser management experience incrementally when it provides practical value.
+The active priority is the reproducible flashable firmware image described at the beginning of this document. Keep the existing verified frontend, Parent Mode, PIN, Remote Management, and Wi-Fi workflows stable while resolving only the integration and release blockers required for the image.
+
+Feature work resumes only when it is necessary to meet the image's acceptance criteria or a real hardware problem requires it.
 
 ### Deferred until the foundation is proven
 
@@ -320,7 +334,10 @@ These questions are intentionally left open rather than prematurely specified:
 
 Resolve these when their implementation becomes the next useful step, not as prerequisites for keeping the current prototype usable.
 
-## Management Server v0.3.0 — Deployed and Validated
+## Historical snapshot: Management Server v0.3.0
+
+This section preserves the earlier v0.3.0 read-only inventory milestone. It is superseded by the current management-server implementation, which includes game-catalog management, artwork workflows, and live slot updates. See `README.md` and `docs/CUSTOM-IMAGE-ARCHITECTURE.md` for the current state.
+
 
 **Status: deployed and tested on the blue Retro Pixel Pocket, November 17, 2026.**
 
@@ -356,9 +373,8 @@ The small Wi-Fi status icon beside the handheld battery indicator also remains d
 
 This milestone validates the core architecture: the handheld stores and applies information, while a phone or computer provides the management interface.
 
-### Later distribution work
+### Distribution and licensing guardrails
 
-- Build a reversible installer for an existing RetroPixel SD card rather than redistributing a complete firmware image by default.
-- Audit the exact RetroPixel fork and every bundled component before publishing any complete image.
-- Preserve third-party licenses, notices, and source-offer obligations.
-- Do not bundle ROMs, BIOS files, or artwork without explicit redistribution rights.
+The earlier installer-first proposal is superseded by the current flashable-image milestone.
+
+Before distributing an image, audit the exact firmware source and every bundled component. Preserve third-party licenses, notices, and source-offer obligations. Do not bundle ROMs, BIOS files, or artwork without explicit redistribution rights.

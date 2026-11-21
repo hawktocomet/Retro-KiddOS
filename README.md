@@ -16,7 +16,17 @@ Prefer using playback and system capabilities already present in the firmware ov
 
 Retro KiddOS is a device-first frontend, not a replacement operating system. It reuses the handheld's existing Linux firmware, SDL libraries, emulator stack, game files, controller, networking, and power-management facilities.
 
-The current priority is a dependable family gaming experience. Keep the interface focused and the implementation as small as practical. Validate real use on hardware before expanding scope.
+The current milestone is a reproducible, flashable KiddOS firmware image based on the existing RetroPixel/AmberELEC firmware. Preserve its proven boot, kernel, drivers, emulator stack, and hardware support; integrate the maintained KiddOS software as proper firmware packages and services. The image must be buildable from documented source inputs and installable on a stock Retro Pixel Pocket without manual SSH setup.
+
+Feature development is frozen while this foundation is completed. Work should address image-build, packaging, reproducibility, boot, persistence, and release-validation blockers—not add unrelated UI or infrastructure features.
+
+## Current firmware-image milestone
+
+The target deliverable is one reproducible, flashable image built on the existing RetroPixel/AmberELEC firmware—not a Linux distribution built from scratch and not a manual installer layered onto a previously configured device.
+
+The active firmware integration checkout is `Firmware-NinohFOX/`; `Firmware-FunnyPlaying/` is retained as the manufacturer's source baseline for comparison. The final source revision and build provenance still require audit and documentation.
+
+The maintained frontend, native hardware service, and management server already exist in this repository. The remaining work is to package and integrate them into the firmware, resolve external build inputs, verify boot and service behavior, preserve writable user data, and produce and inspect a complete image. A flashable image has not yet been validated.
 
 ## Current implementation
 
@@ -91,7 +101,7 @@ playback tools over building custom media infrastructure.
 - Full-length movie playback and a simple music-library workflow have not been validated.
 - Runtime paths and the firmware hook are specific to the tested device setup.
 
-Keep future work focused on making it easier for the kids to play and enjoy games together.
+Until the reproducible image is built and validated, keep work limited to firmware integration and release blockers. Resume feature development only when the image's acceptance criteria or a real hardware problem requires it.
 
 ## Repository layout
 
@@ -99,6 +109,7 @@ Keep future work focused on making it easier for the kids to play and enjoy game
 - `firmware/boot/` — tested device startup hook.
 - `device/management-server/` — shared game catalog, Remote Management API, browser interface, and tests.
 - `docs/` — architecture, hardware, game-library, and management references.
+- `docs/CUSTOM-IMAGE-ARCHITECTURE.md` — current firmware-image integration plan, verified build findings, and blockers.
 - `CONTRIBUTING.md` — development principles.
 
 Earlier committed history, including the pre-refactor baseline, remains available in Git.

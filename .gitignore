@@ -26,3 +26,7 @@ compile_commands.json
 # Local safety backups and Python bytecode are not source files.
 __pycache__/
 *.pre-*
+
+# Local archives and session handoff files
+/KiddOS_REFACTOR.zip
+/kiddos-display-handoff-compact.txt
