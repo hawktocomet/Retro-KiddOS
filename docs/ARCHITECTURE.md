@@ -4,6 +4,16 @@ This document describes the device-first SDL frontend after the November 2026
 architecture refactor. It records current responsibility boundaries and
 distinguishes implemented behavior from prepared extension points.
 
+This is the **KiddOS application architecture**, not the architecture of the
+entire device platform. Project ownership and the intended separation from
+Retro Pixel Foundation are documented in
+[PROJECT-BOUNDARIES.md](PROJECT-BOUNDARIES.md).
+
+The current frontend still contains stock-firmware-specific service
+integrations. Their presence is part of the compatibility baseline; this
+document does not claim that the platform interfaces have already been
+fully separated or implemented by Foundation.
+
 ## Application flow
 
 `main.cpp` is intentionally a small entry point. `Application` owns the

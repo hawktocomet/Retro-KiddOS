@@ -3,28 +3,71 @@
 ## Project mission
 
 Retro KiddOS aims to make the FunnyPlaying Retro Pixel Pocket a simple,
-child-friendly, offline gaming device. Children should be able to choose and
-play their games independently at home and while traveling, with minimal
-adult help and without depending on Wi-Fi.
+child-friendly, offline entertainment device centered on games. The product
+direction may also include music, movies, and TV, while keeping local use
+independent of Wi-Fi. Children should be able to enjoy their content with
+minimal adult help, at home and while traveling.
 
 Family multiplayer is an important part of the gaming goal.
 
 ## Project direction
 
-The active implementation is device-first, and the current delivery milestone is a reproducible, flashable firmware image:
+Retro KiddOS and Retro Pixel Foundation are independent projects. Their
+responsibilities and transition rules are documented in
+[docs/PROJECT-BOUNDARIES.md](docs/PROJECT-BOUNDARIES.md).
 
-- Use the existing RetroPixel/AmberELEC firmware as the base; do not build a Linux distribution from scratch.
-- Preserve proven bootloader, kernel, device-tree, driver, emulator, and hardware support.
-- Package the maintained KiddOS frontend, hardware service, and management server as proper firmware components.
-- Make image builds reproducible from documented source revisions and dependencies.
-- Preserve writable user data across normal upgrades.
-- Reuse its emulator, RetroArch, controller, and game-launching systems.
-- Keep the child-facing gaming experience simple and focused.
-- Prefer existing firmware playback capabilities for other media.
-- Avoid rebuilding functionality the firmware already provides.
-- Prefer a small, reliable solution over a large custom operating system.
-- Keep feature development frozen until the first complete image has been built, inspected, and validated.
-- Preserve dirty working trees, local backups, and device recovery paths; never use destructive cleanup as routine investigation.
+### Retro KiddOS
+
+KiddOS is the child-facing product. It owns:
+
+- The frontend, navigation, and presentation.
+- Game and future media library experiences.
+- Content organization, metadata, artwork, and curation.
+- Child profiles, favorites, visibility, and content assignments.
+- Parent-facing management and content-preparation workflows.
+- Product-specific settings, PIN workflows, and policies.
+
+The immediate priority is a reliable, simple experience on the existing
+stock firmware and hardware. Preserve working behavior and validate
+meaningful changes on the actual device.
+
+### Retro Pixel Foundation
+
+Foundation is the reusable platform beneath applications and frontends.
+It owns:
+
+- Bootloader, kernel, device tree, and hardware support.
+- Linux userspace, system services, and hardware capabilities.
+- Gaming runtime and emulator integration.
+- Documented interfaces for applications and frontends.
+- Reproducible image builds and dependency provisioning.
+- Source provenance, licensing, redistribution, and developer documentation.
+
+Foundation must be independently buildable and must not depend on KiddOS.
+A developer should be able to use it with a different frontend.
+
+### Transition and compatibility
+
+The current KiddOS implementation uses stock RetroPixel firmware facilities.
+Keep that compatibility path working while Foundation is developed.
+
+Do not move or replace working components merely to make the architecture
+look cleaner. Separate interfaces from implementations incrementally, with
+tests and device validation appropriate to each change.
+
+Foundation development must not unnecessarily delay practical KiddOS
+progress. A complete Foundation image is a separate milestone, not a
+prerequisite for the immediate KiddOS product.
+
+### Build and contribution expectations
+
+Keep KiddOS application builds separate from Foundation image builds.
+Document all prerequisites and dependencies; do not rely on private archives,
+undocumented local workspaces, or hidden state.
+
+Preserve the existing firmware, kernel, hardware research, local backups,
+dirty working trees, and device recovery paths. Never use destructive
+cleanup as routine investigation.
 
 Our guiding principle:
 
@@ -32,11 +75,11 @@ Our guiding principle:
 > kids to play games together. If it doesn't, we probably shouldn't be
 > building it.
 
-If a task does not improve the children's experience, question whether
-it needs to be done.
+If a task does not improve the children's experience or materially advance
+the reusable Foundation, question whether it needs to be done.
 
-The original desktop SDL application is archived project history.
-The device-first SDL frontend is the active development path.
+The original desktop SDL application is archived project history. The
+device-first SDL frontend is the active KiddOS development path.
 
 ## Development principles
 

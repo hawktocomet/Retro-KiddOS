@@ -14,19 +14,43 @@ Prefer using playback and system capabilities already present in the firmware ov
 
 ## Project direction
 
-Retro KiddOS is a device-first frontend, not a replacement operating system. It reuses the handheld's existing Linux firmware, SDL libraries, emulator stack, game files, controller, networking, and power-management facilities.
+Retro KiddOS and Retro Pixel Foundation are two independent projects with
+separate responsibilities.
 
-The current milestone is a reproducible, flashable KiddOS firmware image based on the existing RetroPixel/AmberELEC firmware. Preserve its proven boot, kernel, drivers, emulator stack, and hardware support; integrate the maintained KiddOS software as proper firmware packages and services. The image must be buildable from documented source inputs and installable on a stock Retro Pixel Pocket without manual SSH setup.
+- **Retro KiddOS** is the child-friendly gaming and entertainment experience.
+  It owns the frontend, content library, child-facing navigation, parent
+  management, and product-specific behavior.
+- **Retro Pixel Foundation** is the reusable hardware and software platform.
+  It owns the operating system, hardware support, system services, gaming
+  runtime, reproducible image build, and documented application interfaces.
 
-Feature development is frozen while this foundation is completed. Work should address image-build, packaging, reproducibility, boot, persistence, and release-validation blockers—not add unrelated UI or infrastructure features.
+The Foundation must be independently buildable and useful without KiddOS.
+KiddOS must remain usable on the existing stock RetroPixel firmware while
+the Foundation is developed.
 
-## Current firmware-image milestone
+See [Project Boundaries](docs/PROJECT-BOUNDARIES.md) for the ownership rules,
+transition responsibilities, and intended migration sequence.
 
-The target deliverable is one reproducible, flashable image built on the existing RetroPixel/AmberELEC firmware—not a Linux distribution built from scratch and not a manual installer layered onto a previously configured device.
+### Immediate KiddOS priority
 
-The active firmware integration checkout is `Firmware-NinohFOX/`; `Firmware-FunnyPlaying/` is retained as the manufacturer's source baseline for comparison. The final source revision and build provenance still require audit and documentation.
+The immediate product priority is a reliable, easy-to-use experience on the
+existing devices. Preserve the working stock firmware integration and avoid
+changes that put the family gaming experience at risk.
 
-The maintained frontend, native hardware service, and management server already exist in this repository. The remaining work is to package and integrate them into the firmware, resolve external build inputs, verify boot and service behavior, preserve writable user data, and produce and inspect a complete image. A flashable image has not yet been validated.
+Foundation research and development should proceed independently. It must
+not become a prerequisite for KiddOS progress or require premature migration
+of working components.
+
+### Foundation direction
+
+The longer-term Foundation goal is a transparent, reproducible platform that
+another developer can clone, build, and use with a frontend of their choice.
+Build inputs, dependencies, source provenance, licenses, and redistribution
+restrictions must be documented.
+
+The existing firmware-image research remains valuable technical evidence.
+It is not a claim that a complete, reproducible Foundation image has already
+been built or validated.
 
 ## Current implementation
 
@@ -95,13 +119,13 @@ playback tools over building custom media infrastructure.
 
 - The four-slot carousel currently accepts only raw `.gb` and `.gbc` ROMs. Other discovered systems are not currently slot-assignable.
 - Browser-side automatic artwork search supports Game Boy and Game Boy Color; other artwork can be supplied manually.
-- Games is the only implemented library section. Music and Movies exist only as prepared section-navigation structure; their browsing and playback workflows are not implemented.
+- Games is the only implemented child-facing library section. MPV playback has been demonstrated separately, but finished music, movie, and TV browsing experiences and parent-side media preparation workflows are not implemented.
 - Physical L/R library switching is not wired because shoulder-button IDs have not been verified.
 - Multiplayer workflows, including Pokémon trading and head-to-head play, remain future work.
 - Full-length movie playback and a simple music-library workflow have not been validated.
 - Runtime paths and the firmware hook are specific to the tested device setup.
 
-Until the reproducible image is built and validated, keep work limited to firmware integration and release blockers. Resume feature development only when the image's acceptance criteria or a real hardware problem requires it.
+Prioritize practical improvements to the KiddOS experience while preserving the working stock-firmware path. Defer broad Foundation integration and speculative abstractions until they have a concrete purpose and can be validated independently.
 
 ## Repository layout
 
@@ -109,7 +133,7 @@ Until the reproducible image is built and validated, keep work limited to firmwa
 - `firmware/boot/` — tested device startup hook.
 - `device/management-server/` — shared game catalog, Remote Management API, browser interface, and tests.
 - `docs/` — architecture, hardware, game-library, and management references.
-- `docs/CUSTOM-IMAGE-ARCHITECTURE.md` — current firmware-image integration plan, verified build findings, and blockers.
+- `docs/CUSTOM-IMAGE-ARCHITECTURE.md` — retained firmware-image research, verified build findings, and historical integration blockers.
 - `CONTRIBUTING.md` — development principles.
 
 Earlier committed history, including the pre-refactor baseline, remains available in Git.

@@ -1,14 +1,28 @@
-# Retro KiddOS Custom Image Architecture
+# Historical Retro Pixel Pocket Firmware Image Research
 
-**Status:** Architecture baseline and implementation plan
+**Status:** Historical research and technical evidence; the original monolithic KiddOS image plan is superseded.
 **Last updated:** November 20, 2026
-**Purpose:** Document the components, dependencies, build sequence, and remaining work required to produce a reproducible, bootable Retro KiddOS image for the FunnyPlaying Retro Pixel Pocket.
+**Purpose:** Preserve the investigation of the FunnyPlaying Retro Pixel Pocket firmware, build system, dependencies, integration points, and blockers. The reusable operating-system and flashable-image work now belongs to the independent Retro Pixel Foundation project, not to the KiddOS application project.
 
 ---
 
-## 1. Goal and guiding principle
+> **Project direction notice**
+>
+> This document records an earlier architecture in which KiddOS itself would
+> produce and own a complete custom firmware image. That direction has been
+> superseded by the project split documented in `docs/PROJECT-BOUNDARIES.md`.
+> Keep the technical findings below as research and provenance; do not treat
+> the old phases, workspace assumptions, or image-integration steps as current
+> KiddOS instructions. Foundation work must be independently buildable and
+> must not be a prerequisite for continuing KiddOS on the stock firmware.
+>
+> For current KiddOS status, see `README.md`, `docs/ARCHITECTURE.md`, and
+> `docs/HARDWARE-SERVICE-MIGRATION.md`. For the current project split, see
+> `docs/PROJECT-BOUNDARIES.md`.
 
-The goal is to produce our own bootable Retro Pixel Pocket image that starts directly into a reliable, child-friendly Retro KiddOS experience.
+## 1. Original goal and guiding principle
+
+The original goal of this superseded plan was to produce a bootable Retro Pixel Pocket image that started directly into a reliable, child-friendly Retro KiddOS experience.
 
 The project should reuse the existing AmberELEC-derived firmware, Linux kernel, bootloader, drivers, emulator cores, and system libraries wherever practical. We are not trying to replace the underlying operating system.
 
@@ -566,7 +580,7 @@ The management slot file and ROM library must never be treated as disposable bui
 
 ---
 
-## 12. Current implementation status
+## 12. Historical implementation status snapshot
 
 | Component | Tested or present | Clean-image status |
 |---|---|---|
@@ -586,9 +600,9 @@ The management slot file and ROM library must never be treated as disposable bui
 
 ---
 
-## 13. Build integration roadmap
+## 13. Superseded custom-image integration plan
 
-The work should proceed in dependency order.
+The following sequence was proposed for the superseded monolithic KiddOS image plan. It is retained as historical planning context, not as the current project roadmap.
 
 ### Phase 1 — Freeze the architecture baseline
 
@@ -727,9 +741,9 @@ The final measure is not how much of the firmware we replaced. It is whether the
 
 ---
 
-## 16. Verified Firmware build findings and current blockers
+## 16. Firmware build findings recorded during the original investigation
 
-This section records findings from direct inspection of the `Firmware-NinohFOX/` checkout. It supersedes earlier statements in this document where the build path or boot-image details were still described as unknown.
+This section preserves findings from direct inspection of the `Firmware-NinohFOX/` checkout during the original custom-image investigation. These findings describe that checkout and that point in time; verify source revisions, paths, dependencies, and blockers again before relying on them. They are technical evidence for the separate Foundation workstream, not an active KiddOS build checklist.
 
 ### 16.1 Actual distribution and build path
 
@@ -741,7 +755,7 @@ This section records findings from direct inspection of the `Firmware-NinohFOX/`
 - The existing `build.AmberELEC-RPPOCKET.aarch64/` directory is not the expected output directory for this selected distribution.
 - `scripts/image` deletes and recreates its generated install tree and clears its install stamps before assembling the image root filesystem.
 
-**Current state:** the expected RetroPixel build directory is absent. No complete image build has been run as part of this investigation. Do not run a build merely to test the path until the missing source inputs and release blockers below have been addressed.
+**State recorded during the original investigation:** the expected RetroPixel build directory was absent. No complete image build had been run as part of that investigation. Do not run a build merely to test the path until the missing source inputs and release blockers below have been addressed.
 
 ### 16.2 External source package provisioning
 

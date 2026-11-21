@@ -1,12 +1,12 @@
 # Retro Pixel Pocket Hardware Service Migration
 
-**Status:** Deployed and reboot-verified on the blue Retro Pixel Pocket (RPPBLUE)
+**Status:** Transitional hardware service deployed and reboot-verified on the blue Retro Pixel Pocket (RPPBLUE)
 **Date:** 2026-11-20
-**Scope:** Replace the proprietary `retropixel-server` runtime with the KiddOS-owned ARM64 hardware service.
+**Scope:** Replace the proprietary `retropixel-server` runtime with a project-built ARM64 hardware service. This device-specific implementation is a candidate for future Foundation ownership; it is not yet a portable Foundation service.
 
 ## Summary
 
-The device now runs `/storage/.config/kiddos/retropixel-server --apply` as the transient systemd unit `kiddos-hardware.service`. The replacement is launched by the writable `/storage/.config/custom_start.sh` boot hook. The read-only system partition and `/usr/bin/autostart.sh` were not modified.
+The device now runs `/storage/.config/kiddos/retropixel-server --apply` as the transient systemd unit `kiddos-hardware.service`. This is a verified deployment on the blue device, not a claim that the service is already separated from KiddOS or portable across hardware. The replacement is launched by the writable `/storage/.config/custom_start.sh` boot hook. The read-only system partition and `/usr/bin/autostart.sh` were not modified.
 
 The existing KiddOS UI startup logic in `custom_start.sh` was preserved. The hook starts the hardware service before checking whether the UI is already running, and avoids launching a duplicate UI instance.
 

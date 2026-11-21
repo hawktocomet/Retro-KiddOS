@@ -6,17 +6,33 @@
 
 This document records product direction, architecture, historical decisions, and deferred ideas. Recording an idea here does not automatically make it an implementation commitment.
 
-## Current milestone — reproducible flashable firmware image
+## Current direction — two independent projects
 
-**This milestone supersedes the earlier installer-first distribution direction and the feature-development priorities below.**
+The project now has two related but independently useful parts. Their responsibilities and transition boundaries are documented in [`PROJECT-BOUNDARIES.md`](PROJECT-BOUNDARIES.md).
 
-The deliverable is one reproducible, flashable Retro KiddOS image based on the existing RetroPixel/AmberELEC firmware. Retain proven bootloader, kernel, device-tree, drivers, hardware support, emulator infrastructure, and runtime components wherever practical. Do not build a Linux distribution from scratch.
+### Retro KiddOS — immediate product priority
 
-The active firmware integration checkout is `Firmware-NinohFOX/`. `Firmware-FunnyPlaying/` is retained as the manufacturer source baseline for comparison. The exact release source revision and provenance remain subject to audit.
+The immediate priority is a reliable, child-friendly experience on the existing FunnyPlaying Retro Pixel Pocket firmware. Preserve the working stock-firmware integration and build on the tested device-side frontend and parent-management capabilities.
 
-The maintained KiddOS frontend, hardware service, and management server are existing software to package and integrate—not invitations to restart feature development. Resolve the missing `extpackage` inputs, package dependencies, service integration, boot behavior, persistence, reproducibility, image inspection, and physical acceptance tests.
+Christmas progress must not depend on first producing a custom firmware image. Do not freeze useful product work for the sake of image-building infrastructure, and do not destabilize the working device setup to pursue the longer-term platform.
 
-**Feature freeze:** until a complete image has been built and inspected, work should be limited to blockers required to produce and validate that image. Preserve existing source changes, backups, and working device state. Do not perform destructive cleanup without explicit approval.
+Near-term work should be judged by whether it makes the devices easier for the children to use and easier for parents to manage. Keep the implementation small and practical.
+
+### Retro Pixel Foundation — independent platform direction
+
+The longer-term platform effort is a transparent, reproducible, independently buildable foundation for the Retro Pixel Pocket. It should provide hardware support, operating-system/runtime integration, shared device capabilities, documented interfaces, dependency provenance, and developer build instructions.
+
+The Foundation must be useful without KiddOS. KiddOS should become a replaceable reference frontend that uses public Foundation interfaces rather than defining or owning the platform.
+
+A reproducible flashable image remains an important Foundation deliverable, but it is a separate workstream—not a prerequisite for Christmas KiddOS progress. Existing firmware-image research and artifacts remain valuable technical evidence. See [`CUSTOM-IMAGE-ARCHITECTURE.md`](CUSTOM-IMAGE-ARCHITECTURE.md).
+
+### Working rules
+
+- Keep the current stock-firmware path working while the Foundation is developed separately.
+- Do not move or rewrite source code merely to make the conceptual split look complete. Establish and test interfaces before migration.
+- Preserve existing source changes, backups, forensic artifacts, and working device state.
+- Keep current emulator/core behavior—including the intentional Gambatte prototype integration—unless a demonstrated product need justifies changing it.
+- Prefer small, reversible steps. Do not perform destructive cleanup, firmware flashing, or device deployment without explicit approval.
 
 ## 1. Product vision
 
@@ -24,7 +40,7 @@ Retro KiddOS is a simple, child-friendly entertainment experience for the FunnyP
 
 > Every hour we spend developing should make it easier for you and your kids to play games together. If it doesn't, we probably shouldn't be building it.
 
-The broader principle applies to games, music, and movies: development should make it easier for the children to enjoy their devices. Prefer existing firmware capabilities over custom infrastructure. Avoid technically interesting work that does not improve the family experience.
+The broader principle applies to games, music, movies, and TV: development should make it easier for the children to enjoy their devices. Prefer existing firmware capabilities over custom infrastructure. Avoid technically interesting work that does not improve the family experience.
 
 ### Product priorities
 
@@ -39,13 +55,16 @@ The project is not intended to replace the underlying firmware, emulator stack, 
 
 ## 2. Child-facing handheld experience
 
-The normal KiddOS interface should remain deliberately simple, with three top-level categories:
+The current implemented child-facing library experience is Games. The broader product direction includes:
 
 - **Games**
 - **Music**
 - **Movies**
+- **TV shows**
 
-The proposed navigation uses the physical L/R buttons to switch between categories. Each category presents four active slots. Music and Movies playback interactions remain to be validated.
+These are product areas, not a requirement for four fixed top-level buttons or identical navigation depth. The experience should suit the child's age and familiarity: a younger child may need a very flat selection of familiar items, while an older child may benefit from categories, systems, collections, playlists, shows, seasons, and episodes.
+
+The same underlying content library may support different child-facing experiences. Keep this as future product direction; do not mistake it for implemented functionality or expand the Christmas scope without a clear benefit.
 
 The normal child-facing interface should not expose network configuration, media-library administration, theme editors, or other parent tools.
 
@@ -73,15 +92,14 @@ The current working frontend has been tested on the blue device. It is a prototy
 
 ### Media slots and library
 
-Separate the **stored media library** from the **four active slots** in each category.
+The intended design separates the **stored content library** from the **featured choices** shown to a child. The four-game slot workflow is implemented today; equivalent music, movie, and TV assignment workflows are future work.
 
-- Media uploaded to a device remains in its library even when it is no longer assigned to a slot.
-- Parents can assign an existing library item to a slot.
-- Parents can upload new content and assign it to a slot.
-- Replacing a slot assignment must not automatically delete the previous media.
-- Slot assignments are references to stored content, not destructive moves.
+- Content should remain in the library when it is no longer featured.
+- Parents should be able to feature an existing library item or add new content.
+- Replacing a featured assignment must not automatically delete the previous content.
+- Assignments should be references to stored content, not destructive moves.
 
-This allows parents to rotate the four visible choices without repeatedly transferring or losing media.
+The number and presentation of featured choices may vary by content type and child experience. Do not force every category into an identical four-slot model.
 
 ### Game library scope and curation
 
@@ -106,15 +124,17 @@ Curate games for realistic independent play by a three-year-old and/or six-year-
 
 Pokémon is an important consideration for the six-year-old. Distinguish titles currently manageable with limited reading from reading-heavy titles that may become more rewarding as reading skills improve.
 
-Historical note: this paragraph described an earlier prototype. The maintained implementation now has a shared device-side game catalog, parent-managed game assignment, artwork workflows, and live carousel updates. See the current README and custom-image architecture document for implementation and packaging status.
+Historical note: this paragraph described an earlier prototype. The maintained implementation now has a shared device-side game catalog, parent-managed game assignment, artwork workflows, and live carousel updates. See `README.md` and `docs/ARCHITECTURE.md` for current application status. The custom-image architecture document preserves earlier firmware packaging research.
 
-### Music and movies
+### Music, movies, and TV
 
-Music may be represented as albums or playlists, potentially as folders, but the precise playback model and controls remain open design questions.
+Music may be organized as playlists, albums, or individual tracks. Movies may be organized into collections or genres. TV may be organized by show, season, and episode. The precise child-facing playback controls and navigation remain future design work.
 
-Movies should use existing firmware playback capabilities wherever possible. MPV has successfully played a 720 × 720 H.264/AAC test clip with sound. Full-length movie playback and the complete child-friendly browsing experience still need validation.
+MPV has already been demonstrated playing a 720 × 720 H.264/AAC test clip with sound on the device. This is useful proof of playback capability, not validation of a complete movie or TV experience.
 
-A documented local movie-preparation pipeline should build on the successful Totoro encode:
+Content preparation should primarily happen on the parent's computer, not on the resource-constrained handheld. The intended workflow is to keep originals in the parent's library and prepare device-ready copies for transfer. A local companion service may be needed alongside the browser interface for filesystem access, FFmpeg conversion, metadata/artwork work, compatibility checks, and synchronization. This is an architectural direction, not a commitment to a particular implementation yet.
+
+The successful Totoro encode provides a starting point for a repeatable movie profile:
 
 - H.264 video.
 - AAC stereo audio.
@@ -123,7 +143,9 @@ A documented local movie-preparation pipeline should build on the successful Tot
 - Medium preset.
 - 160 kbps audio.
 
-Aspect-ratio handling must be an explicit per-source choice; do not blindly stretch every source. Preserve originals, verify converted files, and prioritize an easy repeatable workflow.
+Aspect-ratio handling must be an explicit per-source choice; do not blindly stretch every source. Preserve originals and verify converted files.
+
+For content to be assignable to a child's experience, it should be both **usable** on the target device (the required player/runtime exists and the content is in a supported format) and **recognizable** (it has a title, relevant metadata, and suitable artwork). Content can remain in the parent's library while it is being prepared or awaiting metadata/artwork.
 
 ## 3. Parent Mode on the handheld
 
@@ -170,7 +192,7 @@ The browser interface is intended to handle:
 
 - Uploading and organizing games, music, and movies.
 - Browsing the stored media library.
-- Assigning existing items to the four active slots in each category.
+- Assigning existing library items to the featured choices available in each child-facing experience.
 - Replacing slot assignments without deleting stored media.
 - Editing or confirming titles, descriptions, metadata, and artwork.
 - Retrieving metadata and artwork on the parent device where practical.
@@ -254,7 +276,7 @@ The management server should remain independent of the SDL process. Each handhel
 
 ## 8. Historical implementation status snapshot
 
-The following records the state documented during the earlier device-first development phase. It is not a complete description of the current frontend, hardware service, or management server. For current software and firmware integration status, see `README.md` and `docs/CUSTOM-IMAGE-ARCHITECTURE.md`.
+The following records the state documented during the earlier device-first development phase. It is not a complete description of the current frontend, hardware service, or management server. For current KiddOS software status, see `README.md` and `docs/ARCHITECTURE.md`. The hardware-service deployment record is in `docs/HARDWARE-SERVICE-MIGRATION.md`.
 
 
 ### Verified on the blue Retro Pixel Pocket
@@ -294,20 +316,31 @@ The current frontend is a working prototype validated on one blue device. Do not
 
 ## 9. Priorities and deferred work
 
-### Current priority
+### Immediate KiddOS priority
 
-The active priority is the reproducible flashable firmware image described at the beginning of this document. Keep the existing verified frontend, Parent Mode, PIN, Remote Management, and Wi-Fi workflows stable while resolving only the integration and release blockers required for the image.
+- Keep the existing blue-device experience stable while preparing the blue, purple, and green devices for practical family use.
+- Improve the child-facing game selection and launch experience only where it reduces friction for the children.
+- Keep parent management reliable and straightforward.
+- Validate the actual family workflows before adding more infrastructure.
+- Protect the working stock-firmware compatibility path.
 
-Feature work resumes only when it is necessary to meet the image's acceptance criteria or a real hardware problem requires it.
+### Foundation work — separate, longer-term workstream
 
-### Deferred until the foundation is proven
+- Define and document the public boundary between applications and device/platform capabilities.
+- Inventory existing firmware dependencies, hardware assumptions, and licensing/provenance.
+- Make the Foundation build reproducible from documented prerequisites and legally distributable inputs.
+- Keep the Foundation independently useful and buildable without KiddOS.
+- Treat a flashable image as a Foundation deliverable, not a gate on KiddOS product progress.
 
+### Deferred product capabilities
+
+- Music, movie, and TV library browsing and child-facing playback experiences.
+- Parent-computer content preparation, conversion, metadata/artwork resolution, and synchronization.
 - Phone-hotspot fallback and automatic network priority switching.
 - IBSS/ad-hoc and other direct device-to-device experiments.
 - Full multiplayer pairing and game-specific testing.
-- Rich media metadata/artwork automation and any companion application.
 - Advanced theme editor and broad device configuration.
-- Wi-Fi configuration screens outside the minimal Parent Mode workflow.
+- Emulator/core management in the remote management interface. This is post-MVP; retain the current intentional Gambatte prototype behavior for now.
 
 ### Explicit project guardrails
 
@@ -336,7 +369,7 @@ Resolve these when their implementation becomes the next useful step, not as pre
 
 ## Historical snapshot: Management Server v0.3.0
 
-This section preserves the earlier v0.3.0 read-only inventory milestone. It is superseded by the current management-server implementation, which includes game-catalog management, artwork workflows, and live slot updates. See `README.md` and `docs/CUSTOM-IMAGE-ARCHITECTURE.md` for the current state.
+This section preserves the earlier v0.3.0 read-only inventory milestone. It is superseded by the current management-server implementation, which includes game-catalog management, artwork workflows, and live slot updates. See `README.md` and `docs/ARCHITECTURE.md` for current KiddOS state. The earlier firmware-image investigation is retained as historical research in `docs/CUSTOM-IMAGE-ARCHITECTURE.md`.
 
 
 **Status: deployed and tested on the blue Retro Pixel Pocket, November 17, 2026.**
@@ -375,6 +408,6 @@ This milestone validates the core architecture: the handheld stores and applies 
 
 ### Distribution and licensing guardrails
 
-The earlier installer-first proposal is superseded by the current flashable-image milestone.
+A reproducible flashable image remains a Foundation goal, separate from the immediate KiddOS application work.
 
-Before distributing an image, audit the exact firmware source and every bundled component. Preserve third-party licenses, notices, and source-offer obligations. Do not bundle ROMs, BIOS files, or artwork without explicit redistribution rights.
+Before distributing an image or bundled software, audit the exact source revisions and every component. Preserve third-party licenses, notices, and source-offer obligations. Distinguish the right to use or build software from the right to redistribute vendor binaries, firmware, ROMs, BIOS files, or artwork. Do not bundle content without explicit redistribution rights.
