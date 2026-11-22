@@ -59,6 +59,8 @@ The active SDL frontend is in [`device/working-ui/`](device/working-ui/). Its ap
 The frontend currently provides:
 
 - A four-slot game carousel populated from the device-side game catalog.
+- A Movies browser populated from `/storage/roms/movies`, with filename-based titles and MPV playback.
+- L/R shoulder-button library switching between Games and Movies; D-pad navigation and A/B selection/back controls.
 - Game launching through the existing firmware and return to KiddOS after exiting.
 - Live carousel updates when slots change in Remote Management, without restarting KiddOS.
 - Artwork-aware game assignment, browser-side cover-art discovery, preview, and upload, plus manual artwork upload.
@@ -68,7 +70,7 @@ The frontend currently provides:
 - Hidden, PIN-protected Parent Mode.
 - Parent Center controls for Remote Management, Wi-Fi radio, network scanning and selection, secured-network password entry, and Parent PIN changes.
 
-The Python catalog module is the shared authority for game discovery, slot assignments, and artwork matching. The SDL frontend reads that catalog locally; it does not maintain a separate hardcoded game list. The architecture separates the application coordinator, semantic input, navigation, screen rendering and state, SDL resource ownership, PIN workflow, and device services.
+The Python catalog module is the shared authority for game discovery, slot assignments, and artwork matching. The SDL frontend reads that catalog locally; it does not maintain a separate hardcoded game list. The Movies browser independently discovers `.mp4`, `.mkv`, `.avi`, `.mov`, and `.m4v` files in `/storage/roms/movies` using Python 3. Movie playback is delegated to the firmware's `/usr/bin/mpv`. The architecture separates the application coordinator, semantic input, navigation, screen rendering and state, SDL resource ownership, PIN workflow, and device services.
 
 ## Verification status
 
@@ -109,18 +111,21 @@ The tested firmware startup hook is in [`firmware/boot/`](firmware/boot/). It is
 
 ## Existing media playback
 
-The handheld's existing MPV player has been confirmed to play a 720×720
-H.264/AAC test clip with sound. The test clip filled the square display after
-the source was encoded to square pixels. This is a playback experiment, not a
-completed Movies or Music interface. Continue to prefer existing firmware
-playback tools over building custom media infrastructure.
+The Movies browser and MPV launcher are integrated into the SDL frontend.
+On RPPBLUE, MPV playback was verified with DRM video output and ALSA stereo
+audio. The physical controls were also verified: A pauses/resumes, B exits
+playback and returns to Movies, and D-pad left/right seeks by 10 seconds.
+Continue to prefer existing firmware playback tools over building custom
+media infrastructure.
 
 ## Current scope and limitations
 
 - The four-slot carousel currently accepts only raw `.gb` and `.gbc` ROMs. Other discovered systems are not currently slot-assignable.
 - Browser-side automatic artwork search supports Game Boy and Game Boy Color; other artwork can be supplied manually.
-- Games is the only implemented child-facing library section. MPV playback has been demonstrated separately, but finished music, movie, and TV browsing experiences and parent-side media preparation workflows are not implemented.
-- Physical L/R library switching is not wired because shoulder-button IDs have not been verified.
+- Games and Movies are implemented as child-facing library sections. Music browsing and parent-side media preparation workflows are not implemented.
+- The Movies browser requires Python 3 on the device; playback requires `/usr/bin/mpv` with DRM video output and ALSA audio support.
+- Movie playback controls are configured by `device/working-ui/mpv-input.conf`: A pauses/resumes, B exits to Movies, and D-pad left/right seeks by 10 seconds. Start and L/R are unbound during playback.
+- The Movies browser currently scans `/storage/roms/movies` and supports `.mp4`, `.mkv`, `.avi`, `.mov`, and `.m4v` filename extensions; codec compatibility depends on the installed MPV build.
 - Multiplayer workflows, including Pokémon trading and head-to-head play, remain future work.
 - Full-length movie playback and a simple music-library workflow have not been validated.
 - Runtime paths and the firmware hook are specific to the tested device setup.

@@ -36,6 +36,12 @@ struct WifiState {
     KiddosServices::WifiConnection connection;
 };
 
+// Movie browser interaction state. Movie data remains in MovieCatalog.
+struct MovieBrowserState {
+    int selectedRow = 0;
+    int scrollOffset = 0;
+};
+
 // Battery and connection indicators are shared chrome, not screen workflow state.
 struct StatusBarState {
     int batteryPercent = -1;

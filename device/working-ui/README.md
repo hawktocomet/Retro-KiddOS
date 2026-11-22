@@ -98,6 +98,11 @@ artwork (`.png`, `.jpg`, or `.webp`).
 The patched `gambatte-link_libretro.so` remains required for the existing
 Game Boy link-launch path.
 
+Movie playback additionally requires `/usr/bin/mpv`, DRM video output, and
+the device ALSA audio device `alsa/hw:0,0`. The deployment script installs
+the MPV gamepad bindings from `mpv-input.conf` to
+`/storage/.config/kiddos/mpv-input.conf`.
+
 It also requires the firmware's runemu.py, systemctl, SDL2 libraries, and Cabin Bold font at:
 
 `/storage/.config/emulationstation/themes/rp-pocket/art/fonts/Cabin-Bold.ttf`
@@ -124,12 +129,26 @@ library navigation, PIN workflow, and SDL resource ownership are separated
 into focused components. See `../../docs/ARCHITECTURE.md` for the responsibility
 map and verification record.
 
-Games is the only implemented library section. Music and Movies are prepared
-navigation extension points, not implemented browsing or playback screens.
-Physical L/R section switching is not wired because shoulder-button IDs have
-not been verified. The four-slot catalog and parent-managed game assignments
-are implemented; see `../../docs/GAME_LIBRARY.md` and
-`../management-server/README.md`.
+Games and Movies are implemented library sections. Music remains a
+prepared navigation extension point. Physical L/R shoulder buttons switch
+between implemented library sections. The four-slot game catalog and
+parent-managed game assignments are implemented; see
+`../../docs/GAME_LIBRARY.md` and `../management-server/README.md`.
+
+The Movies browser scans `/storage/roms/movies` for `.mp4`, `.mkv`, `.avi`,
+`.mov`, and `.m4v` files. It displays movie filenames as titles and launches
+the selected file with MPV. Playback uses the DRM video output and ALSA audio
+device `alsa/hw:0,0`, with stereo audio.
+
+Movie playback controls are configured in
+`/storage/.config/kiddos/mpv-input.conf`:
+- A: pause or resume.
+- B: exit playback and return to the Movies browser.
+- D-pad left/right: seek backward/forward by 10 seconds.
+- Start and L/R: unbound during playback.
+
+The Movies browser, section switching, DRM playback, audio, and controller
+bindings were tested on RPPBLUE on November 22, 2026.
 
 ## Status
 
@@ -159,8 +178,20 @@ The deployment script defaults to the approved blue device (`root@192.168.0.89`)
 
 Deploy with `KIDDOS_DEVICE=root@192.168.0.89 ./deploy-kiddos-ui.sh deploy`.
 
-The script stages the executable, verifies its SHA-256, creates a timestamped backup of the installed executable, replaces it, and starts the `kiddos-ui` service. If the new service fails its four-second active check, it attempts automatic rollback.
+The script stages the executable and MPV input configuration, verifies both
+SHA-256 checksums, and creates timestamped backups of the installed
+executable and any existing MPV config. It installs both, sets the config
+permissions, and starts the `kiddos-ui` service. If installation or the
+new service's four-second active check fails, it attempts to restore the
+previous executable and MPV config before restarting KiddOS.
 
 Keep the backup path printed by deployment. Manual rollback uses `KIDDOS_DEVICE=root@192.168.0.89 ./deploy-kiddos-ui.sh rollback BACKUP_PATH`, replacing `BACKUP_PATH` with the exact printed path.
 
 The automated service check does not verify screen rendering, controller input, game launching, or other UI workflows. Perform the on-device regression checks after deployment. Do not deploy to the purple or green devices without explicit approval.
+
+Deployed Movies milestone executable SHA-256 (November 22, 2026):
+
+`1271f2914e1a9f4b2c915ac33973ff1ab9febab7035d2da53fe55cd893036101`
+
+The Movies browser and playback controls were verified on RPPBLUE after this
+build was deployed on November 22, 2026.

@@ -25,6 +25,8 @@ int main() {
     using KiddosInput::Action;
     check(KiddosInput::fromJoystickButton(0) == Action::Back, "B maps to Back");
     check(KiddosInput::fromJoystickButton(1) == Action::Confirm, "A maps to Confirm");
+    check(KiddosInput::fromJoystickButton(4) == Action::PreviousSection, "L maps to previous section");
+    check(KiddosInput::fromJoystickButton(5) == Action::NextSection, "R maps to next section");
     check(KiddosInput::fromJoystickButton(8) == Action::Up, "D-pad up mapping");
     check(KiddosInput::fromJoystickButton(9) == Action::Down, "D-pad down mapping");
     check(KiddosInput::fromJoystickButton(10) == Action::Left, "D-pad left mapping");
@@ -60,16 +62,16 @@ int main() {
     KiddosUI::LibraryNavigator library(4);
     library.grid().select(3);
     library.nextSection();
-    check(library.section() == KiddosUI::LibrarySection::Music &&
+    check(library.section() == KiddosUI::LibrarySection::Movies &&
           library.grid().selected() == 0,
-          "next library section resets selection");
-    library.nextSection();
-    check(library.section() == KiddosUI::LibrarySection::Movies,
-          "library advances to Movies section");
+          "next library section skips unimplemented Music");
     library.previousSection();
-    check(library.section() == KiddosUI::LibrarySection::Music &&
+    check(library.section() == KiddosUI::LibrarySection::Games &&
           library.grid().selected() == 0,
-          "previous library section resets selection");
+          "previous library section returns to Games");
+    library.previousSection();
+    check(library.section() == KiddosUI::LibrarySection::Movies,
+          "previous library section wraps from Games to Movies");
 
     char directory[] = "/tmp/kiddos-workflow-test-XXXXXX";
     const bool madeDirectory = mkdtemp(directory) != nullptr;

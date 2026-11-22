@@ -6,6 +6,7 @@
 #include "Input.hpp"
 #include "LibraryNavigator.hpp"
 #include "Navigation.hpp"
+#include "screens/ScreenState.hpp"
 #include <memory>
 
 namespace KiddosPin { class PinWorkflow; }
@@ -26,5 +27,6 @@ private:
     KiddosNavigation::Navigation navigation_;
     std::unique_ptr<KiddosPin::PinWorkflow> pinWorkflow_;
     int parentSelected_ = 0;
+    KiddosScreens::MovieBrowserState movieBrowser_;
     bool running_ = true;
 };

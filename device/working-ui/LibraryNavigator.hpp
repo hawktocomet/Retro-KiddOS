@@ -27,16 +27,16 @@ public:
     void previousSection() {
         switch (section_) {
             case LibrarySection::Games: section_ = LibrarySection::Movies; break;
-            case LibrarySection::Music: section_ = LibrarySection::Games; break;
-            case LibrarySection::Movies: section_ = LibrarySection::Music; break;
+            case LibrarySection::Music: section_ = LibrarySection::Movies; break;
+            case LibrarySection::Movies: section_ = LibrarySection::Games; break;
         }
         grid_.select(0);
     }
 
     void nextSection() {
         switch (section_) {
-            case LibrarySection::Games: section_ = LibrarySection::Music; break;
-            case LibrarySection::Music: section_ = LibrarySection::Movies; break;
+            case LibrarySection::Games: section_ = LibrarySection::Movies; break;
+            case LibrarySection::Music: section_ = LibrarySection::Games; break;
             case LibrarySection::Movies: section_ = LibrarySection::Games; break;
         }
         grid_.select(0);

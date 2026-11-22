@@ -38,6 +38,7 @@ struct UI {
     Text wifiActionLabel, wifiFooter;
     Text batteryLabel;
 
+    KiddosScreens::MovieBrowserState movieBrowser;
     KiddosScreens::WifiState wifi;
     KiddosScreens::StatusBarState status;
 };
@@ -74,6 +75,7 @@ void updateSelectedGameText(UI& ui, int selected);
 void refreshGameArtwork(UI& ui);
 
 void drawUI(UI& ui, int selected);
+void drawMovies(UI& ui);
 void drawSelectedGame(UI& ui, int selected, int action);
 void drawGameInfo(UI& ui);
 void drawSystemMenu(UI& ui, int selected);

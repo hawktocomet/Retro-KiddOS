@@ -15,6 +15,8 @@ enum class Action {
     Down,
     Left,
     Right,
+    PreviousSection,
+    NextSection,
     Start
 };
 
@@ -24,6 +26,8 @@ constexpr Action fromJoystickButton(std::uint8_t button) {
     switch (button) {
         case 0:  return Action::Back;    // B
         case 1:  return Action::Confirm; // A
+        case 4:  return Action::PreviousSection; // L
+        case 5:  return Action::NextSection;     // R
         case 8:  return Action::Up;
         case 9:  return Action::Down;
         case 10: return Action::Left;

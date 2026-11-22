@@ -13,6 +13,11 @@ struct Game {
     bool available = false;
 };
 
+struct Movie {
+    std::string title;
+    std::string path;
+};
+
 enum class WifiStatus {
     Unknown,
     Disconnected,
