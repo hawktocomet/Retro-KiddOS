@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Input.hpp"
+#include "LibraryGrid.hpp"
 #include "LibraryNavigator.hpp"
 #include "Navigation.hpp"
 #include "screens/ScreenState.hpp"
@@ -22,6 +23,7 @@ public:
 
 private:
     KiddosUI::LibraryNavigator library_{4};
+    KiddosUI::LibraryGrid homeGrid_{4};
     int action_ = 0;
     int menuSelected_ = 0;
     KiddosNavigation::Navigation navigation_;

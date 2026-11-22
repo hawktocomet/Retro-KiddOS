@@ -23,7 +23,11 @@ struct UI {
     SDL_Renderer* renderer = nullptr;
     SDL_Joystick* joystick = nullptr;
     SDL_Texture* images[4] = {};
+    SDL_Texture* homeIcons[4] = {};
     Text slotLabels[4];
+    Text homeLabels[4];
+    Text homeComingSoon[2];
+    Text homeSubtitle;
     TTF_Font* headingFont = nullptr;
     TTF_Font* labelFont = nullptr;
     TTF_Font* footerFont = nullptr;
@@ -74,6 +78,7 @@ void toggleParentManagement(UI& ui);
 void updateSelectedGameText(UI& ui, int selected);
 void refreshGameArtwork(UI& ui);
 
+void drawHome(UI& ui, int selected);
 void drawUI(UI& ui, int selected);
 void drawMovies(UI& ui);
 void drawSelectedGame(UI& ui, int selected, int action);

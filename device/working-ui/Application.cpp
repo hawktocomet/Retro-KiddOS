@@ -27,6 +27,8 @@ int Application::run() {
     using namespace KiddosNavigation;
 
     KiddosUI::LibraryGrid& gameGrid = library_.grid();
+    KiddosUI::LibraryGrid& homeGrid = homeGrid_;
+    int& homeSelected = homeGrid.selectedRef();
     int& selected = gameGrid.selectedRef();
     int& action = action_;
     int& menuSelected = menuSelected_;
@@ -167,8 +169,8 @@ int Application::run() {
                             screen = SelectedGame;
                         else if (screen == SelectedGame)
                             screen = Games;
-                        else if (screen == Movies)
-                            screen = Games;
+                        else if (screen == Movies || screen == Games)
+                            screen = Home;
                         continue;
                     }
 
@@ -251,7 +253,18 @@ int Application::run() {
                         continue;
                     }
 
-                    if (screen == Movies) {
+                    if (screen == Home) {
+                        if (key == SDLK_UP) homeGrid.moveUp();
+                        else if (key == SDLK_DOWN) homeGrid.moveDown();
+                        else if (key == SDLK_LEFT) homeGrid.moveLeft();
+                        else if (key == SDLK_RIGHT) homeGrid.moveRight();
+                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
+                            if (homeSelected == 0) screen = Games;
+                            else if (homeSelected == 2) screen = Movies;
+                        } else if (key == SDLK_s) {
+                            navigation.openSystemMenu();
+                        }
+                    } else if (screen == Movies) {
                         if (key == SDLK_UP) moveMovieSelection(-1);
                         else if (key == SDLK_DOWN) moveMovieSelection(1);
                         else if (key == SDLK_RETURN || key == SDLK_SPACE) {
@@ -336,14 +349,17 @@ int Application::run() {
                             screen = SelectedGame;
                         else if (screen == SelectedGame)
                             screen = Games;
-                        else if (screen == Movies)
-                            screen = Games;
+                        else if (screen == Movies || screen == Games)
+                            screen = Home;
                     } else if (inputAction == KiddosInput::Action::Confirm) {
                         if (screen == WifiPassword) {
                             if (activateWifiKeyboardKey(ui)) {
                                 screen = WifiSettings;
                                 refreshWifiSettings(ui);
                             }
+                        } else if (screen == Home) {
+                            if (homeSelected == 0) screen = Games;
+                            else if (homeSelected == 2) screen = Movies;
                         } else if (screen == Movies) {
                             const auto& list = KiddosServices::movies();
                             if (ui.movieBrowser.selectedRow >= 0 &&
@@ -399,13 +415,10 @@ int Application::run() {
                                    KiddosServices::requestShutdown()) {
                             running = false;
                         }
-                    } else if (inputAction == KiddosInput::Action::PreviousSection ||
-                               inputAction == KiddosInput::Action::NextSection) {
-                        if (screen == Games || screen == Movies) {
-                            screen = (screen == Games) ? Movies : Games;
-                        }
                     } else if (inputAction == KiddosInput::Action::Up) {
-                        if (screen == Movies) {
+                        if (screen == Home) {
+                            homeGrid.moveUp();
+                        } else if (screen == Movies) {
                             moveMovieSelection(-1);
                         } else if (screen == Games) {
                             gameGrid.moveUp();
@@ -424,7 +437,9 @@ int Application::run() {
                             pinWorkflow.adjustDigit(1);
                         }
                     } else if (inputAction == KiddosInput::Action::Down) {
-                        if (screen == Movies) {
+                        if (screen == Home) {
+                            homeGrid.moveDown();
+                        } else if (screen == Movies) {
                             moveMovieSelection(1);
                         } else if (screen == Games) {
                             gameGrid.moveDown();
@@ -443,7 +458,9 @@ int Application::run() {
                             pinWorkflow.adjustDigit(-1);
                         }
                     } else if (inputAction == KiddosInput::Action::Left) {
-                        if (screen == Games) {
+                        if (screen == Home) {
+                            homeGrid.moveLeft();
+                        } else if (screen == Games) {
                             gameGrid.moveLeft();
                             updateSelectedGameText(ui, selected);
                         } else if (screen == WifiPassword) {
@@ -452,7 +469,9 @@ int Application::run() {
                             pinWorkflow.moveCursor(-1);
                         }
                     } else if (inputAction == KiddosInput::Action::Right) {
-                        if (screen == Games) {
+                        if (screen == Home) {
+                            homeGrid.moveRight();
+                        } else if (screen == Games) {
                             gameGrid.moveRight();
                             updateSelectedGameText(ui, selected);
                         } else if (screen == WifiPassword) {
@@ -468,8 +487,9 @@ int Application::run() {
                             refreshWifiSettings(ui);
                         }
                     } else if (inputAction == KiddosInput::Action::Start &&
-                               (screen == Games || screen == Movies ||
-                                screen == SelectedGame || screen == GameInfo)) {
+                               (screen == Home || screen == Games ||
+                                screen == Movies || screen == SelectedGame ||
+                                screen == GameInfo)) {
                         navigation.openSystemMenu();
                     }
                 }
@@ -543,7 +563,8 @@ int Application::run() {
                         screen = WifiPassword;
                     }
                 }
-                if (screen == Games) drawUI(ui, selected);
+                if (screen == Home) drawHome(ui, homeSelected);
+                else if (screen == Games) drawUI(ui, selected);
                 else if (screen == Movies) drawMovies(ui);
                 else if (screen == SelectedGame) drawSelectedGame(ui, selected, action);
                 else if (screen == GameInfo) drawGameInfo(ui);

@@ -35,11 +35,11 @@ int main() {
     check(KiddosInput::fromJoystickButton(2) == Action::None, "unknown button ignored");
 
     KiddosNavigation::Navigation navigation;
-    check(navigation.current() == KiddosNavigation::Games, "navigation starts at Games");
+    check(navigation.current() == KiddosNavigation::Home, "navigation starts at Home");
     navigation.openSystemMenu();
     check(navigation.current() == KiddosNavigation::SystemMenu, "Start opens System Menu");
     navigation.closeSystemMenu();
-    check(navigation.current() == KiddosNavigation::Games, "System Menu returns to prior screen");
+    check(navigation.current() == KiddosNavigation::Home, "System Menu returns to Home");
     navigation.show(KiddosNavigation::GameInfo);
     navigation.openSystemMenu();
     navigation.closeSystemMenu();

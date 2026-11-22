@@ -3,6 +3,8 @@
 
 #include "UI.hpp"
 
+#include "tabler_icons.hpp"
+
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
@@ -15,6 +17,31 @@
 
 static const char* BASE = "/storage/roms/.kiddos-ui-test-20261116";
 static const char* FONT = "/storage/.config/emulationstation/themes/rp-pocket/art/fonts/Cabin-Bold.ttf";
+
+static bool loadHomeIcons(UI& ui) {
+    const unsigned char* data[4] = {
+        TablerIcons::gamepad, TablerIcons::music,
+        TablerIcons::movies, TablerIcons::tv
+    };
+    const std::size_t sizes[4] = {
+        TablerIcons::gamepad_size, TablerIcons::music_size,
+        TablerIcons::movies_size, TablerIcons::tv_size
+    };
+
+    for (int i = 0; i < 4; ++i) {
+        SDL_RWops* stream = SDL_RWFromConstMem(
+            data[i], static_cast<int>(sizes[i]));
+        if (stream)
+            ui.homeIcons[i] = IMG_LoadTexture_RW(ui.renderer, stream, 1);
+
+        if (!ui.homeIcons[i]) {
+            std::fprintf(stderr, "KiddOS: Home icon %d failed to load: %s\n",
+                         i, IMG_GetError());
+            return false;
+        }
+    }
+    return true;
+}
 
 Text makeText(SDL_Renderer* r, TTF_Font* f, const char* value, SDL_Color color) {
     Text t;
@@ -425,6 +452,9 @@ void toggleParentManagement(UI& ui) {
 
 void closeUI(UI& ui) {
     destroyText(ui.heading);
+    destroyText(ui.homeSubtitle);
+    for (int i = 0; i < 4; ++i) destroyText(ui.homeLabels[i]);
+    for (int i = 0; i < 2; ++i) destroyText(ui.homeComingSoon[i]);
     destroyText(ui.subtitle);
     destroyText(ui.footer);
     destroyText(ui.selectedFooter);
@@ -455,6 +485,7 @@ void closeUI(UI& ui) {
     for (int i = 0; i < 4; ++i) {
         destroyText(ui.slotLabels[i]);
         if (ui.images[i]) SDL_DestroyTexture(ui.images[i]);
+        if (ui.homeIcons[i]) SDL_DestroyTexture(ui.homeIcons[i]);
     }
     if (ui.headingFont) TTF_CloseFont(ui.headingFont);
     if (ui.labelFont) TTF_CloseFont(ui.labelFont);
@@ -509,6 +540,11 @@ bool openUI(UI& ui) {
         return false;
     }
 
+    if (!loadHomeIcons(ui)) {
+        closeUI(ui);
+        return false;
+    }
+
     ui.headingFont = TTF_OpenFont(FONT, 38);
     ui.labelFont = TTF_OpenFont(FONT, 20);
     ui.footerFont = TTF_OpenFont(FONT, 17);
@@ -522,6 +558,16 @@ bool openUI(UI& ui) {
     const SDL_Color muted = {155, 177, 215, 255};
     ui.heading = makeText(ui.renderer, ui.headingFont, "Retro KiddOS", white);
     ui.subtitle = makeText(ui.renderer, ui.footerFont, "CHOOSE A GAME", muted);
+    ui.homeSubtitle = makeText(ui.renderer, ui.footerFont,
+        "CHOOSE SOMETHING TO PLAY", muted);
+    ui.homeLabels[0] = makeText(ui.renderer, ui.labelFont, "GAMES", white);
+    ui.homeLabels[1] = makeText(ui.renderer, ui.labelFont, "MUSIC", white);
+    ui.homeLabels[2] = makeText(ui.renderer, ui.labelFont, "MOVIES", white);
+    ui.homeLabels[3] = makeText(ui.renderer, ui.labelFont, "TV SHOWS", white);
+    ui.homeComingSoon[0] = makeText(ui.renderer, ui.footerFont,
+        "COMING SOON", muted);
+    ui.homeComingSoon[1] = makeText(ui.renderer, ui.footerFont,
+        "COMING SOON", muted);
     ui.footer = makeText(ui.renderer, ui.footerFont,
         "D-PAD  MOVE     A  SELECT     START  MENU", muted);
     ui.selectedFooter = makeText(ui.renderer, ui.footerFont,

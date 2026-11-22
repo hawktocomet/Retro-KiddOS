@@ -11,6 +11,53 @@
 
 #include "../models/Games.hpp"
 
+void drawHome(UI& ui, int selected) {
+    SDL_Renderer* r = ui.renderer;
+    drawSimplePanel(r);
+    drawText(r, ui.heading, 360, 68);
+    drawText(r, ui.homeSubtitle, 360, 119);
+    drawBattery(ui);
+
+    const SDL_Rect tiles[4] = {
+        {88, 174, 252, 190}, {380, 174, 252, 190},
+        {88, 396, 252, 190}, {380, 396, 252, 190}
+    };
+
+    for (int i = 0; i < 4; ++i) {
+        const SDL_Rect tile = tiles[i];
+        SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
+        SDL_RenderFillRect(r, &tile);
+
+        if (ui.homeIcons[i]) {
+            SDL_Rect icon = {
+                tile.x + (tile.w - 88) / 2, tile.y + 24, 88, 88
+            };
+            SDL_RenderCopy(r, ui.homeIcons[i], nullptr, &icon);
+        }
+        drawText(r, ui.homeLabels[i], tile.x + tile.w / 2, tile.y + 130);
+
+        if (i == 1 || i == 3) {
+            const int statusIndex = i == 1 ? 0 : 1;
+            drawText(r, ui.homeComingSoon[statusIndex],
+                     tile.x + tile.w / 2, tile.y + 157);
+        }
+
+        if (i == selected) {
+            SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
+            for (int n = 0; n < 5; ++n) {
+                SDL_Rect outline = {
+                    tile.x - n, tile.y - n,
+                    tile.w + n * 2, tile.h + n * 2
+                };
+                SDL_RenderDrawRect(r, &outline);
+            }
+        }
+    }
+
+    drawText(r, ui.footer, 360, 625);
+    SDL_RenderPresent(r);
+}
+
 void drawUI(UI& ui, int selected) {
     SDL_Renderer* r = ui.renderer;
     SDL_SetRenderDrawColor(r, 12, 18, 42, 255);

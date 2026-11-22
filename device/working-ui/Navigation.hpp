@@ -6,6 +6,7 @@
 namespace KiddosNavigation {
 
 enum Screen {
+    Home,
     Games,
     Movies,
     SelectedGame,
@@ -36,8 +37,8 @@ public:
     void closeSystemMenu() { current_ = returnScreen_; }
 
 private:
-    Screen current_ = Screen::Games;
-    Screen returnScreen_ = Screen::Games;
+    Screen current_ = Screen::Home;
+    Screen returnScreen_ = Screen::Home;
 };
 
 } // namespace KiddosNavigation
