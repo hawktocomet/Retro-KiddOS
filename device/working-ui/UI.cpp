@@ -14,6 +14,7 @@
 #include "services/BatteryService.hpp"
 #include "services/WifiService.hpp"
 #include "services/ParentManagementService.hpp"
+#include "services/MovieCatalog.hpp"
 
 static const char* BASE = "/storage/roms/.kiddos-ui-test-20261116";
 static const char* FONT = "/storage/.config/emulationstation/themes/rp-pocket/art/fonts/Cabin-Bold.ttf";
@@ -453,6 +454,8 @@ void toggleParentManagement(UI& ui) {
 void closeUI(UI& ui) {
     destroyText(ui.heading);
     destroyText(ui.homeSubtitle);
+    destroyText(ui.movieSubtitle);
+    destroyText(ui.movieFooter);
     for (int i = 0; i < 4; ++i) destroyText(ui.homeLabels[i]);
     for (int i = 0; i < 2; ++i) destroyText(ui.homeComingSoon[i]);
     destroyText(ui.subtitle);
@@ -486,6 +489,7 @@ void closeUI(UI& ui) {
         destroyText(ui.slotLabels[i]);
         if (ui.images[i]) SDL_DestroyTexture(ui.images[i]);
         if (ui.homeIcons[i]) SDL_DestroyTexture(ui.homeIcons[i]);
+        if (ui.movieImages[i]) SDL_DestroyTexture(ui.movieImages[i]);
     }
     if (ui.headingFont) TTF_CloseFont(ui.headingFont);
     if (ui.labelFont) TTF_CloseFont(ui.labelFont);
@@ -508,6 +512,9 @@ bool openUI(UI& ui) {
         std::fprintf(stderr, "KiddOS: PNG init failed: %s\n", IMG_GetError());
         SDL_Quit();
         return false;
+    }
+    if (!(IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG)) {
+        std::fprintf(stderr, "KiddOS: JPEG artwork unavailable: %s\n", IMG_GetError());
     }
     if (TTF_Init() != 0) {
         std::fprintf(stderr, "KiddOS: TTF init failed: %s\n", TTF_GetError());
@@ -558,6 +565,9 @@ bool openUI(UI& ui) {
     const SDL_Color muted = {155, 177, 215, 255};
     ui.heading = makeText(ui.renderer, ui.headingFont, "Retro KiddOS", white);
     ui.subtitle = makeText(ui.renderer, ui.footerFont, "CHOOSE A GAME", muted);
+    ui.movieSubtitle = makeText(ui.renderer, ui.footerFont, "CHOOSE A MOVIE", muted);
+    ui.movieFooter = makeText(ui.renderer, ui.footerFont,
+        "D-PAD MOVE   A PLAY   B BACK   START MENU", muted);
     ui.homeSubtitle = makeText(ui.renderer, ui.footerFont,
         "CHOOSE SOMETHING TO PLAY", muted);
     ui.homeLabels[0] = makeText(ui.renderer, ui.labelFont, "GAMES", white);
@@ -628,6 +638,35 @@ bool openUI(UI& ui) {
                 ui.renderer, ui.footerFont, fallback, slotLabelColor);
         }
     }
+    const auto& movieList = KiddosServices::movies();
+    for (int i = 0; i < 4 && i < static_cast<int>(movieList.size()); ++i) {
+        std::string stem = movieList[static_cast<std::size_t>(i)].path;
+        const std::size_t extension = stem.find_last_of('.');
+        if (extension != std::string::npos)
+            stem.resize(extension);
+
+        const std::string candidates[] = {stem + ".jpg", stem + ".png"};
+        for (const auto& candidate : candidates) {
+            ui.movieImages[i] = IMG_LoadTexture(ui.renderer, candidate.c_str());
+            if (ui.movieImages[i]) break;
+        }
+
+        // The initial library contains Totoro; support its fixed artwork name
+        // even when the movie file itself has a longer filename.
+        if (!ui.movieImages[i] && i == 0)
+            ui.movieImages[i] =
+                IMG_LoadTexture(ui.renderer, "/storage/roms/movies/Totoro.jpg");
+
+        if (ui.movieImages[i]) {
+            std::printf("KiddOS: movie artwork loaded for %s\\n",
+                        movieList[static_cast<std::size_t>(i)].title.c_str());
+        } else {
+            std::fprintf(stderr, "KiddOS: movie artwork unavailable for %s: %s\\n",
+                         movieList[static_cast<std::size_t>(i)].title.c_str(),
+                         IMG_GetError());
+        }
+    }
+
     std::puts("KiddOS: game artwork loading complete.");
     std::fflush(stdout);
     return true;

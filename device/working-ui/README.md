@@ -142,6 +142,26 @@ Build prerequisites for this step are Python 3 and `rsvg-convert`, in
 addition to the existing ARM64 or CMake build dependencies. Edit the
 source SVG assets rather than the generated header.
 
+## Movies carousel
+
+The Movies screen uses the same four-slot, 2 × 2 browsing layout as the
+Games screen. Available movies occupy slots in catalog order; unused slots
+remain visibly empty. The selected movie receives the blue highlight.
+Controller navigation uses the D-pad, A to play, B to return, and Start
+for the system menu.
+
+Movie artwork is loaded from a JPEG or PNG beside the movie file, using
+the movie filename without its extension. Totoro also supports the fixed
+fallback path `/storage/roms/movies/Totoro.jpg`. The poster is stored on
+the device rather than embedded in the executable or committed to this
+repository. The deployed Totoro poster was sourced from the
+[At The Movies listing](https://atthemovies.uk/products/829-my-neighbor-totoro-1988).
+It is third-party artwork; retain its source and applicable rights
+information when redistributing it.
+
+The Movies carousel uses SDL_image to load artwork and preserves the
+existing movie catalog and playback launcher.
+
 ## Firmware integration
 
 The tested boot hook is at `../../firmware/boot/custom_start.sh`.
@@ -230,3 +250,17 @@ on November 22, 2026. Its ARM64 executable SHA-256 is:
 
 The service started successfully; game and movie catalogs loaded, the
 controller was detected, and game artwork loading completed.
+
+The Movies carousel and Totoro poster were deployed to RPPBLUE on
+November 22, 2026. The ARM64 executable SHA-256 is:
+
+`e54f6ce0b8c801dcbeb86f04f698e7044fcbbed930edc7e6f55d462ee3977156`
+
+The poster is installed at `/storage/roms/movies/Totoro.jpg` and has
+SHA-256:
+
+`4800820ac053b877ee775d4fb7d7a1f3f5e73aba25d3a991c279877034cc35c5`
+
+The service remained active after deployment, the movie catalog loaded,
+and the Totoro artwork was confirmed loaded on RPPBLUE. The Movies screen
+was visually verified.

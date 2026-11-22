@@ -5,53 +5,59 @@
 #include "../services/MovieCatalog.hpp"
 
 #include <algorithm>
-#include <string>
 
 void drawMovies(UI& ui) {
     SDL_Renderer* r = ui.renderer;
     drawSimplePanel(r);
-    drawText(r, ui.heading, 360, 85);
+    drawText(r, ui.heading, 360, 68);
+    drawText(r, ui.movieSubtitle, 360, 119);
+    drawBattery(ui);
 
-    const SDL_Color normal = {235, 240, 250, 255};
-    const SDL_Color muted = {165, 180, 200, 255};
-    const int rowHeight = 42;
-    constexpr int visibleRows = 8;
+    const SDL_Rect tiles[4] = {
+        {88, 174, 252, 190}, {380, 174, 252, 190},
+        {88, 396, 252, 190}, {380, 396, 252, 190}
+    };
 
     const auto& movieList = KiddosServices::movies();
-    const int itemCount = static_cast<int>(movieList.size());
+    const int itemCount = std::min(4, static_cast<int>(movieList.size()));
+    const SDL_Color muted = {155, 177, 215, 255};
 
-    drawWifiLine(r, ui.labelFont, "CHOOSE A MOVIE", 90, 155, normal);
+    for (int i = 0; i < 4; ++i) {
+        const SDL_Rect tile = tiles[i];
+        SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
+        SDL_RenderFillRect(r, &tile);
 
-    if (itemCount == 0) {
-        drawWifiLine(r, ui.labelFont, "NO MOVIES FOUND", 90, 270, muted);
-    } else {
-        for (int visible = 0; visible < visibleRows; ++visible) {
-            const int index = ui.movieBrowser.scrollOffset + visible;
-            if (index >= itemCount) break;
-
-            SDL_Rect row = {78, 205 + visible * rowHeight, 564, 36};
-
-            if (index == ui.movieBrowser.selectedRow) {
-                SDL_SetRenderDrawColor(r, 65, 165, 235, 255);
-                for (int n = 0; n < 2; ++n) {
-                    SDL_Rect outline = {
-                        row.x - n, row.y - n,
-                        row.w + n * 2, row.h + n * 2
-                    };
-                    SDL_RenderDrawRect(r, &outline);
-                }
+        if (i < itemCount && ui.movieImages[i]) {
+            int iw = 0, ih = 0;
+            if (SDL_QueryTexture(ui.movieImages[i], nullptr, nullptr,
+                                 &iw, &ih) == 0 && iw > 0 && ih > 0) {
+                const float scale = std::min(224.0f / iw, 166.0f / ih);
+                SDL_Rect image = {
+                    tile.x + (tile.w - static_cast<int>(iw * scale)) / 2,
+                    tile.y + (tile.h - static_cast<int>(ih * scale)) / 2,
+                    static_cast<int>(iw * scale),
+                    static_cast<int>(ih * scale)
+                };
+                SDL_RenderCopy(r, ui.movieImages[i], nullptr, &image);
             }
+        } else {
+            const char* label = i < itemCount ? "NO ARTWORK" : "EMPTY SLOT";
+            drawWifiLine(r, ui.footerFont, label,
+                         tile.x + 70, tile.y + 85, muted);
+        }
 
-            drawWifiLine(
-                r, ui.labelFont, movieList[static_cast<std::size_t>(index)].title,
-                row.x + 14, row.y + 7,
-                index == ui.movieBrowser.selectedRow ? normal : muted);
+        if (i == ui.movieBrowser.selectedRow && i < itemCount) {
+            SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
+            for (int n = 0; n < 5; ++n) {
+                SDL_Rect outline = {
+                    tile.x - n, tile.y - n,
+                    tile.w + n * 2, tile.h + n * 2
+                };
+                SDL_RenderDrawRect(r, &outline);
+            }
         }
     }
 
-    drawBattery(ui);
-    drawWifiLine(r, ui.footerFont,
-                 "UP/DOWN MOVE   A PLAY   B BACK   START MENU",
-                 125, 625, muted);
+    drawText(r, ui.movieFooter, 360, 625);
     SDL_RenderPresent(r);
 }

@@ -84,24 +84,16 @@ int Application::run() {
         };
 
         auto moveMovieSelection = [&](int delta) {
-            const int count = static_cast<int>(KiddosServices::movies().size());
+            const int count = std::min(
+                4, static_cast<int>(KiddosServices::movies().size()));
             if (count == 0) {
                 ui.movieBrowser.selectedRow = 0;
                 ui.movieBrowser.scrollOffset = 0;
                 return;
             }
-
             ui.movieBrowser.selectedRow = std::clamp(
                 ui.movieBrowser.selectedRow + delta, 0, count - 1);
-
-            constexpr int visibleRows = 8;
-            if (ui.movieBrowser.selectedRow < ui.movieBrowser.scrollOffset) {
-                ui.movieBrowser.scrollOffset = ui.movieBrowser.selectedRow;
-            } else if (ui.movieBrowser.selectedRow >=
-                       ui.movieBrowser.scrollOffset + visibleRows) {
-                ui.movieBrowser.scrollOffset =
-                    ui.movieBrowser.selectedRow - visibleRows + 1;
-            }
+            ui.movieBrowser.scrollOffset = 0;
         };
 
         auto beginPinChange = [&]() {
@@ -265,8 +257,10 @@ int Application::run() {
                             navigation.openSystemMenu();
                         }
                     } else if (screen == Movies) {
-                        if (key == SDLK_UP) moveMovieSelection(-1);
-                        else if (key == SDLK_DOWN) moveMovieSelection(1);
+                        if (key == SDLK_UP) moveMovieSelection(-2);
+                        else if (key == SDLK_DOWN) moveMovieSelection(2);
+                        else if (key == SDLK_LEFT) moveMovieSelection(-1);
+                        else if (key == SDLK_RIGHT) moveMovieSelection(1);
                         else if (key == SDLK_RETURN || key == SDLK_SPACE) {
                             const auto& list = KiddosServices::movies();
                             if (ui.movieBrowser.selectedRow >= 0 &&
@@ -419,7 +413,7 @@ int Application::run() {
                         if (screen == Home) {
                             homeGrid.moveUp();
                         } else if (screen == Movies) {
-                            moveMovieSelection(-1);
+                            moveMovieSelection(-2);
                         } else if (screen == Games) {
                             gameGrid.moveUp();
                             updateSelectedGameText(ui, selected);
@@ -440,7 +434,7 @@ int Application::run() {
                         if (screen == Home) {
                             homeGrid.moveDown();
                         } else if (screen == Movies) {
-                            moveMovieSelection(1);
+                            moveMovieSelection(2);
                         } else if (screen == Games) {
                             gameGrid.moveDown();
                             updateSelectedGameText(ui, selected);
@@ -460,6 +454,8 @@ int Application::run() {
                     } else if (inputAction == KiddosInput::Action::Left) {
                         if (screen == Home) {
                             homeGrid.moveLeft();
+                        } else if (screen == Movies) {
+                            moveMovieSelection(-1);
                         } else if (screen == Games) {
                             gameGrid.moveLeft();
                             updateSelectedGameText(ui, selected);
@@ -471,6 +467,8 @@ int Application::run() {
                     } else if (inputAction == KiddosInput::Action::Right) {
                         if (screen == Home) {
                             homeGrid.moveRight();
+                        } else if (screen == Movies) {
+                            moveMovieSelection(1);
                         } else if (screen == Games) {
                             gameGrid.moveRight();
                             updateSelectedGameText(ui, selected);

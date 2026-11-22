@@ -24,10 +24,11 @@ struct UI {
     SDL_Joystick* joystick = nullptr;
     SDL_Texture* images[4] = {};
     SDL_Texture* homeIcons[4] = {};
+    SDL_Texture* movieImages[4] = {};
     Text slotLabels[4];
     Text homeLabels[4];
     Text homeComingSoon[2];
-    Text homeSubtitle;
+    Text homeSubtitle, movieSubtitle, movieFooter;
     TTF_Font* headingFont = nullptr;
     TTF_Font* labelFont = nullptr;
     TTF_Font* footerFont = nullptr;
