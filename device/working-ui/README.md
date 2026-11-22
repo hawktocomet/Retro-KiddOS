@@ -115,6 +115,33 @@ The script expects the local Build-Workspace directory alongside the KiddOS repo
 
 The output is written to `Build-Workspace/build/arm64/kiddos-ui` by default. Set `KIDDOS_BUILD_WORKSPACE` to use a separate workspace, as was done for the November 19 refactor build. Existing output is backed up before replacement.
 
+## Tabler Home-screen icons
+
+The Home screen uses official icons from the Tabler Icons filled family:
+
+| KiddOS section | Icon asset |
+| --- | --- |
+| Games | `device-gamepad-2.svg` |
+| Music | `file-music.svg` |
+| Movies | `device-tv-old.svg` (retro television substitute) |
+| TV Shows | `device-tv.svg` |
+
+The original SVG assets and upstream MIT license are included in
+`assets/tabler-filled/`. They come from the
+[Tabler Icons repository](https://github.com/tabler/tabler-icons), under
+`icons/filled/`.
+
+`tools/embed_tabler_icons.py` converts these SVGs into 96 × 96 transparent
+PNGs using `rsvg-convert`, applies the UI blue (`#50beff`), and generates
+`tabler_icons.hpp` with embedded PNG byte arrays. Both `build-kiddos-ui.sh`
+and CMake generate this header as part of the build. The generated header
+is compiled into the executable; no separate icon files or SVG renderer
+are needed on the device at runtime.
+
+Build prerequisites for this step are Python 3 and `rsvg-convert`, in
+addition to the existing ARM64 or CMake build dependencies. Edit the
+source SVG assets rather than the generated header.
+
 ## Firmware integration
 
 The tested boot hook is at `../../firmware/boot/custom_start.sh`.
@@ -195,3 +222,11 @@ Deployed Movies milestone executable SHA-256 (November 22, 2026):
 
 The Movies browser and playback controls were verified on RPPBLUE after this
 build was deployed on November 22, 2026.
+
+The Tabler filled Home-screen icon build was subsequently deployed to RPPBLUE
+on November 22, 2026. Its ARM64 executable SHA-256 is:
+
+`c6f40d9335fe5add758ab16f32bf6d461f5732a2568e88fa6a69e5cdda915d48`
+
+The service started successfully; game and movie catalogs loaded, the
+controller was detected, and game artwork loading completed.
