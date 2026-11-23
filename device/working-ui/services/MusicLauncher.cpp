@@ -28,8 +28,7 @@ bool launchMusic(const MusicTrack& track) {
     if (pid == 0) {
         execl("/usr/bin/mpv", "mpv", "--no-config",
               "--no-video", "--ao=alsa", "--audio-device=alsa/hw:0,0",
-              "--audio-channels=stereo", "--input-gamepad=yes",
-              "--input-conf=/storage/.config/kiddos/mpv-input.conf",
+              "--audio-channels=stereo",
               track.path.c_str(), static_cast<char*>(nullptr));
         _exit(127);
     }
