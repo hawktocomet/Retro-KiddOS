@@ -2,6 +2,7 @@
 // Copyright (C) 2026 hawktocomet
 #include "../UI.hpp"
 #include "../services/MusicCatalog.hpp"
+#include "../services/MusicLauncher.hpp"
 #include <algorithm>
 #include <string>
 
@@ -80,14 +81,37 @@ void drawNowPlaying(UI& ui) {
 
     const SDL_Color white = {245, 248, 255, 255};
     const SDL_Color muted = {155, 177, 215, 255};
+    const SDL_Rect artwork = {225, 125, 270, 270};
+
+    if (ui.musicArtwork) {
+        SDL_RenderCopy(r, ui.musicArtwork, nullptr, &artwork);
+    } else {
+        SDL_Rect fallback = {225, 125, 270, 270};
+        SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
+        SDL_RenderFillRect(r, &fallback);
+        SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
+        SDL_Rect stem = {340, 185, 12, 115};
+        SDL_RenderFillRect(r, &stem);
+        SDL_Rect flag = {350, 185, 62, 12};
+        SDL_RenderFillRect(r, &flag);
+        SDL_Rect note = {305, 280, 48, 30};
+        SDL_RenderFillRect(r, &note);
+        SDL_Rect note2 = {350, 280, 48, 30};
+        SDL_RenderFillRect(r, &note2);
+    }
+
     Text nowPlaying = makeText(r, ui.labelFont, "NOW PLAYING", white);
-    Text indicator = makeText(r, ui.footerFont, "♪  PLAYING", {110, 230, 160, 255});
-    drawText(r, nowPlaying, 360, 230);
-    drawText(r, ui.musicNowPlayingTitle, 360, 315);
-    drawText(r, indicator, 360, 390);
+    const bool paused = KiddosServices::musicPaused();
+    Text indicator = makeText(
+        r, ui.footerFont, paused ? "Ⅱ  PAUSED" : "♪  PLAYING",
+        paused ? SDL_Color{255, 210, 110, 255}
+               : SDL_Color{110, 230, 160, 255});
+    drawText(r, nowPlaying, 360, 420);
+    drawText(r, ui.musicNowPlayingTitle, 360, 465);
+    drawText(r, indicator, 360, 520);
 
     Text footer = makeText(r, ui.footerFont,
-        "B  BACK TO MENU     L/R  CHANGE SONG", muted);
+        "A  PAUSE/RESUME     B  BACK     L/R  CHANGE SONG", muted);
     drawText(r, footer, 360, 625);
     destroyText(nowPlaying);
     destroyText(indicator);

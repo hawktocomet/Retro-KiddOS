@@ -8,6 +8,9 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <cerrno>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "models/Games.hpp"
 #include "services/BatteryService.hpp"
@@ -446,6 +449,53 @@ void toggleParentManagement(UI& ui) {
                      {255, 210, 110, 255});
 }
 
+bool loadMusicArtwork(UI& ui, const std::string& path) {
+    if (ui.musicArtwork) {
+        SDL_DestroyTexture(ui.musicArtwork);
+        ui.musicArtwork = nullptr;
+    }
+
+    constexpr const char* output = "/tmp/kiddos-now-playing-cover.jpg";
+    unlink(output);
+
+    const pid_t pid = fork();
+    if (pid < 0) {
+        std::perror("KiddOS: artwork fork");
+        return false;
+    }
+    if (pid == 0) {
+        execlp("ffmpeg", "ffmpeg", "-y", "-loglevel", "error",
+               "-i", path.c_str(), "-an", "-map", "0:v:0",
+               "-frames:v", "1",
+               "-vf",
+               "scale=360:360:force_original_aspect_ratio=decrease,"
+               "pad=360:360:(ow-iw)/2:(oh-ih)/2",
+               "-q:v", "3", output, static_cast<char*>(nullptr));
+        _exit(127);
+    }
+
+    int status = 0;
+    while (waitpid(pid, &status, 0) < 0) {
+        if (errno == EINTR) continue;
+        unlink(output);
+        return false;
+    }
+
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        unlink(output);
+        return false;
+    }
+
+    ui.musicArtwork = IMG_LoadTexture(ui.renderer, output);
+    unlink(output);
+    if (!ui.musicArtwork) {
+        std::fprintf(stderr, "KiddOS: embedded album art unavailable: %s\n",
+                     IMG_GetError());
+        return false;
+    }
+    return true;
+}
+
 void closeUI(UI& ui) {
     destroyText(ui.heading);
     destroyText(ui.homeSubtitle);
@@ -454,6 +504,7 @@ void closeUI(UI& ui) {
     destroyText(ui.musicSubtitle);
     destroyText(ui.musicFooter);
     destroyText(ui.musicNowPlayingTitle);
+    if (ui.musicArtwork) SDL_DestroyTexture(ui.musicArtwork);
     for (int i = 0; i < 4; ++i) destroyText(ui.homeLabels[i]);
     for (int i = 0; i < 2; ++i) destroyText(ui.homeComingSoon[i]);
     destroyText(ui.subtitle);

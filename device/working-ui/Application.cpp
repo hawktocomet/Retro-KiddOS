@@ -114,9 +114,15 @@ int Application::run() {
             if (index < 0 || index >= static_cast<int>(list.size()))
                 return false;
             const auto& track = list[static_cast<std::size_t>(index)];
-            if (!KiddosServices::launchMusic(track))
-                return false;
+            const bool resuming =
+                index == currentMusicTrack && KiddosServices::musicPaused();
+            const bool started = resuming
+                ? KiddosServices::resumeMusic()
+                : KiddosServices::launchMusic(track);
+            if (!started) return false;
+
             currentMusicTrack = index;
+            if (!resuming) loadMusicArtwork(ui, track.path);
             destroyText(ui.musicNowPlayingTitle);
             ui.musicNowPlayingTitle = makeText(
                 ui.renderer, ui.labelFont, track.title.c_str(),
@@ -296,7 +302,16 @@ int Application::run() {
                         continue;
                     }
 
-                    if (screen == Home) {
+                    if (screen == NowPlaying &&
+                        (key == SDLK_RETURN || key == SDLK_SPACE)) {
+                        if (KiddosServices::musicPaused()) {
+                            KiddosServices::resumeMusic();
+                        } else if (KiddosServices::pauseMusic()) {
+                            if (currentMusicTrack >= 0)
+                                ui.musicBrowser.selectedRow = currentMusicTrack;
+                            screen = nowPlayingReturnScreen;
+                        }
+                    } else if (screen == Home) {
                         if (key == SDLK_UP) homeGrid.moveUp();
                         else if (key == SDLK_DOWN) homeGrid.moveDown();
                         else if (key == SDLK_LEFT) homeGrid.moveLeft();
@@ -434,7 +449,15 @@ int Application::run() {
                         else if (screen == Movies || screen == Music || screen == Games)
                             screen = Home;
                     } else if (inputAction == KiddosInput::Action::Confirm) {
-                        if (screen == WifiPassword) {
+                        if (screen == NowPlaying) {
+                            if (KiddosServices::musicPaused()) {
+                                KiddosServices::resumeMusic();
+                            } else if (KiddosServices::pauseMusic()) {
+                                if (currentMusicTrack >= 0)
+                                    ui.musicBrowser.selectedRow = currentMusicTrack;
+                                screen = nowPlayingReturnScreen;
+                            }
+                        } else if (screen == WifiPassword) {
                             if (activateWifiKeyboardKey(ui)) {
                                 screen = WifiSettings;
                                 refreshWifiSettings(ui);
@@ -662,7 +685,23 @@ int Application::run() {
                 }
             }
 
-            if (screen == NowPlaying && !KiddosServices::musicPlaying()) {
+            if (currentMusicTrack >= 0 &&
+                !KiddosServices::musicPaused() &&
+                !KiddosServices::musicPlaying()) {
+                const auto& tracks = KiddosServices::music();
+                if (!tracks.empty()) {
+                    const int next =
+                        (currentMusicTrack + 1) % static_cast<int>(tracks.size());
+                    if (!playMusicTrack(next))
+                        currentMusicTrack = -1;
+                } else {
+                    currentMusicTrack = -1;
+                }
+            }
+
+            if (screen == NowPlaying &&
+                !KiddosServices::musicPlaying() &&
+                !KiddosServices::musicPaused()) {
                 screen = nowPlayingReturnScreen;
             }
 

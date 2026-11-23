@@ -13,6 +13,7 @@
 namespace KiddosServices {
 namespace {
 pid_t musicPid = -1;
+bool paused = false;
 }
 
 bool launchMusic(const MusicTrack& track) {
@@ -39,18 +40,43 @@ bool launchMusic(const MusicTrack& track) {
     }
 
     musicPid = pid;
+    paused = false;
     std::printf("KiddOS: now playing %s\n", track.title.c_str());
     std::fflush(stdout);
     return true;
 }
 
 void stopMusic() {
-    if (musicPid <= 0) return;
+    if (musicPid <= 0) {
+        paused = false;
+        return;
+    }
 
+    kill(musicPid, SIGCONT);
     kill(musicPid, SIGTERM);
     int status = 0;
     while (waitpid(musicPid, &status, 0) < 0 && errno == EINTR) {}
     musicPid = -1;
+    paused = false;
+}
+
+bool pauseMusic() {
+    if (musicPid <= 0 || paused) return musicPid > 0;
+    if (kill(musicPid, SIGSTOP) != 0) return false;
+    paused = true;
+    return true;
+}
+
+bool resumeMusic() {
+    if (musicPid <= 0) return false;
+    if (!paused) return true;
+    if (kill(musicPid, SIGCONT) != 0) return false;
+    paused = false;
+    return true;
+}
+
+bool musicPaused() {
+    return musicPid > 0 && paused;
 }
 
 bool musicPlaying() {
@@ -62,6 +88,7 @@ bool musicPlaying() {
 
     if (result == musicPid || (result < 0 && errno == ECHILD)) {
         musicPid = -1;
+        paused = false;
         return false;
     }
 

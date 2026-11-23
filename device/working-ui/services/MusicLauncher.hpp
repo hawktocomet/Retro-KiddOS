@@ -5,5 +5,8 @@
 namespace KiddosServices {
 bool launchMusic(const MusicTrack& track);
 void stopMusic();
+bool pauseMusic();
+bool resumeMusic();
+bool musicPaused();
 bool musicPlaying();
 }

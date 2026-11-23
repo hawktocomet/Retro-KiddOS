@@ -30,6 +30,7 @@ struct UI {
     Text homeComingSoon[2];
     Text homeSubtitle, movieSubtitle, movieFooter;
     Text musicSubtitle, musicFooter, musicNowPlayingTitle;
+    SDL_Texture* musicArtwork = nullptr;
     TTF_Font* headingFont = nullptr;
     TTF_Font* labelFont = nullptr;
     TTF_Font* footerFont = nullptr;
@@ -87,6 +88,7 @@ void drawMovies(UI& ui);
 void drawMusic(UI& ui);
 void drawMusicPlaylist(UI& ui);
 void drawNowPlaying(UI& ui);
+bool loadMusicArtwork(UI& ui, const std::string& path);
 void drawSelectedGame(UI& ui, int selected, int action);
 void drawGameInfo(UI& ui);
 void drawSystemMenu(UI& ui, int selected);
