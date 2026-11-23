@@ -42,6 +42,11 @@ struct MovieBrowserState {
     int scrollOffset = 0;
 };
 
+struct MusicBrowserState {
+    int selectedRow = 0;
+    int scrollOffset = 0;
+};
+
 // Battery and connection indicators are shared chrome, not screen workflow state.
 struct StatusBarState {
     int batteryPercent = -1;

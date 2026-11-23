@@ -8,6 +8,7 @@ namespace KiddosNavigation {
 enum Screen {
     Home,
     Games,
+    Music,
     Movies,
     SelectedGame,
     GameInfo,

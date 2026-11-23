@@ -30,5 +30,6 @@ private:
     std::unique_ptr<KiddosPin::PinWorkflow> pinWorkflow_;
     int parentSelected_ = 0;
     KiddosScreens::MovieBrowserState movieBrowser_;
+    KiddosScreens::MusicBrowserState musicBrowser_;
     bool running_ = true;
 };

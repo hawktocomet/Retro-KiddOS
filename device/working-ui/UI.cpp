@@ -451,6 +451,8 @@ void closeUI(UI& ui) {
     destroyText(ui.homeSubtitle);
     destroyText(ui.movieSubtitle);
     destroyText(ui.movieFooter);
+    destroyText(ui.musicSubtitle);
+    destroyText(ui.musicFooter);
     for (int i = 0; i < 4; ++i) destroyText(ui.homeLabels[i]);
     for (int i = 0; i < 2; ++i) destroyText(ui.homeComingSoon[i]);
     destroyText(ui.subtitle);
@@ -563,6 +565,9 @@ bool openUI(UI& ui) {
     ui.movieSubtitle = makeText(ui.renderer, ui.footerFont, "CHOOSE A MOVIE", muted);
     ui.movieFooter = makeText(ui.renderer, ui.footerFont,
         "D-PAD MOVE   A PLAY   B BACK   START MENU", muted);
+    ui.musicSubtitle = makeText(ui.renderer, ui.footerFont, "CHOOSE A SONG", muted);
+    ui.musicFooter = makeText(ui.renderer, ui.footerFont,
+        "D-PAD MOVE   A PLAY   B BACK   START MENU", muted);
     ui.homeSubtitle = makeText(ui.renderer, ui.footerFont,
         "CHOOSE SOMETHING TO PLAY", muted);
     ui.homeLabels[0] = makeText(ui.renderer, ui.labelFont, "GAMES", white);
@@ -570,7 +575,7 @@ bool openUI(UI& ui) {
     ui.homeLabels[2] = makeText(ui.renderer, ui.labelFont, "MOVIES", white);
     ui.homeLabels[3] = makeText(ui.renderer, ui.labelFont, "TV SHOWS", white);
     ui.homeComingSoon[0] = makeText(ui.renderer, ui.footerFont,
-        "COMING SOON", muted);
+        "", muted);
     ui.homeComingSoon[1] = makeText(ui.renderer, ui.footerFont,
         "COMING SOON", muted);
     ui.footer = makeText(ui.renderer, ui.footerFont,

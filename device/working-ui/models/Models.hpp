@@ -18,6 +18,11 @@ struct Movie {
     std::string path;
 };
 
+struct MusicTrack {
+    std::string title;
+    std::string path;
+};
+
 enum class WifiStatus {
     Unknown,
     Disconnected,

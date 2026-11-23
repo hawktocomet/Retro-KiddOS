@@ -164,8 +164,7 @@ library navigation, PIN workflow, and SDL resource ownership are separated
 into focused components. See `../../docs/ARCHITECTURE.md` for the responsibility
 map and verification record.
 
-Games and Movies are implemented library sections. Music remains a
-prepared navigation extension point. Physical L/R shoulder buttons switch
+Games, Music, and Movies are implemented library sections. Music scans `/storage/roms/music` for supported audio files and presents up to four tracks. Physical L/R shoulder buttons switch
 between implemented library sections. The four-slot game catalog and
 parent-managed game assignments are implemented; see
 `../../docs/GAME_LIBRARY.md` and `../management-server/README.md`.
@@ -252,3 +251,11 @@ SHA-256:
 The service remained active after deployment, the movie catalog loaded,
 and the Totoro artwork was confirmed loaded on RPPBLUE. The Movies screen
 was visually verified.
+
+## Music carousel
+
+The Music screen scans `/storage/roms/music` for MP3, M4A, AAC, FLAC,
+OGG, OPUS, WAV, and WMA files. It displays up to four tracks in filename
+order. D-pad navigation selects a track; A starts playback; B exits playback
+to the Music carousel. MPV runs audio-only through the device ALSA output
+and uses the existing A pause/B quit controller bindings.

@@ -15,12 +15,15 @@ set(KIDDOS_SOURCES
     UI.cpp
     screens/GameScreens.cpp
     screens/MovieScreens.cpp
+    screens/MusicScreens.cpp
     screens/SystemScreens.cpp
     screens/ParentScreen.cpp
     screens/WifiScreen.cpp
     services/GameCatalog.cpp
     services/MovieCatalog.cpp
     services/MovieLauncher.cpp
+    services/MusicCatalog.cpp
+    services/MusicLauncher.cpp
     services/GameLauncher.cpp
     services/BatteryService.cpp
     services/WifiService.cpp
