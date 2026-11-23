@@ -25,10 +25,12 @@ struct UI {
     SDL_Texture* images[4] = {};
     SDL_Texture* homeIcons[4] = {};
     SDL_Texture* movieImages[4] = {};
+    SDL_Texture* tvImages[4] = {};
     Text slotLabels[4];
     Text homeLabels[4];
     Text homeComingSoon[2];
     Text homeSubtitle, movieSubtitle, movieFooter;
+    Text tvSubtitle, tvFooter;
     Text musicSubtitle, musicFooter, musicNowPlayingTitle;
     SDL_Texture* musicArtwork = nullptr;
     TTF_Font* headingFont = nullptr;
@@ -46,6 +48,7 @@ struct UI {
     Text batteryLabel;
 
     KiddosScreens::MovieBrowserState movieBrowser;
+    KiddosScreens::TVBrowserState tvBrowser;
     KiddosScreens::MusicBrowserState musicBrowser;
     KiddosScreens::WifiState wifi;
     KiddosScreens::StatusBarState status;
@@ -85,6 +88,7 @@ void refreshGameArtwork(UI& ui);
 void drawHome(UI& ui, int selected);
 void drawUI(UI& ui, int selected);
 void drawMovies(UI& ui);
+void drawTVShows(UI& ui);
 void drawMusic(UI& ui);
 void drawMusicPlaylist(UI& ui);
 void drawNowPlaying(UI& ui);

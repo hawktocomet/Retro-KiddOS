@@ -42,6 +42,11 @@ struct MovieBrowserState {
     int scrollOffset = 0;
 };
 
+struct TVBrowserState {
+    int selectedRow = 0;
+    int scrollOffset = 0;
+};
+
 struct MusicBrowserState {
     int selectedRow = 0;
     int scrollOffset = 0;

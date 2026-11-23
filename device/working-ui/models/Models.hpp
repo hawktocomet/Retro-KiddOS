@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 struct Game {
     std::string name;
@@ -16,6 +17,13 @@ struct Game {
 struct Movie {
     std::string title;
     std::string path;
+};
+
+struct TVShow {
+    std::string title;
+    std::string directory;
+    std::string artwork;
+    std::vector<std::string> episodes;
 };
 
 struct MusicTrack {

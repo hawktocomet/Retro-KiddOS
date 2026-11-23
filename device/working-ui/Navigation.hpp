@@ -12,6 +12,7 @@ enum Screen {
     MusicPlaylist,
     NowPlaying,
     Movies,
+    TVShows,
     SelectedGame,
     GameInfo,
     SystemMenu,

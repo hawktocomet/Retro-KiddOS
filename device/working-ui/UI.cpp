@@ -17,6 +17,7 @@
 #include "services/WifiService.hpp"
 #include "services/ParentManagementService.hpp"
 #include "services/MovieCatalog.hpp"
+#include "services/TVShowCatalog.hpp"
 
 static const char* BASE = "/storage/roms/.kiddos-ui-test-20261116";
 static const char* FONT = "/storage/.config/emulationstation/themes/rp-pocket/art/fonts/Cabin-Bold.ttf";
@@ -501,6 +502,8 @@ void closeUI(UI& ui) {
     destroyText(ui.homeSubtitle);
     destroyText(ui.movieSubtitle);
     destroyText(ui.movieFooter);
+    destroyText(ui.tvSubtitle);
+    destroyText(ui.tvFooter);
     destroyText(ui.musicSubtitle);
     destroyText(ui.musicFooter);
     destroyText(ui.musicNowPlayingTitle);
@@ -539,6 +542,7 @@ void closeUI(UI& ui) {
         if (ui.images[i]) SDL_DestroyTexture(ui.images[i]);
         if (ui.homeIcons[i]) SDL_DestroyTexture(ui.homeIcons[i]);
         if (ui.movieImages[i]) SDL_DestroyTexture(ui.movieImages[i]);
+        if (ui.tvImages[i]) SDL_DestroyTexture(ui.tvImages[i]);
     }
     if (ui.headingFont) TTF_CloseFont(ui.headingFont);
     if (ui.labelFont) TTF_CloseFont(ui.labelFont);
@@ -617,6 +621,10 @@ bool openUI(UI& ui) {
     ui.movieSubtitle = makeText(ui.renderer, ui.footerFont, "CHOOSE A MOVIE", muted);
     ui.movieFooter = makeText(ui.renderer, ui.footerFont,
         "D-PAD MOVE   A PLAY   B BACK   START MENU", muted);
+    ui.tvSubtitle = makeText(
+        ui.renderer, ui.footerFont, "CHOOSE A SHOW", muted);
+    ui.tvFooter = makeText(ui.renderer, ui.footerFont,
+        "D-PAD MOVE   A OPEN   B BACK   START MENU", muted);
     ui.musicSubtitle = makeText(ui.renderer, ui.footerFont, "CHOOSE A SONG", muted);
     ui.musicFooter = makeText(ui.renderer, ui.footerFont,
         "D-PAD MOVE   A PLAY   B BACK   START MENU", muted);
@@ -717,6 +725,21 @@ bool openUI(UI& ui) {
         } else {
             std::fprintf(stderr, "KiddOS: movie artwork unavailable for %s: %s\\n",
                          movieList[static_cast<std::size_t>(i)].title.c_str(),
+                         IMG_GetError());
+        }
+    }
+
+    const auto& showList = KiddosServices::tvShows();
+    for (int i = 0; i < 4 && i < static_cast<int>(showList.size()); ++i) {
+        const auto& artwork = showList[static_cast<std::size_t>(i)].artwork;
+        if (!artwork.empty())
+            ui.tvImages[i] = IMG_LoadTexture(ui.renderer, artwork.c_str());
+        if (ui.tvImages[i]) {
+            std::printf("KiddOS: TV artwork loaded for %s\\n",
+                        showList[static_cast<std::size_t>(i)].title.c_str());
+        } else if (!artwork.empty()) {
+            std::fprintf(stderr, "KiddOS: TV artwork unavailable for %s: %s\\n",
+                         showList[static_cast<std::size_t>(i)].title.c_str(),
                          IMG_GetError());
         }
     }
