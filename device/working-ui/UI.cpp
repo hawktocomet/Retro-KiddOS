@@ -631,7 +631,7 @@ bool openUI(UI& ui) {
     ui.homeComingSoon[0] = makeText(ui.renderer, ui.footerFont,
         "", muted);
     ui.homeComingSoon[1] = makeText(ui.renderer, ui.footerFont,
-        "COMING SOON", muted);
+        "", muted);
     ui.footer = makeText(ui.renderer, ui.footerFont,
         "D-PAD  MOVE     A  SELECT     START  MENU", muted);
     ui.selectedFooter = makeText(ui.renderer, ui.footerFont,
