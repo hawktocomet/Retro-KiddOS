@@ -31,7 +31,6 @@ bool launchMovie(const Movie& movie) {
               "--fullscreen",
               "--input-gamepad=yes",
               "--input-conf=/storage/.config/kiddos/mpv-input.conf",
-              "--script=/storage/.config/kiddos/movie-exit.lua",
               movie.path.c_str(),
               static_cast<char*>(nullptr));
         _exit(127);
