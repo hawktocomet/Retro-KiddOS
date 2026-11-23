@@ -136,8 +136,7 @@ int Application::run() {
 
         bool launch = false;
         bool launchMovie = false;
-        bool launchMusic = false;
-        while (running && !launch && !launchMovie && !launchMusic) {
+        while (running && !launch && !launchMovie) {
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) {
@@ -174,7 +173,10 @@ int Application::run() {
                             screen = SelectedGame;
                         else if (screen == SelectedGame)
                             screen = Games;
-                        else if (screen == Movies || screen == Music || screen == Games)
+                        else if (screen == NowPlaying) {
+                            KiddosServices::stopMusic();
+                            screen = Music;
+                        } else if (screen == Movies || screen == Music || screen == Games)
                             screen = Home;
                         continue;
                     }
@@ -277,7 +279,19 @@ int Application::run() {
                         else if (key == SDLK_RIGHT) moveMusicSelection(1);
                         else if (key == SDLK_RETURN || key == SDLK_SPACE) {
                             const auto& list = KiddosServices::music();
-                            if (ui.musicBrowser.selectedRow >= 0 && ui.musicBrowser.selectedRow < static_cast<int>(list.size())) launchMusic = true;
+                            const int row = ui.musicBrowser.selectedRow;
+                            if (row >= 0 && row < static_cast<int>(list.size())) {
+                                const auto& track = list[static_cast<std::size_t>(row)];
+                                if (KiddosServices::launchMusic(track)) {
+                                    destroyText(ui.musicNowPlayingTitle);
+                                    ui.musicNowPlayingTitle = makeText(
+                                        ui.renderer, ui.labelFont,
+                                        track.title.c_str(), {245, 248, 255, 255});
+                                    screen = NowPlaying;
+                                } else {
+                                    SDL_Delay(1200);
+                                }
+                            }
                         } else if (key == SDLK_s) navigation.openSystemMenu();
                     } else if (screen == Movies) {
                         if (key == SDLK_UP) moveMovieSelection(-2);
@@ -366,7 +380,10 @@ int Application::run() {
                             screen = SelectedGame;
                         else if (screen == SelectedGame)
                             screen = Games;
-                        else if (screen == Movies || screen == Games)
+                        else if (screen == NowPlaying) {
+                            KiddosServices::stopMusic();
+                            screen = Music;
+                        } else if (screen == Movies || screen == Music || screen == Games)
                             screen = Home;
                     } else if (inputAction == KiddosInput::Action::Confirm) {
                         if (screen == WifiPassword) {
@@ -380,7 +397,19 @@ int Application::run() {
                             else if (homeSelected == 2) screen = Movies;
                         } else if (screen == Music) {
                             const auto& list = KiddosServices::music();
-                            if (ui.musicBrowser.selectedRow >= 0 && ui.musicBrowser.selectedRow < static_cast<int>(list.size())) launchMusic = true;
+                            const int row = ui.musicBrowser.selectedRow;
+                            if (row >= 0 && row < static_cast<int>(list.size())) {
+                                const auto& track = list[static_cast<std::size_t>(row)];
+                                if (KiddosServices::launchMusic(track)) {
+                                    destroyText(ui.musicNowPlayingTitle);
+                                    ui.musicNowPlayingTitle = makeText(
+                                        ui.renderer, ui.labelFont,
+                                        track.title.c_str(), {245, 248, 255, 255});
+                                    screen = NowPlaying;
+                                } else {
+                                    SDL_Delay(1200);
+                                }
+                            }
                         } else if (screen == Movies) {
                             const auto& list = KiddosServices::movies();
                             if (ui.movieBrowser.selectedRow >= 0 &&
@@ -521,8 +550,8 @@ int Application::run() {
                         }
                     } else if (inputAction == KiddosInput::Action::Start &&
                                (screen == Home || screen == Games ||
-                                screen == Movies || screen == Music || screen == SelectedGame ||
-                                screen == GameInfo)) {
+                                screen == Movies || screen == Music || screen == NowPlaying ||
+                                screen == SelectedGame || screen == GameInfo)) {
                         navigation.openSystemMenu();
                     }
                 }
@@ -580,7 +609,11 @@ int Application::run() {
                 }
             }
 
-            if (running && !launch && !launchMovie && !launchMusic) {
+            if (screen == NowPlaying && !KiddosServices::musicPlaying()) {
+                screen = Music;
+            }
+
+            if (running && !launch && !launchMovie) {
                 updateBattery(ui);
                 pollWifiConnection(ui);
                 if (ui.wifi.needsPassword) {
@@ -600,6 +633,7 @@ int Application::run() {
                 else if (screen == Games) drawUI(ui, selected);
                 else if (screen == Movies) drawMovies(ui);
                 else if (screen == Music) drawMusic(ui);
+                else if (screen == NowPlaying) drawNowPlaying(ui);
                 else if (screen == SelectedGame) drawSelectedGame(ui, selected, action);
                 else if (screen == GameInfo) drawGameInfo(ui);
                 else if (screen == SystemMenu) drawSystemMenu(ui, menuSelected);
@@ -621,18 +655,12 @@ int Application::run() {
         musicBrowser_ = ui.musicBrowser;
         cancelWifiConnection(ui);
         std::fill(ui.wifi.password.begin(), ui.wifi.password.end(), '\0');
+        KiddosServices::stopMusic();
         closeUI(ui);
         if (running && launch && games[selected].available) {
             if (!KiddosServices::launchGame(games[selected]))
                 SDL_Delay(1500);
             screen = Games;
-        }
-        if (running && launchMusic) {
-            const auto& list = KiddosServices::music();
-            if (musicBrowser_.selectedRow >= 0 && musicBrowser_.selectedRow < static_cast<int>(list.size())) {
-                if (!KiddosServices::launchMusic(list[static_cast<std::size_t>(musicBrowser_.selectedRow)])) SDL_Delay(1500);
-            }
-            screen = Music;
         }
         if (running && launchMovie) {
             const auto& list = KiddosServices::movies();

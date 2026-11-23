@@ -36,3 +36,27 @@ void drawMusic(UI& ui) {
     drawText(r, ui.musicFooter, 360, 625);
     SDL_RenderPresent(r);
 }
+
+
+void drawNowPlaying(UI& ui) {
+    SDL_Renderer* r = ui.renderer;
+    drawSimplePanel(r);
+    drawText(r, ui.heading, 360, 68);
+    drawBattery(ui);
+
+    const SDL_Color white = {245, 248, 255, 255};
+    const SDL_Color muted = {155, 177, 215, 255};
+    Text nowPlaying = makeText(r, ui.labelFont, "NOW PLAYING", white);
+    Text indicator = makeText(r, ui.footerFont, "♪  PLAYING", {110, 230, 160, 255});
+    drawText(r, nowPlaying, 360, 230);
+    drawText(r, ui.musicNowPlayingTitle, 360, 315);
+    drawText(r, indicator, 360, 390);
+
+    Text footer = makeText(r, ui.footerFont,
+        "B  STOP AND RETURN     START  MENU", muted);
+    drawText(r, footer, 360, 625);
+    destroyText(nowPlaying);
+    destroyText(indicator);
+    destroyText(footer);
+    SDL_RenderPresent(r);
+}

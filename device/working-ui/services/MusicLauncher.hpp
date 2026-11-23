@@ -4,4 +4,6 @@
 #include "../models/Models.hpp"
 namespace KiddosServices {
 bool launchMusic(const MusicTrack& track);
+void stopMusic();
+bool musicPlaying();
 }

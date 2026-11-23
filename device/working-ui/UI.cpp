@@ -453,6 +453,7 @@ void closeUI(UI& ui) {
     destroyText(ui.movieFooter);
     destroyText(ui.musicSubtitle);
     destroyText(ui.musicFooter);
+    destroyText(ui.musicNowPlayingTitle);
     for (int i = 0; i < 4; ++i) destroyText(ui.homeLabels[i]);
     for (int i = 0; i < 2; ++i) destroyText(ui.homeComingSoon[i]);
     destroyText(ui.subtitle);
@@ -568,6 +569,8 @@ bool openUI(UI& ui) {
     ui.musicSubtitle = makeText(ui.renderer, ui.footerFont, "CHOOSE A SONG", muted);
     ui.musicFooter = makeText(ui.renderer, ui.footerFont,
         "D-PAD MOVE   A PLAY   B BACK   START MENU", muted);
+    ui.musicNowPlayingTitle = makeText(ui.renderer, ui.labelFont,
+        "", white);
     ui.homeSubtitle = makeText(ui.renderer, ui.footerFont,
         "CHOOSE SOMETHING TO PLAY", muted);
     ui.homeLabels[0] = makeText(ui.renderer, ui.labelFont, "GAMES", white);

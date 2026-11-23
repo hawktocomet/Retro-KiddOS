@@ -29,7 +29,7 @@ struct UI {
     Text homeLabels[4];
     Text homeComingSoon[2];
     Text homeSubtitle, movieSubtitle, movieFooter;
-    Text musicSubtitle, musicFooter;
+    Text musicSubtitle, musicFooter, musicNowPlayingTitle;
     TTF_Font* headingFont = nullptr;
     TTF_Font* labelFont = nullptr;
     TTF_Font* footerFont = nullptr;
@@ -85,6 +85,7 @@ void drawHome(UI& ui, int selected);
 void drawUI(UI& ui, int selected);
 void drawMovies(UI& ui);
 void drawMusic(UI& ui);
+void drawNowPlaying(UI& ui);
 void drawSelectedGame(UI& ui, int selected, int action);
 void drawGameInfo(UI& ui);
 void drawSystemMenu(UI& ui, int selected);
