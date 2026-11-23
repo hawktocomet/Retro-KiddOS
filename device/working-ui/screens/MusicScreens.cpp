@@ -16,13 +16,13 @@ void drawMusic(UI& ui) {
         {88,396,252,190}, {380,396,252,190}
     };
     const auto& tracks = KiddosServices::music();
-    const int count = std::min(4, static_cast<int>(tracks.size()));
+    const int count = tracks.empty() ? 0 : 1;
     const SDL_Color muted = {155,177,215,255};
     for (int i=0; i<4; ++i) {
         SDL_Rect tile = tiles[i];
         SDL_SetRenderDrawColor(r,28,38,68,255);
         SDL_RenderFillRect(r,&tile);
-        std::string label = i < count ? tracks[static_cast<std::size_t>(i)].title : "EMPTY SLOT";
+        std::string label = i < count ? "PLAYLIST 1" : "EMPTY SLOT";
         if (label.size() > 25) label = label.substr(0,22) + "...";
         drawWifiLine(r, ui.labelFont, label, tile.x+18, tile.y+82, muted);
         if (i == ui.musicBrowser.selectedRow && i < count) {
@@ -33,6 +33,40 @@ void drawMusic(UI& ui) {
             }
         }
     }
+    drawText(r, ui.musicFooter, 360, 625);
+    SDL_RenderPresent(r);
+}
+
+
+void drawMusicPlaylist(UI& ui) {
+    SDL_Renderer* r = ui.renderer;
+    drawSimplePanel(r);
+    drawText(r, ui.heading, 360, 68);
+    drawText(r, ui.musicSubtitle, 360, 119);
+    drawBattery(ui);
+
+    const auto& tracks = KiddosServices::music();
+    const int first = std::max(0, ui.musicBrowser.scrollOffset);
+    constexpr int visibleRows = 8;
+    const SDL_Color white = {245, 248, 255, 255};
+    const SDL_Color muted = {155, 177, 215, 255};
+
+    for (int row = 0; row < visibleRows; ++row) {
+        const int index = first + row;
+        if (index >= static_cast<int>(tracks.size())) break;
+        SDL_Rect item = {76, 158 + row * 54, 568, 46};
+        if (index == ui.musicBrowser.selectedRow) {
+            SDL_SetRenderDrawColor(r, 35, 91, 139, 255);
+            SDL_RenderFillRect(r, &item);
+            SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
+            SDL_RenderDrawRect(r, &item);
+        }
+        drawWifiLine(r, ui.labelFont,
+                     tracks[static_cast<std::size_t>(index)].title,
+                     94, item.y + 10,
+                     index == ui.musicBrowser.selectedRow ? white : muted);
+    }
+
     drawText(r, ui.musicFooter, 360, 625);
     SDL_RenderPresent(r);
 }
@@ -53,7 +87,7 @@ void drawNowPlaying(UI& ui) {
     drawText(r, indicator, 360, 390);
 
     Text footer = makeText(r, ui.footerFont,
-        "B  STOP AND RETURN     START  MENU", muted);
+        "B  BACK TO MENU     L/R  CHANGE SONG", muted);
     drawText(r, footer, 360, 625);
     destroyText(nowPlaying);
     destroyText(indicator);

@@ -85,6 +85,7 @@ void drawHome(UI& ui, int selected);
 void drawUI(UI& ui, int selected);
 void drawMovies(UI& ui);
 void drawMusic(UI& ui);
+void drawMusicPlaylist(UI& ui);
 void drawNowPlaying(UI& ui);
 void drawSelectedGame(UI& ui, int selected, int action);
 void drawGameInfo(UI& ui);

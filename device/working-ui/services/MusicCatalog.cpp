@@ -22,7 +22,7 @@ paths = sorted((p for p in directory.iterdir()
                 if p.is_file() and p.suffix.lower() in extensions),
                key=lambda p: p.name.casefold()) if directory.is_dir() else []
 out = sys.stdout.buffer
-for path in paths[:4]:
+for path in paths:
     out.write(path.stem.encode("utf-8") + b"\0")
     out.write(str(path).encode("utf-8") + b"\0")
 )PY";

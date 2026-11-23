@@ -9,6 +9,7 @@ enum Screen {
     Home,
     Games,
     Music,
+    MusicPlaylist,
     NowPlaying,
     Movies,
     SelectedGame,
