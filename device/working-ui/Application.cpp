@@ -309,7 +309,7 @@ int Application::run() {
                         } else if (KiddosServices::pauseMusic()) {
                             if (currentMusicTrack >= 0)
                                 ui.musicBrowser.selectedRow = currentMusicTrack;
-                            screen = nowPlayingReturnScreen;
+
                         }
                     } else if (screen == Home) {
                         if (key == SDLK_UP) homeGrid.moveUp();
@@ -455,7 +455,7 @@ int Application::run() {
                             } else if (KiddosServices::pauseMusic()) {
                                 if (currentMusicTrack >= 0)
                                     ui.musicBrowser.selectedRow = currentMusicTrack;
-                                screen = nowPlayingReturnScreen;
+
                             }
                         } else if (screen == WifiPassword) {
                             if (activateWifiKeyboardKey(ui)) {
