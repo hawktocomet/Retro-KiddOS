@@ -4,7 +4,7 @@
 
 build_kiddos() {
     local SCRIPT_DIR PROJECT_ROOT WORKSPACE
-    local BUILD SDL CONFIG SYS OUT GENERATED TABLER_HEADER
+    local BUILD SDL CONFIG SYS OUT
     local -a SOURCES
     local STAMP TMP NEXT BACKUP
     local path lib
@@ -42,8 +42,6 @@ build_kiddos() {
     CONFIG="$BUILD/sdl2-config/include-config-release/SDL2"
     SYS="$WORKSPACE/build/device-sysroot/usr/lib"
     OUT="$BUILD/kiddos-ui"
-    GENERATED="$BUILD/generated"
-    TABLER_HEADER="$GENERATED/tabler_icons.hpp"
 
     STAMP="$(date +%Y%m%d-%H%M%S)"
     TMP="$BUILD/kiddos-ui.tmp.$$"
@@ -52,11 +50,6 @@ build_kiddos() {
 
     echo "===== CHECKING BUILD INPUTS ====="
     for path in "${SOURCES[@]}" \
-        "$SCRIPT_DIR/tools/embed_tabler_icons.py" \
-        "$SCRIPT_DIR/assets/tabler-filled/device-gamepad-2.svg" \
-        "$SCRIPT_DIR/assets/tabler-filled/file-music.svg" \
-        "$SCRIPT_DIR/assets/tabler-filled/device-tv-old.svg" \
-        "$SCRIPT_DIR/assets/tabler-filled/device-tv.svg" \
         "$SDL/include" "$CONFIG/SDL_config.h" \
         "$SYS/libSDL2-2.0.so.0.3000.3" \
         "$SYS/libSDL2_image-2.0.so.0.800.2" \
@@ -67,10 +60,6 @@ build_kiddos() {
         fi
     done
 
-    if ! command -v python3 >/dev/null 2>&1 || ! command -v rsvg-convert >/dev/null 2>&1; then
-        echo "ERROR: python3 and rsvg-convert are required to embed Tabler icons."
-        return 1
-    fi
     if ! command -v aarch64-linux-gnu-g++ >/dev/null 2>&1; then
         echo "ERROR: ARM64 compiler not found."
         return 1
@@ -85,15 +74,6 @@ build_kiddos() {
         return 1
     fi
 
-    if ! mkdir -p "$GENERATED"; then
-        echo "ERROR: Cannot create generated-header directory."
-        return 1
-    fi
-    if ! python3 "$SCRIPT_DIR/tools/embed_tabler_icons.py" "$TABLER_HEADER"; then
-        echo "ERROR: Could not generate embedded Tabler icons."
-        return 1
-    fi
-
     echo "Sources: ${SOURCES[*]}"
     echo "Workspace: $WORKSPACE"
     aarch64-linux-gnu-g++ --version
@@ -104,7 +84,6 @@ build_kiddos() {
         -std=c++17 -O2 -mcpu=cortex-a35 \
         -I"$SDL/include" \
         -I"$CONFIG" \
-        -I"$GENERATED" \
         -I/usr/include/SDL2 \
         "${SOURCES[@]}" \
         -L"$SYS" \

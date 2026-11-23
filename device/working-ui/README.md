@@ -115,32 +115,20 @@ The script expects the local Build-Workspace directory alongside the KiddOS repo
 
 The output is written to `Build-Workspace/build/arm64/kiddos-ui` by default. Set `KIDDOS_BUILD_WORKSPACE` to use a separate workspace, as was done for the November 19 refactor build. Existing output is backed up before replacement.
 
-## Tabler Home-screen icons
+## Home-screen icons
 
-The Home screen uses official icons from the Tabler Icons filled family:
+The Home screen uses four standalone PNG icons from the Nieobie Game Icon
+Pack v1.4: controller for Games, music note for Music, film for Movies,
+and retro television for TV Shows. The selected 256 × 256 white variants
+are stored in `assets/cc0-icons/`, tinted to the UI blue (`#50beff`) at
+runtime, and loaded from `/storage/roms/.kiddos-ui-assets/` on the device.
 
-| KiddOS section | Icon asset |
-| --- | --- |
-| Games | `device-gamepad-2.svg` |
-| Music | `file-music.svg` |
-| Movies | `device-tv-old.svg` (retro television substitute) |
-| TV Shows | `device-tv.svg` |
-
-The original SVG assets and upstream MIT license are included in
-`assets/tabler-filled/`. They come from the
-[Tabler Icons repository](https://github.com/tabler/tabler-icons), under
-`icons/filled/`.
-
-`tools/embed_tabler_icons.py` converts these SVGs into 96 × 96 transparent
-PNGs using `rsvg-convert`, applies the UI blue (`#50beff`), and generates
-`tabler_icons.hpp` with embedded PNG byte arrays. Both `build-kiddos-ui.sh`
-and CMake generate this header as part of the build. The generated header
-is compiled into the executable; no separate icon files or SVG renderer
-are needed on the device at runtime.
-
-Build prerequisites for this step are Python 3 and `rsvg-convert`, in
-addition to the existing ARM64 or CMake build dependencies. Edit the
-source SVG assets rather than the generated header.
+The source pack is licensed under CC0 1.0 Universal. The source attribution
+and full license are included alongside the PNG assets. No SVG conversion,
+generated icon header, Python icon generator, or `rsvg-convert` dependency
+is required by either build path. Python 3 may still be used by other
+runtime services and tools; this change removes only the icon-generation
+dependency.
 
 ## Movies carousel
 

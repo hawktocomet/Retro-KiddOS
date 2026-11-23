@@ -1,0 +1,5 @@
+Game Icon Pack by Nieobie
+https://github.com/Nieobie/game-icon-pack
+Release: v1.4
+License: CC0 1.0 Universal; see LICENSE
+Selected assets: 256px, no-padding, white variants

@@ -28,33 +28,7 @@ set(KIDDOS_SOURCES
     services/PowerService.cpp
 )
 
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
-find_program(RSVG_CONVERT_EXECUTABLE rsvg-convert)
-if(NOT RSVG_CONVERT_EXECUTABLE)
-    message(FATAL_ERROR "rsvg-convert is required to embed Tabler icons")
-endif()
-
-set(TABLER_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
-set(TABLER_HEADER "${TABLER_GENERATED_DIR}/tabler_icons.hpp")
-add_custom_command(
-    OUTPUT "${TABLER_HEADER}"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${TABLER_GENERATED_DIR}"
-    COMMAND ${Python3_EXECUTABLE}
-            "${CMAKE_CURRENT_SOURCE_DIR}/tools/embed_tabler_icons.py"
-            "${TABLER_HEADER}"
-    DEPENDS
-        tools/embed_tabler_icons.py
-        assets/tabler-filled/device-gamepad-2.svg
-        assets/tabler-filled/file-music.svg
-        assets/tabler-filled/device-tv-old.svg
-        assets/tabler-filled/device-tv.svg
-    VERBATIM
-)
-add_custom_target(tabler-icons DEPENDS "${TABLER_HEADER}")
-
 add_executable(kiddos-ui ${KIDDOS_SOURCES})
-add_dependencies(kiddos-ui tabler-icons)
-target_include_directories(kiddos-ui PRIVATE "${TABLER_GENERATED_DIR}")
 
 target_include_directories(kiddos-ui PRIVATE
     ${SDL2_INCLUDE_DIRS}

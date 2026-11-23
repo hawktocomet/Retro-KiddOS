@@ -3,7 +3,6 @@
 
 #include "UI.hpp"
 
-#include "tabler_icons.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -20,27 +19,23 @@ static const char* BASE = "/storage/roms/.kiddos-ui-test-20261116";
 static const char* FONT = "/storage/.config/emulationstation/themes/rp-pocket/art/fonts/Cabin-Bold.ttf";
 
 static bool loadHomeIcons(UI& ui) {
-    const unsigned char* data[4] = {
-        TablerIcons::gamepad, TablerIcons::music,
-        TablerIcons::movies, TablerIcons::tv
-    };
-    const std::size_t sizes[4] = {
-        TablerIcons::gamepad_size, TablerIcons::music_size,
-        TablerIcons::movies_size, TablerIcons::tv_size
+    const char* paths[4] = {
+        "/storage/roms/.kiddos-ui-assets/games.png",
+        "/storage/roms/.kiddos-ui-assets/music.png",
+        "/storage/roms/.kiddos-ui-assets/movies.png",
+        "/storage/roms/.kiddos-ui-assets/tv-shows.png"
     };
 
     for (int i = 0; i < 4; ++i) {
-        SDL_RWops* stream = SDL_RWFromConstMem(
-            data[i], static_cast<int>(sizes[i]));
-        if (stream)
-            ui.homeIcons[i] = IMG_LoadTexture_RW(ui.renderer, stream, 1);
-
+        ui.homeIcons[i] = IMG_LoadTexture(ui.renderer, paths[i]);
         if (!ui.homeIcons[i]) {
-            std::fprintf(stderr, "KiddOS: Home icon %d failed to load: %s\n",
-                         i, IMG_GetError());
+            std::fprintf(stderr, "KiddOS: Home icon %s failed to load: %s\n",
+                         paths[i], IMG_GetError());
             return false;
         }
+        SDL_SetTextureColorMod(ui.homeIcons[i], 80, 190, 255);
     }
+    std::fprintf(stderr, "KiddOS: All four CC0 home icons loaded\n");
     return true;
 }
 
