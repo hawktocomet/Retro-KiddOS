@@ -56,6 +56,42 @@ dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
 .library-group { margin-top: 20px; }
 .library-group h3 { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
 .media-list { display: grid; gap: 8px; }
+.system-group { margin-top: 22px; }
+.system-group:first-child { margin-top: 0; }
+.system-group-heading {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin-bottom: 10px;
+}
+.system-group-heading h3 {
+  margin: 0; color: var(--text); font-size: 16px; font-weight: 800;
+}
+.game-library-cover {
+  display: block;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 70px;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #0d1830;
+}
+.game-library-cover-placeholder {
+  display: grid;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 70px;
+  place-items: center;
+  padding: 4px;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  background: #0d1830;
+  font-size: 10px;
+  text-align: center;
+}
+.game-library-info { flex: 1; min-width: 0; }
+.game-library-info .media-title { font-size: 14px; }
+.system-group .media-item { padding: 10px 14px; }
 .media-item {
   display: flex; justify-content: space-between; align-items: center; gap: 16px;
   background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
@@ -68,13 +104,106 @@ dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
 #error, #library-error { color: var(--yellow); font-size: 13px; min-height: 20px; }
 footer { color: #7185a5; font-size: 12px; margin-top: 24px; text-align: center; }
 
-.game-section { margin-top: 30px; }
-.game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.game-card { background: linear-gradient(145deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
-.game-card h3 { margin: 0 0 6px; color: var(--text); font-size: 16px; overflow-wrap: anywhere; }
-.game-card .detail { margin-bottom: 12px; }
-.game-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
-.game-actions button { padding: 8px 12px; font-size: 13px; }
+.game-section { margin-top: 20px; }
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.slot-card {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(145deg, var(--panel2), var(--panel));
+}
+.slot-number {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.slot-art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  max-height: 150px;
+  width: 100%;
+  margin: 8px 0 10px;
+  overflow: hidden;
+  border: 1px solid #304768;
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 35%, #263f65, #0c172d 75%);
+  color: #8ebfff;
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+}
+.slot-art.empty-art {
+  border-style: dashed;
+  background: #0d1830;
+  color: #587394;
+  font-size: 32px;
+}
+.slot-art img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 140px;
+  justify-self: center;
+  align-self: center;
+  object-fit: contain;
+}
+.slot-title {
+  min-height: 24px;
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.slot-system {
+  min-height: 20px;
+  margin: 3px 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.slot-actions {
+  display: flex;
+  gap: 8px;
+}
+.slot-actions button { flex: 1; padding: 7px 8px; font-size: 12px; }
+#game-picker {
+  width: min(560px, calc(100% - 28px));
+  max-height: 85vh;
+  padding: 20px;
+  overflow: auto;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+#game-picker::backdrop { background: #020713dd; }
+#game-picker h2 { margin-bottom: 6px; }
+.picker-list { display: grid; gap: 8px; margin: 18px 0; }
+.picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0d1830;
+}
+.picker-item strong { display: block; overflow-wrap: anywhere; }
+.picker-item small { color: var(--muted); }
+@media (max-width: 420px) {
+  .game-grid { gap: 10px; }
+  .slot-card { padding: 10px; }
+  .slot-actions { flex-direction: column; }
+}
 button.secondary { background: #263958; border-color: #405777; }
 button.danger { background: #8d3444; border-color: #bd5265; }
 select, input[type="file"] {
@@ -122,23 +251,216 @@ select, input[type="file"] {
   button { padding: 9px 12px; }
   .media-item { align-items: flex-start; }
 }
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.category-card {
+  min-width: 0;
+  min-height: 190px;
+  padding: 22px;
+  border: 1px solid #304768;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #192e4d, #101e35);
+  display: flex;
+  flex-direction: column;
+}
+.category-icon { font-size: 30px; margin-bottom: 9px; }
+.category-card h2 { font-size: 21px; margin: 0 0 5px; }
+.category-card p, .placeholder-card p { color: var(--muted); margin: 0; }
+.category-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 18px; }
+.category-actions button { flex: 1 1 0; min-width: 0; padding: 9px 8px; font-size: 13px; }
+.global-actions { display: flex; gap: 12px; }
+.global-actions .global-action-card {
+  flex: 1 1 0;
+  min-height: 190px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid #304768;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #192e4d, #101e35);
+}
+.global-actions .global-action-icon {
+  flex-basis: 48px;
+  width: 48px;
+  height: 48px;
+  font-size: 30px;
+}
+.global-actions .global-action-copy strong { font-size: 21px; }
+.global-actions .global-action-copy small { font-size: 13px; }
+.global-action-icon {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #263e60;
+  color: #a9caff;
+  font-size: 25px;
+}
+.global-action-copy { display: flex; flex-direction: column; gap: 4px; }
+.global-action-copy strong { font-size: 15px; }
+.global-action-copy small { color: var(--muted); font-size: 12px; font-weight: 400; }
+#home-view > .device-status { margin-top: 0; }
+.device-status {
+  margin-top: 28px;
+  border: 1px solid #304768;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #172941, #111e32);
+  overflow: hidden;
+}
+.device-status summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 18px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.device-status summary::-webkit-details-marker { display: none; }
+.device-status summary:focus-visible {
+  outline: 2px solid #78aaff;
+  outline-offset: -3px;
+}
+.device-status-copy { display: flex; flex: 1; flex-direction: column; gap: 4px; }
+.device-status-copy strong { font-size: 14px; }
+.device-status-copy small { color: var(--muted); font-size: 12px; font-weight: 400; }
+.device-status-chevron {
+  color: #a9caff;
+  font-size: 22px;
+  line-height: 1;
+  transition: transform .18s ease;
+}
+.device-status[open] .device-status-chevron { transform: rotate(180deg); }
+.device-status[open] summary { border-bottom: 1px solid #304768; }
+.device-status > #error,
+.device-status > .status-actions,
+.device-status > .grid { margin-left: 16px; margin-right: 16px; }
+.device-status > #error { margin-top: 14px; }
+.device-status > .status-actions { margin-top: 12px; }
+.device-status > .grid { margin-bottom: 16px; }
+.status-actions { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.page-heading { display: flex; align-items: center; gap: 16px; margin: 10px 0 12px; }
+.page-heading h2 { font-size: 26px; }
+.back-button { flex: 0 0 auto; }
+.placeholder-card { margin-top: 18px; padding: 24px; }
+[hidden] { display: none !important; }
+#games-view .game-section, #games-view .library-section { margin-top: 24px; }
+#games-view #active-slots, #games-library-view #installed-games { scroll-margin-top: 18px; }
+@media (max-width: 600px) {
+  .category-grid { gap: 10px; }
+  .category-card { min-height: 180px; padding: 14px; }
+  .category-card h2 { font-size: 18px; }
+  .category-actions { flex-direction: column; gap: 6px; }
+  .category-actions button { flex: auto; width: 100%; }
+  .global-actions { gap: 8px; }
+  .global-actions .global-action-card { min-height: 180px; padding: 14px; }
+  .global-actions .global-action-copy strong { font-size: 18px; }
+  .global-actions button { padding: 9px 8px; font-size: 13px; }
+  .device-status summary { align-items: flex-start; flex-direction: column; gap: 2px; }
+  .page-heading { align-items: flex-start; }
+}
+
 </style>
 </head>
 <body>
 <main>
   <header>
     <div class="eyebrow">Retro KiddOS</div>
-    <h1>Device Management</h1>
-    <p class="subtitle">Your handheld, at a glance.</p>
+    <h1>Parent Management</h1>
+    <p class="subtitle">Manage your family's media and what appears on the handheld.</p>
   </header>
 
-  <div class="section-head">
-    <h2>Device Status</h2>
-    <button id="refresh" type="button">↻ Refresh</button>
-  </div>
-  <div id="error" role="status" aria-live="polite"></div>
+  <section id="home-view" data-page="home-view">
+    <div class="section-head"><h2>Media Categories</h2></div>
+    <div class="category-grid">
+      <article class="category-card">
+        <div class="category-icon">🎮</div>
+        <h2>Games</h2>
+        <p>Manage the four games available to play.</p>
+        <div class="category-actions">
+          <button type="button" data-open-page="games-view" data-scroll-target="active-slots">Manage Slots</button>
+          <button type="button" class="secondary" data-open-page="games-library-view">Browse Library</button>
+        </div>
+      </article>
+      <article class="category-card">
+        <div class="category-icon">🎵</div>
+        <h2>Music</h2>
+        <p>Manage playlists for the kids to enjoy.</p>
+        <div class="category-actions">
+          <button type="button" data-open-page="placeholder-view" data-placeholder-title="Music · Manage Slots">Manage Slots</button>
+          <button type="button" class="secondary" data-open-page="placeholder-view" data-placeholder-title="Music · Browse Library">Browse Library</button>
+        </div>
+      </article>
+      <article class="category-card">
+        <div class="category-icon">🎬</div>
+        <h2>Movies</h2>
+        <p>Manage the movies available on the handheld.</p>
+        <div class="category-actions">
+          <button type="button" data-open-page="placeholder-view" data-placeholder-title="Movies · Manage Slots">Manage Slots</button>
+          <button type="button" class="secondary" data-open-page="placeholder-view" data-placeholder-title="Movies · Browse Library">Browse Library</button>
+        </div>
+      </article>
+      <article class="category-card">
+        <div class="category-icon">📺</div>
+        <h2>TV Shows</h2>
+        <p>Manage shows and the episodes available to watch.</p>
+        <div class="category-actions">
+          <button type="button" data-open-page="placeholder-view" data-placeholder-title="TV Shows · Manage Slots">Manage Slots</button>
+          <button type="button" class="secondary" data-open-page="placeholder-view" data-placeholder-title="TV Shows · Browse Library">Browse Library</button>
+        </div>
+      </article>
+    </div>
 
-  <section class="grid">
+    <div class="section-head"><h2>Media Management</h2></div>
+    <div class="global-actions">
+      <button type="button" class="secondary global-action-card" data-open-page="placeholder-view"
+        data-placeholder-title="Scan"
+        data-placeholder-message="Discovery will scan the SD card only when you explicitly start it. This workflow is not implemented yet.">
+        <span class="global-action-icon">⌕</span>
+        <span class="global-action-copy"><strong>Scan</strong><small>Find new media on your SD card</small></span>
+      </button>
+      <button type="button" class="secondary global-action-card" data-open-page="placeholder-view"
+        data-placeholder-title="Upload Media"
+        data-placeholder-message="General media upload is not implemented yet. Copying media directly to the SD card while the handheld is shut down remains the preferred import method. The existing GB/GBC game upload is available under Games.">
+        <span class="global-action-icon">↑</span>
+        <span class="global-action-copy"><strong>Upload Media</strong><small>Add files to your library</small></span>
+      </button>
+    </div>
+
+    <div class="section-head"><h2>Device Status</h2></div>
+    <details class="device-status">
+      <summary>
+        <span class="global-action-icon device-status-icon" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="26" height="26" fill="none"
+               stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+               stroke-linejoin="round">
+            <rect x="6" y="2.5" width="20" height="27" rx="3"/>
+            <rect x="10" y="6.5" width="12" height="9" rx="1"/>
+            <path d="M12 21v6m-3-3h6"/>
+            <circle cx="20.5" cy="22" r="1.4" fill="currentColor" stroke="none"/>
+            <circle cx="24" cy="25" r="1.4" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="device-status-copy">
+          <strong>Device Status</strong>
+          <small>View connection, storage &amp; hardware details</small>
+        </span>
+        <span class="device-status-chevron" aria-hidden="true">⌄</span>
+      </summary>
+      <div id="error" role="status" aria-live="polite"></div>
+      <div class="status-actions"><button id="refresh" type="button">↻ Refresh</button></div>
+        <section class="grid">
     <article class="card">
       <h3>Handheld</h3>
       <div class="big" id="device">—</div>
@@ -153,6 +475,19 @@ select, input[type="file"] {
       <div class="detail" id="signal">Signal unavailable</div>
     </article>
     <article class="card">
+      <h3>Storage</h3>
+      <div class="metric">
+        <div class="big" id="storage-used">—</div>
+        <div class="status" id="storage-percent">—</div>
+      </div>
+      <div class="detail">Used</div>
+      <div class="meter"><div class="meter-fill" id="storage-fill"></div></div>
+      <dl style="margin-top:14px">
+        <dt>Available</dt><dd id="storage-available">—</dd>
+        <dt>Total</dt><dd id="storage-total">—</dd>
+      </dl>
+    </article>
+    <article class="card">
       <h3>Battery</h3>
       <div class="metric">
         <div class="big" id="battery">—</div>
@@ -160,6 +495,11 @@ select, input[type="file"] {
       </div>
       <div class="meter"><div class="meter-fill" id="battery-fill"></div></div>
       <div class="detail" id="battery-detail">Battery information unavailable</div>
+    </article>
+    <article class="card">
+      <h3>KiddOS</h3>
+      <div class="big" id="kiddos-version">—</div>
+      <div class="detail" id="kiddos-state">Checking installation…</div>
     </article>
     <article class="card">
       <h3>Management Server</h3>
@@ -171,108 +511,79 @@ select, input[type="file"] {
       </dl>
     </article>
   </section>
+    </details>
+  </section>
 
-
-  <section class="game-section">
+  <section id="games-view" data-page="games-view" hidden>
+    <div class="page-heading">
+      <button type="button" class="secondary back-button" data-open-page="home-view">← Home</button>
+      <div><div class="eyebrow">Media Category</div><h2>Games</h2></div>
+    </div>
+    <p class="subtitle">Choose the four games that appear on the handheld.</p>
+      <section class="game-section">
     <div class="section-head">
-      <h2>Game Management</h2>
+      <h2>Manage Slots</h2>
       <span class="game-count" id="catalog-summary">Loading games…</span>
     </div>
     <div id="catalog-error" role="status" aria-live="polite"></div>
 
     <div class="library-group">
-      <h3>Active Slots</h3>
       <div id="active-slots" class="game-grid">
-        <div class="empty">Loading active slots…</div>
+        <div class="empty">Loading slots…</div>
       </div>
     </div>
 
-    <div class="library-group">
-      <h3>Available Games</h3>
-      <div id="available-games" class="game-grid">
-        <div class="empty">Loading available games…</div>
+    <div hidden>
+      <div id="available-games"></div>
+      <form id="upload-form"></form>
+      <input id="upload-file" type="file">
+      <select id="upload-system"></select>
+      <button id="upload-button" type="submit"></button>
+    </div>
+  </section>
+    <div hidden aria-hidden="true">
+      <span id="library-updated"></span>
+      <div id="library-error"></div>
+      <span id="game-count"></span>
+      <span id="movie-count"></span>
+      <span id="music-count"></span>
+      <div id="system-list"></div>
+      <div id="games-list"></div>
+      <div id="movies-list"></div>
+    </div>
+  </section>
+  </section>
+
+
+  <section id="games-library-view" data-page="games-library-view" hidden>
+    <div class="page-heading">
+      <button type="button" class="secondary back-button" data-open-page="home-view">← Home</button>
+      <div><div class="eyebrow">Games</div><h2>Browse Library</h2></div>
+    </div>
+    <p class="subtitle">All games stored on this device, including games not currently assigned to a slot.</p>
+    <div id="library-catalog-error" role="status" aria-live="polite"></div>
+    <section class="game-section">
+      <div class="section-head">
+        <h2>Installed Games</h2>
+        <span class="game-count" id="library-game-count">Loading…</span>
       </div>
-    </div>
-
-    <div class="library-group">
-      <h3>Upload a Game</h3>
-      <article class="card">
-        <form id="upload-form">
-          <div class="upload-panel">
-            <div class="upload-field">
-              <label for="upload-system">System</label>
-              <select id="upload-system" required>
-                <option value="gb">Game Boy</option>
-                <option value="gbc">Game Boy Color</option>
-                <option value="gba">Game Boy Advance</option>
-                <option value="arcade">Arcade</option>
-                <option value="snes">Super Nintendo</option>
-                <option value="genesis-megadrive">Genesis / Mega Drive</option>
-                <option value="mastersystem">Master System</option>
-                <option value="nes">Nintendo Entertainment System</option>
-              </select>
-            </div>
-            <div class="upload-field" style="flex:1">
-              <label for="upload-file">ROM file</label>
-              <input id="upload-file" type="file" required>
-            </div>
-            <button id="upload-button" type="submit">Upload Game</button>
-          </div>
-          <div class="upload-note">
-            Uploads are added to the device library. Only raw .gb and .gbc files
-            are currently eligible for the four active slots; other supported
-            formats remain stored in the library.
-          </div>
-        </form>
-      </article>
-    </div>
-
-    <div class="library-group">
-      <h3>Installed Games</h3>
       <div id="installed-games" class="media-list">
         <div class="empty">Loading installed games…</div>
       </div>
-    </div>
+    </section>
   </section>
 
-  <section class="library-section">
-    <div class="section-head">
-      <h2>Media Library</h2>
-      <span class="muted" id="library-updated">Loading…</span>
+  <section id="placeholder-view" data-page="placeholder-view" hidden>
+    <div class="page-heading">
+      <button type="button" class="secondary back-button" data-open-page="home-view">← Home</button>
+      <div><div class="eyebrow">Parent Management</div><h2 id="placeholder-heading">Coming next</h2></div>
     </div>
-    <div id="library-error" role="status" aria-live="polite"></div>
-    <div class="grid">
-      <article class="card">
-        <h3>Games Stored</h3>
-        <div class="big" id="game-count">—</div>
-        <div class="detail">Across supported systems</div>
-      </article>
-      <article class="card">
-        <h3>Movies Stored</h3>
-        <div class="big" id="movie-count">—</div>
-        <div class="detail">In the movies library</div>
-      </article>
-      <article class="card">
-        <h3>Music Stored</h3>
-        <div class="big" id="music-count">Not configured</div>
-        <div class="detail">Dedicated music library not set up</div>
-      </article>
-    </div>
-    <div class="library-group">
-      <h3>Games by System</h3>
-      <div id="system-list" class="media-list"><div class="empty">Loading inventory…</div></div>
-    </div>
-    <div class="library-group">
-      <h3>Stored Games</h3>
-      <div id="games-list" class="media-list"><div class="empty">Loading inventory…</div></div>
-    </div>
-    <div class="library-group">
-      <h3>Stored Movies</h3>
-      <div id="movies-list" class="media-list"><div class="empty">Loading inventory…</div></div>
-    </div>
+    <article class="card placeholder-card">
+      <p id="placeholder-message">This workflow is part of the Parent Management redesign and is not implemented yet.</p>
+    </article>
   </section>
 
-  <dialog id="artwork-preview" aria-labelledby="artwork-preview-title">
+    <dialog id="artwork-preview" aria-labelledby="artwork-preview-title">
     <h2 id="artwork-preview-title">Preview Artwork</h2>
     <p id="artwork-preview-name"></p>
     <img id="artwork-preview-image" alt="Candidate game cover artwork">
@@ -282,7 +593,16 @@ select, input[type="file"] {
     </div>
   </dialog>
 
-  <footer>Retro KiddOS Management · Home network game management</footer>
+  <dialog id="game-picker" aria-labelledby="game-picker-title">
+    <h2 id="game-picker-title">Assign Game</h2>
+    <p class="subtitle">Choose an approved game for this slot.</p>
+    <div id="game-picker-list" class="picker-list"></div>
+    <div class="preview-actions">
+      <button type="button" class="secondary" id="game-picker-cancel">Cancel</button>
+    </div>
+  </dialog>
+
+  <footer>Retro KiddOS · Parent Management</footer>
 </main>
 
 <script>
@@ -366,44 +686,121 @@ function makeGameCard(game) {
   return card;
 }
 
+function openGamePicker(slot) {
+  const dialog = el("game-picker");
+  const list = el("game-picker-list");
+  el("game-picker-title").textContent =
+    slot.game ? `Replace Game in Slot ${slot.number}` : `Assign Game to Slot ${slot.number}`;
+  list.replaceChildren();
+
+  const games = currentCatalog?.available || [];
+  if (!games.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "No other approved games are available to assign yet.";
+    list.append(empty);
+  }
+
+  games.forEach(game => {
+    const item = document.createElement("div");
+    item.className = "picker-item";
+
+    const info = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = game.title;
+    const system = document.createElement("small");
+    system.textContent = game.system;
+    info.append(title, system);
+
+    const assign = makeActionButton("Select", "", async () => {
+      if (slot.game && !confirm(
+        `Replace "${slot.game.title}" in Slot ${slot.number} with "${game.title}"? The original game stays in the library.`
+      )) return;
+
+      assign.disabled = true;
+      try {
+        await postJson("/api/slots/assign", {
+          slot: slot.number,
+          game_id: game.id,
+          replace: Boolean(slot.game)
+        });
+        dialog.close();
+        await refreshCatalog();
+      } catch (error) {
+        el("catalog-error").textContent = `Couldn't assign game: ${error.message}`;
+        assign.disabled = false;
+      }
+    });
+
+    item.append(info, assign);
+    list.append(item);
+  });
+
+  dialog.showModal();
+}
+
 function renderSlots(slots) {
   const container = el("active-slots");
   container.replaceChildren();
 
   slots.forEach(slot => {
     const card = document.createElement("article");
-    card.className = "game-card";
+    card.className = "slot-card";
 
-    const heading = document.createElement("h3");
-    heading.textContent = `Slot ${slot.number}`;
-    card.append(heading);
+    const number = document.createElement("div");
+    number.className = "slot-number";
+    number.textContent = `Slot ${slot.number}`;
+
+    const art = document.createElement("div");
+    art.className = `slot-art${slot.game ? "" : " empty-art"}`;
+
+    if (slot.game && slot.game.artwork) {
+      const cover = document.createElement("img");
+      cover.src = `/api/artwork?game_id=${encodeURIComponent(slot.game.id)}`;
+      cover.alt = `${slot.game.title} cover`;
+      cover.loading = "lazy";
+      cover.addEventListener("error", () => {
+        art.textContent = (slot.game.title.trim()[0] || "•").toLocaleUpperCase();
+      }, { once: true });
+      art.append(cover);
+    } else {
+      art.setAttribute("aria-hidden", "true");
+      art.textContent = slot.game
+        ? (slot.game.title.trim()[0] || "•").toLocaleUpperCase()
+        : "+";
+    }
+
+    const title = document.createElement("h3");
+    title.className = "slot-title";
+    title.textContent = slot.game ? slot.game.title : "Empty Slot";
+
+    const system = document.createElement("div");
+    system.className = "slot-system";
+    system.textContent = slot.game ? slot.game.system : "No game assigned";
+
+    const actions = document.createElement("div");
+    actions.className = "slot-actions";
 
     if (slot.game) {
-      const title = document.createElement("div");
-      title.style.fontWeight = "800";
-      title.textContent = slot.game.title;
-
-      const detail = document.createElement("div");
-      detail.className = "detail";
-      detail.textContent = gameMeta(slot.game);
-
-      const button = makeActionButton("Remove from Slot", "secondary", async () => {
-        if (!confirm(`Remove "${slot.game.title}" from Slot ${slot.number}? The ROM will stay on the device.`)) return;
-        try {
-          await postJson("/api/slots/unassign", { slot: slot.number });
-          await refreshCatalog();
-          await refreshLibrary();
-        } catch (error) {
-          el("catalog-error").textContent = `Couldn't unassign game: ${error.message}`;
-        }
-      });
-      card.append(title, detail, button);
+      actions.append(
+        makeActionButton("Replace", "", () => openGamePicker(slot)),
+        makeActionButton("Clear Slot", "secondary", async () => {
+          if (!confirm(
+            `Clear Slot ${slot.number}? "${slot.game.title}" will remain in the library.`
+          )) return;
+          try {
+            await postJson("/api/slots/unassign", { slot: slot.number });
+            await refreshCatalog();
+          } catch (error) {
+            el("catalog-error").textContent = `Couldn't clear slot: ${error.message}`;
+          }
+        })
+      );
     } else {
-      const empty = document.createElement("div");
-      empty.className = "detail";
-      empty.textContent = "Empty slot";
-      card.append(empty);
+      actions.append(makeActionButton("＋ Assign Game", "", () => openGamePicker(slot)));
     }
+
+    card.append(number, art, title, system, actions);
     container.append(card);
   });
 }
@@ -464,15 +861,17 @@ function renderAvailable(games, slots) {
 }
 
 
+const MAX_ARTWORK_BYTES = 20 * 1024 * 1024;
+
 const BOXART_REPOSITORIES = {
   gb: "Nintendo_-_Game_Boy",
   gbc: "Nintendo_-_Game_Boy_Color"
 };
-const MAX_ARTWORK_BYTES = 20 * 1024 * 1024;
+
 const REGION_SUFFIX = /\s+\((?:USA|Europe|World|Japan|Australia|En|Fr|De|Es|It|Nl|Sv|No|Da|Fi|Pt|Korea|Asia|Brazil|Canada)(?:,\s*(?:USA|Europe|World|Japan|Australia|En|Fr|De|Es|It|Nl|Sv|No|Da|Fi|Pt|Korea|Asia|Brazil|Canada))*\)(?:\s+\((?:SGB Enhanced|GB Compatible)\))*$/i;
 
 function normalizedBoxartTitle(value) {
-  const filename = value.split("/").pop().replace(/\.[^.]+$/, "");
+  const filename = value.split("/").pop().replace(/\.(?:png|jpe?g|webp|gbc?|gba)$/i, "");
   return filename
     .replace(REGION_SUFFIX, "")
     .toLocaleLowerCase()
@@ -605,6 +1004,7 @@ async function uploadArtworkBlob(game, blob, filename) {
 function renderInstalled(games) {
   const container = el("installed-games");
   container.replaceChildren();
+  el("library-game-count").textContent = `${games.length} installed`;
 
   if (!games.length) {
     const empty = document.createElement("div");
@@ -614,115 +1014,146 @@ function renderInstalled(games) {
     return;
   }
 
-  games.forEach(game => {
-    const item = document.createElement("div");
-    item.className = "media-item";
+  const groups = new Map();
+  [...games]
+    .sort((a, b) => a.system.localeCompare(b.system) || a.title.localeCompare(b.title))
+    .forEach(game => {
+      if (!groups.has(game.system)) groups.set(game.system, []);
+      groups.get(game.system).push(game);
+    });
 
-    const info = document.createElement("div");
-    info.style.minWidth = "0";
-    const title = document.createElement("div");
-    title.className = "media-title";
-    title.textContent = game.title;
-    const detail = document.createElement("div");
-    detail.className = "media-meta";
-    detail.textContent = gameMeta(game);
-    info.append(title, detail);
+  groups.forEach((systemGames, systemName) => {
+    const section = document.createElement("section");
+    section.className = "library-group system-group";
 
-    const artworkStatus = document.createElement("div");
-    artworkStatus.className = game.artwork ? "artwork-ready" : "artwork-needed";
-    artworkStatus.textContent = game.artwork
-      ? "Artwork ready"
-      : "Artwork required before slot assignment";
-    info.append(artworkStatus);
+    const heading = document.createElement("div");
+    heading.className = "system-group-heading";
 
-    const actions = document.createElement("div");
-    actions.className = "game-actions";
+    const headingTitle = document.createElement("h3");
+    headingTitle.textContent = systemName;
 
-    if (!game.artwork) {
-      if (game.slottable) {
-        const find = makeActionButton("Find Artwork", "secondary", async () => {
-          find.disabled = true;
-          find.textContent = "Searching…";
-          el("catalog-error").textContent = "";
-          try {
-            const candidate = await findBrowserBoxart(game);
-            const accepted = await previewArtwork(
-              game, candidate.blob, candidate.filename
-            );
-            if (!accepted) {
-              el("catalog-error").textContent = "Artwork preview cancelled.";
-              return;
+    const count = document.createElement("span");
+    count.className = "game-count";
+    count.textContent = `${systemGames.length} ${systemGames.length === 1 ? "game" : "games"}`;
+    heading.append(headingTitle, count);
+
+    const rows = document.createElement("div");
+    rows.className = "media-list";
+
+    systemGames.forEach(game => {
+      const item = document.createElement("div");
+      item.className = "media-item";
+
+      const cover = document.createElement(game.artwork ? "img" : "div");
+      if (game.artwork) {
+        cover.className = "game-library-cover";
+        cover.src = `/api/artwork?game_id=${encodeURIComponent(game.id)}`;
+        cover.alt = `${game.title} cover`;
+        cover.loading = "lazy";
+        cover.addEventListener("error", () => {
+          const placeholder = document.createElement("div");
+          placeholder.className = "game-library-cover-placeholder";
+          placeholder.textContent = "No Art";
+          cover.replaceWith(placeholder);
+        }, { once: true });
+      } else {
+        cover.className = "game-library-cover-placeholder";
+        cover.textContent = "No Art";
+      }
+
+      const info = document.createElement("div");
+      info.className = "game-library-info";
+
+      const title = document.createElement("div");
+      title.className = "media-title";
+      title.textContent = game.title;
+
+      const detail = document.createElement("div");
+      detail.className = "media-meta";
+      detail.textContent = `${game.filename} · ${formatSize(game.size_bytes)}`;
+      info.append(title, detail);
+
+      const artworkStatus = document.createElement("div");
+      artworkStatus.className = game.artwork ? "artwork-ready" : "artwork-needed";
+      artworkStatus.textContent = game.artwork
+        ? "Artwork ready"
+        : "Artwork missing";
+      info.append(artworkStatus);
+
+      const actions = document.createElement("div");
+      actions.className = "game-actions";
+
+      if (!game.artwork) {
+        if (game.slottable) {
+          const find = makeActionButton("Find Artwork", "secondary", async () => {
+            find.disabled = true;
+            find.textContent = "Searching…";
+            el("library-catalog-error").textContent = "";
+            try {
+              await postJson("/api/activity", {});
+              const candidate = await findBrowserBoxart(game);
+              const accepted = await previewArtwork(game, candidate.blob, candidate.filename);
+              if (!accepted) {
+                el("library-catalog-error").textContent = "Artwork preview cancelled.";
+                return;
+              }
+              find.textContent = "Uploading…";
+              await uploadArtworkBlob(game, candidate.blob, candidate.filename);
+              el("library-catalog-error").textContent = `Artwork saved for ${game.title}.`;
+            } catch (error) {
+              el("library-catalog-error").textContent = error.message;
+            } finally {
+              find.disabled = false;
+              find.textContent = "Find Artwork";
             }
-            find.textContent = "Uploading…";
-            await uploadArtworkBlob(game, candidate.blob, candidate.filename);
-            el("catalog-error").textContent = `Artwork saved for ${game.title}.`;
+          });
+          actions.append(find);
+        }
+
+        const file = document.createElement("input");
+        file.type = "file";
+        file.accept = ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp";
+        file.className = "artwork-file";
+        file.setAttribute("aria-label", `Choose artwork for ${game.title}`);
+
+        const uploadArtwork = makeActionButton("Upload Artwork", "secondary", () => file.click());
+        file.addEventListener("change", async () => {
+          const image = file.files[0];
+          if (!image) return;
+          uploadArtwork.disabled = true;
+          uploadArtwork.textContent = "Uploading…";
+          el("library-catalog-error").textContent = "";
+          try {
+            const query = new URLSearchParams({ game_id: game.id, filename: image.name });
+            const response = await fetch(`/api/artwork/upload?${query}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/octet-stream" },
+              body: image
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+            await refreshCatalog();
+            await refreshLibrary();
+            el("library-catalog-error").textContent = `Uploaded artwork for ${game.title}.`;
           } catch (error) {
-            el("catalog-error").textContent = error.message;
+            el("library-catalog-error").textContent = `Artwork upload failed: ${error.message}`;
           } finally {
-            find.disabled = false;
-            find.textContent = "Find Artwork";
+            uploadArtwork.disabled = false;
+            uploadArtwork.textContent = "Upload Artwork";
+            file.value = "";
           }
         });
-        actions.append(find);
+        actions.append(uploadArtwork, file);
       }
 
-      const file = document.createElement("input");
-      file.type = "file";
-      file.accept = ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp";
-      file.className = "artwork-file";
-      file.setAttribute("aria-label", `Choose artwork for ${game.title}`);
-
-      const uploadArtwork = makeActionButton("Upload Artwork", "secondary", () => file.click());
-      file.addEventListener("change", async () => {
-        const image = file.files[0];
-        if (!image) return;
-        uploadArtwork.disabled = true;
-        uploadArtwork.textContent = "Uploading…";
-        el("catalog-error").textContent = "";
-        try {
-          const query = new URLSearchParams({
-            game_id: game.id,
-            filename: image.name
-          });
-          const response = await fetch(`/api/artwork/upload?${query}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/octet-stream" },
-            body: image
-          });
-          const result = await response.json().catch(() => ({}));
-          if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
-          await refreshCatalog();
-          await refreshLibrary();
-          el("catalog-error").textContent = `Uploaded artwork for ${game.title}.`;
-        } catch (error) {
-          el("catalog-error").textContent = `Artwork upload failed: ${error.message}`;
-        } finally {
-          uploadArtwork.disabled = false;
-          uploadArtwork.textContent = "Upload Artwork";
-          file.value = "";
-        }
-      });
-      actions.append(uploadArtwork, file);
-    }
-
-    const remove = makeActionButton("Delete ROM", "danger", async () => {
-      if (!confirm(
-        `Permanently delete "${game.title}" from the device? This cannot be undone. If it is assigned to a slot, that slot will become empty.`
-      )) return;
-      try {
-        await postJson("/api/games/delete", { game_id: game.id });
-        await refreshCatalog();
-        await refreshLibrary();
-      } catch (error) {
-        el("catalog-error").textContent = `Couldn't delete game: ${error.message}`;
-      }
+      item.append(cover, info, actions);
+      rows.append(item);
     });
-    actions.append(remove);
-    item.append(info, actions);
-    container.append(item);
+
+    section.append(heading, rows);
+    container.append(section);
   });
 }
-
 async function refreshCatalog() {
   el("catalog-error").textContent = "";
   try {
@@ -784,6 +1215,18 @@ async function uploadGame(event) {
   }
 }
 
+function formatBytes(bytes) {
+  if (bytes == null || !Number.isFinite(bytes)) return "Unavailable";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
 async function refreshStatus() {
   const button = el("refresh");
   button.disabled = true;
@@ -810,6 +1253,15 @@ async function refreshStatus() {
     el("signal").textContent = net.signal_dbm == null
       ? "Signal unavailable" : `Signal: ${net.signal_dbm} dBm`;
 
+    const storage = data.storage || {};
+    el("storage-used").textContent = formatBytes(storage.used_bytes);
+    el("storage-available").textContent = formatBytes(storage.available_bytes);
+    el("storage-total").textContent = formatBytes(storage.total_bytes);
+    el("storage-percent").textContent = storage.used_percent == null
+      ? "Unavailable" : `${storage.used_percent}% used`;
+    el("storage-fill").style.width = storage.used_percent == null
+      ? "0%" : `${Math.max(0, Math.min(100, storage.used_percent))}%`;
+
     const battery = data.battery || {};
     const percent = battery.percentage;
     el("battery").textContent = percent == null ? "—" : `${percent}%`;
@@ -817,6 +1269,11 @@ async function refreshStatus() {
     el("power-state").textContent = battery.charging ? "Charging"
       : battery.external_power ? "External power" : "On battery";
     el("battery-detail").textContent = show(battery.status);
+    const kiddos = data.kiddos || {};
+    el("kiddos-version").textContent = kiddos.version || "—";
+    el("kiddos-state").textContent = kiddos.installed
+      ? "Installed" : "Not detected";
+
     el("version").textContent = show(data.version);
     el("python").textContent = show(data.python);
     el("checked").textContent = new Date(data.timestamp).toLocaleTimeString();
@@ -854,6 +1311,40 @@ async function refreshLibrary() {
     el("library-error").textContent = `Couldn't load media library: ${error.message}`;
   }
 }
+
+function openPage(page, scrollTarget = null) {
+  document.querySelectorAll("[data-page]").forEach(node => {
+    node.hidden = node.dataset.page !== page;
+  });
+
+  if (page === "placeholder-view") {
+    el("placeholder-heading").textContent =
+      window.pendingPlaceholderTitle || "Coming next";
+    el("placeholder-message").textContent =
+      window.pendingPlaceholderMessage ||
+      "This workflow is part of the Parent Management redesign and is not implemented yet.";
+  }
+
+  if (page === "games-view" && scrollTarget) {
+    requestAnimationFrame(() => {
+      const target = el(scrollTarget);
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  } else {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}
+
+document.querySelectorAll("[data-open-page]").forEach(button => {
+  button.addEventListener("click", () => {
+    window.pendingPlaceholderTitle = button.dataset.placeholderTitle || "";
+    window.pendingPlaceholderMessage = button.dataset.placeholderMessage || "";
+    openPage(button.dataset.openPage, button.dataset.scrollTarget || null);
+  });
+});
+
+el("game-picker-cancel").addEventListener("click", () => el("game-picker").close());
+
 el("refresh").addEventListener("click", () => {
   refreshStatus();
   refreshLibrary();

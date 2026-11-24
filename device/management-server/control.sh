@@ -14,6 +14,15 @@ case "${1:-}" in
     fi
     ;;
 
+  ip)
+    ip -4 -o addr show dev wlan0 2>/dev/null |
+      awk '{ for (i = 1; i <= NF; i++) if ($i == "inet") {
+        split($(i + 1), address, "/")
+        print address[1]
+        exit
+      } }'
+    ;;
+
   start)
     if [ ! -r "$SERVER" ]; then
       echo "KiddOS management server is missing: $SERVER" >&2

@@ -146,7 +146,7 @@ class GameCatalogTests(unittest.TestCase):
         )
         self.assertEqual(Path(game["artwork"]), png)
 
-    def test_games_without_artwork_remain_installed_but_not_assignable(self):
+    def test_games_without_artwork_can_be_assigned(self):
         missing = self.roms / "gb" / "Missing Art.gb"
         missing.write_bytes(b"rom")
 
@@ -155,15 +155,16 @@ class GameCatalogTests(unittest.TestCase):
                     if item["filename"] == "Missing Art.gb")
 
         self.assertIsNone(game["artwork"])
-        self.assertNotIn(game["id"], {
+        self.assertIn(game["id"], {
             item["id"] for item in catalog["available"]
         })
-        with self.assertRaisesRegex(ValueError, "needs artwork"):
-            assign_game(self.roms, self.state, 1, game["id"], replace=True)
 
-        self.assertEqual(
-            catalog["slots"][0]["game"]["title"], "Mario Tennis"
+        result = assign_game(
+            self.roms, self.state, 1, game["id"], replace=True
         )
+        assigned = result["slots"][0]["game"]
+        self.assertEqual(assigned["id"], game["id"])
+        self.assertIsNone(assigned["artwork"])
 
     def test_corrupt_slot_configuration_fails_safely(self):
         self.state.mkdir()

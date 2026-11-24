@@ -7,16 +7,22 @@ import json
 import os
 import platform
 import re
+import shutil
 import socket
 import subprocess
 import tempfile
+import threading
+import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+import providers
+
 from catalog import (
+    ENABLED_GAME_SYSTEMS,
     GAME_SYSTEMS as CATALOG_GAME_SYSTEMS,
     assign_game,
     delete_game,
@@ -29,22 +35,86 @@ VERSION = "0.3.0"
 WEB_ROOT = Path(__file__).resolve().parent / "web"
 ROM_ROOT = Path("/storage/roms")
 STATE_ROOT = Path("/storage/.kiddos-management")
-
-GAME_SYSTEMS = {
-    "gb": ("Game Boy", {".gb", ".zip"}),
-    "gbc": ("Game Boy Color", {".gbc", ".zip"}),
-    "gba": ("Game Boy Advance", {".gba", ".zip"}),
-    "arcade": ("Arcade", {".zip", ".7z"}),
-    "snes": ("Super Nintendo", {".sfc", ".smc", ".zip"}),
-    "genesis": ("Genesis / Mega Drive", {".gen", ".md", ".bin", ".smd", ".zip"}),
-    "megadrive": ("Genesis / Mega Drive", {".gen", ".md", ".bin", ".smd", ".zip"}),
-    "mastersystem": ("Master System", {".sms", ".zip"}),
-    "nes": ("Nintendo Entertainment System", {".nes", ".zip"}),
-}
+KIDDOS_UI = Path("/storage/roms/.kiddos-ui-test-20261116/kiddos-ui")
 
 MOVIE_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".m4v"}
 
 MAX_ARTWORK_BYTES = 20 * 1024 * 1024
+IDLE_TIMEOUT_SECONDS = 15 * 60
+
+# Optional local artwork lookup configuration. These are deliberately not
+# inferred from desktop paths; configure them explicitly at server startup.
+
+
+
+class ManagementActivity:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._last_activity = time.monotonic()
+        self._active_requests = 0
+
+    def begin_request(self):
+        with self._lock:
+            self._active_requests += 1
+
+    def finish_request(self, successful):
+        with self._lock:
+            if successful:
+                self._last_activity = time.monotonic()
+            self._active_requests = max(0, self._active_requests - 1)
+
+    def idle_expired(self, timeout=IDLE_TIMEOUT_SECONDS):
+        with self._lock:
+            return (
+                self._active_requests == 0
+                and time.monotonic() - self._last_activity >= timeout
+            )
+
+
+ACTIVITY = ManagementActivity()
+
+class GameCatalogCache:
+    def __init__(self, ttl=1.0):
+        self._lock = threading.Lock()
+        self._ttl = ttl
+        self._key = None
+        self._expires_at = 0.0
+        self._catalog = None
+
+    def get(self):
+        key = (str(ROM_ROOT), str(STATE_ROOT))
+        with self._lock:
+            now = time.monotonic()
+            if (self._catalog is None or self._key != key
+                    or now >= self._expires_at):
+                self._catalog = game_catalog(ROM_ROOT, STATE_ROOT)
+                self._key = key
+                self._expires_at = time.monotonic() + self._ttl
+            return self._catalog
+
+    def invalidate(self):
+        with self._lock:
+            self._catalog = None
+            self._key = None
+            self._expires_at = 0.0
+
+
+GAME_CATALOG_CACHE = GameCatalogCache()
+
+
+def get_game_catalog():
+    return GAME_CATALOG_CACHE.get()
+
+
+def invalidate_game_catalog():
+    GAME_CATALOG_CACHE.invalidate()
+
+
+
+
+
+
+
 
 def read_text(path):
     try:
@@ -148,15 +218,8 @@ def inventory_games():
     systems = []
 
     groups = [
-        ("gb", "Game Boy", (".gb", ".zip"), ("gb",)),
-        ("gbc", "Game Boy Color", (".gbc", ".zip"), ("gbc",)),
-        ("gba", "Game Boy Advance", (".gba", ".zip"), ("gba",)),
-        ("arcade", "Arcade", (".zip", ".7z"), ("arcade",)),
-        ("snes", "Super Nintendo", (".sfc", ".smc", ".zip"), ("snes",)),
-        ("genesis-megadrive", "Genesis / Mega Drive",
-         (".gen", ".md", ".bin", ".smd", ".zip"), ("genesis", "megadrive")),
-        ("mastersystem", "Master System", (".sms", ".zip"), ("mastersystem",)),
-        ("nes", "Nintendo Entertainment System", (".nes", ".zip"), ("nes",)),
+        entry for entry in CATALOG_GAME_SYSTEMS
+        if entry[0] in ENABLED_GAME_SYSTEMS
     ]
 
     for system_id, display_name, extensions, folders in groups:
@@ -259,6 +322,34 @@ def library_status():
     }
 
 
+def storage_status():
+    try:
+        usage = shutil.disk_usage(ROM_ROOT)
+    except OSError:
+        return {
+            "total_bytes": None,
+            "used_bytes": None,
+            "available_bytes": None,
+            "used_percent": None,
+        }
+
+    return {
+        "total_bytes": usage.total,
+        "used_bytes": usage.used,
+        "available_bytes": usage.free,
+        "used_percent": round(usage.used * 100 / usage.total)
+            if usage.total else None,
+    }
+
+
+def kiddos_status():
+    version = run_read_only([str(KIDDOS_UI), "--version"]).strip()
+    prefix = "KiddOS "
+    if not version.startswith(prefix):
+        return {"installed": False, "version": None}
+    return {"installed": True, "version": version[len(prefix):]}
+
+
 def device_status():
     return {
         "application": "Retro KiddOS Management",
@@ -270,11 +361,14 @@ def device_status():
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "network": network_status(),
         "battery": battery_status(),
+        "storage": storage_status(),
+        "kiddos": kiddos_status(),
     }
 
 
 class Handler(BaseHTTPRequestHandler):
     def send_bytes(self, status, content_type, body):
+        self._response_status = status
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
@@ -283,6 +377,23 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        path = urlparse(self.path).path
+        tracked = path in (
+            "/api/catalog",
+            "/api/library",
+            "/api/artwork",
+            "/api/metadata/search",
+        )
+        if tracked:
+            ACTIVITY.begin_request()
+        self._response_status = 500
+        try:
+            self._dispatch_get()
+        finally:
+            if tracked:
+                ACTIVITY.finish_request(self._response_status < 400)
+
+    def _dispatch_get(self):
         path = urlparse(self.path).path
 
         if path == "/api/status":
@@ -297,13 +408,24 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/catalog":
             try:
-                data = game_catalog(ROM_ROOT, STATE_ROOT)
+                invalidate_game_catalog()
+                data = get_game_catalog()
                 body = json.dumps(data, indent=2).encode("utf-8")
             except (OSError, ValueError) as exc:
                 message = json.dumps({"error": str(exc)}).encode("utf-8")
                 self.send_bytes(500, "application/json; charset=utf-8", message)
                 return
             self.send_bytes(200, "application/json; charset=utf-8", body)
+            return
+
+
+
+        if path == "/api/artwork":
+            self.handle_artwork(urlparse(self.path).query)
+            return
+
+        if path == "/api/metadata/search":
+            self.handle_metadata_search(urlparse(self.path).query)
             return
 
         if path == "/":
@@ -318,6 +440,62 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         self.send_bytes(404, "text/plain; charset=utf-8", b"Not found")
+
+    def handle_metadata_search(self, query):
+        try:
+            params = parse_qs(query, strict_parsing=True)
+            categories = params.get("category", [])
+            queries = params.get("q", [])
+            limits = params.get("limit", ["8"])
+            if len(categories) != 1 or len(queries) != 1 or len(limits) != 1:
+                raise ValueError("Provide one category and one search query")
+            result = providers.search(categories[0], queries[0], limit=limits[0])
+            body = json.dumps(result).encode("utf-8")
+            self.send_bytes(200, "application/json; charset=utf-8", body)
+        except ValueError as exc:
+            self.send_api_error(400, exc)
+        except providers.ProviderError as exc:
+            self.send_api_error(502, exc)
+
+
+
+
+    def handle_artwork(self, query):
+        try:
+            params = parse_qs(query, strict_parsing=True)
+            game_ids = params.get("game_id", [])
+            if len(game_ids) != 1 or not game_ids[0]:
+                self.send_api_error(400, "A single game ID is required")
+                return
+
+            catalog = get_game_catalog()
+            game = next(
+                (item for item in catalog["games"]
+                 if item["id"] == game_ids[0]),
+                None,
+            )
+            if game is None or not game.get("artwork"):
+                self.send_api_error(404, "Artwork not found")
+                return
+
+            artwork = Path(game["artwork"]).resolve(strict=True)
+            root = Path(ROM_ROOT).resolve(strict=True)
+            artwork.relative_to(root)
+
+            content_types = {
+                ".png": "image/png",
+                ".jpg": "image/jpeg",
+                ".webp": "image/webp",
+            }
+            content_type = content_types.get(artwork.suffix.lower())
+            if not content_type or not artwork.is_file():
+                self.send_api_error(404, "Artwork not found")
+                return
+
+            body = artwork.read_bytes()
+            self.send_bytes(200, content_type, body)
+        except (OSError, ValueError):
+            self.send_api_error(404, "Artwork not found")
 
     def read_json(self):
         try:
@@ -338,7 +516,7 @@ class Handler(BaseHTTPRequestHandler):
         return data
 
     def send_catalog(self):
-        data = game_catalog(ROM_ROOT, STATE_ROOT)
+        data = get_game_catalog()
         body = json.dumps(data).encode("utf-8")
         self.send_bytes(200, "application/json; charset=utf-8", body)
 
@@ -349,6 +527,28 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         path = parsed.path
+        tracked = path in (
+            "/api/activity",
+            "/api/upload",
+            "/api/artwork/upload",
+            "/api/slots/assign",
+            "/api/slots/unassign",
+            "/api/games/delete",
+        )
+        if tracked:
+            ACTIVITY.begin_request()
+        self._response_status = 500
+        try:
+            self._dispatch_post(parsed, path)
+        finally:
+            if tracked:
+                ACTIVITY.finish_request(self._response_status < 400)
+
+    def _dispatch_post(self, parsed, path):
+        if path == "/api/activity":
+            body = json.dumps({"success": True}).encode("utf-8")
+            self.send_bytes(200, "application/json; charset=utf-8", body)
+            return
 
         if path == "/api/upload":
             self.handle_upload(parsed.query)
@@ -378,6 +578,7 @@ class Handler(BaseHTTPRequestHandler):
                         ROM_ROOT, STATE_ROOT, data.get("game_id")
                     )
 
+                invalidate_game_catalog()
                 body = json.dumps(result).encode("utf-8")
                 self.send_bytes(200, "application/json; charset=utf-8", body)
             except ValueError as exc:
@@ -400,7 +601,9 @@ class Handler(BaseHTTPRequestHandler):
             filename = params.get("filename", [""])[0]
 
             system = next(
-                (entry for entry in CATALOG_GAME_SYSTEMS if entry[0] == system_id),
+                (entry for entry in CATALOG_GAME_SYSTEMS
+                 if entry[0] == system_id
+                 and entry[0] in ENABLED_GAME_SYSTEMS),
                 None,
             )
             if system is None:
@@ -425,9 +628,7 @@ class Handler(BaseHTTPRequestHandler):
             if length <= 0 or length > max_upload:
                 raise ValueError("Upload must be between 1 byte and 512 MiB")
 
-            destination_dir = ROM_ROOT / system_id
-            if system_id == "genesis-megadrive":
-                destination_dir = ROM_ROOT / "genesis"
+            destination_dir = ROM_ROOT / system[3][0]
 
             destination_dir.mkdir(parents=True, exist_ok=True)
             destination = destination_dir / filename
@@ -454,13 +655,14 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("A file with that name already exists")
             os.replace(temporary, destination)
             temporary = None
+            invalidate_game_catalog()
 
             body = json.dumps({
                 "success": True,
                 "filename": filename,
                 "system": system[1],
                 "size_bytes": received,
-                "catalog": game_catalog(ROM_ROOT, STATE_ROOT),
+                "catalog": get_game_catalog(),
             }).encode("utf-8")
             self.send_bytes(201, "application/json; charset=utf-8", body)
 
@@ -536,11 +738,12 @@ class Handler(BaseHTTPRequestHandler):
 
             os.replace(temporary, destination)
             temporary = None
+            invalidate_game_catalog()
 
             body = json.dumps({
                 "success": True,
                 "filename": destination.name,
-                "catalog": game_catalog(ROM_ROOT, STATE_ROOT),
+                "catalog": get_game_catalog(),
             }).encode("utf-8")
             self.send_bytes(201, "application/json; charset=utf-8", body)
 
@@ -555,6 +758,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, fmt, *args):
         print("%s - %s" % (self.address_string(), fmt % args))
+
+
+def idle_shutdown_watchdog(httpd, stop_event):
+    while not stop_event.wait(1):
+        if ACTIVITY.idle_expired():
+            print("Remote Management idle for 15 minutes; shutting down.")
+            httpd.shutdown()
+            return
 
 
 def main():
@@ -575,12 +786,24 @@ def main():
         return
 
     print(f"Retro KiddOS Management {VERSION}")
+    global ACTIVITY
+    ACTIVITY = ManagementActivity()
+    stop_watchdog = threading.Event()
+    watchdog = threading.Thread(
+        target=idle_shutdown_watchdog,
+        args=(server, stop_watchdog),
+        daemon=True,
+    )
+
     print(f"Listening on http://{args.host}:{args.port}/")
+    watchdog.start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nStopping management server.")
     finally:
+        stop_watchdog.set()
+        watchdog.join(timeout=2)
         server.server_close()
 
 

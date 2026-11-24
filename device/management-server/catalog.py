@@ -21,6 +21,10 @@ GAME_SYSTEMS = (
     ("nes", "Nintendo Entertainment System", (".nes", ".zip"), ("nes",)),
 )
 
+# Systems exposed by the initial KiddOS release.
+# GAME_SYSTEMS remains the complete catalog for future expansion.
+ENABLED_GAME_SYSTEMS = frozenset(("gb", "gbc"))
+
 LEGACY_DIRECTORY = ".kiddos-ui-test-20261116"
 INITIAL_SLOT_TITLES = (
     "Mario Tennis",
@@ -207,12 +211,6 @@ def assign_game(rom_root, state_root, slot_number, game_id,
     game = next((item for item in games if item["id"] == game_id), None)
     if game is None or not game["slottable"]:
         raise ValueError("Game is not available for a KiddOS slot")
-    if not game["artwork"]:
-        raise ValueError(
-            "Game needs artwork before it can be assigned. "
-            "Upload artwork or find matching cover art first."
-        )
-
     assignments = _load_or_initialize_slots(state_root, games)
     key = str(slot_number)
     current = assignments[key]
@@ -295,8 +293,11 @@ def delete_game(rom_root, state_root, game_id):
     return game_catalog(root, state_root)
 
 def game_catalog(rom_root, state_root):
-    """Return four stable slots, eligible games, and full inventory."""
-    games = discover_games(rom_root)
+    """Return four stable slots and the enabled-system game inventory."""
+    games = [
+        game for game in discover_games(rom_root)
+        if game["system_id"] in ENABLED_GAME_SYSTEMS
+    ]
     assignments = _load_or_initialize_slots(state_root, games)
     by_id = {game["id"]: game for game in games}
 
@@ -316,8 +317,7 @@ def game_catalog(rom_root, state_root):
 
     available = [
         game for game in games
-        if (game["slottable"] and game["artwork"]
-            and game["id"] not in assigned_ids)
+        if game["slottable"] and game["id"] not in assigned_ids
     ]
 
     return {

@@ -6,6 +6,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 from urllib.error import HTTPError
@@ -15,6 +16,68 @@ SERVER_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SERVER_DIR))
 
 import server
+
+
+class ManagementActivityTests(unittest.TestCase):
+    def test_active_request_prevents_idle_shutdown(self):
+        tracker = server.ManagementActivity()
+        with tracker._lock:
+            tracker._last_activity -= 1000
+        tracker.begin_request()
+        self.assertFalse(tracker.idle_expired())
+        tracker.finish_request(successful=False)
+        self.assertTrue(tracker.idle_expired())
+
+    def test_successful_request_resets_idle_deadline(self):
+        tracker = server.ManagementActivity()
+        with tracker._lock:
+            tracker._last_activity -= 1000
+        tracker.begin_request()
+        tracker.finish_request(successful=True)
+        self.assertFalse(tracker.idle_expired())
+
+
+class ManagementWatchdogTests(unittest.TestCase):
+    def test_watchdog_stops_serve_forever_cleanly(self):
+        previous_activity = server.ACTIVITY
+        tracker = server.ManagementActivity()
+        with tracker._lock:
+            tracker._last_activity -= 1000
+        server.ACTIVITY = tracker
+
+        httpd = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
+        stop_event = threading.Event()
+        server_thread = threading.Thread(
+            target=httpd.serve_forever, daemon=True
+        )
+        watchdog_thread = threading.Thread(
+            target=server.idle_shutdown_watchdog,
+            args=(httpd, stop_event),
+            daemon=True,
+        )
+
+        try:
+            server_thread.start()
+            watchdog_thread.start()
+
+            server_thread.join(timeout=3)
+            watchdog_thread.join(timeout=3)
+
+            self.assertFalse(
+                server_thread.is_alive(),
+                "Watchdog did not stop the HTTP server",
+            )
+            self.assertFalse(
+                watchdog_thread.is_alive(),
+                "Watchdog thread did not finish",
+            )
+        finally:
+            stop_event.set()
+            if server_thread.is_alive():
+                httpd.shutdown()
+                server_thread.join(timeout=2)
+            httpd.server_close()
+            server.ACTIVITY = previous_activity
 
 
 class ManagementApiTests(unittest.TestCase):
@@ -36,6 +99,7 @@ class ManagementApiTests(unittest.TestCase):
 
         server.ROM_ROOT = self.roms
         server.STATE_ROOT = self.state
+        server.ACTIVITY = server.ManagementActivity()
 
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
         self.thread = threading.Thread(
@@ -67,6 +131,55 @@ class ManagementApiTests(unittest.TestCase):
         self.assertEqual(data["summary"]["assigned_count"], 4)
         self.assertEqual(data["summary"]["installed_count"], 4)
 
+    def test_artwork_endpoint_returns_image_for_game(self):
+        rom = self.roms / ".kiddos-ui-test-20261116" / "Pokemon Red Version.gb"
+        artwork = rom.with_suffix(".png")
+        image = bytes.fromhex("89504e470d0a1a0a") + bytes(8)
+        artwork.write_bytes(image)
+
+        catalog = json.loads(urlopen(self.base_url + "/api/catalog").read())
+        game = next(
+            item for item in catalog["games"]
+            if item["filename"] == rom.name
+        )
+        with urlopen(
+            self.base_url + f"/api/artwork?game_id={game['id']}"
+        ) as response:
+            self.assertEqual(response.status, 200)
+            self.assertEqual(response.headers["Content-Type"], "image/png")
+            self.assertEqual(response.read(), image)
+
+        with self.assertRaises(HTTPError) as error:
+            urlopen(self.base_url + "/api/artwork?game_id=not-a-real-game")
+        self.assertEqual(error.exception.code, 404)
+        error.exception.close()
+
+    def test_artwork_requests_reuse_cached_catalog(self):
+        rom = self.roms / ".kiddos-ui-test-20261116" / "Pokemon Red Version.gb"
+        rom.with_suffix(".png").write_bytes(
+            bytes.fromhex("89504e470d0a1a0a") + bytes(8)
+        )
+
+        catalog = json.loads(urlopen(self.base_url + "/api/catalog").read())
+        game = next(
+            item for item in catalog["games"]
+            if item["filename"] == rom.name
+        )
+        url = self.base_url + f"/api/artwork?game_id={game['id']}"
+
+        original_game_catalog = server.game_catalog
+        server.invalidate_game_catalog()
+
+        with patch(
+            "server.game_catalog", wraps=original_game_catalog
+        ) as catalog_builder:
+            for _ in range(2):
+                with urlopen(url) as response:
+                    self.assertEqual(response.status, 200)
+                    self.assertTrue(response.read())
+
+            catalog_builder.assert_called_once()
+
     def test_catalog_endpoint_persists_assignments(self):
         urlopen(self.base_url + "/api/catalog").close()
         slots_file = self.state / "slots.json"
@@ -89,6 +202,59 @@ class ManagementApiTests(unittest.TestCase):
         self.assertIn("systems", data)
         self.assertIn("movies", data)
         self.assertIn("summary", data)
+
+    def test_future_systems_stay_hidden_from_parent_apis(self):
+        for system in ("gb", "gbc", "gba"):
+            (self.roms / system).mkdir(exist_ok=True)
+
+        advance = self.roms / "gba" / "AdvanceGame.gba"
+        advance.write_bytes(b"future-system-rom")
+
+        discovered = server.discover_games(self.roms)
+        self.assertIn(
+            "AdvanceGame",
+            [game["title"] for game in discovered],
+        )
+
+        with urlopen(self.base_url + "/api/catalog") as response:
+            catalog = json.loads(response.read())
+        self.assertNotIn(
+            "Advance Game",
+            [game["title"] for game in catalog["games"]],
+        )
+
+        with urlopen(self.base_url + "/api/library") as response:
+            library = json.loads(response.read())
+        self.assertNotIn(
+            "Advance Game",
+            [game["title"] for game in library["games"]],
+        )
+        self.assertEqual(
+            {system["id"] for system in library["systems"]},
+            {"gb", "gbc"},
+        )
+
+    def test_status_get_does_not_reset_idle_timer(self):
+        with server.ACTIVITY._lock:
+            server.ACTIVITY._last_activity -= 1000
+        with urlopen(self.base_url + "/api/status") as response:
+            self.assertEqual(response.status, 200)
+        self.assertTrue(server.ACTIVITY.idle_expired())
+
+    def test_catalog_get_counts_as_activity(self):
+        with server.ACTIVITY._lock:
+            server.ACTIVITY._last_activity -= 1000
+        with urlopen(self.base_url + "/api/catalog") as response:
+            self.assertEqual(response.status, 200)
+        self.assertFalse(server.ACTIVITY.idle_expired())
+
+    def test_activity_endpoint_counts_as_activity(self):
+        with server.ACTIVITY._lock:
+            server.ACTIVITY._last_activity -= 1000
+        status, result = self.post_json("/api/activity", {})
+        self.assertEqual(status, 200)
+        self.assertTrue(result["success"])
+        self.assertFalse(server.ACTIVITY.idle_expired())
 
     def test_post_remains_disabled(self):
         request = Request(
@@ -147,7 +313,7 @@ class ManagementApiTests(unittest.TestCase):
         self.assertEqual(data["filename"], "NewGame.gb")
         self.assertEqual(data["size_bytes"], 7)
         self.assertTrue((self.roms / "gb" / "NewGame.gb").is_file())
-        self.assertNotIn(
+        self.assertIn(
             "NewGame",
             [game["title"] for game in data["catalog"]["available"]],
         )
@@ -208,6 +374,14 @@ class ManagementApiTests(unittest.TestCase):
         error.exception.close()
         self.assertFalse((self.roms / "gb" / "WrongSystem.gba").exists())
 
+    def test_upload_rejects_disabled_future_system(self):
+        with self.assertRaises(HTTPError) as error:
+            self.upload("gba", "AdvanceGame.gba")
+
+        self.assertEqual(error.exception.code, 400)
+        error.exception.close()
+        self.assertFalse((self.roms / "gba" / "AdvanceGame.gba").exists())
+
     def test_upload_rejects_invalid_system_and_filename(self):
         for system, filename in (
             ("unknown", "Game.gb"),
@@ -251,7 +425,7 @@ class ManagementApiTests(unittest.TestCase):
         self.assertEqual(
             assigned["slots"][0]["game"]["filename"], "RemoteGame.gb"
         )
-        self.assertNotIn(
+        self.assertIn(
             "Mario Tennis",
             [game["title"] for game in assigned["available"]],
         )
@@ -327,6 +501,18 @@ class ManagementApiTests(unittest.TestCase):
         )
 
 
+    def _first_game_id(self):
+        catalog = json.loads(
+            urlopen(self.base_url + "/api/catalog").read()
+        )
+        return catalog["games"][0]["id"]
+
+
+
+
+
+
+
     def test_device_side_artwork_find_endpoint_is_removed(self):
         request = Request(
             self.base_url + "/api/artwork/find",
@@ -338,6 +524,10 @@ class ManagementApiTests(unittest.TestCase):
 
         self.assertEqual(error.exception.code, 404)
         error.exception.close()
+
+
+
+
 
 
 if __name__ == "__main__":
