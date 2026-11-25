@@ -27,6 +27,8 @@ constexpr const char* CONFIG =
     "/storage/.config/retroarch/retroarch.cfg";
 constexpr const char* PROFILE_DIR =
     "/storage/.config/kiddos/retroarch";
+constexpr const char* HANDHELD_SHADER =
+    "/storage/.config/kiddos/retroarch/handheld-lcd.glslp";
 
 constexpr auto CHORD_WINDOW = std::chrono::milliseconds(1500);
 
@@ -221,6 +223,7 @@ bool launchGame(const Game& game) {
         execl(RETROARCH, "retroarch",
               "--config", CONFIG,
               "--appendconfig", profile.c_str(),
+              "--set-shader", HANDHELD_SHADER,
               "-L", CORE,
               game.rom.c_str(),
               static_cast<char*>(nullptr));
