@@ -16,6 +16,7 @@ set(KIDDOS_SOURCES
     screens/GameScreens.cpp
     screens/MovieScreens.cpp
     screens/MusicScreens.cpp
+    screens/TVShowScreens.cpp
     screens/SystemScreens.cpp
     screens/ParentScreen.cpp
     screens/WifiScreen.cpp
@@ -23,7 +24,9 @@ set(KIDDOS_SOURCES
     services/MovieCatalog.cpp
     services/MovieLauncher.cpp
     services/MusicCatalog.cpp
+    services/TVShowCatalog.cpp
     services/MusicLauncher.cpp
+    services/TVShowLauncher.cpp
     services/GameLauncher.cpp
     services/BatteryService.cpp
     services/WifiService.cpp
