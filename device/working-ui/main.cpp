@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hawktocomet
 
-#include "Application.hpp"
+#include "app/Application.hpp"
 
 #include <cstdio>
 #include <cstring>

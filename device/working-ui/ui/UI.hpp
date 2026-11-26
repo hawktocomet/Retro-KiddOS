@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "screens/ScreenState.hpp"
+#include "../screens/ScreenState.hpp"
 
 struct Text {
     SDL_Texture* texture = nullptr;

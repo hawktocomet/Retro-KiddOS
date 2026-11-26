@@ -9,7 +9,7 @@ case "${1}" in
 
     echo "===== KiddOS boot hook: $(date) ====="
 
-    KIDDOS=/storage/roms/.kiddos-ui-test-20261116/kiddos-ui
+    KIDDOS=/storage/roms/.kiddos/kiddos-ui
 
     if [ ! -x "$KIDDOS" ]; then
       echo "KiddOS executable missing; leaving normal startup unchanged."

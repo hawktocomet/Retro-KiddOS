@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hawktocomet
 
-#include "Input.hpp"
-#include "Navigation.hpp"
-#include "LibraryGrid.hpp"
-#include "LibraryNavigator.hpp"
-#include "PinWorkflow.hpp"
-#include "screens/ScreenState.hpp"
+#include "../input/Input.hpp"
+#include "../navigation/Navigation.hpp"
+#include "../navigation/LibraryGrid.hpp"
+#include "../navigation/LibraryNavigator.hpp"
+#include "../security/PinWorkflow.hpp"
+#include "../screens/ScreenState.hpp"
 
 #include <cstdio>
 #include <cstdlib>

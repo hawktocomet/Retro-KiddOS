@@ -21,8 +21,8 @@ build_kiddos() {
 
     SOURCES=(
         "$SCRIPT_DIR/main.cpp"
-        "$SCRIPT_DIR/Application.cpp"
-        "$SCRIPT_DIR/UI.cpp"
+        "$SCRIPT_DIR/app/Application.cpp"
+        "$SCRIPT_DIR/ui/UI.cpp"
         "$SCRIPT_DIR/screens/GameScreens.cpp"
         "$SCRIPT_DIR/screens/MovieScreens.cpp"
         "$SCRIPT_DIR/screens/TVShowScreens.cpp"

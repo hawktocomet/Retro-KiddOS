@@ -11,8 +11,8 @@ pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 
 set(KIDDOS_SOURCES
     main.cpp
-    Application.cpp
-    UI.cpp
+    app/Application.cpp
+    ui/UI.cpp
     screens/GameScreens.cpp
     screens/MovieScreens.cpp
     screens/MusicScreens.cpp

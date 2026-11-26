@@ -8,18 +8,18 @@
 #include <cstdio>
 #include <sys/stat.h>
 
-#include "UI.hpp"
-#include "PinWorkflow.hpp"
-#include "services/GameCatalog.hpp"
-#include "services/GameLauncher.hpp"
-#include "services/MovieCatalog.hpp"
-#include "services/TVShowCatalog.hpp"
-#include "services/TVShowLauncher.hpp"
-#include "services/MovieLauncher.hpp"
-#include "services/MusicCatalog.hpp"
-#include "services/MusicLauncher.hpp"
-#include "services/PowerService.hpp"
-#include "services/LibraryData.hpp"
+#include "../ui/UI.hpp"
+#include "../security/PinWorkflow.hpp"
+#include "../services/GameCatalog.hpp"
+#include "../services/GameLauncher.hpp"
+#include "../services/MovieCatalog.hpp"
+#include "../services/TVShowCatalog.hpp"
+#include "../services/TVShowLauncher.hpp"
+#include "../services/MovieLauncher.hpp"
+#include "../services/MusicCatalog.hpp"
+#include "../services/MusicLauncher.hpp"
+#include "../services/PowerService.hpp"
+#include "../services/LibraryData.hpp"
 #include <filesystem>
 #include <vector>
 

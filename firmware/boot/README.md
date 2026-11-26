@@ -25,7 +25,7 @@ unmasks EmulationStation.
 
 The tested executable path is:
 
-`/storage/roms/.kiddos-ui-test-20261116/kiddos-ui`
+`/storage/roms/.kiddos/kiddos-ui`
 
 The hook is currently specific to the tested blue device configuration.
 Do not assume it is ready to install on another device.

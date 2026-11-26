@@ -97,8 +97,8 @@ The build script checks that the resulting executable is an AArch64 ELF binary a
 The repository includes focused tests for the native library-data implementation and architecture boundaries:
 
 ```bash
-./run-library-data-tests.sh
-./run-architecture-tests.sh
+./tests/run-library-data-tests.sh
+./tests/run-architecture-tests.sh
 ```
 
 A desktop CMake build can be performed from the repository root:
@@ -128,7 +128,7 @@ root@192.168.0.89
 The default executable destination is a test location:
 
 ```text
-/storage/roms/.kiddos-ui-test-20261116/kiddos-ui
+/storage/roms/.kiddos/kiddos-ui
 ```
 
 The script also deploys MP

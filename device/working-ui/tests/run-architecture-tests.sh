@@ -8,6 +8,6 @@ TEMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TEMP_DIR"' EXIT
 
 CXX="${CXX:-g++}"
-"$CXX" -std=c++17 -Wall -Wextra -Werror -I"$SCRIPT_DIR" \
+"$CXX" -std=c++17 -Wall -Wextra -Werror -I"$SCRIPT_DIR/.." \
     "$SCRIPT_DIR/architecture_test.cpp" -o "$TEMP_DIR/architecture-test"
 "$TEMP_DIR/architecture-test"

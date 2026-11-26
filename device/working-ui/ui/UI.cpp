@@ -2,7 +2,7 @@
 // Copyright (C) 2026 hawktocomet
 
 #include "UI.hpp"
-#include "services/MusicCatalog.hpp"
+#include "../services/MusicCatalog.hpp"
 
 
 #include <algorithm>
@@ -13,13 +13,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "services/GameCatalog.hpp"
-#include "services/BatteryService.hpp"
-#include "services/WifiService.hpp"
-#include "services/MovieCatalog.hpp"
-#include "services/TVShowCatalog.hpp"
+#include "../services/GameCatalog.hpp"
+#include "../services/BatteryService.hpp"
+#include "../services/WifiService.hpp"
+#include "../services/MovieCatalog.hpp"
+#include "../services/TVShowCatalog.hpp"
 
-static const char* BASE = "/storage/roms/.kiddos-ui-test-20261116";
+static const char* BASE = "/storage/roms/.kiddos";
 static const char* FONT = "/storage/.config/emulationstation/themes/rp-pocket/art/fonts/Cabin-Bold.ttf";
 
 static bool loadHomeIcons(UI& ui) {

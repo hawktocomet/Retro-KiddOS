@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "Input.hpp"
-#include "LibraryGrid.hpp"
-#include "LibraryNavigator.hpp"
-#include "Navigation.hpp"
-#include "screens/ScreenState.hpp"
+#include "../input/Input.hpp"
+#include "../navigation/LibraryGrid.hpp"
+#include "../navigation/LibraryNavigator.hpp"
+#include "../navigation/Navigation.hpp"
+#include "../screens/ScreenState.hpp"
 #include <memory>
 
 namespace KiddosPin { class PinWorkflow; }

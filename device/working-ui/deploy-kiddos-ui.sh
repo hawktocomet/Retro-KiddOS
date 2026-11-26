@@ -6,8 +6,9 @@ deploy_kiddos() {
     local SCRIPT_DIR PROJECT_ROOT LOCAL
     local REMOTE TARGET STAGED REMOTE_DIR
     local CONFIG_LOCAL CONFIG_TARGET CONFIG_STAGED CONFIG_BACKUP
+    local HELPER_LOCAL HELPER_TARGET HELPER_STAGED HELPER_BACKUP
     local GB_LOCAL GBC_LOCAL GB_STAGED GBC_STAGED JOY_LOCAL JOY_STAGED
-    local GB_EXPECTED GBC_EXPECTED JOY_EXPECTED REMOTE_FILE EXPECTED_HASH ACTUAL_HASH PROFILE
+    local GB_EXPECTED GBC_EXPECTED JOY_EXPECTED HELPER_EXPECTED REMOTE_FILE EXPECTED_HASH ACTUAL_HASH PROFILE
     local EXPECTED ACTUAL BACKUP WORK CHUNK CONFIG_EXPECTED DEPLOY_ID
     local STATUS
 
@@ -21,8 +22,11 @@ deploy_kiddos() {
     }
 
     REMOTE="${KIDDOS_DEVICE:-root@192.168.0.89}"
-    TARGET="/storage/roms/.kiddos-ui-test-20261116/kiddos-ui"
+    TARGET="/storage/roms/.kiddos/kiddos-ui"
     STAGED="${TARGET}.new"
+    HELPER_LOCAL="$SCRIPT_DIR/wifi_helper.py"
+    HELPER_TARGET="/storage/roms/.kiddos/wifi_helper.py"
+    HELPER_STAGED="/tmp/kiddos-deploy-stage/wifi_helper.py.new"
     REMOTE_DIR="/tmp/kiddos-deploy-stage"
     LOCAL="$PROJECT_ROOT/../Build-Workspace/build/arm64/kiddos-ui"
     CONFIG_LOCAL="$SCRIPT_DIR/mpv-input.conf"
@@ -30,6 +34,7 @@ deploy_kiddos() {
     CONFIG_STAGED="/tmp/kiddos-deploy-stage/mpv-input.conf.new"
     DEPLOY_ID="$(date +%Y%m%d-%H%M%S)"
     BACKUP="${TARGET}.pre-deploy-${DEPLOY_ID}"
+    HELPER_BACKUP="${HELPER_TARGET}.pre-deploy-${DEPLOY_ID}"
     CONFIG_BACKUP="${CONFIG_TARGET}.pre-deploy-${DEPLOY_ID}"
     GB_LOCAL="$SCRIPT_DIR/retroarch-profiles/gb.cfg"
     GBC_LOCAL="$SCRIPT_DIR/retroarch-profiles/gbc.cfg"
@@ -46,6 +51,10 @@ deploy_kiddos() {
         echo "ERROR: MPV input config not found: $CONFIG_LOCAL"
         return 1
     fi
+    if [[ ! -f "$HELPER_LOCAL" ]]; then
+        echo "ERROR: Wi-Fi helper not found: $HELPER_LOCAL"
+        return 1
+    fi
     if [[ ! -f "$GB_LOCAL" || ! -f "$GBC_LOCAL" || ! -f "$JOY_LOCAL" ]]; then
         echo "ERROR: A required RetroArch profile source is missing."
         return 1
@@ -59,6 +68,7 @@ deploy_kiddos() {
 
     EXPECTED="$(sha256sum "$LOCAL" | cut -d ' ' -f 1)"
     CONFIG_EXPECTED="$(sha256sum "$CONFIG_LOCAL" | cut -d ' ' -f 1)"
+    HELPER_EXPECTED="$(sha256sum "$HELPER_LOCAL" | cut -d ' ' -f 1)"
     GB_EXPECTED="$(sha256sum "$GB_LOCAL" | cut -d ' ' -f 1)"
     GBC_EXPECTED="$(sha256sum "$GBC_LOCAL" | cut -d ' ' -f 1)"
     JOY_EXPECTED="$(sha256sum "$JOY_LOCAL" | cut -d ' ' -f 1)"
@@ -72,7 +82,7 @@ deploy_kiddos() {
     echo "SHA-256: $EXPECTED"
     echo "Device: $REMOTE"
 
-    if ! ssh "$REMOTE" "mkdir -p '$REMOTE_DIR/parts' /storage/.config/kiddos /storage/joypads && rm -f '$REMOTE_DIR'/parts/chunk-* '$STAGED' '$CONFIG_STAGED' '$GB_STAGED' '$GBC_STAGED' '$JOY_STAGED'"; then
+    if ! ssh "$REMOTE" "mkdir -p '/storage/roms/.kiddos' '$REMOTE_DIR/parts' /storage/.config/kiddos /storage/joypads && rm -f '$REMOTE_DIR'/parts/chunk-* '$STAGED' '$HELPER_STAGED' '$CONFIG_STAGED' '$GB_STAGED' '$GBC_STAGED' '$JOY_STAGED'"; then
         echo "ERROR: Could not prepare device staging directory."
         rm -rf "$WORK"
         return 1
@@ -94,6 +104,12 @@ deploy_kiddos() {
             return 1
         fi
     done
+
+    if ! scp -q "$HELPER_LOCAL" "$REMOTE:$HELPER_STAGED"; then
+        echo "ERROR: Wi-Fi helper transfer failed."
+        rm -rf "$WORK"
+        return 1
+    fi
 
     if ! scp -q "$CONFIG_LOCAL" "$REMOTE:$CONFIG_STAGED"; then
         echo "ERROR: MPV config transfer failed."
@@ -131,6 +147,17 @@ deploy_kiddos() {
     fi
     echo "Staged checksum verified: $ACTUAL"
 
+    HELPER_ACTUAL="$(ssh "$REMOTE" "sha256sum '$HELPER_STAGED' | cut -d ' ' -f 1")"
+    STATUS=$?
+    if [[ "$STATUS" -ne 0 || "$HELPER_ACTUAL" != "$HELPER_EXPECTED" ]]; then
+        echo "ERROR: Wi-Fi helper checksum verification failed."
+        echo "Expected: $HELPER_EXPECTED"
+        echo "Received: ${HELPER_ACTUAL:-<none>}"
+        rm -rf "$WORK"
+        return 1
+    fi
+    echo "Wi-Fi helper checksum verified: $HELPER_ACTUAL"
+
     echo
     echo "===== VERIFYING STAGED PROFILES ====="
     for PROFILE in "$GB_STAGED:$GB_EXPECTED" "$GBC_STAGED:$GBC_EXPECTED" "$JOY_STAGED:$JOY_EXPECTED"; do
@@ -150,22 +177,26 @@ deploy_kiddos() {
 
     echo
     echo "===== INSTALLING AND LAUNCHING ====="
-    ssh "$REMOTE" sh -s -- "$TARGET" "$STAGED" "$BACKUP" "$EXPECTED" "$CONFIG_TARGET" "$CONFIG_STAGED" "$CONFIG_BACKUP" "$CONFIG_EXPECTED" "/storage/.config/kiddos/retroarch" "$GB_STAGED" "$GBC_STAGED" "$GB_EXPECTED" "$GBC_EXPECTED" "$JOY_STAGED" "$JOY_EXPECTED" <<'REMOTE_SCRIPT'
+    ssh "$REMOTE" sh -s -- "$TARGET" "$STAGED" "$BACKUP" "$EXPECTED" "$HELPER_TARGET" "$HELPER_STAGED" "$HELPER_BACKUP" "$HELPER_EXPECTED" "$CONFIG_TARGET" "$CONFIG_STAGED" "$CONFIG_BACKUP" "$CONFIG_EXPECTED" "/storage/.config/kiddos/retroarch" "$GB_STAGED" "$GBC_STAGED" "$GB_EXPECTED" "$GBC_EXPECTED" "$JOY_STAGED" "$JOY_EXPECTED" <<'REMOTE_SCRIPT'
 TARGET="$1"
 STAGED="$2"
 BACKUP="$3"
 EXPECTED="$4"
-CONFIG_TARGET="$5"
-CONFIG_STAGED="$6"
-CONFIG_BACKUP="$7"
-CONFIG_EXPECTED="$8"
-PROFILE_DIR="$9"
-GB_STAGED="${10}"
-GBC_STAGED="${11}"
-GB_EXPECTED="${12}"
-GBC_EXPECTED="${13}"
-JOY_STAGED="${14}"
-JOY_EXPECTED="${15}"
+HELPER_TARGET="$5"
+HELPER_STAGED="$6"
+HELPER_BACKUP="$7"
+HELPER_EXPECTED="$8"
+CONFIG_TARGET="$9"
+CONFIG_STAGED="${10}"
+CONFIG_BACKUP="${11}"
+CONFIG_EXPECTED="${12}"
+PROFILE_DIR="${13}"
+GB_STAGED="${14}"
+GBC_STAGED="${15}"
+GB_EXPECTED="${16}"
+GBC_EXPECTED="${17}"
+JOY_STAGED="${18}"
+JOY_EXPECTED="${19}"
 GB_TARGET="$PROFILE_DIR/gb.cfg"
 GBC_TARGET="$PROFILE_DIR/gbc.cfg"
 JOY_TARGET="/storage/joypads/GO-Super Gamepad.cfg"
@@ -174,6 +205,8 @@ GB_BACKUP="$GB_TARGET.pre-deploy-$PROFILE_BACKUP_ID"
 GBC_BACKUP="$GBC_TARGET.pre-deploy-$PROFILE_BACKUP_ID"
 JOY_BACKUP="$JOY_TARGET.pre-deploy-$PROFILE_BACKUP_ID"
 CONFIG_HAD_BACKUP=0
+EXECUTABLE_HAD_BACKUP=0
+HELPER_HAD_BACKUP=0
 GB_HAD_BACKUP=0
 GBC_HAD_BACKUP=0
 JOY_HAD_BACKUP=0
@@ -197,9 +230,27 @@ restore_previous() {
         echo "CRITICAL: KiddOS is still active; refusing to overwrite executable."
         return 1
     fi
-    if ! cp -p "$BACKUP" "$TARGET"; then
-        echo "CRITICAL: Could not restore executable backup."
-        return 1
+    if [ "$EXECUTABLE_HAD_BACKUP" -eq 1 ]; then
+        if ! cp -p "$BACKUP" "$TARGET"; then
+            echo "CRITICAL: Could not restore executable backup."
+            return 1
+        fi
+    else
+        if ! rm -f "$TARGET"; then
+            echo "CRITICAL: Could not remove first-install executable."
+            return 1
+        fi
+    fi
+    if [ "$HELPER_HAD_BACKUP" -eq 1 ]; then
+        if ! cp -p "$HELPER_BACKUP" "$HELPER_TARGET"; then
+            echo "CRITICAL: Could not restore Wi-Fi helper backup."
+            return 1
+        fi
+    else
+        if ! rm -f "$HELPER_TARGET"; then
+            echo "CRITICAL: Could not remove first-install Wi-Fi helper."
+            return 1
+        fi
     fi
     if [ "$CONFIG_HAD_BACKUP" -eq 1 ]; then
         if ! cp -p "$CONFIG_BACKUP" "$CONFIG_TARGET"; then
@@ -245,7 +296,12 @@ restore_previous() {
             return 1
         fi
     fi
-    echo "Previous executable, MPV config, GB/GBC profiles, and controller profile states restored."
+    if [ "$EXECUTABLE_HAD_BACKUP" -eq 0 ]; then
+        echo "FIRST-INSTALL ROLLBACK: New executable and helper removed."
+        echo "No previous KiddOS installation existed to relaunch."
+        return 0
+    fi
+    echo "Previous executable, Wi-Fi helper, MPV config, GB/GBC profiles, and controller profile states restored."
     if ! launch_kiddos; then
         echo "CRITICAL: Could not relaunch previous executable."
         return 1
@@ -261,12 +317,17 @@ restore_previous() {
 }
 
 deploy_main() {
-    if [ ! -x "$TARGET" ]; then
-        echo "ERROR: Current executable missing or not executable."
+    if [ ! -f "$HELPER_STAGED" ] || [ "$(sha256sum "$HELPER_STAGED" | cut -d " " -f 1)" != "$HELPER_EXPECTED" ]; then
+        echo "ERROR: Staged Wi-Fi helper checksum verification failed."
         return 1
     fi
     if [ ! -x "$STAGED" ]; then
         echo "ERROR: Verified staged executable missing."
+        return 1
+    fi
+    if [ -e "$BACKUP" ] || [ -e "$HELPER_BACKUP" ] || [ -e "$CONFIG_BACKUP" ] ||
+       [ -e "$GB_BACKUP" ] || [ -e "$GBC_BACKUP" ] || [ -e "$JOY_BACKUP" ]; then
+        echo "ERROR: A backup path already exists."
         return 1
     fi
     if [ ! -f "$CONFIG_STAGED" ] || [ "$(sha256sum "$CONFIG_STAGED" | cut -d " " -f 1)" != "$CONFIG_EXPECTED" ]; then
@@ -285,23 +346,28 @@ deploy_main() {
         echo "ERROR: Staged controller profile checksum verification failed."
         return 1
     fi
-    if [ -e "$BACKUP" ] || [ -e "$CONFIG_BACKUP" ] ||
-       [ -e "$GB_BACKUP" ] || [ -e "$GBC_BACKUP" ] || [ -e "$JOY_BACKUP" ]; then
-        echo "ERROR: A backup path already exists."
-        return 1
-    fi
-
     ACTUAL="$(sha256sum "$STAGED" | cut -d " " -f 1)"
     if [ "$ACTUAL" != "$EXPECTED" ]; then
         echo "ERROR: Staged checksum changed before installation."
         return 1
     fi
 
-    if ! cp -p "$TARGET" "$BACKUP"; then
-        echo "ERROR: Could not create rollback backup."
-        return 1
+    if [ -e "$TARGET" ]; then
+        if ! cp -p "$TARGET" "$BACKUP"; then
+            echo "ERROR: Could not create executable rollback backup."
+            return 1
+        fi
+        EXECUTABLE_HAD_BACKUP=1
+        echo "Executable backup: $BACKUP"
     fi
-    echo "Rollback backup: $BACKUP"
+    if [ -e "$HELPER_TARGET" ]; then
+        if ! cp -p "$HELPER_TARGET" "$HELPER_BACKUP"; then
+            echo "ERROR: Could not create Wi-Fi helper backup."
+            return 1
+        fi
+        HELPER_HAD_BACKUP=1
+        echo "Wi-Fi helper backup: $HELPER_BACKUP"
+    fi
     if [ -e "$CONFIG_TARGET" ]; then
         if ! cp -p "$CONFIG_TARGET" "$CONFIG_BACKUP"; then
             echo "ERROR: Could not back up existing MPV config."
@@ -355,6 +421,16 @@ deploy_main() {
         restore_previous
         return 1
     fi
+    if ! mv "$HELPER_STAGED" "$HELPER_TARGET"; then
+        echo "ERROR: Could not install Wi-Fi helper."
+        restore_previous
+        return 1
+    fi
+    if ! chmod 755 "$HELPER_TARGET"; then
+        echo "ERROR: Could not set Wi-Fi helper permissions."
+        restore_previous
+        return 1
+    fi
     if ! mv "$CONFIG_STAGED" "$CONFIG_TARGET"; then
         echo "ERROR: Could not install MPV input config."
         restore_previous
@@ -403,7 +479,16 @@ deploy_main() {
         if systemctl is-active --quiet "$UNIT.service"; then
             echo "SUCCESS: New KiddOS is running."
             sha256sum "$TARGET"
-            echo "Executable backup: $BACKUP"
+            if [ "$EXECUTABLE_HAD_BACKUP" -eq 1 ]; then
+                echo "Executable backup: $BACKUP"
+            else
+                echo "Executable backup: - (first install)"
+            fi
+            if [ "$HELPER_HAD_BACKUP" -eq 1 ]; then
+                echo "Wi-Fi helper backup: $HELPER_BACKUP"
+            else
+                echo "Wi-Fi helper backup: -"
+            fi
             if [ "$CONFIG_HAD_BACKUP" -eq 1 ]; then
                 echo "MPV config backup: $CONFIG_BACKUP"
             else
@@ -444,7 +529,16 @@ REMOTE_SCRIPT
     if [[ "$STATUS" -eq 0 ]]; then
         echo
         echo "DEPLOYMENT SUCCESS."
-        echo "Rollback backup: $BACKUP"
+        if [ -e "$BACKUP" ]; then
+            echo "Rollback backup: $BACKUP"
+        else
+            echo "Rollback backup: - (first install)"
+        fi
+        if [ -e "$HELPER_BACKUP" ]; then
+            echo "Wi-Fi helper backup: $HELPER_BACKUP"
+        else
+            echo "Wi-Fi helper backup: -"
+        fi
         return 0
     fi
 
@@ -459,15 +553,17 @@ rollback_kiddos() {
     local GB_PROFILE_BACKUP="${3:-}"
     local GBC_PROFILE_BACKUP="${4:-}"
     local JOY_PROFILE_BACKUP="${5:-}"
-    local REMOTE TARGET CONFIG_TARGET PROFILE_DIR RESTORE_PROFILES=0
+    local HELPER_BACKUP="${6:-__UNCHANGED__}"
+    local REMOTE TARGET HELPER_TARGET CONFIG_TARGET PROFILE_DIR RESTORE_PROFILES=0
 
     REMOTE="${KIDDOS_DEVICE:-root@192.168.0.89}"
-    TARGET="/storage/roms/.kiddos-ui-test-20261116/kiddos-ui"
+    TARGET="/storage/roms/.kiddos/kiddos-ui"
+    HELPER_TARGET="/storage/roms/.kiddos/wifi_helper.py"
     CONFIG_TARGET="/storage/.config/kiddos/mpv-input.conf"
     PROFILE_DIR="/storage/.config/kiddos/retroarch"
 
     if [[ -z "$BACKUP" || -z "$CONFIG_BACKUP" ]]; then
-        echo "Usage: $0 rollback EXECUTABLE_BACKUP MPV_CONFIG_BACKUP|- [GB_PROFILE_BACKUP|- GBC_PROFILE_BACKUP|- CONTROLLER_PROFILE_BACKUP|-]"
+        echo "Usage: $0 rollback EXECUTABLE_BACKUP MPV_CONFIG_BACKUP|- [GB_PROFILE_BACKUP|- GBC_PROFILE_BACKUP|- CONTROLLER_PROFILE_BACKUP|- [WIFI_HELPER_BACKUP|-]]"
         return 2
     fi
 
@@ -477,6 +573,14 @@ rollback_kiddos() {
             return 2
         fi
         RESTORE_PROFILES=1
+    fi
+
+    if [[ "$HELPER_BACKUP" == "-" ]]; then
+        echo "Wi-Fi helper: restore previous absent state"
+    elif [[ "$HELPER_BACKUP" != "__UNCHANGED__" ]]; then
+        echo "Wi-Fi helper backup: $HELPER_BACKUP"
+    else
+        echo "Wi-Fi helper: unchanged (legacy rollback command)"
     fi
 
     echo "===== RESTORING EXECUTABLE AND CONFIGURATION ====="
@@ -490,7 +594,7 @@ rollback_kiddos() {
 
     ssh "$REMOTE" sh -s -- \
         "$TARGET" "$BACKUP" "$CONFIG_TARGET" "$CONFIG_BACKUP" \
-        "$PROFILE_DIR" "$GB_PROFILE_BACKUP" "$GBC_PROFILE_BACKUP" "$JOY_PROFILE_BACKUP" "$RESTORE_PROFILES" <<'REMOTE_SCRIPT'
+        "$PROFILE_DIR" "$GB_PROFILE_BACKUP" "$GBC_PROFILE_BACKUP" "$JOY_PROFILE_BACKUP" "$RESTORE_PROFILES" "$HELPER_BACKUP" <<'REMOTE_SCRIPT'
 TARGET="$1"
 BACKUP="$2"
 CONFIG_TARGET="$3"
@@ -500,6 +604,8 @@ GB_PROFILE_BACKUP="$6"
 GBC_PROFILE_BACKUP="$7"
 JOY_PROFILE_BACKUP="$8"
 RESTORE_PROFILES="$9"
+HELPER_BACKUP="${10}"
+HELPER_TARGET="/storage/roms/.kiddos/wifi_helper.py"
 
 GB_TARGET="$PROFILE_DIR/gb.cfg"
 GBC_TARGET="$PROFILE_DIR/gbc.cfg"
@@ -511,6 +617,11 @@ if [ ! -f "$BACKUP" ]; then
 fi
 if [ "$CONFIG_BACKUP" != "-" ] && [ ! -f "$CONFIG_BACKUP" ]; then
     echo "ERROR: MPV config backup not found: $CONFIG_BACKUP"
+    exit 1
+fi
+if [ "$HELPER_BACKUP" != "__UNCHANGED__" ] &&
+   [ "$HELPER_BACKUP" != "-" ] && [ ! -f "$HELPER_BACKUP" ]; then
+    echo "ERROR: Wi-Fi helper backup not found: $HELPER_BACKUP"
     exit 1
 fi
 if [ "$RESTORE_PROFILES" -eq 1 ]; then
@@ -544,6 +655,18 @@ fi
 if ! chmod 755 "$TARGET"; then
     echo "ERROR: Could not set executable permissions on restored file."
     exit 1
+fi
+
+if [ "$HELPER_BACKUP" = "-" ]; then
+    if ! rm -f "$HELPER_TARGET"; then
+        echo "ERROR: Could not restore absent Wi-Fi helper state."
+        exit 1
+    fi
+elif [ "$HELPER_BACKUP" != "__UNCHANGED__" ]; then
+    if ! cp -p "$HELPER_BACKUP" "$HELPER_TARGET"; then
+        echo "ERROR: Could not restore Wi-Fi helper backup."
+        exit 1
+    fi
 fi
 
 if [ "$CONFIG_BACKUP" = "-" ]; then
@@ -611,6 +734,13 @@ if systemctl is-active --quiet kiddos-ui.service; then
         sha256sum "$CONFIG_TARGET"
     else
         echo "MPV config: absent (restored previous state)"
+    fi
+    if [ "$HELPER_BACKUP" != "__UNCHANGED__" ]; then
+        if [ -f "$HELPER_TARGET" ]; then
+            sha256sum "$HELPER_TARGET"
+        else
+            echo "Wi-Fi helper: absent (restored previous state)"
+        fi
     fi
     if [ "$RESTORE_PROFILES" -eq 1 ]; then
         for PROFILE in "$GB_TARGET" "$GBC_TARGET" "$JOY_TARGET"; do
