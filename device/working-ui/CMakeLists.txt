@@ -21,6 +21,7 @@ set(KIDDOS_SOURCES
     screens/ParentScreen.cpp
     screens/WifiScreen.cpp
     services/GameCatalog.cpp
+    services/LibraryData.cpp
     services/MovieCatalog.cpp
     services/MovieLauncher.cpp
     services/MusicCatalog.cpp

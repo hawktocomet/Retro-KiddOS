@@ -17,6 +17,7 @@ struct Game {
 struct Movie {
     std::string title;
     std::string path;
+    std::string artwork;
 };
 
 struct TVShow {
@@ -29,6 +30,13 @@ struct TVShow {
 struct MusicTrack {
     std::string title;
     std::string path;
+};
+
+struct KiddosMusicPlaylist {
+    std::string title;
+    std::string path;
+    std::string artwork;
+    std::vector<MusicTrack> tracks;
 };
 
 enum class WifiStatus {

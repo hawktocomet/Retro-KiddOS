@@ -27,7 +27,9 @@ void drawMovies(UI& ui) {
         SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
         SDL_RenderFillRect(r, &tile);
 
-        if (i < itemCount && ui.movieImages[i]) {
+        const bool occupied = i < itemCount &&
+            !movieList[static_cast<std::size_t>(i)].path.empty();
+        if (occupied && ui.movieImages[i]) {
             int iw = 0, ih = 0;
             if (SDL_QueryTexture(ui.movieImages[i], nullptr, nullptr,
                                  &iw, &ih) == 0 && iw > 0 && ih > 0) {
@@ -41,12 +43,12 @@ void drawMovies(UI& ui) {
                 SDL_RenderCopy(r, ui.movieImages[i], nullptr, &image);
             }
         } else {
-            const char* label = i < itemCount ? "NO ARTWORK" : "EMPTY SLOT";
+            const char* label = occupied ? "NO ARTWORK" : "EMPTY SLOT";
             drawWifiLine(r, ui.footerFont, label,
                          tile.x + 70, tile.y + 85, muted);
         }
 
-        if (i == ui.mediaBrowser->movies.selectedRow && i < itemCount) {
+        if (i == ui.mediaBrowser->movies.selectedRow && occupied) {
             SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
             for (int n = 0; n < 5; ++n) {
                 SDL_Rect outline = {

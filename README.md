@@ -1,12 +1,10 @@
 # Retro KiddOS
 
-A simple, child-friendly entertainment frontend for the FunnyPlaying Retro Pixel Pocket.
+A simple, child-friendly gaming and entertainment frontend for the FunnyPlaying Retro Pixel Pocket.
 
 ## Mission
 
 Make a small, personal, offline entertainment device that children can use independently at home and while traveling. Family multiplayer is an important part of the gaming goal.
-
-Our guiding principle:
 
 > Every hour we spend developing should make it easier for you and your kids to play games together. If it doesn't, we probably shouldn't be building it.
 
@@ -14,143 +12,142 @@ Prefer using playback and system capabilities already present in the firmware ov
 
 ## Project direction
 
-Retro KiddOS and Retro Pixel Foundation are two independent projects with
-separate responsibilities.
+Retro KiddOS and Retro Pixel Foundation are two independent projects with separate responsibilities.
 
-- **Retro KiddOS** is the child-friendly gaming and entertainment experience.
-  It owns the frontend, content library, child-facing navigation, parent
-  management, and product-specific behavior.
-- **Retro Pixel Foundation** is the reusable hardware and software platform.
-  It owns the operating system, hardware support, system services, gaming
-  runtime, reproducible image build, and documented application interfaces.
+- **Retro KiddOS** owns the child-friendly experience: frontend, content library, navigation, parent-facing content management, and product-specific behavior.
+- **Retro Pixel Foundation** is the reusable hardware and software platform: operating system, hardware support, system services, gaming runtime, reproducible image build, and documented application interfaces.
 
-The Foundation must be independently buildable and useful without KiddOS.
-KiddOS must remain usable on the existing stock RetroPixel firmware while
-the Foundation is developed.
+The Foundation must be independently buildable and useful without KiddOS. KiddOS must remain usable on existing compatible firmware while the Foundation is developed.
 
-See [Project Boundaries](docs/PROJECT-BOUNDARIES.md) for the ownership rules,
-transition responsibilities, and intended migration sequence.
+See [Project Boundaries](docs/PROJECT-BOUNDARIES.md) for ownership rules and transition responsibilities.
 
-### Immediate KiddOS priority
-
-The immediate product priority is a reliable, easy-to-use experience on the
-existing devices. Preserve the working stock firmware integration and avoid
-changes that put the family gaming experience at risk.
-
-Foundation research and development should proceed independently. It must
-not become a prerequisite for KiddOS progress or require premature migration
-of working components.
-
-### Foundation direction
-
-The longer-term Foundation goal is a transparent, reproducible platform that
-another developer can clone, build, and use with a frontend of their choice.
-Build inputs, dependencies, source provenance, licenses, and redistribution
-restrictions must be documented.
-
-The existing firmware-image research remains valuable technical evidence.
-It is not a claim that a complete, reproducible Foundation image has already
-been built or validated.
+The immediate priority is a reliable, easy-to-use family entertainment experience. Foundation work must not become a prerequisite for KiddOS progress.
 
 ## Current implementation
 
-The active SDL frontend is in [`device/working-ui/`](device/working-ui/). Its application architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+The active native SDL application is in [`device/working-ui/`](device/working-ui/).
 
-The frontend currently provides:
+The frontend currently includes:
 
-- A four-slot game carousel populated from the device-side game catalog.
-- A Movies browser populated from `/storage/roms/movies`, with filename-based titles and MPV playback.
-- L/R shoulder-button library switching between Games and Movies; D-pad navigation and A/B selection/back controls.
-- Game launching through the existing firmware and return to KiddOS after exiting.
-- Live carousel updates when slots change in Remote Management, without restarting KiddOS.
-- Artwork-aware game assignment, browser-side cover-art discovery, preview, and upload, plus manual artwork upload.
-- A System Menu with shutdown confirmation.
-- Battery percentage, charging status, and low-battery warning.
-- Wi-Fi connection status.
-- Hidden, PIN-protected Parent Mode.
-- Parent Center controls for Remote Management, Wi-Fi radio, network scanning and selection, secured-network password entry, and Parent PIN changes.
+- A child-facing game carousel with four fixed game slots.
+- Game launching through the device's existing RetroArch installation.
+- Movies, music playlists, and TV shows as separate library categories.
+- MPV-based movie, music, and TV playback.
+- A hidden, PIN-protected Parent Center.
+- Native, offline parent-side assignment of games, movies, music playlists, and TV shows to four fixed slots per category.
+- Artwork-aware library discovery: only items with supported artwork are eligible for assignment.
+- Slot assignment, replacement, movement, and clearing without compacting the remaining slots.
+- Battery and charging status.
+- Wi-Fi status and existing Wi-Fi configuration functionality.
+- A system menu with shutdown confirmation.
 
-The Python catalog module is the shared authority for game discovery, slot assignments, and artwork matching. The SDL frontend reads that catalog locally; it does not maintain a separate hardcoded game list. The Movies browser independently discovers `.mp4`, `.mkv`, `.avi`, `.mov`, and `.m4v` files in `/storage/roms/movies` using Python 3. Movie playback is delegated to the firmware's `/usr/bin/mpv`. The architecture separates the application coordinator, semantic input, navigation, screen rendering and state, SDL resource ownership, PIN workflow, and device services.
+Music playlists and TV shows are managed as containers. A playlist contains its audio files; a show contains its seasons and episodes. Individual tracks and episodes are not separately assigned to home-screen slots.
 
-## Verification status
+The Parent Center's media-management workflow is native C++. It works locally and does not require a network connection or a remote management server.
 
-The refactored frontend was built for ARM64 and deployed to the **blue device (RPPBLUE)** on November 19, 2026.
+### Library and SD-card data
 
-The following were verified on that device:
+The SD card is the source of truth for games and media. KiddOS discovers content from the card and stores references to selected content rather than maintaining a separate library database.
 
-- Startup and Games screen rendering.
-- D-pad navigation, A/Confirm, and B/Back.
-- Start/System Menu navigation and correct return destination.
-- Game launch and return to KiddOS.
-- Shutdown confirmation.
-- Parent Mode and PIN unlock, change, cancellation, and error handling.
-- Wi-Fi settings and the on-screen password keyboard.
-- Battery and charging indicator.
+The device-side slot configuration is:
 
-The November 19 architecture-refactor executable had SHA-256:
+`/storage/.config/kiddos/slots.conf`
 
-`1238648b823a2f09342bb646d5aee6f135a8d426647ea2b7bd6c7b5825bb3508`
+The current format begins with `KIDDOS_SLOTS_V1`.
 
-The subsequent live-catalog frontend build had SHA-256:
+The data layout, supported artwork conventions, and slot-reference rules are documented in [SD Card Data Contract v1](docs/SD-CARD-DATA-CONTRACT-v1.md).
 
-`209edf4c07e2f16227d41c5969650182b410f9ef26eb8a3bf05bc9d6353ab10c`
+### Current implementation boundaries
 
-That live-catalog build was deployed to RPPBLUE and verified on-device. The later artwork workflow update changed the management web page, not the frontend executable.
+Some legacy components remain and are scheduled for audit and cleanup:
 
-This validation applies to RPPBLUE and its current firmware/configuration. Purple and green devices have not been approved or validated as deployment targets.
+- Remote Management controls and their service are still present in the frontend.
+- The Wi-Fi service still invokes the Python `wifi_helper.py` helper.
+- Legacy management-server and Python catalog code remain in the repository.
 
-## Build and deployment
+These are not dependencies of the native Parent Center media workflow. Their removal must be handled separately and must not accidentally break Wi-Fi functionality.
 
-See [`device/working-ui/README.md`](device/working-ui/README.md) for prerequisites, the ARM64 build, deployment target, backup, and rollback procedure.
+Artwork changes made in place may not be detected until the application reloads its library data. Independent artwork-change detection is a known improvement.
 
-The build uses an external `Build-Workspace` alongside the repository, or the path supplied through `KIDDOS_BUILD_WORKSPACE`. The workspace contains the ARM64 compiler dependencies, SDL sources, and device sysroot; it is not included in this repository.
+## Latest milestone
 
-Deployment is device-specific and defaults to RPPBLUE. Verify the target and local build path before running it. The deployment script backs up the existing executable and verifies the staged checksum. Its automated startup check only verifies that the service remains active; visual and input regression testing on the handheld is still required.
+The [Native Parent Center Milestone](docs/MILESTONE-NATIVE-PARENT-CENTER-2026-11-26.md) records the current implementation, verification, known limitations, and next steps.
 
-The tested firmware startup hook is in [`firmware/boot/`](firmware/boot/). It is not a general-purpose installer. Do not install it on another device without reviewing its paths and recovery procedure.
+Verified during this milestone:
 
-## Existing media playback
+- Library-data tests passed.
+- Architecture tests passed.
+- Desktop CMake build passed.
+- ARM64 build passed.
+- Deployment and application launch were verified on the blue Retro Pixel Pocket (RPPBLUE).
 
-The Movies browser and MPV launcher are integrated into the SDL frontend.
-On RPPBLUE, MPV playback was verified with DRM video output and ALSA stereo
-audio. The physical controls were also verified: A pauses/resumes, B exits
-playback and returns to Movies, and D-pad left/right seeks by 10 seconds.
-Continue to prefer existing firmware playback tools over building custom
-media infrastructure.
+The deployed ARM64 executable SHA-256 at that milestone was:
 
-## Current scope and limitations
+`47673a8e03dac8c508bdc95b0a80c4be539e87ac6ced260f136a05f260fbb722`
 
-- The four-slot carousel currently accepts only raw `.gb` and `.gbc` ROMs. Other discovered systems are not currently slot-assignable.
-- Browser-side automatic artwork search supports Game Boy and Game Boy Color; other artwork can be supplied manually.
-- Games and Movies are implemented as child-facing library sections. Music browsing and parent-side media preparation workflows are not implemented.
-- The Movies browser requires Python 3 on the device; playback requires `/usr/bin/mpv` with DRM video output and ALSA audio support.
-- Movie playback controls are configured by `device/working-ui/mpv-input.conf`: A pauses/resumes, B exits to Movies, and D-pad left/right seeks by 10 seconds. Start and L/R are unbound during playback.
-- The Movies browser currently scans `/storage/roms/movies` and supports `.mp4`, `.mkv`, `.avi`, `.mov`, and `.m4v` filename extensions; codec compatibility depends on the installed MPV build.
-- Multiplayer workflows, including Pokémon trading and head-to-head play, remain future work.
-- Full-length movie playback and a simple music-library workflow have not been validated.
-- Runtime paths and the firmware hook are specific to the tested device setup.
+This checksum identifies that particular deployed build; subsequent builds will have different checksums.
 
-Prioritize practical improvements to the KiddOS experience while preserving the working stock-firmware path. Defer broad Foundation integration and speculative abstractions until they have a concrete purpose and can be validated independently.
+The blue device is the currently verified deployment target. Purple and green devices have not been approved or validated as deployment targets.
+
+## Build, test, and deployment
+
+The active frontend's build instructions, prerequisites, ARM64 build procedure, deployment procedure, backup, and rollback information are documented in [`device/working-ui/README.md`](device/working-ui/README.md).
+
+The repository includes these test scripts:
+
+```bash
+./device/working-ui/run-library-data-tests.sh
+./device/working-ui/run-architecture-tests.sh
+```
+
+A desktop CMake build can be run from an existing configured build directory:
+
+```bash
+cmake --build build-working-ui -j2
+```
+
+The ARM64 build uses an external Build-Workspace alongside the repository, or the location supplied through `KIDDOS_BUILD_WORKSPACE`. The workspace contains the cross-compilation dependencies, SDL sources, and device sysroot; it is not included in this repository.
+
+Deployment is device-specific. Review the target and recovery procedure before deploying. Do not deploy to another handheld without explicit approval and a device-specific validation plan.
+
+The tested firmware startup integration is under [`firmware/boot/`](firmware/boot/). It is specific to the inspected device setup and is not a general-purpose installer.
+
+## Roadmap
+
+The next priorities are:
+
+1. Document and preserve the working native implementation in Git.
+2. Audit and remove obsolete Remote Management and Python catalog/server code while preserving required Wi-Fi functionality.
+3. Refactor and simplify the native application architecture.
+4. Refine the child-facing and Parent Center interfaces.
+5. Develop an Arch Linux SD-card preparation tool that organizes content and retrieves suitable metadata and artwork according to the SD-card data contract.
+6. Investigate practical multiplayer workflows, including Pokémon trading and head-to-head games.
+
+The Arch-side preparation tool and scraper are planned work, not current repository features.
+
+The longer-term Retro Pixel Foundation work remains separate from immediate KiddOS product development. See the [Product and Technical Roadmap](docs/PRODUCT-AND-TECHNICAL-ROADMAP.md) and [Custom Image Architecture](docs/CUSTOM-IMAGE-ARCHITECTURE.md).
 
 ## Repository layout
 
-- `device/working-ui/` — active SDL frontend, build/deploy scripts, and device-specific instructions.
-- `firmware/boot/` — tested device startup hook.
-- `device/management-server/` — shared game catalog, Remote Management API, browser interface, and tests.
-- `docs/` — architecture, hardware, game-library, and management references.
-- `docs/CUSTOM-IMAGE-ARCHITECTURE.md` — retained firmware-image research, verified build findings, and historical integration blockers.
-- `CONTRIBUTING.md` — development principles.
-
-Earlier committed history, including the pre-refactor baseline, remains available in Git.
+- `device/working-ui/` — active SDL frontend, native services, tests, and build/deployment scripts.
+- `firmware/boot/` — inspected device startup integration and related artifacts.
+- `docs/` — architecture, hardware, SD-card contract, project boundaries, and milestone documentation.
+- `device/management-server/` — legacy management-server implementation pending audit and cleanup.
 
 ## Hardware
 
-- FunnyPlaying Retro Pixel Pocket
-- 720 × 720 display
-- ARM64 Linux firmware
-- Existing RetroArch, emulator, SDL, and MPV infrastructure
+- FunnyPlaying Retro Pixel Pocket.
+- 720 × 720 display.
+- ARM64 Linux firmware.
+- Existing RetroArch, emulator, SDL, and MPV infrastructure.
 
-See [`docs/HARDWARE.md`](docs/HARDWARE.md) for the inspected device configuration.
+See [Hardware Notes](docs/HARDWARE.md) for the inspected device configuration.
+
+## Distribution and licensing
+
+The long-term Foundation direction is a transparent, reproducible platform with documented dependencies, source provenance, licenses, and redistribution restrictions.
+
+Do not bundle ROMs, BIOS files, game content, media, artwork, or emulator cores without the appropriate rights. Any future distribution must preserve third-party licenses and notices and distinguish between software that can be built, software that can be redistributed, and content that must be supplied by users.
 
 ## License
 

@@ -27,7 +27,9 @@ void drawTVShows(UI& ui) {
         SDL_SetRenderDrawColor(r, 28, 38, 68, 255);
         SDL_RenderFillRect(r, &tile);
 
-        if (i < count && ui.tvImages[i]) {
+        const bool occupied = i < count &&
+            !shows[static_cast<std::size_t>(i)].directory.empty();
+        if (occupied && ui.tvImages[i]) {
             int iw = 0, ih = 0;
             if (SDL_QueryTexture(ui.tvImages[i], nullptr, nullptr,
                                  &iw, &ih) == 0 && iw > 0 && ih > 0) {
@@ -42,11 +44,11 @@ void drawTVShows(UI& ui) {
             }
         } else {
             drawWifiLine(r, ui.footerFont,
-                i < count ? "NO ARTWORK" : "EMPTY SLOT",
+                occupied ? "NO ARTWORK" : "EMPTY SLOT",
                 tile.x + 70, tile.y + 85, muted);
         }
 
-        if (i == ui.mediaBrowser->tvShows.selectedRow && i < count) {
+        if (i == ui.mediaBrowser->tvShows.selectedRow && occupied) {
             SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
             for (int n = 0; n < 5; ++n) {
                 SDL_Rect outline = {

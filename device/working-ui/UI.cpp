@@ -2,6 +2,7 @@
 // Copyright (C) 2026 hawktocomet
 
 #include "UI.hpp"
+#include "services/MusicCatalog.hpp"
 
 
 #include <algorithm>
@@ -580,6 +581,7 @@ void closeUI(UI& ui) {
         if (ui.homeIcons[i]) SDL_DestroyTexture(ui.homeIcons[i]);
         if (ui.movieImages[i]) SDL_DestroyTexture(ui.movieImages[i]);
         if (ui.tvImages[i]) SDL_DestroyTexture(ui.tvImages[i]);
+        if (ui.musicImages[i]) SDL_DestroyTexture(ui.musicImages[i]);
     }
     if (ui.headingFont) TTF_CloseFont(ui.headingFont);
     if (ui.labelFont) TTF_CloseFont(ui.labelFont);
@@ -591,6 +593,51 @@ void closeUI(UI& ui) {
     IMG_Quit();
     SDL_Quit();
     ui = {};
+}
+
+
+void refreshMediaArtwork(UI& ui) {
+    const auto clear = [](SDL_Texture*& texture) {
+        if (texture) SDL_DestroyTexture(texture);
+        texture = nullptr;
+    };
+
+    const auto& movies = KiddosServices::movies();
+    const auto& playlists = KiddosServices::musicPlaylists();
+    const auto& shows = KiddosServices::tvShows();
+
+    for (int i = 0; i < 4; ++i) {
+        clear(ui.movieImages[i]);
+        clear(ui.musicImages[i]);
+        clear(ui.tvImages[i]);
+
+        if (i < static_cast<int>(movies.size()) &&
+            !movies[static_cast<std::size_t>(i)].artwork.empty()) {
+            const auto& path = movies[static_cast<std::size_t>(i)].artwork;
+            ui.movieImages[i] = IMG_LoadTexture(ui.renderer, path.c_str());
+            if (!ui.movieImages[i])
+                std::fprintf(stderr, "KiddOS: movie artwork load failed (%s): %s\n",
+                             path.c_str(), IMG_GetError());
+        }
+
+        if (i < static_cast<int>(playlists.size()) &&
+            !playlists[static_cast<std::size_t>(i)].artwork.empty()) {
+            const auto& path = playlists[static_cast<std::size_t>(i)].artwork;
+            ui.musicImages[i] = IMG_LoadTexture(ui.renderer, path.c_str());
+            if (!ui.musicImages[i])
+                std::fprintf(stderr, "KiddOS: playlist artwork load failed (%s): %s\n",
+                             path.c_str(), IMG_GetError());
+        }
+
+        if (i < static_cast<int>(shows.size()) &&
+            !shows[static_cast<std::size_t>(i)].artwork.empty()) {
+            const auto& path = shows[static_cast<std::size_t>(i)].artwork;
+            ui.tvImages[i] = IMG_LoadTexture(ui.renderer, path.c_str());
+            if (!ui.tvImages[i])
+                std::fprintf(stderr, "KiddOS: TV artwork load failed (%s): %s\n",
+                             path.c_str(), IMG_GetError());
+        }
+    }
 }
 
 bool openUI(UI& ui) {
@@ -739,49 +786,7 @@ bool openUI(UI& ui) {
                 ui.renderer, ui.footerFont, fallback, slotLabelColor);
         }
     }
-    const auto& movieList = KiddosServices::movies();
-    for (int i = 0; i < 4 && i < static_cast<int>(movieList.size()); ++i) {
-        std::string stem = movieList[static_cast<std::size_t>(i)].path;
-        const std::size_t extension = stem.find_last_of('.');
-        if (extension != std::string::npos)
-            stem.resize(extension);
-
-        const std::string candidates[] = {stem + ".jpg", stem + ".png"};
-        for (const auto& candidate : candidates) {
-            ui.movieImages[i] = IMG_LoadTexture(ui.renderer, candidate.c_str());
-            if (ui.movieImages[i]) break;
-        }
-
-        // The initial library contains Totoro; support its fixed artwork name
-        // even when the movie file itself has a longer filename.
-        if (!ui.movieImages[i] && i == 0)
-            ui.movieImages[i] =
-                IMG_LoadTexture(ui.renderer, "/storage/roms/movies/Totoro.jpg");
-
-        if (ui.movieImages[i]) {
-            std::printf("KiddOS: movie artwork loaded for %s\\n",
-                        movieList[static_cast<std::size_t>(i)].title.c_str());
-        } else {
-            std::fprintf(stderr, "KiddOS: movie artwork unavailable for %s: %s\\n",
-                         movieList[static_cast<std::size_t>(i)].title.c_str(),
-                         IMG_GetError());
-        }
-    }
-
-    const auto& showList = KiddosServices::tvShows();
-    for (int i = 0; i < 4 && i < static_cast<int>(showList.size()); ++i) {
-        const auto& artwork = showList[static_cast<std::size_t>(i)].artwork;
-        if (!artwork.empty())
-            ui.tvImages[i] = IMG_LoadTexture(ui.renderer, artwork.c_str());
-        if (ui.tvImages[i]) {
-            std::printf("KiddOS: TV artwork loaded for %s\\n",
-                        showList[static_cast<std::size_t>(i)].title.c_str());
-        } else if (!artwork.empty()) {
-            std::fprintf(stderr, "KiddOS: TV artwork unavailable for %s: %s\\n",
-                         showList[static_cast<std::size_t>(i)].title.c_str(),
-                         IMG_GetError());
-        }
-    }
+    refreshMediaArtwork(ui);
 
     std::puts("KiddOS: game artwork loading complete.");
     std::fflush(stdout);

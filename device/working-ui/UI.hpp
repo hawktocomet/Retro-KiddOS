@@ -26,6 +26,7 @@ struct UI {
     SDL_Texture* homeIcons[4] = {};
     SDL_Texture* movieImages[4] = {};
     SDL_Texture* tvImages[4] = {};
+    SDL_Texture* musicImages[4] = {};
     Text slotLabels[4];
     Text homeLabels[4];
     Text homeComingSoon[2];
@@ -82,6 +83,7 @@ bool refreshParentStatus(UI& ui);
 void toggleParentManagement(UI& ui);
 void updateSelectedGameText(UI& ui, int selected);
 void refreshGameArtwork(UI& ui);
+void refreshMediaArtwork(UI& ui);
 
 void drawHome(UI& ui, int selected);
 void drawUI(UI& ui, int selected);

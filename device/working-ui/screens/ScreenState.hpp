@@ -47,6 +47,7 @@ struct MediaBrowserState {
     BrowserSelectionState movies;
     BrowserSelectionState tvShows;
     BrowserSelectionState music;
+    int musicPlaylistIndex = -1;
 };
 
 // Battery and connection indicators are shared chrome, not screen workflow state.

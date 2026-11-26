@@ -11,29 +11,24 @@
 void drawParentCenter(UI& ui, int selected) {
     SDL_Renderer* r = ui.renderer;
     drawSimplePanel(r);
-    drawText(r, ui.heading, 360, 105);
-    drawText(r, ui.parentHeading, 360, 220);
+    drawText(r, ui.heading, 360, 92);
+    drawText(r, ui.parentHeading, 360, 155);
 
-    SDL_Rect rows[3] = {
-        {90, 270, 540, 72},
-        {90, 370, 540, 72},
-        {90, 470, 540, 72}
+    const char* labels[7] = {
+        "REMOTE MANAGEMENT", "GAMES", "MOVIES", "MUSIC PLAYLISTS",
+        "TV SHOWS", "WI-FI SETTINGS", "CHANGE PARENT PIN"
     };
-    SDL_Rect selectedRow = rows[selected];
-
-    SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
-    for (int n = 0; n < 3; ++n) {
-        SDL_Rect outline = {
-            selectedRow.x - n, selectedRow.y - n,
-            selectedRow.w + n * 2, selectedRow.h + n * 2
-        };
-        SDL_RenderDrawRect(r, &outline);
+    for (int i = 0; i < 7; ++i) {
+        const int y = 205 + i * 57;
+        SDL_Rect row{90, y - 7, 540, 45};
+        if (i == selected) {
+            SDL_SetRenderDrawColor(r, 28, 65, 105, 255);
+            SDL_RenderFillRect(r, &row);
+            SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
+            SDL_RenderDrawRect(r, &row);
+        }
+        drawWifiLine(r, ui.labelFont, labels[i], 120, y, {245,248,255,255});
     }
-
-    drawText(r, ui.parentBody, 360, 286);
-    drawText(r, ui.parentUrl, 360, 320);
-    drawText(r, ui.parentWifi, 360, 394);
-    drawText(r, ui.parentChangePin, 360, 494);
     drawBattery(ui);
     drawText(r, ui.parentFooter, 360, 625);
     SDL_RenderPresent(r);

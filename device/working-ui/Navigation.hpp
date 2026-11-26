@@ -18,6 +18,8 @@ enum Screen {
     SystemMenu,
     PinEntry,
     ParentCenter,
+    ParentSlots,
+    ParentLibrary,
     WifiSettings,
     WifiPassword,
     ConfirmShutdown

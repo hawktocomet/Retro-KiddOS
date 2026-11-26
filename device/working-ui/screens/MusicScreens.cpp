@@ -16,17 +16,34 @@ void drawMusic(UI& ui) {
         {88,174,252,190}, {380,174,252,190},
         {88,396,252,190}, {380,396,252,190}
     };
-    const auto& tracks = KiddosServices::music();
-    const int count = tracks.empty() ? 0 : 1;
+    const auto& playlists = KiddosServices::musicPlaylists();
+    const int count = static_cast<int>(playlists.size());
     const SDL_Color muted = {155,177,215,255};
     for (int i=0; i<4; ++i) {
         SDL_Rect tile = tiles[i];
         SDL_SetRenderDrawColor(r,28,38,68,255);
         SDL_RenderFillRect(r,&tile);
-        std::string label = i < count ? "PLAYLIST 1" : "EMPTY SLOT";
+        const bool occupied = i < count &&
+            !playlists[static_cast<std::size_t>(i)].tracks.empty();
+        if (occupied && ui.musicImages[i]) {
+            int iw = 0, ih = 0;
+            if (SDL_QueryTexture(ui.musicImages[i], nullptr, nullptr,
+                                 &iw, &ih) == 0 && iw > 0 && ih > 0) {
+                const float scale = std::min(112.0f / iw, 112.0f / ih);
+                SDL_Rect image = {
+                    tile.x + (tile.w - static_cast<int>(iw * scale)) / 2,
+                    tile.y + 8,
+                    static_cast<int>(iw * scale),
+                    static_cast<int>(ih * scale)
+                };
+                SDL_RenderCopy(r, ui.musicImages[i], nullptr, &image);
+            }
+        }
+        std::string label = occupied
+            ? playlists[static_cast<std::size_t>(i)].title : "EMPTY SLOT";
         if (label.size() > 25) label = label.substr(0,22) + "...";
-        drawWifiLine(r, ui.labelFont, label, tile.x+18, tile.y+82, muted);
-        if (i == ui.mediaBrowser->music.selectedRow && i < count) {
+        drawWifiLine(r, ui.labelFont, label, tile.x+18, tile.y+145, muted);
+        if (i == ui.mediaBrowser->music.selectedRow && occupied) {
             SDL_SetRenderDrawColor(r,80,190,255,255);
             for (int n=0; n<5; ++n) {
                 SDL_Rect outline={tile.x-n,tile.y-n,tile.w+n*2,tile.h+n*2};
@@ -46,7 +63,13 @@ void drawMusicPlaylist(UI& ui) {
     drawText(r, ui.musicSubtitle, 360, 119);
     drawBattery(ui);
 
-    const auto& tracks = KiddosServices::music();
+    const auto& playlists = KiddosServices::musicPlaylists();
+    const int playlistIndex = ui.mediaBrowser->musicPlaylistIndex;
+    const std::vector<MusicTrack> emptyTracks;
+    const auto& tracks = playlistIndex >= 0 &&
+        playlistIndex < static_cast<int>(playlists.size())
+        ? playlists[static_cast<std::size_t>(playlistIndex)].tracks
+        : emptyTracks;
     const int first = std::max(0, ui.mediaBrowser->music.scrollOffset);
     constexpr int visibleRows = 8;
     const SDL_Color white = {245, 248, 255, 255};
