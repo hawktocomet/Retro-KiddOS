@@ -1,0 +1,30 @@
+{
+  "explorer.excludeGitIgnore": true,
+  "files.exclude": {
+    "**/*.pre-*": true,
+    "**/*.bak-*": true,
+    "**/__pycache__": true,
+    "/build": true,
+    "/build-working-ui": true,
+    "/.local-dev": true,
+    "/logs": true,
+    "/firmware/boot/stock-retropixel-v1.1.3": true,
+    "/KiddOS_REFACTOR.zip": true,
+    "/kiddos-display-handoff-compact.txt": true,
+    "/music-one-shot-*": true,
+    "/.music-one-shot-*": true,
+    "/.run-music-one-shot-*": true,
+    "/local-archive": true
+  },
+  "search.exclude": {
+    "**/*.pre-*": true,
+    "**/*.bak-*": true,
+    "**/__pycache__": true,
+    "**/build/**": true,
+    "**/build-working-ui/**": true,
+    "**/.local-dev/**": true,
+    "**/logs/**": true,
+    "**/firmware/boot/stock-retropixel-v1.1.3/**": true,
+    "**/local-archive/**": true
+  }
+}

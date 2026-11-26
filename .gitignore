@@ -30,3 +30,20 @@ __pycache__/
 # Local archives and session handoff files
 /KiddOS_REFACTOR.zip
 /kiddos-display-handoff-compact.txt
+
+# Local development data and generated workspaces
+/build-working-ui/
+/.local-dev/
+/logs/
+/firmware/boot/stock-retropixel-v1.1.3/
+
+# Timestamped local safety backups
+*.bak-*
+
+# One-off local diagnostics
+/music-one-shot-*
+/.music-one-shot-*
+/.run-music-one-shot-*
+
+# Local archive of historical and one-off files
+/local-archive/
