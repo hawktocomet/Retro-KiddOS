@@ -96,6 +96,7 @@ class ManagementApiTests(unittest.TestCase):
             "Tetris.gb",
         ):
             (legacy / name).write_bytes(b"test-rom")
+            (legacy / (Path(name).stem + ".png")).write_bytes(b"artwork")
 
         server.ROM_ROOT = self.roms
         server.STATE_ROOT = self.state
@@ -130,6 +131,178 @@ class ManagementApiTests(unittest.TestCase):
         )
         self.assertEqual(data["summary"]["assigned_count"], 4)
         self.assertEqual(data["summary"]["installed_count"], 4)
+
+    def test_media_catalog_endpoint_returns_artwork_eligible_media(self):
+        movies = self.roms / "movies"
+        movies.mkdir()
+        (movies / "Movie One.mp4").write_bytes(b"movie")
+        (movies / "Movie One.jpg").write_bytes(b"art")
+        (movies / "No Artwork.mp4").write_bytes(b"movie")
+
+        playlist = self.roms / "music" / "Bedtime"
+        playlist.mkdir(parents=True)
+        (playlist / "cover.jpg").write_bytes(b"art")
+        (playlist / "01 - Song.mp3").write_bytes(b"audio")
+        (playlist / "02 - Song.mp3").write_bytes(b"audio")
+
+        no_cover = self.roms / "music" / "No Cover"
+        no_cover.mkdir()
+        (no_cover / "Song.mp3").write_bytes(b"audio")
+
+        show = self.roms / "tvshows" / "Bluey"
+        show.mkdir(parents=True)
+        (show / "poster.png").write_bytes(b"art")
+        (show / "S01E01.mkv").write_bytes(b"episode")
+
+        with urlopen(self.base_url + "/api/media-catalog") as response:
+            self.assertEqual(response.status, 200)
+            data = json.loads(response.read())
+
+        self.assertEqual(
+            [item["title"] for item in data["movies"]],
+            ["Movie One"],
+        )
+        self.assertEqual(
+            [item["title"] for item in data["music_playlists"]],
+            ["Bedtime"],
+        )
+        self.assertEqual(len(data["music_playlists"][0]["tracks"]), 2)
+        self.assertEqual(
+            [item["title"] for item in data["tv_shows"]],
+            ["Bluey"],
+        )
+        self.assertEqual(len(data["tv_shows"][0]["episodes"]), 1)
+
+    def test_media_slots_endpoint_assigns_and_unassigns_all_categories(self):
+        movies = self.roms / "movies"
+        movies.mkdir()
+        (movies / "Movie One.mp4").write_bytes(b"movie")
+        (movies / "Movie One.jpg").write_bytes(b"art")
+        (movies / "Movie Two.mp4").write_bytes(b"movie")
+        (movies / "Movie Two.jpg").write_bytes(b"art")
+
+        playlist = self.roms / "music" / "Bedtime"
+        playlist.mkdir(parents=True)
+        (playlist / "cover.jpg").write_bytes(b"art")
+        (playlist / "Song.mp3").write_bytes(b"audio")
+
+        show = self.roms / "tvshows" / "Bluey"
+        show.mkdir(parents=True)
+        (show / "poster.png").write_bytes(b"art")
+        (show / "Episode.mp4").write_bytes(b"episode")
+
+        with urlopen(self.base_url + "/api/media-slots") as response:
+            self.assertEqual(response.status, 200)
+            initial = json.loads(response.read())
+
+        categories = ("movies", "music_playlists", "tv_shows")
+        for category in categories:
+            self.assertEqual(len(initial[category]["slots"]), 4)
+            self.assertTrue(
+                all(slot["item"] is None
+                    for slot in initial[category]["slots"])
+            )
+
+        assignments = {
+            category: initial[category]["available"][0]
+            for category in categories
+        }
+        for category, item in assignments.items():
+            status, result = self.post_json(
+                "/api/media-slots/assign",
+                {
+                    "category": category,
+                    "slot": 1,
+                    "item_id": item["id"],
+                },
+            )
+            self.assertEqual(status, 200)
+            self.assertEqual(
+                result[category]["slots"][0]["item"]["id"], item["id"]
+            )
+
+        with urlopen(self.base_url + "/api/media-slots") as response:
+            persisted = json.loads(response.read())
+
+        for category, item in assignments.items():
+            self.assertEqual(
+                persisted[category]["slots"][0]["item"]["id"], item["id"]
+            )
+
+        status, result = self.post_json(
+            "/api/media-slots/unassign",
+            {"category": "movies", "slot": 1},
+        )
+        self.assertEqual(status, 200)
+        self.assertIsNone(result["movies"]["slots"][0]["item"])
+        self.assertTrue(Path(assignments["movies"]["path"]).is_file())
+
+    def test_media_slots_require_explicit_replace_and_reject_invalid_items(self):
+        movies = self.roms / "movies"
+        movies.mkdir()
+        for name in ("First", "Second"):
+            (movies / f"{name}.mp4").write_bytes(b"movie")
+            (movies / f"{name}.jpg").write_bytes(b"art")
+
+        with urlopen(self.base_url + "/api/media-slots") as response:
+            catalog = json.loads(response.read())
+        first, second = catalog["movies"]["available"]
+
+        status, _ = self.post_json(
+            "/api/media-slots/assign",
+            {"category": "movies", "slot": 1, "item_id": first["id"]},
+        )
+        self.assertEqual(status, 200)
+
+        with self.assertRaises(HTTPError) as error:
+            self.post_json(
+                "/api/media-slots/assign",
+                {"category": "movies", "slot": 1, "item_id": second["id"]},
+            )
+        self.assertEqual(error.exception.code, 400)
+        error.exception.close()
+
+        with self.assertRaises(HTTPError) as error:
+            self.post_json(
+                "/api/media-slots/assign",
+                {"category": "movies", "slot": 2, "item_id": "missing"},
+            )
+        self.assertEqual(error.exception.code, 400)
+        error.exception.close()
+
+        for invalid_category in ([], {}):
+            for endpoint, payload in (
+                (
+                    "/api/media-slots/assign",
+                    {
+                        "category": invalid_category,
+                        "slot": 1,
+                        "item_id": first["id"],
+                    },
+                ),
+                (
+                    "/api/media-slots/unassign",
+                    {"category": invalid_category, "slot": 1},
+                ),
+            ):
+                with self.assertRaises(HTTPError) as error:
+                    self.post_json(endpoint, payload)
+                self.assertEqual(error.exception.code, 400)
+                error.exception.close()
+
+    def test_media_slots_get_counts_as_activity(self):
+        with server.ACTIVITY._lock:
+            server.ACTIVITY._last_activity -= 1000
+        with urlopen(self.base_url + "/api/media-slots") as response:
+            self.assertEqual(response.status, 200)
+        self.assertFalse(server.ACTIVITY.idle_expired())
+
+    def test_media_catalog_get_counts_as_activity(self):
+        with server.ACTIVITY._lock:
+            server.ACTIVITY._last_activity -= 1000
+        with urlopen(self.base_url + "/api/media-catalog") as response:
+            self.assertEqual(response.status, 200)
+        self.assertFalse(server.ACTIVITY.idle_expired())
 
     def test_artwork_endpoint_returns_image_for_game(self):
         rom = self.roms / ".kiddos-ui-test-20261116" / "Pokemon Red Version.gb"
@@ -257,17 +430,18 @@ class ManagementApiTests(unittest.TestCase):
         self.assertFalse(server.ACTIVITY.idle_expired())
 
     def test_post_remains_disabled(self):
-        request = Request(
-            self.base_url + "/api/catalog",
-            data=b"{}",
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        with self.assertRaises(HTTPError) as error:
-            urlopen(request)
-
-        self.assertEqual(error.exception.code, 405)
-        error.exception.close()
+        for endpoint in ("/api/catalog", "/api/media-catalog"):
+            request = Request(
+                self.base_url + endpoint,
+                data=b"{}",
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with self.subTest(endpoint=endpoint):
+                with self.assertRaises(HTTPError) as error:
+                    urlopen(request)
+                self.assertEqual(error.exception.code, 405)
+                error.exception.close()
 
 
     def post_json(self, path, data):
@@ -313,7 +487,7 @@ class ManagementApiTests(unittest.TestCase):
         self.assertEqual(data["filename"], "NewGame.gb")
         self.assertEqual(data["size_bytes"], 7)
         self.assertTrue((self.roms / "gb" / "NewGame.gb").is_file())
-        self.assertIn(
+        self.assertNotIn(
             "NewGame",
             [game["title"] for game in data["catalog"]["available"]],
         )

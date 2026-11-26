@@ -379,11 +379,40 @@ static void setParentMessage(UI& ui, const char* message, SDL_Color color) {
     ui.parentBody = makeText(ui.renderer, ui.labelFont, message, color);
 }
 
+static void setParentUrl(UI& ui, const char* message, SDL_Color color) {
+    destroyText(ui.parentUrl);
+    ui.parentUrl = makeText(ui.renderer, ui.footerFont, message, color);
+}
+
+static void refreshParentUrl(UI& ui, bool managementRunning) {
+    if (!managementRunning) {
+        setParentUrl(ui, "ENABLE TO VIEW ADDRESS", {190, 195, 210, 255});
+        return;
+    }
+
+    char address[64] = {};
+    if (!KiddosServices::managementControl("ip", address, sizeof(address))) {
+        setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
+        return;
+    }
+
+    address[std::strcspn(address, "\r\n")] = '\0';
+    if (address[0] == '\0') {
+        setParentUrl(ui, "WI-FI NOT CONNECTED", {255, 190, 110, 255});
+        return;
+    }
+
+    char url[96] = {};
+    std::snprintf(url, sizeof(url), "http://%s:8081", address);
+    setParentUrl(ui, url, {110, 210, 255, 255});
+}
+
 bool refreshParentStatus(UI& ui) {
     char result[32];
     if (!KiddosServices::managementControl("status", result, sizeof(result))) {
         setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
                          {255, 115, 115, 255});
+        setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
         return false;
     }
 
@@ -391,17 +420,20 @@ bool refreshParentStatus(UI& ui) {
     if (std::strcmp(result, "running") == 0) {
         setParentMessage(ui, "REMOTE MANAGEMENT: ON",
                          {110, 230, 160, 255});
+        refreshParentUrl(ui, true);
         return true;
     }
 
     if (std::strcmp(result, "stopped") == 0) {
         setParentMessage(ui, "REMOTE MANAGEMENT: OFF",
                          {190, 195, 210, 255});
+        refreshParentUrl(ui, false);
         return false;
     }
 
     setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
                      {255, 115, 115, 255});
+    setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
     return false;
 }
 
@@ -410,6 +442,7 @@ void toggleParentManagement(UI& ui) {
     if (!KiddosServices::managementControl("status", result, sizeof(result))) {
         setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
                          {255, 115, 115, 255});
+        setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
         return;
     }
 
@@ -419,6 +452,7 @@ void toggleParentManagement(UI& ui) {
     if (!wasRunning && std::strcmp(result, "stopped") != 0) {
         setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
                          {255, 115, 115, 255});
+        setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
         return;
     }
 
@@ -426,6 +460,7 @@ void toggleParentManagement(UI& ui) {
                            result, sizeof(result))) {
         setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
                          {255, 115, 115, 255});
+        setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
         return;
     }
 
@@ -448,6 +483,7 @@ void toggleParentManagement(UI& ui) {
 
     setParentMessage(ui, "REMOTE MANAGEMENT: STARTING",
                      {255, 210, 110, 255});
+    setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 190, 110, 255});
 }
 
 bool loadMusicArtwork(UI& ui, const std::string& path) {
@@ -528,6 +564,7 @@ void closeUI(UI& ui) {
     destroyText(ui.pinError);
     destroyText(ui.parentHeading);
     destroyText(ui.parentBody);
+    destroyText(ui.parentUrl);
     destroyText(ui.parentWifi);
     destroyText(ui.parentChangePin);
     destroyText(ui.parentFooter);
@@ -668,6 +705,8 @@ bool openUI(UI& ui) {
         "PARENT MODE", white);
     ui.parentBody = makeText(ui.renderer, ui.labelFont,
         "REMOTE MANAGEMENT: UNKNOWN", muted);
+    ui.parentUrl = makeText(ui.renderer, ui.footerFont,
+        "ENABLE TO VIEW ADDRESS", muted);
     ui.parentWifi = makeText(ui.renderer, ui.labelFont,
         "WI-FI SETTINGS", white);
     ui.parentChangePin = makeText(ui.renderer, ui.labelFont,

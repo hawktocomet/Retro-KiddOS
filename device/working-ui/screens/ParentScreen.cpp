@@ -30,7 +30,8 @@ void drawParentCenter(UI& ui, int selected) {
         SDL_RenderDrawRect(r, &outline);
     }
 
-    drawText(r, ui.parentBody, 360, 294);
+    drawText(r, ui.parentBody, 360, 286);
+    drawText(r, ui.parentUrl, 360, 320);
     drawText(r, ui.parentWifi, 360, 394);
     drawText(r, ui.parentChangePin, 360, 494);
     drawBattery(ui);

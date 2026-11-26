@@ -26,7 +26,7 @@ void drawMusic(UI& ui) {
         std::string label = i < count ? "PLAYLIST 1" : "EMPTY SLOT";
         if (label.size() > 25) label = label.substr(0,22) + "...";
         drawWifiLine(r, ui.labelFont, label, tile.x+18, tile.y+82, muted);
-        if (i == ui.musicBrowser.selectedRow && i < count) {
+        if (i == ui.mediaBrowser->music.selectedRow && i < count) {
             SDL_SetRenderDrawColor(r,80,190,255,255);
             for (int n=0; n<5; ++n) {
                 SDL_Rect outline={tile.x-n,tile.y-n,tile.w+n*2,tile.h+n*2};
@@ -47,7 +47,7 @@ void drawMusicPlaylist(UI& ui) {
     drawBattery(ui);
 
     const auto& tracks = KiddosServices::music();
-    const int first = std::max(0, ui.musicBrowser.scrollOffset);
+    const int first = std::max(0, ui.mediaBrowser->music.scrollOffset);
     constexpr int visibleRows = 8;
     const SDL_Color white = {245, 248, 255, 255};
     const SDL_Color muted = {155, 177, 215, 255};
@@ -56,7 +56,7 @@ void drawMusicPlaylist(UI& ui) {
         const int index = first + row;
         if (index >= static_cast<int>(tracks.size())) break;
         SDL_Rect item = {76, 158 + row * 54, 568, 46};
-        if (index == ui.musicBrowser.selectedRow) {
+        if (index == ui.mediaBrowser->music.selectedRow) {
             SDL_SetRenderDrawColor(r, 35, 91, 139, 255);
             SDL_RenderFillRect(r, &item);
             SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
@@ -65,7 +65,7 @@ void drawMusicPlaylist(UI& ui) {
         drawWifiLine(r, ui.labelFont,
                      tracks[static_cast<std::size_t>(index)].title,
                      94, item.y + 10,
-                     index == ui.musicBrowser.selectedRow ? white : muted);
+                     index == ui.mediaBrowser->music.selectedRow ? white : muted);
     }
 
     drawText(r, ui.musicFooter, 360, 625);

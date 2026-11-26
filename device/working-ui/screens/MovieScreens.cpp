@@ -46,7 +46,7 @@ void drawMovies(UI& ui) {
                          tile.x + 70, tile.y + 85, muted);
         }
 
-        if (i == ui.movieBrowser.selectedRow && i < itemCount) {
+        if (i == ui.mediaBrowser->movies.selectedRow && i < itemCount) {
             SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
             for (int n = 0; n < 5; ++n) {
                 SDL_Rect outline = {

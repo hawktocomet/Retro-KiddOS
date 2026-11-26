@@ -185,6 +185,61 @@ footer { color: #7185a5; font-size: 12px; margin-top: 24px; text-align: center; 
   border-radius: 16px;
 }
 #game-picker::backdrop { background: #020713dd; }
+#upload-media-dialog {
+  width: min(560px, calc(100% - 28px));
+  max-height: 85vh;
+  padding: 20px;
+  overflow: auto;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+#upload-media-dialog::backdrop { background: #020713dd; }
+#upload-media-dialog h2 { margin-bottom: 8px; }
+#upload-media-dialog .card {
+  margin: 14px 0;
+  padding: 16px;
+}
+#upload-media-dialog .upload-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 14px;
+  margin-top: 14px;
+}
+#upload-media-dialog .upload-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
+  min-width: 0;
+  width: 100%;
+}
+#upload-media-dialog select,
+#upload-media-dialog input[type="file"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+#upload-media-dialog input[type="file"] {
+  overflow: hidden;
+  font-size: 13px;
+}
+#upload-media-dialog #upload-button {
+  display: block;
+  width: 100%;
+  margin-top: 2px;
+}
+#upload-media-dialog .upload-note { line-height: 1.45; }
+#upload-media-dialog #upload-status {
+  min-height: 20px;
+  margin-top: 10px;
+  overflow-wrap: anywhere;
+}
+#upload-media-dialog .preview-actions {
+  margin-top: 16px;
+}
 #game-picker h2 { margin-bottom: 6px; }
 .picker-list { display: grid; gap: 8px; margin: 18px 0; }
 .picker-item {
@@ -232,9 +287,14 @@ select, input[type="file"] {
   padding: 20px;
 }
 #artwork-preview::backdrop { background: #020713dd; }
-#artwork-preview h2 { margin-bottom: 8px; }
+#artwork-preview h2 { margin-bottom: 8px; overflow-wrap: anywhere; }
 #artwork-preview p { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
-#artwork-preview img {
+.artwork-search-field { display: grid; gap: 6px; margin: 14px 0; }
+.artwork-search-field label { color: var(--muted); font-size: 12px; font-weight: 700; }
+.artwork-search-row { display: flex; gap: 8px; }
+.artwork-search-row input { flex: 1; min-width: 0; }
+#artwork-search-status { min-height: 20px; margin: 8px 0; }
+#artwork-preview-image {
   display: block;
   width: min(100%, 320px);
   aspect-ratio: 1;
@@ -243,6 +303,7 @@ select, input[type="file"] {
   background: #080e20;
   border-radius: 10px;
 }
+#artwork-preview-image[hidden] { display: none; }
 .preview-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
 
 @media (max-width: 480px) {
@@ -424,17 +485,13 @@ select, input[type="file"] {
 
     <div class="section-head"><h2>Media Management</h2></div>
     <div class="global-actions">
-      <button type="button" class="secondary global-action-card" data-open-page="placeholder-view"
-        data-placeholder-title="Scan"
-        data-placeholder-message="Discovery will scan the SD card only when you explicitly start it. This workflow is not implemented yet.">
+      <button type="button" class="secondary global-action-card" id="scan-games">
         <span class="global-action-icon">⌕</span>
-        <span class="global-action-copy"><strong>Scan</strong><small>Find new media on your SD card</small></span>
+        <span class="global-action-copy"><strong>Scan</strong><small>Find new GB/GBC games on the SD card</small></span>
       </button>
-      <button type="button" class="secondary global-action-card" data-open-page="placeholder-view"
-        data-placeholder-title="Upload Media"
-        data-placeholder-message="General media upload is not implemented yet. Copying media directly to the SD card while the handheld is shut down remains the preferred import method. The existing GB/GBC game upload is available under Games.">
+      <button type="button" class="secondary global-action-card" id="open-upload-media">
         <span class="global-action-icon">↑</span>
-        <span class="global-action-copy"><strong>Upload Media</strong><small>Add files to your library</small></span>
+        <span class="global-action-copy"><strong>Upload Media</strong><small>Add supported files to your library</small></span>
       </button>
     </div>
 
@@ -533,13 +590,7 @@ select, input[type="file"] {
       </div>
     </div>
 
-    <div hidden>
-      <div id="available-games"></div>
-      <form id="upload-form"></form>
-      <input id="upload-file" type="file">
-      <select id="upload-system"></select>
-      <button id="upload-button" type="submit"></button>
-    </div>
+
   </section>
     <div hidden aria-hidden="true">
       <span id="library-updated"></span>
@@ -583,13 +634,46 @@ select, input[type="file"] {
     </article>
   </section>
 
-    <dialog id="artwork-preview" aria-labelledby="artwork-preview-title">
-    <h2 id="artwork-preview-title">Preview Artwork</h2>
-    <p id="artwork-preview-name"></p>
-    <img id="artwork-preview-image" alt="Candidate game cover artwork">
+  <dialog id="artwork-preview" aria-labelledby="artwork-preview-title">
+    <h2 id="artwork-preview-title">Game artwork</h2>
+    <div class="artwork-search-field">
+      <label for="artwork-search-query">Search terms</label>
+      <div class="artwork-search-row">
+        <input id="artwork-search-query" type="text" maxlength="160" autocomplete="off">
+        <button id="artwork-search-again" type="button" class="secondary">Search Again</button>
+      </div>
+    </div>
+    <p id="artwork-search-status" role="status" aria-live="polite">Preparing artwork search…</p>
+    <img id="artwork-preview-image" alt="Candidate game cover artwork" hidden>
     <div class="preview-actions">
       <button id="artwork-preview-cancel" class="secondary" type="button">Cancel</button>
-      <button id="artwork-preview-confirm" type="button">Use This Artwork</button>
+      <button id="artwork-preview-confirm" type="button" disabled>Use This Artwork</button>
+    </div>
+  </dialog>
+
+  <dialog id="upload-media-dialog" aria-labelledby="upload-media-title">
+    <h2 id="upload-media-title">Upload Media</h2>
+    <p class="subtitle">Choose supported media to add to the handheld.</p>
+    <section class="card" aria-labelledby="game-upload-heading">
+      <h2 id="game-upload-heading">Game ROMs</h2>
+      <p class="subtitle">Upload a Game Boy or Game Boy Color ROM.</p>
+      <form id="upload-form" class="upload-panel">
+        <div class="upload-field">
+          <label for="upload-file">ROM file</label>
+          <input id="upload-file" name="rom" type="file" accept=".gb,.gbc">
+        </div>
+        <button id="upload-button" type="submit">Upload Game</button>
+      </form>
+      <p class="upload-note" id="upload-note">Supported files: .gb (Game Boy) and .gbc (Game Boy Color). Existing files with the same name won't be overwritten. Other media types are not supported by browser upload yet.</p>
+      <p id="upload-status" role="status" aria-live="polite"></p>
+      <div id="upload-success-actions" class="preview-actions" hidden>
+        <button type="button" class="secondary" id="upload-another">Upload Another</button>
+        <button type="button" id="open-game-library">Open Game Library</button>
+      </div>
+      <div id="available-games" hidden></div>
+    </section>
+    <div class="preview-actions">
+      <button type="button" class="secondary" id="upload-media-close">Close</button>
     </div>
   </dialog>
 
@@ -892,7 +976,7 @@ async function fetchGitHubTree(url) {
   return result;
 }
 
-async function findBrowserBoxart(game) {
+async function findBrowserBoxart(game, searchTerm = game.title) {
   const repository = BOXART_REPOSITORIES[game.system_id];
   if (!repository) {
     throw new Error("Automatic artwork search currently supports Game Boy and Game Boy Color. Please upload artwork manually.");
@@ -912,7 +996,7 @@ async function findBrowserBoxart(game) {
     throw new Error("GitHub returned an incomplete artwork listing. Please upload artwork manually.");
   }
 
-  const wanted = normalizedBoxartTitle(game.title);
+  const wanted = normalizedBoxartTitle(searchTerm);
   const matches = listing.tree.filter(item =>
     item.type === "blob" &&
     item.path.toLowerCase().endsWith(".png") &&
@@ -920,12 +1004,12 @@ async function findBrowserBoxart(game) {
   );
 
   if (!matches.length) {
-    throw new Error(`No exact cover-art match was found for "${game.title}". Please upload artwork manually.`);
+    throw new Error(`No exact cover-art match was found for "${searchTerm}". Please upload artwork manually.`);
   }
 
   const priority = filename => {
     const stem = filename.split("/").pop().replace(/\.png$/i, "");
-    const base = game.title.replace(/\.[^.]+$/, "");
+    const base = searchTerm.trim();
     const suffix = stem.toLocaleLowerCase().startsWith(base.toLocaleLowerCase())
       ? stem.slice(base.length).trim().toLocaleLowerCase()
       : "";
@@ -957,32 +1041,102 @@ async function findBrowserBoxart(game) {
   return { blob, filename: matches[0].path.split("/").pop() };
 }
 
-function previewArtwork(game, blob, filename) {
+function previewArtwork(game) {
   return new Promise(resolve => {
     const dialog = el("artwork-preview");
     const image = el("artwork-preview-image");
-    const objectUrl = URL.createObjectURL(blob);
+    const query = el("artwork-search-query");
+    const searchButton = el("artwork-search-again");
+    const confirmButton = el("artwork-preview-confirm");
+    const status = el("artwork-search-status");
+    let candidate = null;
+    let objectUrl = null;
     let settled = false;
+    let searching = false;
+
+    const clearPreview = () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      objectUrl = null;
+      image.removeAttribute("src");
+      image.hidden = true;
+      candidate = null;
+      confirmButton.disabled = true;
+    };
 
     const finish = accepted => {
       if (settled) return;
       settled = true;
       dialog.removeEventListener("close", onClose);
-      URL.revokeObjectURL(objectUrl);
-      resolve(accepted);
+      searchButton.onclick = null;
+      confirmButton.onclick = null;
+      query.onkeydown = null;
+      el("artwork-preview-cancel").onclick = null;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      resolve(accepted ? candidate : null);
     };
     const onClose = () => finish(false);
 
-    image.src = objectUrl;
-    el("artwork-preview-name").textContent =
-      `${game.title} · ${filename}`;
-    el("artwork-preview-confirm").onclick = () => {
+    el("artwork-preview-title").textContent = game.filename;
+    query.value = game.title;
+    clearPreview();
+
+    const runSearch = async () => {
+      const searchTerm = query.value.trim();
+      if (!searchTerm || searching) {
+        if (!searchTerm) status.textContent = "Enter a title or search term.";
+        return;
+      }
+
+      searching = true;
+      searchButton.disabled = true;
+      searchButton.textContent = "Searching…";
+      clearPreview();
+      status.textContent = `Searching for "${searchTerm}"…`;
+
+      try {
+        await postJson("/api/activity", {});
+        const result = await findBrowserBoxart(game, searchTerm);
+        if (settled) return;
+        candidate = result;
+        objectUrl = URL.createObjectURL(result.blob);
+        image.src = objectUrl;
+        image.hidden = false;
+        confirmButton.disabled = false;
+        status.textContent = `Artwork found: ${result.filename}`;
+      } catch (error) {
+        if (!settled) {
+          status.textContent = error.message.includes("No exact cover-art match")
+            ? "No artwork found. Try a different search term."
+            : error.message;
+        }
+      } finally {
+        searching = false;
+        if (!settled) {
+          searchButton.disabled = false;
+          searchButton.textContent = "Search Again";
+        }
+      }
+    };
+
+    searchButton.onclick = runSearch;
+    confirmButton.onclick = () => {
+      if (!candidate) return;
       dialog.close();
       finish(true);
     };
     el("artwork-preview-cancel").onclick = () => dialog.close();
+    query.onkeydown = event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        runSearch();
+      }
+    };
+
     dialog.addEventListener("close", onClose);
     dialog.showModal();
+    runSearch();
+    query.focus();
+    query.select();
   });
 }
 
@@ -1087,16 +1241,10 @@ function renderInstalled(games) {
         if (game.slottable) {
           const find = makeActionButton("Find Artwork", "secondary", async () => {
             find.disabled = true;
-            find.textContent = "Searching…";
             el("library-catalog-error").textContent = "";
             try {
-              await postJson("/api/activity", {});
-              const candidate = await findBrowserBoxart(game);
-              const accepted = await previewArtwork(game, candidate.blob, candidate.filename);
-              if (!accepted) {
-                el("library-catalog-error").textContent = "Artwork preview cancelled.";
-                return;
-              }
+              const candidate = await previewArtwork(game);
+              if (!candidate) return;
               find.textContent = "Uploading…";
               await uploadArtworkBlob(game, candidate.blob, candidate.filename);
               el("library-catalog-error").textContent = `Artwork saved for ${game.title}.`;
@@ -1171,8 +1319,10 @@ async function refreshCatalog() {
       `${summary.assigned_count ?? 0}/4 slots filled · ` +
       `${summary.available_count ?? 0} available · ` +
       `${summary.installed_count ?? 0} installed`;
+    return true;
   } catch (error) {
     el("catalog-error").textContent = `Couldn't load game catalog: ${error.message}`;
+    return false;
   }
 }
 
@@ -1180,16 +1330,24 @@ async function uploadGame(event) {
   event.preventDefault();
   const file = el("upload-file").files[0];
   if (!file) {
-    el("catalog-error").textContent = "Choose a ROM file first.";
+    el("upload-status").textContent = "Choose a ROM file first.";
     return;
   }
 
-  const system = el("upload-system").value;
+  const extension = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+  const system = extension === ".gb" ? "gb" : extension === ".gbc" ? "gbc" : null;
+  if (!system) {
+    el("upload-status").textContent =
+      "Unsupported file type. Choose a Game Boy .gb or Game Boy Color .gbc ROM.";
+    return;
+  }
+
   const button = el("upload-button");
   button.disabled = true;
   button.textContent = "Uploading…";
-  el("catalog-error").textContent = "";
+  el("upload-status").textContent = "";
 
+  let uploaded = false;
   try {
     const query = new URLSearchParams({
       system,
@@ -1203,12 +1361,24 @@ async function uploadGame(event) {
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
 
+    uploaded = true;
     el("upload-file").value = "";
-    await refreshCatalog();
-    await refreshLibrary();
-    el("catalog-error").textContent = `Uploaded ${file.name} successfully.`;
+    const [catalogOk, libraryOk] = await Promise.all([
+      refreshCatalog(),
+      refreshLibrary()
+    ]);
+    if (catalogOk && libraryOk) {
+      el("upload-status").textContent = `Uploaded ${file.name} successfully.`;
+    } else {
+      el("upload-status").textContent =
+        `Uploaded ${file.name}, but the library refresh had a problem. You can still open the library and refresh there.`;
+    }
+    el("upload-form").hidden = true;
+    el("upload-note").hidden = true;
+    el("upload-success-actions").hidden = false;
   } catch (error) {
-    el("catalog-error").textContent = `Upload failed: ${error.message}`;
+    el("upload-status").textContent =
+      `${uploaded ? "Upload completed, but refresh failed" : "Upload failed"}: ${error.message}`;
   } finally {
     button.disabled = false;
     button.textContent = "Upload Game";
@@ -1307,8 +1477,10 @@ async function refreshLibrary() {
     renderList("movies-list", data.movies || [], "No movies found in the movies library.",
       (container, movie) => addMediaItem(container, movie.title,
         movie.filename, movie.size_bytes));
+    return true;
   } catch (error) {
     el("library-error").textContent = `Couldn't load media library: ${error.message}`;
+    return false;
   }
 }
 
@@ -1351,6 +1523,57 @@ el("refresh").addEventListener("click", () => {
   refreshCatalog();
 });
 el("upload-form").addEventListener("submit", uploadGame);
+el("upload-another").addEventListener("click", () => {
+  el("upload-file").value = "";
+  el("upload-status").textContent = "";
+  el("upload-success-actions").hidden = true;
+  el("upload-form").hidden = false;
+  el("upload-note").hidden = false;
+  el("upload-file").focus();
+});
+el("open-game-library").addEventListener("click", async () => {
+  el("upload-media-dialog").close();
+  openPage("games-library-view");
+  el("library-catalog-error").textContent = "Refreshing the game library…";
+  const [catalogOk, libraryOk] = await Promise.all([
+    refreshCatalog(),
+    refreshLibrary()
+  ]);
+  el("library-catalog-error").textContent =
+    catalogOk && libraryOk
+      ? "Library refreshed. Find artwork or manage your installed games below."
+      : "The library could not be fully refreshed. Check the page for any loading errors.";
+});
+el("open-upload-media").addEventListener("click", () => {
+  el("upload-media-dialog").showModal();
+});
+el("upload-media-close").addEventListener("click", () => {
+  el("upload-media-dialog").close();
+});
+el("scan-games").addEventListener("click", async () => {
+  const button = el("scan-games");
+  button.disabled = true;
+  const copy = button.querySelector(".global-action-copy small");
+  const original = copy.textContent;
+  copy.textContent = "Scanning GB/GBC folders…";
+  openPage("games-view");
+  el("catalog-error").textContent = "Scanning the SD card for GB/GBC games…";
+  try {
+    const [catalogOk, libraryOk] = await Promise.all([
+      refreshCatalog(),
+      refreshLibrary()
+    ]);
+    if (catalogOk && libraryOk) {
+      el("catalog-error").textContent = "Scan complete. The game library is up to date.";
+    } else {
+      el("catalog-error").textContent =
+        "Scan incomplete. Check the catalog and library error messages.";
+    }
+  } finally {
+    button.disabled = false;
+    copy.textContent = original;
+  }
+});
 refreshStatus();
 refreshLibrary();
 refreshCatalog();

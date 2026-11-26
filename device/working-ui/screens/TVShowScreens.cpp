@@ -46,7 +46,7 @@ void drawTVShows(UI& ui) {
                 tile.x + 70, tile.y + 85, muted);
         }
 
-        if (i == ui.tvBrowser.selectedRow && i < count) {
+        if (i == ui.mediaBrowser->tvShows.selectedRow && i < count) {
             SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
             for (int n = 0; n < 5; ++n) {
                 SDL_Rect outline = {

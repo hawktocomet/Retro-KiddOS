@@ -45,6 +45,15 @@ int main() {
     navigation.closeSystemMenu();
     check(navigation.current() == KiddosNavigation::GameInfo, "System Menu preserves non-home return screen");
 
+    KiddosScreens::MediaBrowserState browserState;
+    browserState.movies.selectedRow = 2;
+    browserState.tvShows.selectedRow = 1;
+    browserState.music.selectedRow = 7;
+    check(browserState.movies.selectedRow == 2 &&
+          browserState.tvShows.selectedRow == 1 &&
+          browserState.music.selectedRow == 7,
+          "media browser selections remain independent");
+
     KiddosUI::LibraryGrid grid(4);
     grid.moveRight();
     check(grid.selected() == 1, "grid moves right");

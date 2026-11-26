@@ -29,8 +29,6 @@ private:
     KiddosNavigation::Navigation navigation_;
     std::unique_ptr<KiddosPin::PinWorkflow> pinWorkflow_;
     int parentSelected_ = 0;
-    KiddosScreens::MovieBrowserState movieBrowser_;
-    KiddosScreens::TVBrowserState tvBrowser_;
-    KiddosScreens::MusicBrowserState musicBrowser_;
+    KiddosScreens::MediaBrowserState mediaBrowser_;
     bool running_ = true;
 };

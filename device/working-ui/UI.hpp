@@ -42,14 +42,12 @@ struct UI {
     Text menuHeading, menuItems[2], menuFooter;
     Text confirmHeading, confirmBody, confirmFooter;
     Text pinPrompt, pinFooter, pinError;
-    Text parentHeading, parentBody, parentWifi, parentChangePin, parentFooter;
+    Text parentHeading, parentBody, parentUrl, parentWifi, parentChangePin, parentFooter;
     Text wifiHeading, wifiPowerLabel, wifiConnectionLabel;
     Text wifiActionLabel, wifiFooter;
     Text batteryLabel;
 
-    KiddosScreens::MovieBrowserState movieBrowser;
-    KiddosScreens::TVBrowserState tvBrowser;
-    KiddosScreens::MusicBrowserState musicBrowser;
+    KiddosScreens::MediaBrowserState* mediaBrowser = nullptr;
     KiddosScreens::WifiState wifi;
     KiddosScreens::StatusBarState status;
 };

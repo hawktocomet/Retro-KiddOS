@@ -36,20 +36,17 @@ struct WifiState {
     KiddosServices::WifiConnection connection;
 };
 
-// Movie browser interaction state. Movie data remains in MovieCatalog.
-struct MovieBrowserState {
+// Shared selection state; each media workflow keeps an independent instance.
+struct BrowserSelectionState {
     int selectedRow = 0;
     int scrollOffset = 0;
 };
 
-struct TVBrowserState {
-    int selectedRow = 0;
-    int scrollOffset = 0;
-};
-
-struct MusicBrowserState {
-    int selectedRow = 0;
-    int scrollOffset = 0;
+// Persistent browsing state survives SDL UI teardown during external playback.
+struct MediaBrowserState {
+    BrowserSelectionState movies;
+    BrowserSelectionState tvShows;
+    BrowserSelectionState music;
 };
 
 // Battery and connection indicators are shared chrome, not screen workflow state.

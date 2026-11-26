@@ -88,6 +88,7 @@ build_kiddos() {
     echo "===== COMPILING ARM64 ====="
     if ! aarch64-linux-gnu-g++ \
         -std=c++17 -O2 -mcpu=cortex-a35 \
+        -DKIDDOS_VERSION=\"0.1.0\" \
         -I"$SDL/include" \
         -I"$CONFIG" \
         -I/usr/include/SDL2 \

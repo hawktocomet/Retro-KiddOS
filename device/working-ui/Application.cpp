@@ -69,9 +69,7 @@ int Application::run() {
         }
         UI ui;
         if (!openUI(ui)) return 1;
-        ui.movieBrowser = movieBrowser_;
-        ui.musicBrowser = musicBrowser_;
-        ui.tvBrowser = tvBrowser_;
+        ui.mediaBrowser = &mediaBrowser_;
         updateSelectedGameText(ui, selected);
 
         // The management server atomically replaces slots.json on assignment.
@@ -81,6 +79,7 @@ int Application::run() {
         struct stat lastSlotsStat {};
         bool haveSlotsStat = stat(slotsPath, &lastSlotsStat) == 0;
         Uint32 lastCatalogPoll = SDL_GetTicks();
+        Uint32 lastParentStatusPoll = SDL_GetTicks();
 
         const SDL_Color pinWhite = {245, 248, 255, 255};
         const SDL_Color pinRed = {255, 115, 115, 255};
@@ -101,19 +100,19 @@ int Application::run() {
         auto moveMusicSelection = [&](int delta) {
             const int count = static_cast<int>(KiddosServices::music().size());
             if (count == 0) {
-                ui.musicBrowser.selectedRow = 0;
-                ui.musicBrowser.scrollOffset = 0;
+                ui.mediaBrowser->music.selectedRow = 0;
+                ui.mediaBrowser->music.scrollOffset = 0;
                 return;
             }
-            ui.musicBrowser.selectedRow = std::clamp(
-                ui.musicBrowser.selectedRow + delta, 0, count - 1);
+            ui.mediaBrowser->music.selectedRow = std::clamp(
+                ui.mediaBrowser->music.selectedRow + delta, 0, count - 1);
             constexpr int visibleRows = 8;
-            if (ui.musicBrowser.selectedRow < ui.musicBrowser.scrollOffset)
-                ui.musicBrowser.scrollOffset = ui.musicBrowser.selectedRow;
-            if (ui.musicBrowser.selectedRow >= ui.musicBrowser.scrollOffset + visibleRows)
-                ui.musicBrowser.scrollOffset = ui.musicBrowser.selectedRow - visibleRows + 1;
-            ui.musicBrowser.scrollOffset = std::clamp(
-                ui.musicBrowser.scrollOffset, 0, std::max(0, count - visibleRows));
+            if (ui.mediaBrowser->music.selectedRow < ui.mediaBrowser->music.scrollOffset)
+                ui.mediaBrowser->music.scrollOffset = ui.mediaBrowser->music.selectedRow;
+            if (ui.mediaBrowser->music.selectedRow >= ui.mediaBrowser->music.scrollOffset + visibleRows)
+                ui.mediaBrowser->music.scrollOffset = ui.mediaBrowser->music.selectedRow - visibleRows + 1;
+            ui.mediaBrowser->music.scrollOffset = std::clamp(
+                ui.mediaBrowser->music.scrollOffset, 0, std::max(0, count - visibleRows));
         };
 
         auto playMusicTrack = [&](int index) {
@@ -141,33 +140,33 @@ int Application::run() {
             const int count = std::min(
                 4, static_cast<int>(KiddosServices::movies().size()));
             if (count == 0) {
-                ui.movieBrowser.selectedRow = 0;
-                ui.movieBrowser.scrollOffset = 0;
+                ui.mediaBrowser->movies.selectedRow = 0;
+                ui.mediaBrowser->movies.scrollOffset = 0;
                 return;
             }
-            ui.movieBrowser.selectedRow = std::clamp(
-                ui.movieBrowser.selectedRow + delta, 0, count - 1);
-            ui.movieBrowser.scrollOffset = 0;
+            ui.mediaBrowser->movies.selectedRow = std::clamp(
+                ui.mediaBrowser->movies.selectedRow + delta, 0, count - 1);
+            ui.mediaBrowser->movies.scrollOffset = 0;
         };
 
         auto moveTVSelection = [&](int delta) {
             const int count = std::min(
                 4, static_cast<int>(KiddosServices::tvShows().size()));
             if (count <= 0) {
-                ui.tvBrowser.selectedRow = 0;
-                ui.tvBrowser.scrollOffset = 0;
+                ui.mediaBrowser->tvShows.selectedRow = 0;
+                ui.mediaBrowser->tvShows.scrollOffset = 0;
                 return;
             }
-            ui.tvBrowser.selectedRow = std::clamp(
-                ui.tvBrowser.selectedRow + delta, 0, count - 1);
-            ui.tvBrowser.scrollOffset = 0;
+            ui.mediaBrowser->tvShows.selectedRow = std::clamp(
+                ui.mediaBrowser->tvShows.selectedRow + delta, 0, count - 1);
+            ui.mediaBrowser->tvShows.scrollOffset = 0;
         };
 
         bool launchTVShow = false;
         auto confirmTVSelection = [&]() {
             const int count = static_cast<int>(KiddosServices::tvShows().size());
-            if (ui.tvBrowser.selectedRow >= 0 &&
-                ui.tvBrowser.selectedRow < std::min(4, count))
+            if (ui.mediaBrowser->tvShows.selectedRow >= 0 &&
+                ui.mediaBrowser->tvShows.selectedRow < std::min(4, count))
                 launchTVShow = true;
         };
 
@@ -207,243 +206,6 @@ int Application::run() {
                     continue;
                 }
 
-                if (event.type == SDL_KEYDOWN) {
-                    const SDL_Keycode key = event.key.keysym.sym;
-
-                    if (key == SDLK_y && KiddosServices::musicPlaying()) {
-                        if (screen != NowPlaying) nowPlayingReturnScreen = screen;
-                        screen = NowPlaying;
-                        continue;
-                    }
-
-                    if (key == SDLK_ESCAPE) {
-                        running = false;
-                        continue;
-                    }
-
-                    if (key == SDLK_BACKSPACE) {
-                        if (screen == WifiPassword) {
-                            if (ui.wifi.passwordCursor > 0) {
-                                ui.wifi.password.erase(ui.wifi.password.begin() + --ui.wifi.passwordCursor);
-                            } else {
-                                screen = WifiSettings;
-                                refreshWifiSettings(ui);
-                            }
-                        } else if (screen == WifiSettings)
-                            screen = ParentCenter;
-                        else if (screen == PinEntry && pinWorkflow.isChanging())
-                            cancelPinChange();
-                        else if (screen == ConfirmShutdown ||
-                                 screen == PinEntry || screen == ParentCenter)
-                            screen = SystemMenu;
-                        else if (screen == SystemMenu)
-                            navigation.closeSystemMenu();
-                        else if (screen == GameInfo)
-                            screen = SelectedGame;
-                        else if (screen == SelectedGame)
-                            screen = Games;
-                        else if (screen == NowPlaying)
-                            screen = nowPlayingReturnScreen;
-                        else if (screen == MusicPlaylist)
-                            screen = Music;
-                        else if (screen == TVShows)
-                            screen = Home;
-                        else if (screen == Movies || screen == Music || screen == Games)
-                            screen = Home;
-                        continue;
-                    }
-
-                    if (screen == PinEntry) {
-                        if (key == SDLK_UP) {
-                            pinWorkflow.adjustDigit(1);
-                        } else if (key == SDLK_DOWN) {
-                            pinWorkflow.adjustDigit(-1);
-                        } else if (key == SDLK_LEFT) {
-                            pinWorkflow.moveCursor(-1);
-                        } else if (key == SDLK_RIGHT) {
-                            pinWorkflow.moveCursor(1);
-                        } else if (key >= SDLK_0 && key <= SDLK_9) {
-                            pinWorkflow.setDigit(static_cast<int>(key - SDLK_0));
-                        } else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                            submitPin();
-                        }
-                        continue;
-                    }
-
-                    if (screen == WifiPassword) {
-                        if (key == SDLK_UP) moveWifiKeyboard(ui, 0, -1);
-                        else if (key == SDLK_DOWN) moveWifiKeyboard(ui, 0, 1);
-                        else if (key == SDLK_LEFT) moveWifiKeyboard(ui, -1, 0);
-                        else if (key == SDLK_RIGHT) moveWifiKeyboard(ui, 1, 0);
-                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                            if (activateWifiKeyboardKey(ui)) {
-                                screen = WifiSettings;
-                                refreshWifiSettings(ui);
-                            }
-                        } else if (key == SDLK_BACKSPACE ||
-                                   key == SDLK_DELETE) {
-                            if (!ui.wifi.password.empty())
-                                ui.wifi.password.pop_back();
-                            ui.wifi.passwordCursor =
-                                static_cast<int>(ui.wifi.password.size());
-                        } else if (key == SDLK_ESCAPE) {
-                            screen = WifiSettings;
-                            refreshWifiSettings(ui);
-                        }
-                        continue;
-                    }
-
-                    if (screen == WifiSettings) {
-                        if (key == SDLK_UP)
-                            moveWifiSelection(ui, -1);
-                        else if (key == SDLK_DOWN)
-                            moveWifiSelection(ui, 1);
-                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                            if (ui.wifi.selectedRow == 0) {
-                                toggleWifiPower(ui);
-                            } else if (ui.wifi.selectedRow == 1) {
-                                loadWifiNetworks(ui, true);
-                            } else {
-                                const auto& network =
-                                    ui.wifi.networks[ui.wifi.selectedRow - 2];
-                                startWifiConnection(ui, network, "");
-                            }
-                        }
-                        continue;
-                    }
-
-                    if (screen == ParentCenter) {
-                        if (key == SDLK_UP)
-                            parentSelected = (parentSelected + 2) % 3;
-                        else if (key == SDLK_DOWN)
-                            parentSelected = (parentSelected + 1) % 3;
-                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                            if (parentSelected == 0)
-                                toggleParentManagement(ui);
-                            else if (parentSelected == 1) {
-                                updateWifiStatus(ui);
-                                ui.wifi.commandError = false;
-                                refreshWifiMenuText(ui);
-                                loadWifiNetworks(ui, true);
-                                screen = WifiSettings;
-                            } else
-                                beginPinChange();
-                        }
-                        continue;
-                    }
-
-                    if (screen == NowPlaying &&
-                        (key == SDLK_RETURN || key == SDLK_SPACE)) {
-                        if (KiddosServices::musicPaused()) {
-                            KiddosServices::resumeMusic();
-                        } else if (KiddosServices::pauseMusic()) {
-                            if (currentMusicTrack >= 0)
-                                ui.musicBrowser.selectedRow = currentMusicTrack;
-
-                        }
-                    } else if (screen == Home) {
-                        if (key == SDLK_UP) homeGrid.moveUp();
-                        else if (key == SDLK_DOWN) homeGrid.moveDown();
-                        else if (key == SDLK_LEFT) homeGrid.moveLeft();
-                        else if (key == SDLK_RIGHT) homeGrid.moveRight();
-                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                            if (homeSelected == 0) screen = Games;
-                            else if (homeSelected == 1) screen = Music;
-                            else if (homeSelected == 2) screen = Movies;
-                            else if (homeSelected == 3) {
-                                ui.tvBrowser.selectedRow = 0;
-                                ui.tvBrowser.scrollOffset = 0;
-                                screen = TVShows;
-                            }
-                        } else if (key == SDLK_s) {
-                            navigation.openSystemMenu();
-                        }
-                    } else if (screen == Music) {
-                        if ((key == SDLK_RETURN || key == SDLK_SPACE) &&
-                            !KiddosServices::music().empty()) {
-                            ui.musicBrowser.selectedRow = 0;
-                            ui.musicBrowser.scrollOffset = 0;
-                            screen = MusicPlaylist;
-                        } else if (key == SDLK_s) navigation.openSystemMenu();
-                    } else if (screen == MusicPlaylist) {
-                        if (key == SDLK_UP) moveMusicSelection(-1);
-                        else if (key == SDLK_DOWN) moveMusicSelection(1);
-                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                            nowPlayingReturnScreen = MusicPlaylist;
-                            if (playMusicTrack(ui.musicBrowser.selectedRow))
-                                screen = NowPlaying;
-                            else
-                                SDL_Delay(1200);
-                        } else if (key == SDLK_s) navigation.openSystemMenu();
-                    } else if (screen == Movies) {
-                        if (key == SDLK_UP) moveMovieSelection(-2);
-                        else if (key == SDLK_DOWN) moveMovieSelection(2);
-                        else if (key == SDLK_LEFT) moveMovieSelection(-1);
-                        else if (key == SDLK_RIGHT) moveMovieSelection(1);
-                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                            const auto& list = KiddosServices::movies();
-                            if (ui.movieBrowser.selectedRow >= 0 &&
-                                ui.movieBrowser.selectedRow < static_cast<int>(list.size()))
-                                launchMovie = true;
-                        } else if (key == SDLK_s) {
-                            navigation.openSystemMenu();
-                        }
-                    } else if (screen == TVShows) {
-                        if (key == SDLK_UP) moveTVSelection(-2);
-                        else if (key == SDLK_DOWN) moveTVSelection(2);
-                        else if (key == SDLK_LEFT) moveTVSelection(-1);
-                        else if (key == SDLK_RIGHT) moveTVSelection(1);
-                        else if (key == SDLK_RETURN || key == SDLK_SPACE)
-                            confirmTVSelection();
-                        else if (key == SDLK_s)
-                            navigation.openSystemMenu();
-                    } else if (screen == Games) {
-                        switch (key) {
-                            case SDLK_UP:    gameGrid.moveUp(); break;
-                            case SDLK_DOWN:  gameGrid.moveDown(); break;
-                            case SDLK_LEFT:  gameGrid.moveLeft(); break;
-                            case SDLK_RIGHT: gameGrid.moveRight(); break;
-                            case SDLK_RETURN:
-                            case SDLK_SPACE:
-                                if (games[selected].available) {
-                                    screen = SelectedGame;
-                                    action = 0;
-                                }
-                                break;
-                            case SDLK_s:
-                                navigation.openSystemMenu();
-                                break;
-                        }
-                        updateSelectedGameText(ui, selected);
-                    } else if (screen == SelectedGame) {
-                        if (!games[selected].available) {
-                            screen = Games;
-                        } else if (key == SDLK_UP || key == SDLK_DOWN) {
-                            action = (action + 1) % 2;
-                        } else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                            if (action == 0) launch = true;
-                            else if (action == 1) screen = GameInfo;
-                        }
-                    } else if (screen == GameInfo) {
-                        if (key == SDLK_RETURN || key == SDLK_SPACE)
-                            screen = SelectedGame;
-                    } else if (screen == SystemMenu) {
-                        if (key == SDLK_UP || key == SDLK_DOWN)
-                            menuSelected = (menuSelected + 1) % 2;
-                        else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                            if (menuSelected == 1) {
-                                screen = ConfirmShutdown;
-                            } else {
-                                pinWorkflow.beginUnlock();
-                                refreshPinPrompt();
-                                screen = PinEntry;
-                            }
-                        }
-                    } else if (key == SDLK_RETURN || key == SDLK_SPACE) {
-                        if (KiddosServices::requestShutdown()) running = false;
-                    }
-                }
-
                 if (event.type == SDL_JOYBUTTONDOWN) {
                     const KiddosInput::Action inputAction =
                         KiddosInput::fromJoystickButton(event.jbutton.button);
@@ -473,8 +235,10 @@ int Application::run() {
                             }
                             ui.wifi.passwordCursor =
                                 static_cast<int>(ui.wifi.password.size());
-                        } else if (screen == WifiSettings)
+                        } else if (screen == WifiSettings) {
                             screen = ParentCenter;
+                            refreshParentStatus(ui);
+                        }
                         else if (screen == PinEntry && pinWorkflow.isChanging())
                             cancelPinChange();
                         else if (screen == ConfirmShutdown ||
@@ -500,7 +264,7 @@ int Application::run() {
                                 KiddosServices::resumeMusic();
                             } else if (KiddosServices::pauseMusic()) {
                                 if (currentMusicTrack >= 0)
-                                    ui.musicBrowser.selectedRow = currentMusicTrack;
+                                    ui.mediaBrowser->music.selectedRow = currentMusicTrack;
 
                             }
                         } else if (screen == WifiPassword) {
@@ -513,26 +277,26 @@ int Application::run() {
                             else if (homeSelected == 1) screen = Music;
                             else if (homeSelected == 2) screen = Movies;
                             else if (homeSelected == 3) {
-                                ui.tvBrowser.selectedRow = 0;
-                                ui.tvBrowser.scrollOffset = 0;
+                                ui.mediaBrowser->tvShows.selectedRow = 0;
+                                ui.mediaBrowser->tvShows.scrollOffset = 0;
                                 screen = TVShows;
                             }
                         } else if (screen == Music) {
                             if (!KiddosServices::music().empty()) {
-                                ui.musicBrowser.selectedRow = 0;
-                                ui.musicBrowser.scrollOffset = 0;
+                                ui.mediaBrowser->music.selectedRow = 0;
+                                ui.mediaBrowser->music.scrollOffset = 0;
                                 screen = MusicPlaylist;
                             }
                         } else if (screen == MusicPlaylist) {
                             nowPlayingReturnScreen = MusicPlaylist;
-                            if (playMusicTrack(ui.musicBrowser.selectedRow))
+                            if (playMusicTrack(ui.mediaBrowser->music.selectedRow))
                                 screen = NowPlaying;
                             else
                                 SDL_Delay(1200);
                         } else if (screen == Movies) {
                             const auto& list = KiddosServices::movies();
-                            if (ui.movieBrowser.selectedRow >= 0 &&
-                                ui.movieBrowser.selectedRow < static_cast<int>(list.size()))
+                            if (ui.mediaBrowser->movies.selectedRow >= 0 &&
+                                ui.mediaBrowser->movies.selectedRow < static_cast<int>(list.size()))
                                 launchMovie = true;
                         } else if (screen == TVShows) {
                             confirmTVSelection();
@@ -714,6 +478,18 @@ int Application::run() {
 
             // Refresh the live carousel when remote slot assignments change.
             const Uint32 now = SDL_GetTicks();
+
+            // Keep the Parent Center's management URL and Wi-Fi state current.
+            // Do not poll while the child-facing UI or another screen is active.
+            if (screen == ParentCenter) {
+                if (SDL_TICKS_PASSED(now, lastParentStatusPoll + 10000)) {
+                    lastParentStatusPoll = now;
+                    refreshParentStatus(ui);
+                }
+            } else {
+                lastParentStatusPoll = now;
+            }
+
             if (SDL_TICKS_PASSED(now, lastCatalogPoll + 1000)) {
                 lastCatalogPoll = now;
 
@@ -806,9 +582,6 @@ int Application::run() {
             }
         }
 
-        movieBrowser_ = ui.movieBrowser;
-        musicBrowser_ = ui.musicBrowser;
-        tvBrowser_ = ui.tvBrowser;
         cancelWifiConnection(ui);
         std::fill(ui.wifi.password.begin(), ui.wifi.password.end(), '\0');
         if (!running || launch || launchMovie || launchTVShow)
@@ -821,21 +594,21 @@ int Application::run() {
         }
         if (running && launchTVShow) {
             const auto& list = KiddosServices::tvShows();
-            if (tvBrowser_.selectedRow >= 0 &&
-                tvBrowser_.selectedRow < std::min(
+            if (mediaBrowser_.tvShows.selectedRow >= 0 &&
+                mediaBrowser_.tvShows.selectedRow < std::min(
                     4, static_cast<int>(list.size()))) {
                 if (!KiddosServices::launchTVShow(
-                        list[static_cast<std::size_t>(tvBrowser_.selectedRow)]))
+                        list[static_cast<std::size_t>(mediaBrowser_.tvShows.selectedRow)]))
                     SDL_Delay(1500);
             }
             screen = TVShows;
         }
         if (running && launchMovie) {
             const auto& list = KiddosServices::movies();
-            if (movieBrowser_.selectedRow >= 0 &&
-                movieBrowser_.selectedRow < static_cast<int>(list.size())) {
+            if (mediaBrowser_.movies.selectedRow >= 0 &&
+                mediaBrowser_.movies.selectedRow < static_cast<int>(list.size())) {
                 if (!KiddosServices::launchMovie(
-                        list[static_cast<std::size_t>(movieBrowser_.selectedRow)]))
+                        list[static_cast<std::size_t>(mediaBrowser_.movies.selectedRow)]))
                     SDL_Delay(1500);
             }
             screen = Movies;

@@ -27,7 +27,13 @@ from catalog import (
     assign_game,
     delete_game,
     discover_games,
+    discover_movies,
+    discover_music_playlists,
+    discover_tv_shows,
     game_catalog,
+    media_slots_catalog,
+    assign_media,
+    unassign_media,
     unassign_game,
 )
 
@@ -100,6 +106,14 @@ class GameCatalogCache:
 
 
 GAME_CATALOG_CACHE = GameCatalogCache()
+
+
+def get_media_catalog():
+    return {
+        "movies": discover_movies(ROM_ROOT),
+        "music_playlists": discover_music_playlists(ROM_ROOT),
+        "tv_shows": discover_tv_shows(ROM_ROOT),
+    }
 
 
 def get_game_catalog():
@@ -380,6 +394,8 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         tracked = path in (
             "/api/catalog",
+            "/api/media-catalog",
+            "/api/media-slots",
             "/api/library",
             "/api/artwork",
             "/api/metadata/search",
@@ -411,6 +427,28 @@ class Handler(BaseHTTPRequestHandler):
                 invalidate_game_catalog()
                 data = get_game_catalog()
                 body = json.dumps(data, indent=2).encode("utf-8")
+            except (OSError, ValueError) as exc:
+                message = json.dumps({"error": str(exc)}).encode("utf-8")
+                self.send_bytes(500, "application/json; charset=utf-8", message)
+                return
+            self.send_bytes(200, "application/json; charset=utf-8", body)
+            return
+
+        if path == "/api/media-catalog":
+            try:
+                data = get_media_catalog()
+                body = json.dumps(data, indent=2).encode("utf-8")
+            except (OSError, ValueError) as exc:
+                message = json.dumps({"error": str(exc)}).encode("utf-8")
+                self.send_bytes(500, "application/json; charset=utf-8", message)
+                return
+            self.send_bytes(200, "application/json; charset=utf-8", body)
+            return
+
+        if path == "/api/media-slots":
+            try:
+                data = media_slots_catalog(ROM_ROOT, STATE_ROOT)
+                body = json.dumps(data).encode("utf-8")
             except (OSError, ValueError) as exc:
                 message = json.dumps({"error": str(exc)}).encode("utf-8")
                 self.send_bytes(500, "application/json; charset=utf-8", message)
@@ -533,6 +571,8 @@ class Handler(BaseHTTPRequestHandler):
             "/api/artwork/upload",
             "/api/slots/assign",
             "/api/slots/unassign",
+            "/api/media-slots/assign",
+            "/api/media-slots/unassign",
             "/api/games/delete",
         )
         if tracked:
@@ -556,6 +596,29 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/artwork/upload":
             self.handle_artwork_upload(parsed.query)
+            return
+
+        if path in ("/api/media-slots/assign", "/api/media-slots/unassign"):
+            try:
+                data = self.read_json()
+                if path == "/api/media-slots/assign":
+                    result = assign_media(
+                        ROM_ROOT, STATE_ROOT,
+                        data.get("category"), data.get("slot"),
+                        data.get("item_id"),
+                        replace=data.get("replace") is True,
+                    )
+                else:
+                    result = unassign_media(
+                        ROM_ROOT, STATE_ROOT,
+                        data.get("category"), data.get("slot"),
+                    )
+                body = json.dumps(result).encode("utf-8")
+                self.send_bytes(200, "application/json; charset=utf-8", body)
+            except ValueError as exc:
+                self.send_api_error(400, exc)
+            except OSError as exc:
+                self.send_api_error(500, exc)
             return
 
         if path in ("/api/slots/assign", "/api/slots/unassign",
@@ -587,7 +650,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_api_error(500, exc)
             return
 
-        if path in ("/api/status", "/api/library", "/api/catalog"):
+        if path in ("/api/status", "/api/library", "/api/catalog", "/api/media-catalog"):
             self.send_bytes(405, "text/plain; charset=utf-8",
                             b"Method not allowed")
         else:
