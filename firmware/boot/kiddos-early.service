@@ -1,0 +1,10 @@
+[Unit]
+Description=Start KiddOS early without delaying system boot
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemd-run --quiet --no-block --unit=kiddos-early-waiter --service-type=exec --setenv=HOME=/storage /bin/sh /storage/.config/kiddos-early-start.sh
+
+[Install]
+WantedBy=multi-user.target

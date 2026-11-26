@@ -8,6 +8,8 @@ deploy_kiddos() {
     local CONFIG_LOCAL CONFIG_TARGET CONFIG_STAGED CONFIG_BACKUP
     local HELPER_LOCAL HELPER_TARGET HELPER_STAGED HELPER_BACKUP
     local GB_LOCAL GBC_LOCAL GB_STAGED GBC_STAGED JOY_LOCAL JOY_STAGED
+    local EARLY_SCRIPT_LOCAL EARLY_SCRIPT_TARGET EARLY_SCRIPT_STAGED EARLY_SCRIPT_BACKUP EARLY_SCRIPT_EXPECTED
+    local EARLY_UNIT_LOCAL EARLY_UNIT_TARGET EARLY_UNIT_STAGED EARLY_UNIT_BACKUP EARLY_UNIT_EXPECTED
     local GB_EXPECTED GBC_EXPECTED JOY_EXPECTED HELPER_EXPECTED REMOTE_FILE EXPECTED_HASH ACTUAL_HASH PROFILE
     local EXPECTED ACTUAL BACKUP WORK CHUNK CONFIG_EXPECTED DEPLOY_ID
     local STATUS
@@ -42,6 +44,14 @@ deploy_kiddos() {
     GB_STAGED="$REMOTE_DIR/gb.cfg.new"
     GBC_STAGED="$REMOTE_DIR/gbc.cfg.new"
     JOY_STAGED="$REMOTE_DIR/go-super-gamepad.cfg.new"
+    EARLY_SCRIPT_LOCAL="$PROJECT_ROOT/firmware/boot/kiddos-early-start.sh"
+    EARLY_SCRIPT_TARGET="/storage/.config/kiddos-early-start.sh"
+    EARLY_SCRIPT_STAGED="$REMOTE_DIR/kiddos-early-start.sh.new"
+    EARLY_SCRIPT_BACKUP="${EARLY_SCRIPT_TARGET}.pre-deploy-${DEPLOY_ID}"
+    EARLY_UNIT_LOCAL="$PROJECT_ROOT/firmware/boot/kiddos-early.service"
+    EARLY_UNIT_TARGET="/storage/.config/system.d/kiddos-early.service"
+    EARLY_UNIT_STAGED="$REMOTE_DIR/kiddos-early.service.new"
+    EARLY_UNIT_BACKUP="${EARLY_UNIT_TARGET}.pre-deploy-${DEPLOY_ID}"
 
     if [[ ! -f "$LOCAL" ]]; then
         echo "ERROR: Build not found: $LOCAL"
@@ -53,6 +63,14 @@ deploy_kiddos() {
     fi
     if [[ ! -f "$HELPER_LOCAL" ]]; then
         echo "ERROR: Wi-Fi helper not found: $HELPER_LOCAL"
+        return 1
+    fi
+    if [[ ! -f "$EARLY_SCRIPT_LOCAL" || ! -f "$EARLY_UNIT_LOCAL" ]]; then
+        echo "ERROR: Early-start script or systemd unit source is missing."
+        return 1
+    fi
+    if ! sh -n "$EARLY_SCRIPT_LOCAL"; then
+        echo "ERROR: Early-start script has invalid shell syntax."
         return 1
     fi
     if [[ ! -f "$GB_LOCAL" || ! -f "$GBC_LOCAL" || ! -f "$JOY_LOCAL" ]]; then
@@ -69,6 +87,8 @@ deploy_kiddos() {
     EXPECTED="$(sha256sum "$LOCAL" | cut -d ' ' -f 1)"
     CONFIG_EXPECTED="$(sha256sum "$CONFIG_LOCAL" | cut -d ' ' -f 1)"
     HELPER_EXPECTED="$(sha256sum "$HELPER_LOCAL" | cut -d ' ' -f 1)"
+    EARLY_SCRIPT_EXPECTED="$(sha256sum "$EARLY_SCRIPT_LOCAL" | cut -d ' ' -f 1)"
+    EARLY_UNIT_EXPECTED="$(sha256sum "$EARLY_UNIT_LOCAL" | cut -d ' ' -f 1)"
     GB_EXPECTED="$(sha256sum "$GB_LOCAL" | cut -d ' ' -f 1)"
     GBC_EXPECTED="$(sha256sum "$GBC_LOCAL" | cut -d ' ' -f 1)"
     JOY_EXPECTED="$(sha256sum "$JOY_LOCAL" | cut -d ' ' -f 1)"
@@ -82,7 +102,7 @@ deploy_kiddos() {
     echo "SHA-256: $EXPECTED"
     echo "Device: $REMOTE"
 
-    if ! ssh "$REMOTE" "mkdir -p '/storage/roms/.kiddos' '$REMOTE_DIR/parts' /storage/.config/kiddos /storage/joypads && rm -f '$REMOTE_DIR'/parts/chunk-* '$STAGED' '$HELPER_STAGED' '$CONFIG_STAGED' '$GB_STAGED' '$GBC_STAGED' '$JOY_STAGED'"; then
+    if ! ssh "$REMOTE" "mkdir -p '/storage/roms/.kiddos' '$REMOTE_DIR/parts' /storage/.config/kiddos /storage/.config/system.d /storage/joypads && rm -f '$REMOTE_DIR'/parts/chunk-* '$STAGED' '$HELPER_STAGED' '$CONFIG_STAGED' '$GB_STAGED' '$GBC_STAGED' '$JOY_STAGED' '$EARLY_SCRIPT_STAGED' '$EARLY_UNIT_STAGED'"; then
         echo "ERROR: Could not prepare device staging directory."
         rm -rf "$WORK"
         return 1
@@ -132,6 +152,16 @@ deploy_kiddos() {
         rm -rf "$WORK"
         return 1
     fi
+    if ! scp -q "$EARLY_SCRIPT_LOCAL" "$REMOTE:$EARLY_SCRIPT_STAGED"; then
+        echo "ERROR: Early-start script transfer failed."
+        rm -rf "$WORK"
+        return 1
+    fi
+    if ! scp -q "$EARLY_UNIT_LOCAL" "$REMOTE:$EARLY_UNIT_STAGED"; then
+        echo "ERROR: Early-start unit transfer failed."
+        rm -rf "$WORK"
+        return 1
+    fi
 
     echo
     echo "===== ASSEMBLING AND VERIFYING STAGED FILE ====="
@@ -175,9 +205,22 @@ deploy_kiddos() {
         echo "Verified: $REMOTE_FILE"
     done
 
+    for PROFILE in "$EARLY_SCRIPT_STAGED:$EARLY_SCRIPT_EXPECTED" "$EARLY_UNIT_STAGED:$EARLY_UNIT_EXPECTED"; do
+        REMOTE_FILE="${PROFILE%%:*}"
+        EXPECTED_HASH="${PROFILE##*:}"
+        ACTUAL_HASH="$(ssh "$REMOTE" "sha256sum '$REMOTE_FILE' | cut -d ' ' -f 1")"
+        STATUS=$?
+        if [[ "$STATUS" -ne 0 || "$ACTUAL_HASH" != "$EXPECTED_HASH" ]]; then
+            echo "ERROR: Boot-file checksum verification failed: $REMOTE_FILE"
+            rm -rf "$WORK"
+            return 1
+        fi
+        echo "Verified: $REMOTE_FILE"
+    done
+
     echo
     echo "===== INSTALLING AND LAUNCHING ====="
-    ssh "$REMOTE" sh -s -- "$TARGET" "$STAGED" "$BACKUP" "$EXPECTED" "$HELPER_TARGET" "$HELPER_STAGED" "$HELPER_BACKUP" "$HELPER_EXPECTED" "$CONFIG_TARGET" "$CONFIG_STAGED" "$CONFIG_BACKUP" "$CONFIG_EXPECTED" "/storage/.config/kiddos/retroarch" "$GB_STAGED" "$GBC_STAGED" "$GB_EXPECTED" "$GBC_EXPECTED" "$JOY_STAGED" "$JOY_EXPECTED" <<'REMOTE_SCRIPT'
+    ssh "$REMOTE" sh -s -- "$TARGET" "$STAGED" "$BACKUP" "$EXPECTED" "$HELPER_TARGET" "$HELPER_STAGED" "$HELPER_BACKUP" "$HELPER_EXPECTED" "$CONFIG_TARGET" "$CONFIG_STAGED" "$CONFIG_BACKUP" "$CONFIG_EXPECTED" "/storage/.config/kiddos/retroarch" "$GB_STAGED" "$GBC_STAGED" "$GB_EXPECTED" "$GBC_EXPECTED" "$JOY_STAGED" "$JOY_EXPECTED" "$EARLY_SCRIPT_TARGET" "$EARLY_SCRIPT_STAGED" "$EARLY_SCRIPT_BACKUP" "$EARLY_SCRIPT_EXPECTED" "$EARLY_UNIT_TARGET" "$EARLY_UNIT_STAGED" "$EARLY_UNIT_BACKUP" "$EARLY_UNIT_EXPECTED" <<'REMOTE_SCRIPT'
 TARGET="$1"
 STAGED="$2"
 BACKUP="$3"
@@ -197,6 +240,14 @@ GB_EXPECTED="${16}"
 GBC_EXPECTED="${17}"
 JOY_STAGED="${18}"
 JOY_EXPECTED="${19}"
+EARLY_SCRIPT_TARGET="${20}"
+EARLY_SCRIPT_STAGED="${21}"
+EARLY_SCRIPT_BACKUP="${22}"
+EARLY_SCRIPT_EXPECTED="${23}"
+EARLY_UNIT_TARGET="${24}"
+EARLY_UNIT_STAGED="${25}"
+EARLY_UNIT_BACKUP="${26}"
+EARLY_UNIT_EXPECTED="${27}"
 GB_TARGET="$PROFILE_DIR/gb.cfg"
 GBC_TARGET="$PROFILE_DIR/gbc.cfg"
 JOY_TARGET="/storage/joypads/GO-Super Gamepad.cfg"
@@ -210,6 +261,9 @@ HELPER_HAD_BACKUP=0
 GB_HAD_BACKUP=0
 GBC_HAD_BACKUP=0
 JOY_HAD_BACKUP=0
+EARLY_SCRIPT_HAD_BACKUP=0
+EARLY_UNIT_HAD_BACKUP=0
+EARLY_FILES_INSTALL_STARTED=0
 UNIT="kiddos-ui"
 
 launch_kiddos() {
@@ -296,9 +350,57 @@ restore_previous() {
             return 1
         fi
     fi
+    if [ "$EARLY_FILES_INSTALL_STARTED" -eq 1 ]; then
+        if [ "$EARLY_SCRIPT_HAD_BACKUP" -eq 1 ]; then
+            if ! cp -p "$EARLY_SCRIPT_BACKUP" "$EARLY_SCRIPT_TARGET"; then
+                echo "CRITICAL: Could not restore early-start script."
+                return 1
+            fi
+        else
+            if ! rm -f "$EARLY_SCRIPT_TARGET"; then
+                echo "CRITICAL: Could not remove early-start script."
+                return 1
+            fi
+        fi
+        if [ "$EARLY_UNIT_HAD_BACKUP" -eq 1 ]; then
+            if ! cp -p "$EARLY_UNIT_BACKUP" "$EARLY_UNIT_TARGET"; then
+                echo "CRITICAL: Could not restore early-start unit."
+                return 1
+            fi
+        else
+            if ! rm -f "$EARLY_UNIT_TARGET"; then
+                echo "CRITICAL: Could not remove early-start unit."
+                return 1
+            fi
+        fi
+        if ! systemctl daemon-reload; then
+            echo "CRITICAL: Could not reload systemd after restoring boot files."
+            return 1
+        fi
+    fi
     if [ "$EXECUTABLE_HAD_BACKUP" -eq 0 ]; then
         echo "FIRST-INSTALL ROLLBACK: New executable and helper removed."
-        echo "No previous KiddOS installation existed to relaunch."
+        LEGACY_TARGET="/storage/roms/.kiddos-ui-test-20261116/kiddos-ui"
+        if [ -x "$LEGACY_TARGET" ]; then
+            echo "Relaunching preserved legacy KiddOS: $LEGACY_TARGET"
+            if ! systemd-run --quiet --no-block --service-type=exec \
+                --unit="$UNIT" \
+                --property=Restart=on-failure \
+                --property=RestartSec=2 \
+                --setenv=HOME=/storage "$LEGACY_TARGET"; then
+                echo "CRITICAL: Could not relaunch legacy KiddOS."
+                return 1
+            fi
+            sleep 4
+            if systemctl is-active --quiet "$UNIT.service"; then
+                echo "ROLLBACK SUCCESS: Legacy KiddOS is running."
+                sha256sum "$LEGACY_TARGET"
+                return 0
+            fi
+            echo "CRITICAL: Legacy KiddOS did not become active."
+            return 1
+        fi
+        echo "WARNING: No legacy executable exists to relaunch."
         return 0
     fi
     echo "Previous executable, Wi-Fi helper, MPV config, GB/GBC profiles, and controller profile states restored."
@@ -321,12 +423,21 @@ deploy_main() {
         echo "ERROR: Staged Wi-Fi helper checksum verification failed."
         return 1
     fi
+    if [ ! -f "$EARLY_SCRIPT_STAGED" ] || [ "$(sha256sum "$EARLY_SCRIPT_STAGED" | cut -d " " -f 1)" != "$EARLY_SCRIPT_EXPECTED" ] || ! sh -n "$EARLY_SCRIPT_STAGED"; then
+        echo "ERROR: Staged early-start script failed checksum or syntax verification."
+        return 1
+    fi
+    if [ ! -f "$EARLY_UNIT_STAGED" ] || [ "$(sha256sum "$EARLY_UNIT_STAGED" | cut -d " " -f 1)" != "$EARLY_UNIT_EXPECTED" ]; then
+        echo "ERROR: Staged early-start unit checksum verification failed."
+        return 1
+    fi
     if [ ! -x "$STAGED" ]; then
         echo "ERROR: Verified staged executable missing."
         return 1
     fi
     if [ -e "$BACKUP" ] || [ -e "$HELPER_BACKUP" ] || [ -e "$CONFIG_BACKUP" ] ||
-       [ -e "$GB_BACKUP" ] || [ -e "$GBC_BACKUP" ] || [ -e "$JOY_BACKUP" ]; then
+       [ -e "$GB_BACKUP" ] || [ -e "$GBC_BACKUP" ] || [ -e "$JOY_BACKUP" ] ||
+       [ -e "$EARLY_SCRIPT_BACKUP" ] || [ -e "$EARLY_UNIT_BACKUP" ]; then
         echo "ERROR: A backup path already exists."
         return 1
     fi
@@ -401,6 +512,22 @@ deploy_main() {
         JOY_HAD_BACKUP=1
         echo "Controller profile backup: $JOY_BACKUP"
     fi
+    if [ -e "$EARLY_SCRIPT_TARGET" ]; then
+        if ! cp -p "$EARLY_SCRIPT_TARGET" "$EARLY_SCRIPT_BACKUP"; then
+            echo "ERROR: Could not back up existing early-start script."
+            return 1
+        fi
+        EARLY_SCRIPT_HAD_BACKUP=1
+        echo "Early-start script backup: $EARLY_SCRIPT_BACKUP"
+    fi
+    if [ -e "$EARLY_UNIT_TARGET" ]; then
+        if ! cp -p "$EARLY_UNIT_TARGET" "$EARLY_UNIT_BACKUP"; then
+            echo "ERROR: Could not back up existing early-start unit."
+            return 1
+        fi
+        EARLY_UNIT_HAD_BACKUP=1
+        echo "Early-start unit backup: $EARLY_UNIT_BACKUP"
+    fi
 
     if ! systemctl stop "$UNIT.service"; then
         echo "ERROR: Could not stop existing KiddOS service."
@@ -473,6 +600,32 @@ deploy_main() {
         restore_previous
         return 1
     fi
+    EARLY_FILES_INSTALL_STARTED=1
+    if ! mv "$EARLY_SCRIPT_STAGED" "$EARLY_SCRIPT_TARGET"; then
+        echo "ERROR: Could not install early-start script."
+        restore_previous
+        return 1
+    fi
+    if ! chmod 755 "$EARLY_SCRIPT_TARGET"; then
+        echo "ERROR: Could not set early-start script permissions."
+        restore_previous
+        return 1
+    fi
+    if ! mv "$EARLY_UNIT_STAGED" "$EARLY_UNIT_TARGET"; then
+        echo "ERROR: Could not install early-start unit."
+        restore_previous
+        return 1
+    fi
+    if ! chmod 644 "$EARLY_UNIT_TARGET"; then
+        echo "ERROR: Could not set early-start unit permissions."
+        restore_previous
+        return 1
+    fi
+    if ! systemctl daemon-reload; then
+        echo "ERROR: systemd daemon-reload failed."
+        restore_previous
+        return 1
+    fi
 
     if launch_kiddos; then
         sleep 4
@@ -509,6 +662,17 @@ deploy_main() {
             else
                 echo "Controller profile backup: -"
             fi
+            if [ "$EARLY_SCRIPT_HAD_BACKUP" -eq 1 ]; then
+                echo "Early-start script backup: $EARLY_SCRIPT_BACKUP"
+            else
+                echo "Early-start script backup: - (first install)"
+            fi
+            if [ "$EARLY_UNIT_HAD_BACKUP" -eq 1 ]; then
+                echo "Early-start unit backup: $EARLY_UNIT_BACKUP"
+            else
+                echo "Early-start unit backup: - (first install)"
+            fi
+            echo "Early-start service enablement was not changed."
             return 0
         fi
     fi
@@ -539,6 +703,16 @@ REMOTE_SCRIPT
         else
             echo "Wi-Fi helper backup: -"
         fi
+        if ssh "$REMOTE" "[ -e '$EARLY_SCRIPT_BACKUP' ]"; then
+            echo "Early-start script backup: $EARLY_SCRIPT_BACKUP"
+        else
+            echo "Early-start script backup: -"
+        fi
+        if ssh "$REMOTE" "[ -e '$EARLY_UNIT_BACKUP' ]"; then
+            echo "Early-start unit backup: $EARLY_UNIT_BACKUP"
+        else
+            echo "Early-start unit backup: -"
+        fi
         return 0
     fi
 
@@ -550,10 +724,12 @@ REMOTE_SCRIPT
 rollback_kiddos() {
     local BACKUP="${1:-}"
     local CONFIG_BACKUP="${2:-}"
-    local GB_PROFILE_BACKUP="${3:-}"
-    local GBC_PROFILE_BACKUP="${4:-}"
-    local JOY_PROFILE_BACKUP="${5:-}"
+    local GB_PROFILE_BACKUP="${3:-__UNCHANGED__}"
+    local GBC_PROFILE_BACKUP="${4:-__UNCHANGED__}"
+    local JOY_PROFILE_BACKUP="${5:-__UNCHANGED__}"
     local HELPER_BACKUP="${6:-__UNCHANGED__}"
+    local EARLY_SCRIPT_BACKUP="${7:-__UNCHANGED__}"
+    local EARLY_UNIT_BACKUP="${8:-__UNCHANGED__}"
     local REMOTE TARGET HELPER_TARGET CONFIG_TARGET PROFILE_DIR RESTORE_PROFILES=0
 
     REMOTE="${KIDDOS_DEVICE:-root@192.168.0.89}"
@@ -563,13 +739,13 @@ rollback_kiddos() {
     PROFILE_DIR="/storage/.config/kiddos/retroarch"
 
     if [[ -z "$BACKUP" || -z "$CONFIG_BACKUP" ]]; then
-        echo "Usage: $0 rollback EXECUTABLE_BACKUP MPV_CONFIG_BACKUP|- [GB_PROFILE_BACKUP|- GBC_PROFILE_BACKUP|- CONTROLLER_PROFILE_BACKUP|- [WIFI_HELPER_BACKUP|-]]"
+        echo "Usage: $0 rollback EXECUTABLE_BACKUP MPV_CONFIG_BACKUP|- [GB_PROFILE_BACKUP|__UNCHANGED__|- GBC_PROFILE_BACKUP|__UNCHANGED__|- CONTROLLER_PROFILE_BACKUP|__UNCHANGED__|- [WIFI_HELPER_BACKUP|- [EARLY_SCRIPT_BACKUP|- [EARLY_UNIT_BACKUP|-]]]]]"
         return 2
     fi
 
-    if [[ -n "$GB_PROFILE_BACKUP" || -n "$GBC_PROFILE_BACKUP" || -n "$JOY_PROFILE_BACKUP" ]]; then
-        if [[ -z "$GB_PROFILE_BACKUP" || -z "$GBC_PROFILE_BACKUP" || -z "$JOY_PROFILE_BACKUP" ]]; then
-            echo "ERROR: Supply GB, GBC, and controller profile backup arguments together, or omit all three."
+    if [[ "$GB_PROFILE_BACKUP" != "__UNCHANGED__" || "$GBC_PROFILE_BACKUP" != "__UNCHANGED__" || "$JOY_PROFILE_BACKUP" != "__UNCHANGED__" ]]; then
+        if [[ "$GB_PROFILE_BACKUP" == "__UNCHANGED__" || "$GBC_PROFILE_BACKUP" == "__UNCHANGED__" || "$JOY_PROFILE_BACKUP" == "__UNCHANGED__" ]]; then
+            echo "ERROR: Supply all three profile arguments, or use __UNCHANGED__ for all three."
             return 2
         fi
         RESTORE_PROFILES=1
@@ -583,6 +759,17 @@ rollback_kiddos() {
         echo "Wi-Fi helper: unchanged (legacy rollback command)"
     fi
 
+    if [[ "$EARLY_SCRIPT_BACKUP" == "-" ]]; then
+        echo "Early-start script: restore previous absent state"
+    elif [[ "$EARLY_SCRIPT_BACKUP" != "__UNCHANGED__" ]]; then
+        echo "Early-start script backup: $EARLY_SCRIPT_BACKUP"
+    fi
+    if [[ "$EARLY_UNIT_BACKUP" == "-" ]]; then
+        echo "Early-start unit: restore previous absent state"
+    elif [[ "$EARLY_UNIT_BACKUP" != "__UNCHANGED__" ]]; then
+        echo "Early-start unit backup: $EARLY_UNIT_BACKUP"
+    fi
+
     echo "===== RESTORING EXECUTABLE AND CONFIGURATION ====="
     if [[ "$RESTORE_PROFILES" -eq 1 ]]; then
         echo "GB profile backup: $GB_PROFILE_BACKUP"
@@ -594,7 +781,7 @@ rollback_kiddos() {
 
     ssh "$REMOTE" sh -s -- \
         "$TARGET" "$BACKUP" "$CONFIG_TARGET" "$CONFIG_BACKUP" \
-        "$PROFILE_DIR" "$GB_PROFILE_BACKUP" "$GBC_PROFILE_BACKUP" "$JOY_PROFILE_BACKUP" "$RESTORE_PROFILES" "$HELPER_BACKUP" <<'REMOTE_SCRIPT'
+        "$PROFILE_DIR" "$GB_PROFILE_BACKUP" "$GBC_PROFILE_BACKUP" "$JOY_PROFILE_BACKUP" "$RESTORE_PROFILES" "$HELPER_BACKUP" "$EARLY_SCRIPT_BACKUP" "$EARLY_UNIT_BACKUP" <<'REMOTE_SCRIPT'
 TARGET="$1"
 BACKUP="$2"
 CONFIG_TARGET="$3"
@@ -605,7 +792,11 @@ GBC_PROFILE_BACKUP="$7"
 JOY_PROFILE_BACKUP="$8"
 RESTORE_PROFILES="$9"
 HELPER_BACKUP="${10}"
+EARLY_SCRIPT_BACKUP="${11}"
+EARLY_UNIT_BACKUP="${12}"
 HELPER_TARGET="/storage/roms/.kiddos/wifi_helper.py"
+EARLY_SCRIPT_TARGET="/storage/.config/kiddos-early-start.sh"
+EARLY_UNIT_TARGET="/storage/.config/system.d/kiddos-early.service"
 
 GB_TARGET="$PROFILE_DIR/gb.cfg"
 GBC_TARGET="$PROFILE_DIR/gbc.cfg"
@@ -622,6 +813,16 @@ fi
 if [ "$HELPER_BACKUP" != "__UNCHANGED__" ] &&
    [ "$HELPER_BACKUP" != "-" ] && [ ! -f "$HELPER_BACKUP" ]; then
     echo "ERROR: Wi-Fi helper backup not found: $HELPER_BACKUP"
+    exit 1
+fi
+if [ "$EARLY_SCRIPT_BACKUP" != "__UNCHANGED__" ] &&
+   [ "$EARLY_SCRIPT_BACKUP" != "-" ] && [ ! -f "$EARLY_SCRIPT_BACKUP" ]; then
+    echo "ERROR: Early-start script backup not found: $EARLY_SCRIPT_BACKUP"
+    exit 1
+fi
+if [ "$EARLY_UNIT_BACKUP" != "__UNCHANGED__" ] &&
+   [ "$EARLY_UNIT_BACKUP" != "-" ] && [ ! -f "$EARLY_UNIT_BACKUP" ]; then
+    echo "ERROR: Early-start unit backup not found: $EARLY_UNIT_BACKUP"
     exit 1
 fi
 if [ "$RESTORE_PROFILES" -eq 1 ]; then
@@ -677,6 +878,36 @@ if [ "$CONFIG_BACKUP" = "-" ]; then
 elif ! cp -p "$CONFIG_BACKUP" "$CONFIG_TARGET"; then
     echo "ERROR: Could not restore MPV config backup."
     exit 1
+fi
+
+if [ "$EARLY_SCRIPT_BACKUP" = "-" ]; then
+    if ! rm -f "$EARLY_SCRIPT_TARGET"; then
+        echo "ERROR: Could not restore absent early-start script state."
+        exit 1
+    fi
+elif [ "$EARLY_SCRIPT_BACKUP" != "__UNCHANGED__" ]; then
+    if ! cp -p "$EARLY_SCRIPT_BACKUP" "$EARLY_SCRIPT_TARGET"; then
+        echo "ERROR: Could not restore early-start script backup."
+        exit 1
+    fi
+fi
+
+if [ "$EARLY_UNIT_BACKUP" = "-" ]; then
+    if ! rm -f "$EARLY_UNIT_TARGET"; then
+        echo "ERROR: Could not restore absent early-start unit state."
+        exit 1
+    fi
+elif [ "$EARLY_UNIT_BACKUP" != "__UNCHANGED__" ]; then
+    if ! cp -p "$EARLY_UNIT_BACKUP" "$EARLY_UNIT_TARGET"; then
+        echo "ERROR: Could not restore early-start unit backup."
+        exit 1
+    fi
+fi
+if [ "$EARLY_UNIT_BACKUP" != "__UNCHANGED__" ]; then
+    if ! systemctl daemon-reload; then
+        echo "ERROR: systemd daemon-reload failed after restoring early-start unit."
+        exit 1
+    fi
 fi
 
 if [ "$RESTORE_PROFILES" -eq 1 ]; then
@@ -742,6 +973,20 @@ if systemctl is-active --quiet kiddos-ui.service; then
             echo "Wi-Fi helper: absent (restored previous state)"
         fi
     fi
+    if [ "$EARLY_SCRIPT_BACKUP" != "__UNCHANGED__" ]; then
+        if [ -f "$EARLY_SCRIPT_TARGET" ]; then
+            sha256sum "$EARLY_SCRIPT_TARGET"
+        else
+            echo "Early-start script: absent (restored previous state)"
+        fi
+    fi
+    if [ "$EARLY_UNIT_BACKUP" != "__UNCHANGED__" ]; then
+        if [ -f "$EARLY_UNIT_TARGET" ]; then
+            sha256sum "$EARLY_UNIT_TARGET"
+        else
+            echo "Early-start unit: absent (restored previous state)"
+        fi
+    fi
     if [ "$RESTORE_PROFILES" -eq 1 ]; then
         for PROFILE in "$GB_TARGET" "$GBC_TARGET" "$JOY_TARGET"; do
             if [ -f "$PROFILE" ]; then
@@ -765,10 +1010,10 @@ case "${1:-}" in
         deploy_kiddos
         ;;
     rollback)
-        rollback_kiddos "${2:-}" "${3:-}" "${4:-}" "${5:-}" "${6:-}"
+        rollback_kiddos "${2:-}" "${3:-}" "${4:-}" "${5:-}" "${6:-}" "${7:-}" "${8:-}" "${9:-}"
         ;;
     *)
-        echo "Usage: $0 [deploy | rollback EXECUTABLE_BACKUP MPV_CONFIG_BACKUP|- [GB_PROFILE_BACKUP|- GBC_PROFILE_BACKUP|- CONTROLLER_PROFILE_BACKUP|-]]"
+        echo "Usage: $0 [deploy | rollback EXECUTABLE_BACKUP MPV_CONFIG_BACKUP|- [GB_PROFILE_BACKUP|__UNCHANGED__|- GBC_PROFILE_BACKUP|__UNCHANGED__|- CONTROLLER_PROFILE_BACKUP|__UNCHANGED__|- [WIFI_HELPER_BACKUP|- [EARLY_SCRIPT_BACKUP|- [EARLY_UNIT_BACKUP|-]]]]]]"
         false
         ;;
 esac

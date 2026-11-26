@@ -1,57 +1,103 @@
-# Retro KiddOS Firmware Boot Integration
+# KiddOS Boot Integration
 
-This directory contains the startup hook tested on the blue FunnyPlaying
-Retro Pixel Pocket on November 16, 2026.
+## Early startup
 
-## How it works
+KiddOS uses an early systemd launcher to start the native UI as soon as the
+firmware's hardware services and required devices are ready.
 
-The firmware invokes `custom_start.sh` with the `before` argument.
+Repository files:
 
-The hook:
+- `kiddos-early-start.sh` — waits for hardware readiness and starts KiddOS.
+- `kiddos-early.service` — starts the asynchronous early-launch waiter during
+  boot.
 
-1. Loads the firmware environment from `/etc/profile`.
-2. Logs startup activity to `/storage/.config/kiddos-boot.log`.
-3. Checks for the KiddOS executable.
-4. Masks `emustation.service` for the current boot.
-5. Starts KiddOS as a transient systemd service named `kiddos-ui`.
+Installed device paths:
 
-The service uses `Restart=on-failure` and a two-second restart delay.
+- `/storage/.config/kiddos-early-start.sh`
+- `/storage/.config/system.d/kiddos-early.service`
 
-If the executable is missing or EmulationStation cannot be masked, the hook
-leaves normal startup unchanged. If the initial service launch fails, it
-unmasks EmulationStation.
+The early launcher waits for:
 
-## Current device-specific configuration
+- The `retropixel-serv` process
+- `/dev/input/js0`
+- `/dev/dri/card0`
+- The KiddOS executable
 
-The tested executable path is:
+It waits for up to 45 seconds. If the required conditions are not met, it
+exits and leaves the later firmware startup hook to handle the launch.
 
-`/storage/roms/.kiddos/kiddos-ui`
+Before launching KiddOS, the early launcher checks whether `kiddos-ui.service`
+is already active. It masks `emustation.service` at runtime and starts KiddOS
+as a transient systemd service with automatic restart on failure.
 
-The hook is currently specific to the tested blue device configuration.
-Do not assume it is ready to install on another device.
+## Later startup hook
+
+The firmware's later startup hook remains a fallback:
+
+`/storage/.config/custom_start.sh`
+
+It also starts the hardware service and avoids launching a duplicate KiddOS
+instance if the early launcher has already started it.
+
+**Do not overwrite the installed `custom_start.sh` with the repository copy
+without first reconciling its device-specific hardware-service logic.**
+
+The installed hook contains device-specific changes that are not necessarily
+present in the repository version.
+
+## Deployment
+
+Running:
+
+`device/working-ui/deploy-kiddos-ui.sh deploy`
+
+stages and checksum-verifies both early-start files, backs up any existing
+copies, installs them, and reloads systemd's unit definitions.
+
+Deployment preserves the early service's existing enabled/disabled state. It
+does not enable, disable, or restart the early service. The updated launcher
+and unit take effect on the next boot.
+
+If a later deployment step fails, the deployment transaction restores the
+previous early-start files. If those files did not previously exist, rollback
+removes the newly installed copies.
+
+The deployment does not modify the installed `custom_start.sh` or the
+early-service enablement symlink:
+
+`/storage/.config/system.d/multi-user.target.wants/kiddos-early.service`
+
+## Manual rollback
+
+The deployment script accepts optional backup arguments for the early-start
+script and systemd unit.
+
+Use `-` to restore a file to its previously absent state. Use
+`__UNCHANGED__` to leave an optional component untouched.
+
+To restore the early-start files while leaving the GB, GBC, controller profiles, and Wi-Fi helper unchanged, use the following command. Note that it also restores the executable and MPV config and then relaunches KiddOS.
+
+```sh
+deploy-kiddos-ui.sh rollback EXECUTABLE_BACKUP MPV_CONFIG_BACKUP __UNCHANGED__ __UNCHANGED__ __UNCHANGED__ __UNCHANGED__ EARLY_SCRIPT_BACKUP EARLY_UNIT_BACKUP
+```
+
+Replace each backup placeholder with its exact device backup path.
+
+The complete argument order is documented in the deployment script's usage
+text. Run rollback only when you intend to restore the corresponding backups.
+
+## Device scope and recovery
+
+The early-start integration has been validated on the blue device only.
+
+Do not assume it is ready to install on another device without checking that
+device's firmware paths, hardware readiness signals, and startup configuration.
+
+Keep the legacy KiddOS runtime and the installed startup hook intact as
+recovery paths.
 
 ## Logging
 
-Startup messages are appended to:
+Early-launch and later-hook messages are appended to:
 
 `/storage/.config/kiddos-boot.log`
-
-## Recovery and limitations
-
-This hook has been validated on the blue device only.
-
-The current failure handling covers a missing executable, a failed service
-launch, and failure to mask EmulationStation. It does not automatically
-restore EmulationStation if KiddOS later exits or repeatedly crashes.
-
-Before installing an updated hook, preserve the device's original startup
-script. Recovery requires restoring that original script and removing any
-runtime service mask as appropriate.
-
-No general installation or rollback procedure is provided yet.
-
-## Verification
-
-The tested hook's SHA-256 is:
-
-`0433c8f4a9a2bcccc1d60f7995a3c316305e2f7bdadb6bf8718a8a2270bd4980`
