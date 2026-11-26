@@ -10,9 +10,8 @@
 
 #include "UI.hpp"
 #include "PinWorkflow.hpp"
-#include "models/Games.hpp"
-#include "services/GameLauncher.hpp"
 #include "services/GameCatalog.hpp"
+#include "services/GameLauncher.hpp"
 #include "services/MovieCatalog.hpp"
 #include "services/TVShowCatalog.hpp"
 #include "services/TVShowLauncher.hpp"
@@ -348,12 +347,12 @@ int Application::run() {
                         } else if (screen == TVShows) {
                             confirmTVSelection();
                         } else if (screen == Games) {
-                            if (games[selected].available) {
+                            if (KiddosServices::games()[selected].available) {
                                 screen = SelectedGame;
                                 action = 0;
                             }
                         } else if (screen == SelectedGame) {
-                            if (!games[selected].available) {
+                            if (!KiddosServices::games()[selected].available) {
                                 screen = Games;
                             } else if (action == 0) {
                                 launch = true;
@@ -587,7 +586,7 @@ int Application::run() {
                         updateSelectedGameText(ui, selected);
 
                         if ((screen == SelectedGame || screen == GameInfo) &&
-                            !games[selected].available) {
+                            !KiddosServices::games()[selected].available) {
                             screen = Games;
                         }
                     } else if (changed) {
@@ -720,8 +719,8 @@ int Application::run() {
         if (!running || launch || launchMovie || launchTVShow)
             KiddosServices::stopMusic();
         closeUI(ui);
-        if (running && launch && games[selected].available) {
-            if (!KiddosServices::launchGame(games[selected]))
+        if (running && launch && KiddosServices::games()[selected].available) {
+            if (!KiddosServices::launchGame(KiddosServices::games()[selected]))
                 SDL_Delay(1500);
             screen = Games;
         }

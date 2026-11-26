@@ -1,7 +1,6 @@
 #include "GameCatalog.hpp"
 
 #include "LibraryData.hpp"
-#include "../models/Games.hpp"
 
 #include <cstdio>
 #include <string>
@@ -11,6 +10,7 @@ namespace KiddosServices {
 namespace {
 constexpr const char* kRoot = "/storage/roms";
 constexpr const char* kSlots = "/storage/.config/kiddos/slots.conf";
+std::array<Game, 4> gameItems{};
 
 bool assignedItem(const std::vector<KiddosLibrary::Item>& items,
                   const std::string& reference,
@@ -27,6 +27,8 @@ bool assignedItem(const std::vector<KiddosLibrary::Item>& items,
     return false;
 }
 }
+
+const std::array<Game, 4>& games() { return gameItems; }
 
 bool loadGameSlots() {
     KiddosLibrary::Slots slots{};
@@ -53,7 +55,7 @@ bool loadGameSlots() {
                     next[i].available ? next[i].name.c_str() : "(empty)");
     }
 
-    games = std::move(next);
+    gameItems = std::move(next);
     return true;
 }
 }

@@ -13,7 +13,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "models/Games.hpp"
+#include "services/GameCatalog.hpp"
 #include "services/BatteryService.hpp"
 #include "services/WifiService.hpp"
 #include "services/MovieCatalog.hpp"
@@ -648,14 +648,15 @@ bool openUI(UI& ui) {
 
     const SDL_Color slotLabelColor = {155, 177, 215, 255};
     for (int i = 0; i < 4; ++i) {
-        if (games[i].available && !games[i].image.empty()) {
-            ui.images[i] = IMG_LoadTexture(ui.renderer, games[i].image.c_str());
+        const auto& game = KiddosServices::games()[i];
+        if (game.available && !game.image.empty()) {
+            ui.images[i] = IMG_LoadTexture(ui.renderer, game.image.c_str());
             if (!ui.images[i]) {
                 std::fprintf(stderr, "KiddOS: artwork unavailable for %s: %s\n",
-                             games[i].name.c_str(), IMG_GetError());
+                             game.name.c_str(), IMG_GetError());
             }
         }
-        const char* fallback = games[i].available ? "NO ARTWORK" : "EMPTY SLOT";
+        const char* fallback = game.available ? "NO ARTWORK" : "EMPTY SLOT";
         if (!ui.images[i]) {
             ui.slotLabels[i] = makeText(
                 ui.renderer, ui.footerFont, fallback, slotLabelColor);

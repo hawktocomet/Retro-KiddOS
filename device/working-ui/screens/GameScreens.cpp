@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "../models/Games.hpp"
+#include "../services/GameCatalog.hpp"
 
 void drawHome(UI& ui, int selected) {
     SDL_Renderer* r = ui.renderer;
@@ -127,13 +127,14 @@ void updateSelectedGameText(UI& ui, int selected) {
 
     destroyText(ui.selectedTitle);
     destroyText(ui.selectedPlatform);
-    const bool available = games[selected].available;
+    const auto& game = KiddosServices::games()[selected];
+    const bool available = game.available;
     ui.selectedTitle = makeText(
         ui.renderer, ui.labelFont,
-        available ? games[selected].name.c_str() : "EMPTY SLOT", white);
+        available ? game.name.c_str() : "EMPTY SLOT", white);
     ui.selectedPlatform = makeText(
         ui.renderer, ui.footerFont,
-        available ? platformName(games[selected].platform) : "", muted);
+        available ? platformName(game.platform) : "", muted);
 }
 
 
@@ -144,20 +145,21 @@ void refreshGameArtwork(UI& ui) {
 
     // Prepare all replacement resources before touching the visible ones.
     for (int i = 0; i < 4; ++i) {
-        if (games[i].available && !games[i].image.empty()) {
+        const auto& game = KiddosServices::games()[i];
+        if (game.available && !game.image.empty()) {
             nextImages[i] =
-                IMG_LoadTexture(ui.renderer, games[i].image.c_str());
+                IMG_LoadTexture(ui.renderer, game.image.c_str());
 
             if (!nextImages[i]) {
                 std::fprintf(stderr,
                     "KiddOS: refreshed artwork unavailable for %s: %s\n",
-                    games[i].name.c_str(), IMG_GetError());
+                    game.name.c_str(), IMG_GetError());
             }
         }
 
         if (!nextImages[i]) {
             const char* fallback =
-                games[i].available ? "NO ARTWORK" : "EMPTY SLOT";
+                game.available ? "NO ARTWORK" : "EMPTY SLOT";
             nextLabels[i] = makeText(
                 ui.renderer, ui.footerFont, fallback, labelColor);
         }

@@ -3,8 +3,13 @@
 
 #pragma once
 
+#include "../models/Models.hpp"
+
+#include <array>
+
 namespace KiddosServices {
 
 bool loadGameSlots();
+const std::array<Game, 4>& games();
 
 } // namespace KiddosServices
