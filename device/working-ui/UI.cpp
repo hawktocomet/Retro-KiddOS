@@ -16,7 +16,6 @@
 #include "models/Games.hpp"
 #include "services/BatteryService.hpp"
 #include "services/WifiService.hpp"
-#include "services/ParentManagementService.hpp"
 #include "services/MovieCatalog.hpp"
 #include "services/TVShowCatalog.hpp"
 
@@ -375,118 +374,6 @@ void destroyText(Text& t) {
     t.texture = nullptr;
 }
 
-static void setParentMessage(UI& ui, const char* message, SDL_Color color) {
-    destroyText(ui.parentBody);
-    ui.parentBody = makeText(ui.renderer, ui.labelFont, message, color);
-}
-
-static void setParentUrl(UI& ui, const char* message, SDL_Color color) {
-    destroyText(ui.parentUrl);
-    ui.parentUrl = makeText(ui.renderer, ui.footerFont, message, color);
-}
-
-static void refreshParentUrl(UI& ui, bool managementRunning) {
-    if (!managementRunning) {
-        setParentUrl(ui, "ENABLE TO VIEW ADDRESS", {190, 195, 210, 255});
-        return;
-    }
-
-    char address[64] = {};
-    if (!KiddosServices::managementControl("ip", address, sizeof(address))) {
-        setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
-        return;
-    }
-
-    address[std::strcspn(address, "\r\n")] = '\0';
-    if (address[0] == '\0') {
-        setParentUrl(ui, "WI-FI NOT CONNECTED", {255, 190, 110, 255});
-        return;
-    }
-
-    char url[96] = {};
-    std::snprintf(url, sizeof(url), "http://%s:8081", address);
-    setParentUrl(ui, url, {110, 210, 255, 255});
-}
-
-bool refreshParentStatus(UI& ui) {
-    char result[32];
-    if (!KiddosServices::managementControl("status", result, sizeof(result))) {
-        setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
-                         {255, 115, 115, 255});
-        setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
-        return false;
-    }
-
-    result[std::strcspn(result, "\r\n")] = '\0';
-    if (std::strcmp(result, "running") == 0) {
-        setParentMessage(ui, "REMOTE MANAGEMENT: ON",
-                         {110, 230, 160, 255});
-        refreshParentUrl(ui, true);
-        return true;
-    }
-
-    if (std::strcmp(result, "stopped") == 0) {
-        setParentMessage(ui, "REMOTE MANAGEMENT: OFF",
-                         {190, 195, 210, 255});
-        refreshParentUrl(ui, false);
-        return false;
-    }
-
-    setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
-                     {255, 115, 115, 255});
-    setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
-    return false;
-}
-
-void toggleParentManagement(UI& ui) {
-    char result[32];
-    if (!KiddosServices::managementControl("status", result, sizeof(result))) {
-        setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
-                         {255, 115, 115, 255});
-        setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
-        return;
-    }
-
-    result[std::strcspn(result, "\r\n")] = '\0';
-    const bool wasRunning = std::strcmp(result, "running") == 0;
-
-    if (!wasRunning && std::strcmp(result, "stopped") != 0) {
-        setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
-                         {255, 115, 115, 255});
-        setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
-        return;
-    }
-
-    if (!KiddosServices::managementControl(wasRunning ? "stop" : "start",
-                           result, sizeof(result))) {
-        setParentMessage(ui, "REMOTE MANAGEMENT: ERROR",
-                         {255, 115, 115, 255});
-        setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 115, 115, 255});
-        return;
-    }
-
-    if (wasRunning) {
-        refreshParentStatus(ui);
-        return;
-    }
-
-    for (int attempt = 0; attempt < 20; ++attempt) {
-        SDL_Delay(100);
-        char statusResult[32];
-        if (KiddosServices::managementControl("status", statusResult, sizeof(statusResult))) {
-            statusResult[std::strcspn(statusResult, "\r\n")] = '\0';
-            if (std::strcmp(statusResult, "running") == 0) {
-                refreshParentStatus(ui);
-                return;
-            }
-        }
-    }
-
-    setParentMessage(ui, "REMOTE MANAGEMENT: STARTING",
-                     {255, 210, 110, 255});
-    setParentUrl(ui, "ADDRESS UNAVAILABLE", {255, 190, 110, 255});
-}
-
 bool loadMusicArtwork(UI& ui, const std::string& path) {
     if (ui.musicArtwork) {
         SDL_DestroyTexture(ui.musicArtwork);
@@ -564,10 +451,6 @@ void closeUI(UI& ui) {
     destroyText(ui.pinFooter);
     destroyText(ui.pinError);
     destroyText(ui.parentHeading);
-    destroyText(ui.parentBody);
-    destroyText(ui.parentUrl);
-    destroyText(ui.parentWifi);
-    destroyText(ui.parentChangePin);
     destroyText(ui.parentFooter);
     destroyText(ui.wifiHeading);
     destroyText(ui.wifiPowerLabel);
@@ -750,14 +633,6 @@ bool openUI(UI& ui) {
         "INCORRECT PIN - TRY AGAIN", {255, 115, 115, 255});
     ui.parentHeading = makeText(ui.renderer, ui.headingFont,
         "PARENT MODE", white);
-    ui.parentBody = makeText(ui.renderer, ui.labelFont,
-        "REMOTE MANAGEMENT: UNKNOWN", muted);
-    ui.parentUrl = makeText(ui.renderer, ui.footerFont,
-        "ENABLE TO VIEW ADDRESS", muted);
-    ui.parentWifi = makeText(ui.renderer, ui.labelFont,
-        "WI-FI SETTINGS", white);
-    ui.parentChangePin = makeText(ui.renderer, ui.labelFont,
-        "CHANGE PARENT PIN", white);
     ui.parentFooter = makeText(ui.renderer, ui.footerFont,
         "UP/DOWN MOVE   A SELECT   B BACK", muted);
     ui.wifiHeading = makeText(ui.renderer, ui.headingFont,

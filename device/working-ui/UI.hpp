@@ -43,7 +43,7 @@ struct UI {
     Text menuHeading, menuItems[2], menuFooter;
     Text confirmHeading, confirmBody, confirmFooter;
     Text pinPrompt, pinFooter, pinError;
-    Text parentHeading, parentBody, parentUrl, parentWifi, parentChangePin, parentFooter;
+    Text parentHeading, parentFooter;
     Text wifiHeading, wifiPowerLabel, wifiConnectionLabel;
     Text wifiActionLabel, wifiFooter;
     Text batteryLabel;
@@ -79,8 +79,6 @@ void moveWifiKeyboard(UI& ui, int dx, int dy);
 bool activateWifiKeyboardKey(UI& ui);
 
 void updateBattery(UI& ui);
-bool refreshParentStatus(UI& ui);
-void toggleParentManagement(UI& ui);
 void updateSelectedGameText(UI& ui, int selected);
 void refreshGameArtwork(UI& ui);
 void refreshMediaArtwork(UI& ui);

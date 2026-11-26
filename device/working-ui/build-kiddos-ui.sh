@@ -41,7 +41,6 @@ build_kiddos() {
         "$SCRIPT_DIR/services/GameLauncher.cpp"
         "$SCRIPT_DIR/services/BatteryService.cpp"
         "$SCRIPT_DIR/services/WifiService.cpp"
-        "$SCRIPT_DIR/services/ParentManagementService.cpp"
         "$SCRIPT_DIR/services/PowerService.cpp"
     )
     BUILD="$WORKSPACE/build/arm64"

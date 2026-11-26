@@ -82,26 +82,27 @@ handheld's shoulder-button IDs are identified and verified.
 
 ## Device-side game catalog integration
 
-The Python module in `device/management-server/catalog.py` is the shared
-authority for ROM discovery, slot eligibility, artwork association, and
-persistent slot assignments. The management server and frontend use this
-same module rather than maintaining independent game lists.
+The native `KiddosLibrary` service in
+`device/working-ui/services/LibraryData.cpp` discovers eligible content
+directly beneath `/storage/roms`. It validates resolved paths against the ROM
+root, ignores hidden paths, and requires the category's artwork and content
+requirements before an item appears in Parent Center.
 
-The frontend's `GameCatalog` service invokes the installed module locally
-using `/storage/roms` as the ROM root and
-`/storage/.kiddos-management` as the state root. It maps the four stable slot
-records into frontend `Game` models.
+The current native game reader offers raw `.gb` and `.gbc` files with
+matching artwork. Movies are individual files in `movies/`; music playlists
+and TV shows are immediate child directories in `music/` and `tvshows/`.
+Playlist tracks and show episodes are discovered recursively inside their
+respective containers.
 
-While KiddOS is running, the application checks the slot file once per
-second. When it detects a change, it reloads the catalog and refreshes
-carousel artwork and selected-game text. If the selected slot is now empty,
-it returns to the Games carousel. A failed reload is retried on a later poll.
-Parent slot changes therefore do not require a frontend restart or manual
-refresh.
+Four stable slot references per category are persisted in
+`/storage/.config/kiddos/slots.conf`. The file begins with
+`KIDDOS_SLOTS_V1`; references are relative to the ROM root. The native slot
+manager loads and saves these references without maintaining a second
+catalog database. Parent Center assignment operations do not move or delete
+media files.
 
-The four slots currently accept raw `.gb` and `.gbc` ROMs with artwork.
-Broader library discovery does not mean other systems are currently
-slot-eligible.
+The legacy browser Remote Management service and Python catalog are not
+part of the current architecture. Wi-Fi remains a separate device service.
 
 ## State and resource ownership
 

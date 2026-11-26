@@ -14,11 +14,11 @@ void drawParentCenter(UI& ui, int selected) {
     drawText(r, ui.heading, 360, 92);
     drawText(r, ui.parentHeading, 360, 155);
 
-    const char* labels[7] = {
-        "REMOTE MANAGEMENT", "GAMES", "MOVIES", "MUSIC PLAYLISTS",
-        "TV SHOWS", "WI-FI SETTINGS", "CHANGE PARENT PIN"
+    const char* labels[6] = {
+        "GAMES", "MOVIES", "MUSIC PLAYLISTS", "TV SHOWS",
+        "WI-FI SETTINGS", "CHANGE PARENT PIN"
     };
-    for (int i = 0; i < 7; ++i) {
+    for (int i = 0; i < 6; ++i) {
         const int y = 205 + i * 57;
         SDL_Rect row{90, y - 7, 540, 45};
         if (i == selected) {

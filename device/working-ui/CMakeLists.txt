@@ -31,7 +31,6 @@ set(KIDDOS_SOURCES
     services/GameLauncher.cpp
     services/BatteryService.cpp
     services/WifiService.cpp
-    services/ParentManagementService.cpp
     services/PowerService.cpp
 )
 

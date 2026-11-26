@@ -100,7 +100,6 @@ int Application::run() {
         struct stat lastSlotsStat {};
         bool haveSlotsStat = stat(slotsPath, &lastSlotsStat) == 0;
         Uint32 lastCatalogPoll = SDL_GetTicks();
-        Uint32 lastParentStatusPoll = SDL_GetTicks();
 
         const SDL_Color pinWhite = {245, 248, 255, 255};
         const SDL_Color pinRed = {255, 115, 115, 255};
@@ -223,7 +222,6 @@ int Application::run() {
         auto cancelPinChange = [&]() {
             pinWorkflow.cancelChange();
             screen = ParentCenter;
-            refreshParentStatus(ui);
         };
 
         auto submitPin = [&]() {
@@ -232,11 +230,9 @@ int Application::run() {
             if (result == KiddosPin::WorkflowResult::Unlocked) {
                 screen = ParentCenter;
                 parentSelected = 0;
-                refreshParentStatus(ui);
             } else if (result == KiddosPin::WorkflowResult::Changed) {
                 screen = ParentCenter;
-                parentSelected = 6;
-                refreshParentStatus(ui);
+                parentSelected = 5;
             }
         };
 
@@ -281,9 +277,7 @@ int Application::run() {
                                 static_cast<int>(ui.wifi.password.size());
                         } else if (screen == WifiSettings) {
                             screen = ParentCenter;
-                            refreshParentStatus(ui);
-                        }
-                        else if (screen == PinEntry && pinWorkflow.isChanging())
+                        } else if (screen == PinEntry && pinWorkflow.isChanging())
                             cancelPinChange();
                         else if (screen == ParentLibrary)
                             screen = ParentSlots;
@@ -379,14 +373,12 @@ int Application::run() {
                         } else if (screen == PinEntry) {
                             submitPin();
                         } else if (screen == ParentCenter) {
-                            if (parentSelected == 0) {
-                                toggleParentManagement(ui);
-                            } else if (parentSelected >= 1 && parentSelected <= 4) {
-                                parentCategory = static_cast<KiddosLibrary::Category>(parentSelected - 1);
+                            if (parentSelected >= 0 && parentSelected <= 3) {
+                                parentCategory = static_cast<KiddosLibrary::Category>(parentSelected);
                                 parentSlotSelected = 0;
                                 discoverParentItems();
                                 screen = ParentSlots;
-                            } else if (parentSelected == 5) {
+                            } else if (parentSelected == 4) {
                                 updateWifiStatus(ui);
                                 ui.wifi.commandError = false;
                                 refreshWifiMenuText(ui);
@@ -447,7 +439,7 @@ int Application::run() {
                         } else if (screen == SystemMenu) {
                             menuSelected = (menuSelected + 1) % 2;
                         } else if (screen == ParentCenter) {
-                            parentSelected = (parentSelected + 6) % 7;
+                            parentSelected = (parentSelected + 5) % 6;
                         } else if (screen == ParentSlots) {
                             parentSlotSelected = (parentSlotSelected + 3) % 4;
                         } else if (screen == ParentLibrary) {
@@ -480,7 +472,7 @@ int Application::run() {
                         } else if (screen == SystemMenu) {
                             menuSelected = (menuSelected + 1) % 2;
                         } else if (screen == ParentCenter) {
-                            parentSelected = (parentSelected + 1) % 7;
+                            parentSelected = (parentSelected + 1) % 6;
                         } else if (screen == ParentSlots) {
                             parentSlotSelected = (parentSlotSelected + 1) % 4;
                         } else if (screen == ParentLibrary) {
@@ -569,17 +561,6 @@ int Application::run() {
 
             // Refresh the live carousel when remote slot assignments change.
             const Uint32 now = SDL_GetTicks();
-
-            // Keep the Parent Center's management URL and Wi-Fi state current.
-            // Do not poll while the child-facing UI or another screen is active.
-            if (screen == ParentCenter) {
-                if (SDL_TICKS_PASSED(now, lastParentStatusPoll + 10000)) {
-                    lastParentStatusPoll = now;
-                    refreshParentStatus(ui);
-                }
-            } else {
-                lastParentStatusPoll = now;
-            }
 
             if (SDL_TICKS_PASSED(now, lastCatalogPoll + 1000)) {
                 lastCatalogPoll = now;

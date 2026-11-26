@@ -23,7 +23,7 @@ The current implementation includes:
 
 Music slots represent playlists, not individual tracks. TV show slots represent shows, not individual episodes.
 
-The Parent Center is native and does not require a network connection or the legacy Remote Management server.
+The Parent Center is native and works offline. The legacy browser Remote Management interface, Python management server/catalog, and their frontend service have been removed. Wi-Fi remains a separate workflow and continues to use `wifi_helper.py`.
 
 ## SD-card data and slot configuration
 
@@ -47,17 +47,12 @@ It stores four ordered references for each of the four content categories. Empty
 
 Only library items that meet the artwork requirements are eligible for assignment in Parent Center.
 
-## Legacy components
+## Service boundaries
 
-Some older components remain in the repository and have not yet been removed:
-
-- Legacy Remote Management controls and related frontend code.
-- The legacy management-server and Python catalog implementation.
-- The Wi-Fi service's dependency on `wifi_helper.py`.
-
-The native Parent Center does not depend on the legacy management server or Python catalog. However, the Wi-Fi helper is still used by the current Wi-Fi workflow. Any cleanup of legacy Python code must preserve Wi-Fi functionality or replace that dependency first.
-
-These components are documented here because they remain relevant to future refactoring and removal work; they are not the architecture to extend for new Parent Center features.
+The native library reader and slot manager own SD-card discovery and slot
+persistence. The Wi-Fi service remains separate and invokes `wifi_helper.py`
+for device Wi-Fi operations. Do not remove or bypass that helper as part of
+unrelated library or Parent Center changes.
 
 ## Artwork refresh behavior
 

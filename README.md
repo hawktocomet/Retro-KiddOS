@@ -59,13 +59,7 @@ The data layout, supported artwork conventions, and slot-reference rules are doc
 
 ### Current implementation boundaries
 
-Some legacy components remain and are scheduled for audit and cleanup:
-
-- Remote Management controls and their service are still present in the frontend.
-- The Wi-Fi service still invokes the Python `wifi_helper.py` helper.
-- Legacy management-server and Python catalog code remain in the repository.
-
-These are not dependencies of the native Parent Center media workflow. Their removal must be handled separately and must not accidentally break Wi-Fi functionality.
+The legacy browser Remote Management interface, its Python server/catalog, and the associated frontend service have been removed. The native Parent Center reads the SD-card library directly and works offline. The Wi-Fi workflow remains separate and continues to use `wifi_helper.py`.
 
 Artwork changes made in place may not be detected until the application reloads its library data. Independent artwork-change detection is a known improvement.
 
@@ -116,12 +110,10 @@ The tested firmware startup integration is under [`firmware/boot/`](firmware/boo
 
 The next priorities are:
 
-1. Document and preserve the working native implementation in Git.
-2. Audit and remove obsolete Remote Management and Python catalog/server code while preserving required Wi-Fi functionality.
-3. Refactor and simplify the native application architecture.
-4. Refine the child-facing and Parent Center interfaces.
-5. Develop an Arch Linux SD-card preparation tool that organizes content and retrieves suitable metadata and artwork according to the SD-card data contract.
-6. Investigate practical multiplayer workflows, including Pokémon trading and head-to-head games.
+1. Refactor and simplify the native application architecture.
+2. Refine the child-facing and Parent Center interfaces.
+3. Develop an Arch Linux SD-card preparation tool that organizes content and retrieves suitable metadata and artwork according to the SD-card data contract.
+4. Investigate practical multiplayer workflows, including Pokémon trading and head-to-head games.
 
 The Arch-side preparation tool and scraper are planned work, not current repository features.
 
@@ -132,7 +124,6 @@ The longer-term Retro Pixel Foundation work remains separate from immediate Kidd
 - `device/working-ui/` — active SDL frontend, native services, tests, and build/deployment scripts.
 - `firmware/boot/` — inspected device startup integration and related artifacts.
 - `docs/` — architecture, hardware, SD-card contract, project boundaries, and milestone documentation.
-- `device/management-server/` — legacy management-server implementation pending audit and cleanup.
 
 ## Hardware
 
