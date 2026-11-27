@@ -1005,9 +1005,232 @@ REMOTE_SCRIPT
     return $?
 }
 
+
+audio_deploy_kiddos() {
+    local SCRIPT_DIR PROJECT_ROOT LOCAL CONFIG_LOCAL
+    local REMOTE TARGET STAGED BACKUP CONFIG_TARGET CONFIG_STAGED CONFIG_BACKUP
+    local EXPECTED CONFIG_EXPECTED DEPLOY_ID STATUS
+
+    SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || return 1
+    PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)" || return 1
+
+    REMOTE="${KIDDOS_DEVICE:-root@192.168.0.89}"
+    TARGET="/storage/roms/.kiddos/kiddos-ui"
+    STAGED="${TARGET}.audio.new"
+    CONFIG_LOCAL="$SCRIPT_DIR/alsa-dmix.conf"
+    CONFIG_TARGET="/storage/.config/kiddos/alsa-dmix.conf"
+    CONFIG_STAGED="${CONFIG_TARGET}.new"
+    DEPLOY_ID="$(date +%Y%m%d-%H%M%S)"
+    BACKUP="${TARGET}.pre-audio-deploy-${DEPLOY_ID}"
+    CONFIG_BACKUP="${CONFIG_TARGET}.pre-audio-deploy-${DEPLOY_ID}"
+    LOCAL="$PROJECT_ROOT/../Build-Workspace/build/arm64/kiddos-ui"
+
+    if [[ ! -f "$LOCAL" || ! -x "$LOCAL" ]]; then
+        echo "ERROR: Built KiddOS executable is missing or not executable: $LOCAL"
+        return 1
+    fi
+    if [[ ! -f "$CONFIG_LOCAL" ]]; then
+        echo "ERROR: ALSA dmix config is missing: $CONFIG_LOCAL"
+        return 1
+    fi
+    for command_name in ssh scp sha256sum file; do
+        if ! command -v "$command_name" >/dev/null 2>&1; then
+            echo "ERROR: Required command not found: $command_name"
+            return 1
+        fi
+    done
+
+    EXPECTED="$(sha256sum "$LOCAL" | cut -d ' ' -f 1)"
+    CONFIG_EXPECTED="$(sha256sum "$CONFIG_LOCAL" | cut -d ' ' -f 1)"
+
+    echo "===== AUDIO-ONLY DEPLOYMENT ====="
+    file "$LOCAL"
+    echo "Executable SHA-256: $EXPECTED"
+    echo "ALSA config SHA-256: $CONFIG_EXPECTED"
+    echo "Device: $REMOTE"
+
+    if ! ssh "$REMOTE" "mkdir -p /storage/roms/.kiddos /storage/.config/kiddos && rm -f '$STAGED' '$CONFIG_STAGED'"; then
+        echo "ERROR: Could not prepare remote staging directories."
+        return 1
+    fi
+
+    if ! scp -q "$LOCAL" "$REMOTE:$STAGED"; then
+        echo "ERROR: Executable transfer failed."
+        return 1
+    fi
+    if ! scp -q "$CONFIG_LOCAL" "$REMOTE:$CONFIG_STAGED"; then
+        echo "ERROR: ALSA config transfer failed."
+        return 1
+    fi
+
+    ssh "$REMOTE" sh -s -- \
+        "$TARGET" "$STAGED" "$BACKUP" "$EXPECTED" \
+        "$CONFIG_TARGET" "$CONFIG_STAGED" "$CONFIG_BACKUP" "$CONFIG_EXPECTED" <<'REMOTE_AUDIO_SCRIPT'
+TARGET="$1"
+STAGED="$2"
+BACKUP="$3"
+EXPECTED="$4"
+CONFIG_TARGET="$5"
+CONFIG_STAGED="$6"
+CONFIG_BACKUP="$7"
+CONFIG_EXPECTED="$8"
+UNIT="kiddos-ui"
+EXECUTABLE_HAD_BACKUP=0
+CONFIG_HAD_BACKUP=0
+
+launch_kiddos() {
+    systemd-run --quiet --no-block --service-type=exec \
+        --unit="$UNIT" \
+        --property=Restart=on-failure \
+        --property=RestartSec=2 \
+        --setenv=HOME=/storage "$TARGET"
+}
+
+restore_audio_files() {
+    echo "Attempting audio deployment rollback..."
+    systemctl stop "$UNIT.service" || {
+        echo "CRITICAL: Could not stop KiddOS for rollback."
+        return 1
+    }
+
+    if [ "$EXECUTABLE_HAD_BACKUP" -eq 1 ]; then
+        cp -p "$BACKUP" "$TARGET" || {
+            echo "CRITICAL: Could not restore executable backup: $BACKUP"
+            return 1
+        }
+    else
+        rm -f "$TARGET" || return 1
+    fi
+
+    if [ "$CONFIG_HAD_BACKUP" -eq 1 ]; then
+        cp -p "$CONFIG_BACKUP" "$CONFIG_TARGET" || {
+            echo "CRITICAL: Could not restore ALSA config backup: $CONFIG_BACKUP"
+            return 1
+        }
+    else
+        rm -f "$CONFIG_TARGET" || return 1
+    fi
+
+    echo "Previous executable and ALSA config states restored."
+    if launch_kiddos; then
+        sleep 4
+        if systemctl is-active --quiet "$UNIT.service"; then
+            echo "ROLLBACK SUCCESS: Previous KiddOS is running."
+            sha256sum "$TARGET"
+            [ -f "$CONFIG_TARGET" ] && sha256sum "$CONFIG_TARGET" || true
+            return 0
+        fi
+    fi
+
+    echo "CRITICAL: Previous KiddOS could not be relaunched."
+    return 1
+}
+
+if [ ! -f "$STAGED" ] ||
+   [ "$(sha256sum "$STAGED" | cut -d ' ' -f 1)" != "$EXPECTED" ]; then
+    echo "ERROR: Staged executable is missing or failed checksum verification."
+    exit 1
+fi
+if ! chmod 755 "$STAGED"; then
+    echo "ERROR: Could not set staged executable permissions."
+    exit 1
+fi
+if [ ! -f "$CONFIG_STAGED" ] ||
+   [ "$(sha256sum "$CONFIG_STAGED" | cut -d ' ' -f 1)" != "$CONFIG_EXPECTED" ]; then
+    echo "ERROR: Staged ALSA config is missing or failed checksum verification."
+    exit 1
+fi
+if [ -e "$BACKUP" ] || [ -e "$CONFIG_BACKUP" ]; then
+    echo "ERROR: A timestamped backup path already exists; refusing deployment."
+    exit 1
+fi
+
+echo "Both staged files passed checksum verification."
+
+if [ -e "$TARGET" ]; then
+    cp -p "$TARGET" "$BACKUP" || {
+        echo "ERROR: Could not back up existing executable."
+        exit 1
+    }
+    EXECUTABLE_HAD_BACKUP=1
+    echo "Executable backup: $BACKUP"
+else
+    echo "Executable backup: - (no previous executable)"
+fi
+
+if [ -e "$CONFIG_TARGET" ]; then
+    cp -p "$CONFIG_TARGET" "$CONFIG_BACKUP" || {
+        echo "ERROR: Could not back up existing ALSA config."
+        exit 1
+    }
+    CONFIG_HAD_BACKUP=1
+    echo "ALSA config backup: $CONFIG_BACKUP"
+else
+    echo "ALSA config backup: - (first install)"
+fi
+
+if ! systemctl stop "$UNIT.service"; then
+    echo "ERROR: Could not stop existing KiddOS service."
+    exit 1
+fi
+if systemctl is-active --quiet "$UNIT.service"; then
+    echo "ERROR: KiddOS service is still active; refusing to replace files."
+    exit 1
+fi
+
+if ! mv "$STAGED" "$TARGET" || ! chmod 755 "$TARGET"; then
+    echo "ERROR: Could not install the new executable."
+    restore_audio_files
+    exit 1
+fi
+
+if ! mv "$CONFIG_STAGED" "$CONFIG_TARGET" || ! chmod 644 "$CONFIG_TARGET"; then
+    echo "ERROR: Could not install the ALSA dmix config."
+    restore_audio_files
+    exit 1
+fi
+
+if launch_kiddos; then
+    sleep 4
+    if systemctl is-active --quiet "$UNIT.service"; then
+        echo "AUDIO DEPLOY SUCCESS: KiddOS is running."
+        sha256sum "$TARGET" "$CONFIG_TARGET"
+        if [ "$EXECUTABLE_HAD_BACKUP" -eq 1 ]; then
+            echo "Executable backup: $BACKUP"
+        else
+            echo "Executable backup: - (no previous executable)"
+        fi
+        if [ "$CONFIG_HAD_BACKUP" -eq 1 ]; then
+            echo "ALSA config backup: $CONFIG_BACKUP"
+        else
+            echo "ALSA config backup: - (first install)"
+        fi
+        exit 0
+    fi
+fi
+
+echo "ERROR: KiddOS failed to remain active after audio deployment."
+restore_audio_files
+exit 1
+REMOTE_AUDIO_SCRIPT
+    STATUS=$?
+
+    if [[ "$STATUS" -eq 0 ]]; then
+        echo
+        echo "AUDIO DEPLOYMENT SUCCESS."
+    else
+        echo
+        echo "AUDIO DEPLOYMENT FAILED (remote status $STATUS)."
+    fi
+    return "$STATUS"
+}
+
 case "${1:-}" in
     deploy)
         deploy_kiddos
+        ;;
+    audio-deploy)
+        audio_deploy_kiddos
         ;;
     rollback)
         rollback_kiddos "${2:-}" "${3:-}" "${4:-}" "${5:-}" "${6:-}" "${7:-}" "${8:-}" "${9:-}"

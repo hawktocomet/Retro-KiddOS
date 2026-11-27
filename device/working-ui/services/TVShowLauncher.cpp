@@ -266,11 +266,16 @@ bool launchTVShow(const TVShow& show) {
         if (gamepad >= 0)
             close(gamepad);
 
+        if (setenv("ALSA_CONFIG_PATH",
+                   "/storage/.config/kiddos/alsa-dmix.conf", 1) != 0)
+            _exit(126);
+
         execl("/usr/bin/mpv", "mpv",
               "--no-config",
               "--vo=drm",
               "--ao=alsa",
-              "--audio-device=alsa/hw:0,0",
+              "--audio-device=alsa/dmix",
+              "--audio-format=s16", "--audio-samplerate=48000",
               "--audio-channels=stereo",
               "--fullscreen",
               "--video-aspect-override=1:1",

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hawktocomet
 
+#include <cstdlib>
+
 #include "MovieLauncher.hpp"
 
 #include <cstdio>
@@ -77,11 +79,15 @@ bool launchMovie(const Movie& movie) {
     if (pid == 0) {
         if (gamepadFd >= 0)
             close(gamepadFd);
+        if (setenv("ALSA_CONFIG_PATH",
+                   "/storage/.config/kiddos/alsa-dmix.conf", 1) != 0)
+            _exit(126);
         execl("/usr/bin/mpv", "mpv",
               "--no-config",
               "--vo=drm",
               "--ao=alsa",
-              "--audio-device=alsa/hw:0,0",
+              "--audio-device=alsa/dmix",
+              "--audio-format=s16", "--audio-samplerate=48000",
               "--audio-channels=stereo",
               "--fullscreen",
               "--osd-playing-msg=${media-title}",

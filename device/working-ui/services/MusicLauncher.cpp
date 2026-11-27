@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hawktocomet
 
+#include <cstdlib>
+
 #include "MusicLauncher.hpp"
 
 #include <cerrno>
@@ -23,12 +25,15 @@ bool launchMusic(const MusicTrack& track) {
         return false;
     }
 
-    stopMusic();
-
     const pid_t pid = fork();
     if (pid == 0) {
+        if (kill(getpid(), SIGSTOP) != 0) _exit(126);
+        if (setenv("ALSA_CONFIG_PATH",
+                   "/storage/.config/kiddos/alsa-dmix.conf", 1) != 0)
+            _exit(126);
         execl("/usr/bin/mpv", "mpv", "--no-config",
-              "--no-video", "--ao=alsa", "--audio-device=alsa/hw:0,0",
+              "--no-video", "--ao=alsa", "--audio-device=alsa/dmix",
+              "--audio-format=s16", "--audio-samplerate=48000",
               "--audio-channels=stereo",
               track.path.c_str(), static_cast<char*>(nullptr));
         _exit(127);
@@ -39,23 +44,59 @@ bool launchMusic(const MusicTrack& track) {
         return false;
     }
 
+    int status = 0;
+    pid_t result;
+    do {
+        result = waitpid(pid, &status, WUNTRACED);
+    } while (result < 0 && errno == EINTR);
+
+    if (result != pid || !WIFSTOPPED(status)) {
+        kill(pid, SIGKILL);
+        while (waitpid(pid, &status, 0) < 0 && errno == EINTR) {}
+        std::fprintf(stderr, "KiddOS: replacement music process failed to stop\n");
+        return false;
+    }
+
+    stopMusic();
+
+    if (kill(pid, SIGCONT) != 0) {
+        std::perror("KiddOS: resume replacement music process");
+        kill(pid, SIGKILL);
+        while (waitpid(pid, &status, 0) < 0 && errno == EINTR) {}
+        return false;
+    }
+
     musicPid = pid;
     paused = false;
     std::printf("KiddOS: now playing %s\n", track.title.c_str());
     std::fflush(stdout);
     return true;
 }
-
 void stopMusic() {
     if (musicPid <= 0) {
         paused = false;
         return;
     }
 
-    kill(musicPid, SIGCONT);
-    kill(musicPid, SIGTERM);
+    const pid_t pid = musicPid;
+    kill(pid, SIGCONT);
+    kill(pid, SIGTERM);
+
     int status = 0;
-    while (waitpid(musicPid, &status, 0) < 0 && errno == EINTR) {}
+    for (int attempt = 0; attempt < 100; ++attempt) {
+        const pid_t result = waitpid(pid, &status, WNOHANG);
+        if (result == pid || (result < 0 && errno == ECHILD))
+            break;
+        if (result < 0 && errno != EINTR)
+            break;
+        usleep(10000);
+    }
+
+    if (waitpid(pid, &status, WNOHANG) == 0) {
+        kill(pid, SIGKILL);
+        while (waitpid(pid, &status, 0) < 0 && errno == EINTR) {}
+    }
+
     musicPid = -1;
     paused = false;
 }
