@@ -144,6 +144,39 @@ int main() {
           restored[2][1].empty(),
           "clearing a slot only clears its reference");
 
+
+    // Shared slot resolution covers all four categories.
+    auto reference = [&](const Item& item) {
+        return fs::path(item.path).lexically_relative(root).generic_string();
+    };
+
+    Slots resolvedSlots{};
+    resolvedSlots[0][0] = reference(games[0]);
+    resolvedSlots[0][2] = "gb/Missing.gb";
+    resolvedSlots[0][3] = reference(games[1]);
+    const auto resolvedGames =
+        resolveSlots(root, resolvedSlots, Category::Games, games);
+    check(resolvedGames[0] == &games[0] &&
+          resolvedGames[1] == nullptr &&
+          resolvedGames[2] == nullptr &&
+          resolvedGames[3] == &games[1],
+          "game resolution preserves empty and missing slots");
+
+    resolvedSlots = {};
+    resolvedSlots[1][0] = reference(movies[0]);
+    check(resolveSlots(root, resolvedSlots, Category::Movies, movies)[0] ==
+              &movies[0], "movie slots use shared resolution");
+
+    resolvedSlots = {};
+    resolvedSlots[2][0] = reference(music[0]);
+    check(resolveSlots(root, resolvedSlots, Category::Music, music)[0] ==
+              &music[0], "music slots use shared resolution");
+
+    resolvedSlots = {};
+    resolvedSlots[3][0] = reference(shows[0]);
+    check(resolveSlots(root, resolvedSlots, Category::TVShows, shows)[0] ==
+              &shows[0], "TV show slots use shared resolution");
+
     fs::remove_all(root);
     return failures == 0 ? 0 : 1;
 }

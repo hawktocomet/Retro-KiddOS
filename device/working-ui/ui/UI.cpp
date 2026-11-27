@@ -430,6 +430,7 @@ void closeUI(UI& ui) {
     destroyText(ui.tvFooter);
     destroyText(ui.musicSubtitle);
     destroyText(ui.musicFooter);
+    destroyText(ui.musicNowPlayingPlaylist);
     destroyText(ui.musicNowPlayingTitle);
     if (ui.musicArtwork) SDL_DestroyTexture(ui.musicArtwork);
     for (int i = 0; i < 4; ++i) destroyText(ui.homeLabels[i]);
@@ -595,6 +596,8 @@ bool openUI(UI& ui) {
     ui.musicSubtitle = makeText(ui.renderer, ui.footerFont, "CHOOSE A SONG", muted);
     ui.musicFooter = makeText(ui.renderer, ui.footerFont,
         "D-PAD MOVE   A PLAY   B BACK   START MENU", muted);
+    ui.musicNowPlayingPlaylist = makeText(ui.renderer, ui.footerFont,
+        "", muted);
     ui.musicNowPlayingTitle = makeText(ui.renderer, ui.labelFont,
         "", white);
     ui.homeSubtitle = makeText(ui.renderer, ui.footerFont,

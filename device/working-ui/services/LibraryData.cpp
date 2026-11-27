@@ -334,4 +334,27 @@ bool clear(Slots& slots, Category category, std::size_t slot) {
     return true;
 }
 
+std::array<const Item*, 4> resolveSlots(
+    const fs::path& romRoot, const Slots& slots, Category category,
+    const std::vector<Item>& items) {
+    std::array<const Item*, 4> resolved{};
+    const auto c = static_cast<std::size_t>(category);
+    if (c >= slots.size()) return resolved;
+
+    for (std::size_t slot = 0; slot < resolved.size(); ++slot) {
+        if (slots[c][slot].empty()) continue;
+
+        for (const auto& item : items) {
+            std::error_code ec;
+            const auto relative = fs::relative(item.path, romRoot, ec);
+            if (!ec && !relative.empty() &&
+                relative.generic_string() == slots[c][slot]) {
+                resolved[slot] = &item;
+                break;
+            }
+        }
+    }
+    return resolved;
+}
+
 } // namespace KiddosLibrary

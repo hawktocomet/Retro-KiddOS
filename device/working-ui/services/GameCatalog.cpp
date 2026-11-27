@@ -12,20 +12,6 @@ constexpr const char* kRoot = "/storage/roms";
 constexpr const char* kSlots = "/storage/.config/kiddos/slots.conf";
 std::array<Game, 4> gameItems{};
 
-bool assignedItem(const std::vector<KiddosLibrary::Item>& items,
-                  const std::string& reference,
-                  KiddosLibrary::Item& result) {
-    namespace fs = std::filesystem;
-    for (const auto& item : items) {
-        std::error_code ec;
-        const auto relative = fs::relative(item.path, kRoot, ec);
-        if (!ec && relative.generic_string() == reference) {
-            result = item;
-            return true;
-        }
-    }
-    return false;
-}
 }
 
 const std::array<Game, 4>& games() { return gameItems; }
@@ -40,11 +26,13 @@ bool loadGameSlots() {
     const auto items = KiddosLibrary::discover(
         kRoot, KiddosLibrary::Category::Games);
 
+    const auto resolved = KiddosLibrary::resolveSlots(
+        kRoot, slots, KiddosLibrary::Category::Games, items);
+
     std::array<Game, 4> next{};
     for (std::size_t i = 0; i < next.size(); ++i) {
-        KiddosLibrary::Item item;
-        if (!slots[0][i].empty() &&
-            assignedItem(items, slots[0][i], item)) {
+        if (resolved[i]) {
+            const auto& item = *resolved[i];
             next[i].name = item.title;
             next[i].rom = item.path;
             next[i].platform = item.platform;

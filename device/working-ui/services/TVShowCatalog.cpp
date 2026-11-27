@@ -25,22 +25,17 @@ bool loadTVShows() {
 
     const auto discovered =
         KiddosLibrary::discover(kRoot, KiddosLibrary::Category::TVShows);
+    const auto resolved = KiddosLibrary::resolveSlots(
+        kRoot, slots, KiddosLibrary::Category::TVShows, discovered);
     std::vector<TVShow> next;
 
-    for (const auto& reference : slots[3]) {
+    for (const auto* item : resolved) {
         TVShow show;
-        if (!reference.empty()) {
-            for (const auto& item : discovered) {
-                std::error_code ec;
-                const auto relative = std::filesystem::relative(item.path, kRoot, ec);
-                if (ec || relative.generic_string() != reference) continue;
-
-                show.title = item.title;
-                show.directory = item.path;
-                show.artwork = item.artwork;
-                show.episodes = item.files;
-                break;
-            }
+        if (item) {
+            show.title = item->title;
+            show.directory = item->path;
+            show.artwork = item->artwork;
+            show.episodes = item->files;
         }
         next.push_back(std::move(show));
     }

@@ -46,7 +46,8 @@ struct BrowserSelectionState {
 struct MediaBrowserState {
     BrowserSelectionState movies;
     BrowserSelectionState tvShows;
-    BrowserSelectionState music;
+    BrowserSelectionState music;       // Four playlist slots.
+    BrowserSelectionState musicTracks;  // Tracks in the open playlist.
     int musicPlaylistIndex = -1;
 };
 

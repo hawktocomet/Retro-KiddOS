@@ -5,6 +5,5 @@
 #include <vector>
 namespace KiddosServices {
 bool loadMusic();
-const std::vector<MusicTrack>& music();
 const std::vector<KiddosMusicPlaylist>& musicPlaylists();
 }

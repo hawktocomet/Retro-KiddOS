@@ -52,7 +52,9 @@ int Application::run() {
     int parentLibraryScroll = 0;
     std::vector<KiddosLibrary::Item> parentLibrary;
     bool& running = running_;
+    int currentMusicPlaylist = -1;
     int currentMusicTrack = -1;
+    std::string currentMusicPath;
     Screen nowPlayingReturnScreen = Home;
 
     std::error_code slotConfigError;
@@ -93,6 +95,41 @@ int Application::run() {
         ui.mediaBrowser = &mediaBrowser_;
         updateSelectedGameText(ui, selected);
 
+        // Restore Now Playing resources by the playing file path. Catalog
+        // slots may have changed while an external player was running.
+        if (!currentMusicPath.empty() && KiddosServices::musicPlaying()) {
+            const auto& playlists = KiddosServices::musicPlaylists();
+            bool restored = false;
+            for (std::size_t playlistIndex = 0;
+                 playlistIndex < playlists.size() && !restored;
+                 ++playlistIndex) {
+                const auto& playlist = playlists[playlistIndex];
+                for (std::size_t trackIndex = 0;
+                     trackIndex < playlist.tracks.size(); ++trackIndex) {
+                    const auto& track = playlist.tracks[trackIndex];
+                    if (track.path != currentMusicPath) continue;
+
+                    currentMusicPlaylist = static_cast<int>(playlistIndex);
+                    currentMusicTrack = static_cast<int>(trackIndex);
+                    ui.musicNowPlayingPlaylist = makeText(
+                        ui.renderer, ui.footerFont, playlist.title.c_str(),
+                        {155, 177, 215, 255});
+                    ui.musicNowPlayingTitle = makeText(
+                        ui.renderer, ui.labelFont, track.title.c_str(),
+                        {245, 248, 255, 255});
+                    loadMusicArtwork(ui, playlist.artwork.empty()
+                        ? track.path : playlist.artwork);
+                    restored = true;
+                    break;
+                }
+            }
+
+            if (!restored) {
+                currentMusicPlaylist = -1;
+                currentMusicTrack = -1;
+            }
+        }
+
         // Parent Center atomically replaces the native slot configuration.
         constexpr const char* slotsPath =
             "/storage/.config/kiddos/slots.conf";
@@ -117,39 +154,74 @@ int Application::run() {
         };
 
         auto moveMusicSelection = [&](int delta) {
-            const int count = screen == Music
-                ? static_cast<int>(KiddosServices::musicPlaylists().size())
-                : static_cast<int>(KiddosServices::music().size());
+            const bool browsingTracks = screen == MusicPlaylist;
+            auto& selection = browsingTracks
+                ? ui.mediaBrowser->musicTracks
+                : ui.mediaBrowser->music;
+
+            int count = 0;
+            if (browsingTracks) {
+                const auto& playlists = KiddosServices::musicPlaylists();
+                const int slot = ui.mediaBrowser->musicPlaylistIndex;
+                if (slot >= 0 && slot < static_cast<int>(playlists.size()))
+                    count = static_cast<int>(
+                        playlists[static_cast<std::size_t>(slot)].tracks.size());
+            } else {
+                count = static_cast<int>(KiddosServices::musicPlaylists().size());
+            }
+
             if (count == 0) {
-                ui.mediaBrowser->music.selectedRow = 0;
-                ui.mediaBrowser->music.scrollOffset = 0;
+                selection.selectedRow = 0;
+                selection.scrollOffset = 0;
                 return;
             }
-            ui.mediaBrowser->music.selectedRow = std::clamp(
-                ui.mediaBrowser->music.selectedRow + delta, 0, count - 1);
+
+            selection.selectedRow = std::clamp(
+                selection.selectedRow + delta, 0, count - 1);
             constexpr int visibleRows = 8;
-            if (ui.mediaBrowser->music.selectedRow < ui.mediaBrowser->music.scrollOffset)
-                ui.mediaBrowser->music.scrollOffset = ui.mediaBrowser->music.selectedRow;
-            if (ui.mediaBrowser->music.selectedRow >= ui.mediaBrowser->music.scrollOffset + visibleRows)
-                ui.mediaBrowser->music.scrollOffset = ui.mediaBrowser->music.selectedRow - visibleRows + 1;
-            ui.mediaBrowser->music.scrollOffset = std::clamp(
-                ui.mediaBrowser->music.scrollOffset, 0, std::max(0, count - visibleRows));
+            if (selection.selectedRow < selection.scrollOffset)
+                selection.scrollOffset = selection.selectedRow;
+            if (selection.selectedRow >= selection.scrollOffset + visibleRows)
+                selection.scrollOffset = selection.selectedRow - visibleRows + 1;
+            selection.scrollOffset = std::clamp(
+                selection.scrollOffset, 0, std::max(0, count - visibleRows));
         };
 
-        auto playMusicTrack = [&](int index) {
-            const auto& list = KiddosServices::music();
-            if (index < 0 || index >= static_cast<int>(list.size()))
+        auto playMusicTrack = [&](int playlistIndex, int trackIndex) {
+            const auto& playlists = KiddosServices::musicPlaylists();
+            if (playlistIndex < 0 ||
+                playlistIndex >= static_cast<int>(playlists.size()))
                 return false;
-            const auto& track = list[static_cast<std::size_t>(index)];
+
+            const auto& playlist =
+                playlists[static_cast<std::size_t>(playlistIndex)];
+            if (trackIndex < 0 ||
+                trackIndex >= static_cast<int>(playlist.tracks.size()))
+                return false;
+
+            const auto& track = playlist.tracks[static_cast<std::size_t>(trackIndex)];
             const bool resuming =
-                index == currentMusicTrack && KiddosServices::musicPaused();
+                playlistIndex == currentMusicPlaylist &&
+                trackIndex == currentMusicTrack &&
+                currentMusicPath == track.path &&
+                KiddosServices::musicPaused();
+
             const bool started = resuming
                 ? KiddosServices::resumeMusic()
                 : KiddosServices::launchMusic(track);
             if (!started) return false;
 
-            currentMusicTrack = index;
-            if (!resuming) loadMusicArtwork(ui, track.path);
+            currentMusicPlaylist = playlistIndex;
+            currentMusicTrack = trackIndex;
+            currentMusicPath = track.path;
+
+            if (!resuming) loadMusicArtwork(ui, playlist.artwork.empty()
+                ? track.path : playlist.artwork);
+
+            destroyText(ui.musicNowPlayingPlaylist);
+            ui.musicNowPlayingPlaylist = makeText(
+                ui.renderer, ui.footerFont, playlist.title.c_str(),
+                {155, 177, 215, 255});
             destroyText(ui.musicNowPlayingTitle);
             ui.musicNowPlayingTitle = makeText(
                 ui.renderer, ui.labelFont, track.title.c_str(),
@@ -256,13 +328,20 @@ int Application::run() {
                         }
                     } else if (inputAction == KiddosInput::Action::PreviousSection ||
                                inputAction == KiddosInput::Action::NextSection) {
-                        const auto& list = KiddosServices::music();
-                        if (!list.empty() && currentMusicTrack >= 0) {
-                            const int direction =
-                                inputAction == KiddosInput::Action::PreviousSection ? -1 : 1;
-                            const int count = static_cast<int>(list.size());
-                            const int next = (currentMusicTrack + direction + count) % count;
-                            if (!playMusicTrack(next)) SDL_Delay(1200);
+                        const auto& playlists = KiddosServices::musicPlaylists();
+                        if (currentMusicPlaylist >= 0 &&
+                            currentMusicPlaylist < static_cast<int>(playlists.size())) {
+                            const auto& tracks =
+                                playlists[static_cast<std::size_t>(currentMusicPlaylist)].tracks;
+                            if (!tracks.empty() && currentMusicTrack >= 0 &&
+                                currentMusicTrack < static_cast<int>(tracks.size())) {
+                                const int direction =
+                                    inputAction == KiddosInput::Action::PreviousSection ? -1 : 1;
+                                const int count = static_cast<int>(tracks.size());
+                                const int next = (currentMusicTrack + direction + count) % count;
+                                if (!playMusicTrack(currentMusicPlaylist, next))
+                                    SDL_Delay(1200);
+                            }
                         }
                     } else if (inputAction == KiddosInput::Action::Back) {
                         if (screen == WifiPassword) {
@@ -304,9 +383,6 @@ int Application::run() {
                             if (KiddosServices::musicPaused()) {
                                 KiddosServices::resumeMusic();
                             } else if (KiddosServices::pauseMusic()) {
-                                if (currentMusicTrack >= 0)
-                                    ui.mediaBrowser->music.selectedRow = currentMusicTrack;
-
                             }
                         } else if (screen == WifiPassword) {
                             if (activateWifiKeyboardKey(ui)) {
@@ -327,15 +403,29 @@ int Application::run() {
                             const int index = ui.mediaBrowser->music.selectedRow;
                             if (index >= 0 && index < static_cast<int>(playlists.size()) &&
                                 !playlists[static_cast<std::size_t>(index)].tracks.empty()) {
+                                const bool changingPlaylist =
+                                    index != ui.mediaBrowser->musicPlaylistIndex;
                                 ui.mediaBrowser->musicPlaylistIndex = index;
-                                ui.mediaBrowser->music.selectedRow = 0;
-                                ui.mediaBrowser->music.scrollOffset = 0;
-                                currentMusicTrack = -1;
+                                const int trackCount = static_cast<int>(
+                                    playlists[static_cast<std::size_t>(index)].tracks.size());
+                                if (changingPlaylist) {
+                                    ui.mediaBrowser->musicTracks.selectedRow = 0;
+                                    ui.mediaBrowser->musicTracks.scrollOffset = 0;
+                                } else {
+                                    ui.mediaBrowser->musicTracks.selectedRow = std::clamp(
+                                        ui.mediaBrowser->musicTracks.selectedRow,
+                                        0, std::max(0, trackCount - 1));
+                                    ui.mediaBrowser->musicTracks.scrollOffset = std::clamp(
+                                        ui.mediaBrowser->musicTracks.scrollOffset,
+                                        0, std::max(0, trackCount - 8));
+                                }
                                 screen = MusicPlaylist;
                             }
                         } else if (screen == MusicPlaylist) {
                             nowPlayingReturnScreen = MusicPlaylist;
-                            if (playMusicTrack(ui.mediaBrowser->music.selectedRow))
+                            if (playMusicTrack(
+                                    ui.mediaBrowser->musicPlaylistIndex,
+                                    ui.mediaBrowser->musicTracks.selectedRow))
                                 screen = NowPlaying;
                             else
                                 SDL_Delay(1200);
@@ -600,14 +690,29 @@ int Application::run() {
             if (currentMusicTrack >= 0 &&
                 !KiddosServices::musicPaused() &&
                 !KiddosServices::musicPlaying()) {
-                const auto& tracks = KiddosServices::music();
-                if (!tracks.empty()) {
-                    const int next =
-                        (currentMusicTrack + 1) % static_cast<int>(tracks.size());
-                    if (!playMusicTrack(next))
+                const auto& playlists = KiddosServices::musicPlaylists();
+                if (currentMusicPlaylist >= 0 &&
+                    currentMusicPlaylist < static_cast<int>(playlists.size())) {
+                    const auto& tracks =
+                        playlists[static_cast<std::size_t>(currentMusicPlaylist)].tracks;
+                    if (!tracks.empty() && currentMusicTrack >= 0 &&
+                        currentMusicTrack < static_cast<int>(tracks.size())) {
+                        const int next =
+                            (currentMusicTrack + 1) % static_cast<int>(tracks.size());
+                        if (!playMusicTrack(currentMusicPlaylist, next)) {
+                            currentMusicPlaylist = -1;
+                            currentMusicTrack = -1;
+                            currentMusicPath.clear();
+                        }
+                    } else {
+                        currentMusicPlaylist = -1;
                         currentMusicTrack = -1;
+                        currentMusicPath.clear();
+                    }
                 } else {
+                    currentMusicPlaylist = -1;
                     currentMusicTrack = -1;
+                    currentMusicPath.clear();
                 }
             }
 
@@ -716,8 +821,26 @@ int Application::run() {
 
         cancelWifiConnection(ui);
         std::fill(ui.wifi.password.begin(), ui.wifi.password.end(), '\0');
-        if (!running || launch || launchMovie || launchTVShow)
+
+        bool resumeMusicAfterHandoff = false;
+        if (!running) {
             KiddosServices::stopMusic();
+        } else if (launch || launchMovie || launchTVShow) {
+            if (KiddosServices::musicPlaying() &&
+                !KiddosServices::musicPaused()) {
+                if (KiddosServices::pauseMusic()) {
+                    resumeMusicAfterHandoff = true;
+                } else {
+                    std::fprintf(stderr,
+                        "KiddOS: could not pause music for media handoff\n");
+                    launch = false;
+                    launchMovie = false;
+                    launchTVShow = false;
+                    SDL_Delay(1000);
+                }
+            }
+        }
+
         closeUI(ui);
         if (running && launch && KiddosServices::games()[selected].available) {
             if (!KiddosServices::launchGame(KiddosServices::games()[selected]))
@@ -745,6 +868,9 @@ int Application::run() {
             }
             screen = Movies;
         }
+
+        if (running && resumeMusicAfterHandoff)
+            KiddosServices::resumeMusic();
     }
 
     return 0;

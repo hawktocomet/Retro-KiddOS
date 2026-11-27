@@ -29,5 +29,8 @@ bool saveSlots(const fs::path& configPath, const Slots& slots);
 bool assign(Slots& slots, Category category, std::size_t slot,
             const std::string& relativePath);
 bool clear(Slots& slots, Category category, std::size_t slot);
+std::array<const Item*, 4> resolveSlots(
+    const fs::path& romRoot, const Slots& slots, Category category,
+    const std::vector<Item>& items);
 
 } // namespace KiddosLibrary

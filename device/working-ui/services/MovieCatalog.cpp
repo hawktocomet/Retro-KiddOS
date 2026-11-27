@@ -24,21 +24,16 @@ bool loadMovies() {
 
     const auto discovered =
         KiddosLibrary::discover(kRoot, KiddosLibrary::Category::Movies);
+    const auto resolved = KiddosLibrary::resolveSlots(
+        kRoot, slots, KiddosLibrary::Category::Movies, discovered);
     std::vector<Movie> next;
 
-    for (const auto& reference : slots[1]) {
+    for (const auto* item : resolved) {
         Movie movie;
-        if (!reference.empty()) {
-            for (const auto& item : discovered) {
-                std::error_code ec;
-                const auto relative = std::filesystem::relative(item.path, kRoot, ec);
-                if (!ec && relative.generic_string() == reference) {
-                    movie.title = item.title;
-                    movie.path = item.path;
-                    movie.artwork = item.artwork;
-                    break;
-                }
-            }
+        if (item) {
+            movie.title = item->title;
+            movie.path = item->path;
+            movie.artwork = item->artwork;
         }
         next.push_back(std::move(movie));
     }

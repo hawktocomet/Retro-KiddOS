@@ -70,7 +70,7 @@ void drawMusicPlaylist(UI& ui) {
         playlistIndex < static_cast<int>(playlists.size())
         ? playlists[static_cast<std::size_t>(playlistIndex)].tracks
         : emptyTracks;
-    const int first = std::max(0, ui.mediaBrowser->music.scrollOffset);
+    const int first = std::max(0, ui.mediaBrowser->musicTracks.scrollOffset);
     constexpr int visibleRows = 8;
     const SDL_Color white = {245, 248, 255, 255};
     const SDL_Color muted = {155, 177, 215, 255};
@@ -79,7 +79,7 @@ void drawMusicPlaylist(UI& ui) {
         const int index = first + row;
         if (index >= static_cast<int>(tracks.size())) break;
         SDL_Rect item = {76, 158 + row * 54, 568, 46};
-        if (index == ui.mediaBrowser->music.selectedRow) {
+        if (index == ui.mediaBrowser->musicTracks.selectedRow) {
             SDL_SetRenderDrawColor(r, 35, 91, 139, 255);
             SDL_RenderFillRect(r, &item);
             SDL_SetRenderDrawColor(r, 80, 190, 255, 255);
@@ -88,7 +88,7 @@ void drawMusicPlaylist(UI& ui) {
         drawWifiLine(r, ui.labelFont,
                      tracks[static_cast<std::size_t>(index)].title,
                      94, item.y + 10,
-                     index == ui.mediaBrowser->music.selectedRow ? white : muted);
+                     index == ui.mediaBrowser->musicTracks.selectedRow ? white : muted);
     }
 
     drawText(r, ui.musicFooter, 360, 625);
@@ -130,8 +130,9 @@ void drawNowPlaying(UI& ui) {
         paused ? SDL_Color{255, 210, 110, 255}
                : SDL_Color{110, 230, 160, 255});
     drawText(r, nowPlaying, 360, 420);
-    drawText(r, ui.musicNowPlayingTitle, 360, 465);
-    drawText(r, indicator, 360, 520);
+    drawText(r, ui.musicNowPlayingPlaylist, 360, 450);
+    drawText(r, ui.musicNowPlayingTitle, 360, 485);
+    drawText(r, indicator, 360, 535);
 
     Text footer = makeText(r, ui.footerFont,
         "A  PAUSE/RESUME     B  BACK     L/R  CHANGE SONG", muted);

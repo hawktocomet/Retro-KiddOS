@@ -273,6 +273,7 @@ bool launchTVShow(const TVShow& show) {
               "--audio-device=alsa/hw:0,0",
               "--audio-channels=stereo",
               "--fullscreen",
+              "--video-aspect-override=1:1",
               "--osd-playing-msg=${media-title}",
               "--osd-playing-msg-duration=4000",
               "--input-gamepad=yes",

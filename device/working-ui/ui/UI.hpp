@@ -32,7 +32,8 @@ struct UI {
     Text homeComingSoon[2];
     Text homeSubtitle, movieSubtitle, movieFooter;
     Text tvSubtitle, tvFooter;
-    Text musicSubtitle, musicFooter, musicNowPlayingTitle;
+    Text musicSubtitle, musicFooter;
+    Text musicNowPlayingPlaylist, musicNowPlayingTitle;
     SDL_Texture* musicArtwork = nullptr;
     TTF_Font* headingFont = nullptr;
     TTF_Font* labelFont = nullptr;
