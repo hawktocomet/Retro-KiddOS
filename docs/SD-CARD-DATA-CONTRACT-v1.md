@@ -88,21 +88,28 @@ Example:
 
 - Directory: `tvshows/`
 - Each immediate child directory is one show.
+- The show folder is the assignable item. Individual seasons and episodes are not separate Parent Center items.
 - A show requires one of these artwork files, in preference order: `poster.jpg`, `poster.png`, `cover.jpg`, `cover.png`.
 - The show must contain at least one supported episode file. Episodes may be in nested subdirectories.
 - Accepted episode extensions: `.mp4`, `.mkv`, `.avi`, `.mov`, `.m4v`, `.webm`.
-- The show folder is the assignable item. Individual episodes are not shown as Parent Center items.
+- Season folders should use the naming convention `Season 01`, `Season 02`, and so on.
+- Episode filenames must include a season and episode identifier in the format `SHOW NAME - S##E## - EPISODE NAME.ext`. For example: `Pokemon - S01E01 - Pokemon I Choose You.mp4`.
+- Episodes play sequentially across the entire show: seasons in numeric order, with episodes in numeric order within each season. After the final episode, playback loops back to the first episode.
+- The organizer must identify the `S##E##` season and episode numbers and flag missing or duplicate identifiers for parent review. It must not silently guess an episode's position.
+- Season and episode ordering is numeric, not alphabetical. For example, Season 10 follows Season 9, and Episode 10 follows Episode 9.
 
 Example:
 
 ```text
 /storage/roms/
   tvshows/
-    Favorite Show/
+    Pokemon/
       poster.jpg
-      Season 1/
-        Episode 01.mp4
-        Episode 02.mp4
+      Season 01/
+        Pokemon - S01E01 - Pokemon I Choose You.mp4
+        Pokemon - S01E02 - Pokemon Emergency.mp4
+      Season 02/
+        Pokemon - S02E01 - Example Episode.mp4
 ```
 
 ## 3. Parent Center assignment behavior

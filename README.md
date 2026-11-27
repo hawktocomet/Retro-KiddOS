@@ -10,6 +10,61 @@ Make a small, personal, offline entertainment device that children can use indep
 
 Prefer using playback and system capabilities already present in the firmware over building custom infrastructure. Do not add features just because they are technically interesting.
 
+## Preparing your SD card
+
+Retro KiddOS reads games and media from the SD card. The card's `roms/` directory is the source of truth; you organize the files there, and KiddOS discovers them.
+
+The expected layout is:
+
+```text
+roms/
+├── gb/
+├── gbc/
+├── gba/
+├── arcade/
+├── snes/
+├── genesis/
+├── mastersystem/
+├── nes/
+├── movies/
+│   ├── Movie Name.mp4
+│   └── Movie Name.png
+├── music/
+│   └── Playlist Name/
+│       ├── cover.jpg
+│       └── Track 01.mp3
+└── tvshows/
+    └── Show Name/
+        ├── poster.jpg
+        ├── Season 01/
+        │   └── Show Name - S01E01 - Episode Name.mp4
+        └── Season 02/
+            └── Show Name - S02E01 - Episode Name.mp4
+```
+
+### Artwork naming
+
+| Content | Artwork filename |
+|---|---|
+| Games | Same filename stem as the game; `.png`, `.jpg`, or `.webp` |
+| Movies | Same filename stem as the movie; `.png` or `.jpg` |
+| Music playlists | `cover.jpg` or `cover.png` inside the playlist folder |
+| TV shows | `poster.jpg`, `poster.png`, `cover.jpg`, or `cover.png` inside the show folder |
+
+Movies and games have their artwork beside the content file. Music and TV artwork belongs inside the playlist or show folder.
+
+### Media organization
+
+- Movie files go directly inside `movies/`.
+- Each immediate subfolder of `music/` is one playlist. Put its audio tracks inside that folder; nested track folders are allowed.
+- Each immediate subfolder of `tvshows/` is one show. Put episodes inside season folders.
+- Name TV episodes using `SHOW NAME - S##E## - EPISODE NAME.ext`, such as `Pokemon - S01E01 - Episode Name.mp4`. Seasons and episodes are intended to play in numeric order, from the first episode through the final episode, then loop back to the beginning.
+- File extensions are matched without regard to letter case. Hidden files and folders (names beginning with `.`) are ignored.
+
+The folder conventions cover eight game platforms, but not every platform is currently enabled for Parent Center assignment. The current native library reader supports raw GB and GBC game files; consult the full contract for the precise conventions and current implementation boundaries.
+
+See [SD Card Data Contract v1](docs/SD-CARD-DATA-CONTRACT-v1.md) for supported file extensions, artwork preferences, discovery rules, and slot behavior.
+
 ## Project direction
 
 Retro KiddOS and Retro Pixel Foundation are two independent projects with separate responsibilities.
@@ -112,10 +167,10 @@ The next priorities are:
 
 1. Refactor and simplify the native application architecture.
 2. Refine the child-facing and Parent Center interfaces.
-3. Develop an Arch Linux SD-card preparation tool that organizes content and retrieves suitable metadata and artwork according to the SD-card data contract.
+3. Develop a small graphical SD-card preparation tool that organizes games and media, finds suitable metadata and artwork, and validates the card against the SD-card data contract.
 4. Investigate practical multiplayer workflows, including Pokémon trading and head-to-head games.
 
-The Arch-side preparation tool and scraper are planned work, not current repository features.
+The SD-card preparation tool is planned work, not a current repository feature. Initial development will target Linux, with cross-platform support for Windows and macOS where practical.
 
 The longer-term Retro Pixel Foundation work remains separate from immediate KiddOS product development. See the [Product and Technical Roadmap](docs/PRODUCT-AND-TECHNICAL-ROADMAP.md) and [Custom Image Architecture](docs/CUSTOM-IMAGE-ARCHITECTURE.md).
 
