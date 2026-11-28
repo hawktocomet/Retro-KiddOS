@@ -2,6 +2,7 @@
 // Copyright (C) 2026 hawktocomet
 
 #include "Application.hpp"
+#include "ParentCenter.hpp"
 
 #include <SDL.h>
 #include <algorithm>
@@ -42,30 +43,15 @@ int Application::run() {
     Screen& screen = navigation.currentRef();
     KiddosPin::PinWorkflow& pinWorkflow = *pinWorkflow_;
     int& parentSelected = parentSelected_;
-    KiddosLibrary::Slots parentSlots{};
-    const std::filesystem::path parentSlotsPath = "/storage/.config/kiddos/slots.conf";
-    const std::filesystem::path romRoot = "/storage/roms";
-    bool parentSlotsReady = false;
-    KiddosLibrary::Category parentCategory = KiddosLibrary::Category::Games;
-    int parentSlotSelected = 0;
-    int parentLibrarySelected = 0;
-    int parentLibraryScroll = 0;
-    std::vector<KiddosLibrary::Item> parentLibrary;
+    ParentCenterController parentCenter;
     bool& running = running_;
     int currentMusicPlaylist = -1;
     int currentMusicTrack = -1;
     std::string currentMusicPath;
     Screen nowPlayingReturnScreen = Home;
 
-    std::error_code slotConfigError;
-    if (std::filesystem::exists(parentSlotsPath, slotConfigError)) {
-        parentSlotsReady = !slotConfigError &&
-            KiddosLibrary::loadSlots(parentSlotsPath, parentSlots);
-    } else if (!slotConfigError) {
-        parentSlotsReady = KiddosLibrary::saveSlots(parentSlotsPath, parentSlots);
-    }
-    if (!parentSlotsReady)
-        std::fprintf(stderr, "KiddOS: native Parent Center slots unavailable or invalid.\\n");
+    if (!parentCenter.initialize())
+        std::fprintf(stderr, "KiddOS: native Parent Center slots unavailable or invalid.\n");
 
     if (!KiddosPin::initializePinStore("/storage/.config/kiddos")) {
         std::fprintf(stderr,
@@ -263,27 +249,6 @@ int Application::run() {
                 launchTVShow = true;
         };
 
-        auto categoryName = [&]() -> const char* {
-            switch (parentCategory) {
-                case KiddosLibrary::Category::Games: return "GAMES";
-                case KiddosLibrary::Category::Movies: return "MOVIES";
-                case KiddosLibrary::Category::Music: return "MUSIC PLAYLISTS";
-                case KiddosLibrary::Category::TVShows: return "TV SHOWS";
-            }
-            return "LIBRARY";
-        };
-        auto itemReference = [&](const KiddosLibrary::Item& item) {
-            return std::filesystem::path(item.path).lexically_relative(romRoot).generic_string();
-        };
-        auto discoverParentItems = [&]() {
-            parentLibrary = KiddosLibrary::discover(romRoot, parentCategory);
-            parentLibrarySelected = 0;
-            parentLibraryScroll = 0;
-        };
-        auto persistParentSlots = [&]() {
-            return parentSlotsReady && KiddosLibrary::saveSlots(parentSlotsPath, parentSlots);
-        };
-
         auto beginPinChange = [&]() {
             pinWorkflow.beginChange();
             refreshPinPrompt();
@@ -463,9 +428,8 @@ int Application::run() {
                             submitPin();
                         } else if (screen == ParentCenter) {
                             if (parentSelected >= 0 && parentSelected <= 3) {
-                                parentCategory = static_cast<KiddosLibrary::Category>(parentSelected);
-                                parentSlotSelected = 0;
-                                discoverParentItems();
+                                parentCenter.openCategory(
+                                    static_cast<KiddosLibrary::Category>(parentSelected));
                                 screen = ParentSlots;
                             } else if (parentSelected == 4) {
                                 updateWifiStatus(ui);
@@ -477,23 +441,16 @@ int Application::run() {
                                 beginPinChange();
                             }
                         } else if (screen == ParentSlots) {
-                            parentLibrarySelected = 0;
-                            parentLibraryScroll = 0;
+                            parentCenter.openLibrary();
                             screen = ParentLibrary;
                         } else if (screen == ParentLibrary) {
-                            if (!parentSlotsReady) {
+                            if (!parentCenter.ready()) {
                                 SDL_Delay(800);
-                            } else if (parentLibrarySelected == 0) {
-                                KiddosLibrary::clear(parentSlots, parentCategory,
-                                    static_cast<std::size_t>(parentSlotSelected));
-                                if (persistParentSlots()) screen = ParentSlots;
-                            } else {
-                                const auto index = static_cast<std::size_t>(parentLibrarySelected - 1);
-                                if (index < parentLibrary.size() &&
-                                    KiddosLibrary::assign(parentSlots, parentCategory,
-                                        static_cast<std::size_t>(parentSlotSelected),
-                                        itemReference(parentLibrary[index])) && persistParentSlots())
+                            } else if (parentCenter.librarySelection() == 0) {
+                                if (parentCenter.clearSelectedSlot())
                                     screen = ParentSlots;
+                            } else if (parentCenter.assignSelected()) {
+                                screen = ParentSlots;
                             }
                         } else if (screen == WifiSettings) {
                             if (ui.wifi.selectedRow == 0) {
@@ -530,11 +487,9 @@ int Application::run() {
                         } else if (screen == ParentCenter) {
                             parentSelected = (parentSelected + 5) % 6;
                         } else if (screen == ParentSlots) {
-                            parentSlotSelected = (parentSlotSelected + 3) % 4;
+                            parentCenter.moveSlot(-1);
                         } else if (screen == ParentLibrary) {
-                            parentLibrarySelected = std::max(0, parentLibrarySelected - 1);
-                            if (parentLibrarySelected < parentLibraryScroll)
-                                parentLibraryScroll = parentLibrarySelected;
+                            parentCenter.moveLibrary(-1);
                         } else if (screen == WifiSettings) {
                             moveWifiSelection(ui, -1);
                         } else if (screen == WifiPassword) {
@@ -563,12 +518,9 @@ int Application::run() {
                         } else if (screen == ParentCenter) {
                             parentSelected = (parentSelected + 1) % 6;
                         } else if (screen == ParentSlots) {
-                            parentSlotSelected = (parentSlotSelected + 1) % 4;
+                            parentCenter.moveSlot(1);
                         } else if (screen == ParentLibrary) {
-                            const int total = static_cast<int>(parentLibrary.size()) + 1;
-                            parentLibrarySelected = std::min(total - 1, parentLibrarySelected + 1);
-                            if (parentLibrarySelected >= parentLibraryScroll + 8)
-                                parentLibraryScroll = parentLibrarySelected - 7;
+                            parentCenter.moveLibrary(1);
                         } else if (screen == WifiSettings) {
                             moveWifiSelection(ui, 1);
                         } else if (screen == WifiPassword) {
@@ -757,9 +709,9 @@ int Application::run() {
                     SDL_Renderer* r = ui.renderer;
                     drawSimplePanel(r);
                     drawText(r, ui.heading, 360, 90);
-                    drawWifiLine(r, ui.headingFont, categoryName(), 75, 145,
+                    drawWifiLine(r, ui.headingFont, parentCenter.categoryName(), 75, 145,
                                  {245,248,255,255});
-                    if (!parentSlotsReady) {
+                    if (!parentCenter.ready()) {
                         drawWifiLine(r, ui.labelFont, "SLOT FILE UNAVAILABLE - NO CHANGES SAVED",
                                      75, 240, {255,115,115,255});
                     } else if (screen == ParentSlots) {
@@ -769,41 +721,41 @@ int Application::run() {
                             SDL_Rect tile{x,y,270,125};
                             SDL_SetRenderDrawColor(r,28,38,68,255);
                             SDL_RenderFillRect(r,&tile);
-                            if (i == parentSlotSelected) {
+                            if (i == parentCenter.slotSelection()) {
                                 SDL_SetRenderDrawColor(r,80,190,255,255);
                                 SDL_Rect outline{x-3,y-3,276,131};
                                 SDL_RenderDrawRect(r,&outline);
                             }
-                            const auto& ref = parentSlots[static_cast<std::size_t>(parentCategory)][static_cast<std::size_t>(i)];
+                            const auto& ref = parentCenter.slots()[static_cast<std::size_t>(parentCenter.category())][static_cast<std::size_t>(i)];
                             std::string label = "SLOT " + std::to_string(i+1) + " - EMPTY";
                             if (!ref.empty()) {
-                                auto found = std::find_if(parentLibrary.begin(),parentLibrary.end(),
-                                    [&](const KiddosLibrary::Item& item) { return itemReference(item) == ref; });
-                                label = found == parentLibrary.end() ? "SLOT " + std::to_string(i+1) + " - ITEM NOT FOUND" : "SLOT " + std::to_string(i+1) + " - " + found->title;
+                                auto found = std::find_if(parentCenter.items().begin(),parentCenter.items().end(),
+                                    [&](const KiddosLibrary::Item& item) { return parentCenter.itemReference(item) == ref; });
+                                label = found == parentCenter.items().end() ? "SLOT " + std::to_string(i+1) + " - ITEM NOT FOUND" : "SLOT " + std::to_string(i+1) + " - " + found->title;
                             }
                             drawWifiLine(r,ui.labelFont,label,x+12,y+48,{245,248,255,255});
                         }
                         drawWifiLine(r,ui.footerFont,"A CHOOSE / REPLACE     B BACK",145,625,{190,195,210,255});
                     } else {
                         drawWifiLine(r,ui.footerFont,"0: CLEAR THIS SLOT",75,190,{255,190,110,255});
-                        const int total = static_cast<int>(parentLibrary.size()) + 1;
+                        const int total = static_cast<int>(parentCenter.items().size()) + 1;
                         for (int row = 0; row < 8; ++row) {
-                            const int index = parentLibraryScroll + row;
+                            const int index = parentCenter.libraryScroll() + row;
                             if (index >= total) break;
                             const int y = 225 + row * 45;
                             SDL_Rect line{65,y-5,590,38};
-                            if (index == parentLibrarySelected) {
+                            if (index == parentCenter.librarySelection()) {
                                 SDL_SetRenderDrawColor(r,28,65,105,255);
                                 SDL_RenderFillRect(r,&line);
                                 SDL_SetRenderDrawColor(r,80,190,255,255);
                                 SDL_RenderDrawRect(r,&line);
                             }
-                            const std::string label = index == 0 ? "CLEAR SLOT ASSIGNMENT" : parentLibrary[static_cast<std::size_t>(index-1)].title;
+                            const std::string label = index == 0 ? "CLEAR SLOT ASSIGNMENT" : parentCenter.items()[static_cast<std::size_t>(index-1)].title;
                             drawWifiLine(r,ui.labelFont,label,82,y,
                                 index == 0 ? SDL_Color{255,190,110,255} : SDL_Color{245,248,255,255});
                         }
                         char count[64];
-                        std::snprintf(count,sizeof(count),"%zu ARTWORK-BACKED ITEMS",parentLibrary.size());
+                        std::snprintf(count,sizeof(count),"%zu ARTWORK-BACKED ITEMS",parentCenter.items().size());
                         drawWifiLine(r,ui.footerFont,count,75,590,{190,195,210,255});
                         drawWifiLine(r,ui.footerFont,"A SELECT     B BACK",440,625,{190,195,210,255});
                     }
