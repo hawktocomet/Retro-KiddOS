@@ -94,12 +94,20 @@ The build script checks that the resulting executable is an AArch64 ELF binary a
 
 ## Tests and local development build
 
-The repository includes focused tests for the native library-data implementation and architecture boundaries:
+The repository includes five focused host-side test suites. Run them from
+this directory:
 
 ```bash
-./tests/run-library-data-tests.sh
 ./tests/run-architecture-tests.sh
+./tests/run-library-data-tests.sh
+./tests/run-pin-store-tests.sh
+./tests/run-music-workflow-tests.sh
+./tests/run-media-playback-workflow-tests.sh
 ```
+
+The workflow tests exercise the extracted music and movie/TV orchestration
+without requiring SDL or the target device. The architecture and library
+tests cover their respective input/navigation and SD-card data boundaries.
 
 A desktop CMake build can be performed from the repository root:
 
@@ -131,4 +139,18 @@ The default executable destination is a test location:
 /storage/roms/.kiddos/kiddos-ui
 ```
 
-The script also deploys MP
+The script also deploys the related MPV input configuration, RetroArch
+profiles, controller configuration, and early-start integration files used
+by this installation. Existing files are backed up before replacement.
+
+Use the repository's existing deployment script for device deployment and
+recovery; do not manually copy binaries or configuration files around the
+script's backup and verification process. The deployment target and
+recovery procedure must be reviewed before each deployment.
+
+The November 28, 2026 deployment of commit `20500fb` to RPPBLUE completed
+successfully. The deployed executable checksum matched the local ARM64
+build, and on-device smoke tests passed for startup, controls, Parent Center
+PIN entry, Movies/TV navigation and playback return, music playback, and
+game launching. See [the frontend architecture document](../../docs/ARCHITECTURE.md)
+for the build checksum and full milestone record.

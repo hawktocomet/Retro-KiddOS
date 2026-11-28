@@ -123,33 +123,40 @@ Artwork changes made in place may not be detected until the application reloads 
 
 ## Latest milestone
 
-The [Native Parent Center Milestone](docs/MILESTONE-NATIVE-PARENT-CENTER-2026-11-26.md) records the current implementation, verification, known limitations, and next steps.
+The latest completed milestone is the [Media Playback Workflow extraction](docs/ARCHITECTURE.md#november-28-2026--media-playback-workflow-extraction).
 
-Verified during this milestone:
+Commit `20500fb` extracted movie and TV playback orchestration into a focused
+service workflow. The five host-side test suites passed (118 checks), and the
+ARM64 build completed without GCC warnings.
 
-- Library-data tests passed.
-- Architecture tests passed.
-- Desktop CMake build passed.
-- ARM64 build passed.
-- Deployment and application launch were verified on the blue Retro Pixel Pocket (RPPBLUE).
+The build was deployed successfully to the blue Retro Pixel Pocket (RPPBLUE)
+using the existing deployment script. The device executable SHA-256 matched
+the local build:
 
-The deployed ARM64 executable SHA-256 at that milestone was:
+`dc447d614793ba570b0efebb15f70405894617b0f7194f47aecb4affd7bc95e9`
 
-`47673a8e03dac8c508bdc95b0a80c4be539e87ac6ced260f136a05f260fbb722`
+On-device smoke tests passed for startup and controls, Parent Center PIN entry,
+Movies and TV Shows navigation, movie and TV launch/return behavior, music
+playback, and game launching. This validates the tested blue device
+configuration; purple and green devices have not been validated as deployment
+targets.
 
-This checksum identifies that particular deployed build; subsequent builds will have different checksums.
-
-The blue device is the currently verified deployment target. Purple and green devices have not been approved or validated as deployment targets.
+The [Native Parent Center Milestone](docs/MILESTONE-NATIVE-PARENT-CENTER-2026-11-26.md)
+records the preceding implementation milestone.
 
 ## Build, test, and deployment
 
 The active frontend's build instructions, prerequisites, ARM64 build procedure, deployment procedure, backup, and rollback information are documented in [`device/working-ui/README.md`](device/working-ui/README.md).
 
-The repository includes these test scripts:
+The repository includes five focused host-side test suites. Run them from
+the repository root:
 
 ```bash
-./device/working-ui/run-library-data-tests.sh
-./device/working-ui/run-architecture-tests.sh
+./device/working-ui/tests/run-architecture-tests.sh
+./device/working-ui/tests/run-library-data-tests.sh
+./device/working-ui/tests/run-pin-store-tests.sh
+./device/working-ui/tests/run-music-workflow-tests.sh
+./device/working-ui/tests/run-media-playback-workflow-tests.sh
 ```
 
 A desktop CMake build can be run from an existing configured build directory:

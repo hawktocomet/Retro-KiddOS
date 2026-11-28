@@ -38,8 +38,11 @@ place. This refactor does not replace the operating system or emulator stack.
 | `Navigation.hpp` | Current screen and System Menu return destination |
 | `LibraryGrid.hpp` | Two-column grid selection and bounds handling |
 | `LibraryNavigator.hpp` | Games/Music/Movies section order and selection reset; no shared media-item model |
-| `PinWorkflow.hpp` | Parent PIN unlock/change state machine |
-| `pin_store.h` | Existing PIN persistence and hash verification; retained unchanged |
+| `app/ParentCenter.hpp/.cpp` | Parent Center controller: category, slot and library selection, artwork-backed discovery, assignment, clearing, and slot persistence orchestration |
+| `security/PinWorkflow.hpp/.cpp` | Parent PIN unlock/change state machine |
+| `security/pin_store.h/.cpp` | PIN persistence and hash verification |
+| `services/MusicWorkflow.hpp/.cpp` | Music playlist playback orchestration, track navigation, looping, pause/resume, and player handoff |
+| `services/MediaPlaybackWorkflow.hpp/.cpp` | Movie and TV selection bounds, validation, and launch orchestration |
 | `UI.hpp/.cpp` | SDL resource ownership, UI initialization/cleanup, shared status, and device-service/UI coordination |
 | `screens/GameScreens.cpp` | Games carousel, selected-game screen, game information, and artwork refresh |
 | `services/GameCatalog.cpp/.hpp` | Loads the shared device-side Python catalog and maps its four slot assignments into frontend game models |
@@ -75,10 +78,11 @@ to call navigation transitions.
 
 `LibraryGrid` owns selection behavior. `LibraryNavigator` owns the order
 Games → Music → Movies and resets the grid selection when changing sections.
-Each future section is expected to own its own content model and rendering; no
-generic media model is introduced. Only Games is currently implemented. The
-section model is ready, but physical L/R switching is not wired until the
-handheld's shoulder-button IDs are identified and verified.
+Each section owns its own content model and rendering; no generic media model
+is introduced. Games, Music, and Movies are represented in the library
+navigation, with TV Shows available through the media experience. The
+navigation model remains separate from the individual media workflows. Physical L/R section switching remains unwired until the handheld's
+shoulder-button IDs are identified and verified.
 
 ## Device-side game catalog integration
 
@@ -123,6 +127,36 @@ Unlock → Current PIN → New PIN → Confirm PIN flow. It reports workflow out
 to `Application`, which performs screen navigation and refreshes presentation.
 `pin_store.h` remains the persistence boundary and was not rewritten.
 
+## Extracted workflows and controller boundaries
+
+`ParentCenterController` in `app/ParentCenter.hpp/.cpp` owns Parent Center
+state and operations: loading and saving the four slot assignments,
+category selection, slot/library selection and scrolling, artwork-backed
+library discovery, assignment, and clearing. `Application` retains SDL
+rendering, input/event handling, screen transitions, PIN/Wi-Fi flows, and
+the application lifecycle.
+
+`PinWorkflow` in `security/PinWorkflow.hpp/.cpp` owns PIN entry and change
+state transitions. `pin_store.h/.cpp` remains the persistence and
+verification boundary. `Application` handles presentation and navigation
+based on workflow outcomes.
+
+`MusicWorkflow` in `services/MusicWorkflow.hpp/.cpp` owns music playback
+orchestration, including playlist/track state, launching, resume and
+navigation behavior, looping, pause, and player handoff. SDL resources,
+screen rendering, browsing presentation, and screen transitions remain in
+the application/UI layer.
+
+`MediaPlaybackWorkflow` in
+`services/MediaPlaybackWorkflow.hpp/.cpp` owns movie and TV selection
+movement, selection validation, and launch dispatch. Catalog loading,
+SDL rendering, screen transitions, and music handoff remain with their
+existing owners. TV selection remains limited to the four Parent Center
+slots; movie selection retains the existing catalog validation behavior.
+
+These boundaries are deliberately focused. They do not introduce a generic
+media framework or move SDL/UI ownership into service classes.
+
 ## Build and verification
 
 The refactored frontend was built successfully for ARM64 using the project's
@@ -130,12 +164,18 @@ external build workspace and the `aarch64-linux-gnu-g++` cross-compiler. The
 build output was an AArch64 ELF executable with the expected SDL2, SDL2_image,
 and SDL2_ttf runtime dependencies.
 
-Host-side architecture tests passed for:
-- Semantic physical-button mappings.
-- Navigation and System Menu return destination.
-- Grid movement and bounds handling.
-- Library section switching and selection reset.
-- PIN unlock, error, change, mismatch, and save transitions.
+The host-side test suite now includes five focused runners:
+- `tests/run-architecture-tests.sh` — input mappings, navigation, grid
+  behavior, and architecture boundaries.
+- `tests/run-library-data-tests.sh` — SD-card library discovery and data
+  behavior.
+- `tests/run-pin-store-tests.sh` — PIN persistence and verification.
+- `tests/run-music-workflow-tests.sh` — music playback workflow behavior.
+- `tests/run-media-playback-workflow-tests.sh` — movie and TV playback
+  selection, validation, and launch behavior.
+
+All five suites passed during the November 28, 2026 media-workflow
+milestone, totaling 118 checks.
 
 The refactored executable was deployed to RPPBLUE on November 19, 2026. The
 device checksum matched the local ARM64 build:
@@ -147,10 +187,29 @@ and return behavior, game launch/return, shutdown confirmation, Parent Mode
 and PIN workflows, Wi-Fi settings/password keyboard, and battery/charging
 indication. All reported checks passed.
 
-This validates the blue device's current configuration, not portability to
-other devices or firmware versions. The deployment script's automated health
-check only verifies that the systemd service remains active after launch; it
-does not replace visual, controller, or workflow testing on the handheld.
+This validates the blue device's configuration at that historical milestone,
+not portability to other devices or firmware versions. The deployment
+script's automated health check only verifies that the systemd service
+remains active after launch; it does not replace visual, controller, or
+workflow testing on the handheld.
+
+### November 28, 2026 — media playback workflow extraction
+
+Commit `20500fb` (`Extract media playback workflow`) extracted movie and TV
+playback orchestration into `MediaPlaybackWorkflow`. The five host-side test
+suites passed (118 checks), and the ARM64 build completed with no GCC
+warnings. The build was deployed to RPPBLUE using the existing build and
+deployment scripts.
+
+The deployed executable SHA-256 was:
+
+`dc447d614793ba570b0efebb15f70405894617b0f7194f47aecb4affd7bc95e9`
+
+The device executable checksum matched the local build. On-device smoke
+testing passed for startup and controls, Parent Center PIN entry, Movies
+and TV Shows navigation, movie and TV launch/return behavior, music
+playback, and game launching. This verification applies to RPPBLUE and the
+tested firmware/device configuration.
 
 ## Deployment boundaries and remaining work
 
@@ -160,9 +219,8 @@ Keep the printed backup path for manual rollback if a visual or input
 regression is found.
 
 The following remain outside the current implementation:
-- Music or Movies browsing/playback screens.
-- Physical L/R library section switching; shoulder-button IDs remain unverified.
 - Multiplayer workflows, including Pokémon trading and head-to-head play.
+- A graphical parent-side SD-card preparation/organizer application.
 
 Do not add generic frameworks or media abstractions ahead of a concrete
 user-facing need. Preserve existing firmware services and prioritize changes
