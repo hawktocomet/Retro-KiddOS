@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cctype>
 #include <fstream>
+#include <initializer_list>
 #include <iomanip>
 #include <system_error>
 
@@ -110,9 +111,16 @@ bool naturalLess(const std::string& a, const std::string& b) {
     return lower(a) < lower(b);
 }
 
+bool hasExtension(const fs::path& path,
+                  std::initializer_list<const char*> extensions) {
+    const std::string ext = lower(path.extension().string());
+    return std::any_of(extensions.begin(), extensions.end(),
+        [&ext](const char* candidate) { return ext == candidate; });
+}
+
 std::vector<fs::path> recursiveFiles(const fs::path& root,
                                      const fs::path& dir,
-                                     const std::vector<std::string>& exts) {
+                                     std::initializer_list<const char*> exts) {
     std::vector<fs::path> result;
     std::error_code ec;
     fs::recursive_directory_iterator it(

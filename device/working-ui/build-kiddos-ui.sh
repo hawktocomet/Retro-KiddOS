@@ -42,6 +42,7 @@ build_kiddos() {
         "$SCRIPT_DIR/services/MusicCatalog.cpp"
         "$SCRIPT_DIR/services/MusicLauncher.cpp"
         "$SCRIPT_DIR/services/MusicWorkflow.cpp"
+        "$SCRIPT_DIR/services/MediaPlaybackWorkflow.cpp"
         "$SCRIPT_DIR/services/GameLauncher.cpp"
         "$SCRIPT_DIR/services/BatteryService.cpp"
         "$SCRIPT_DIR/services/WifiService.cpp"

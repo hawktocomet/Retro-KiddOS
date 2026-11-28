@@ -16,8 +16,7 @@
 #include "../services/GameLauncher.hpp"
 #include "../services/MovieCatalog.hpp"
 #include "../services/TVShowCatalog.hpp"
-#include "../services/TVShowLauncher.hpp"
-#include "../services/MovieLauncher.hpp"
+#include "../services/MediaPlaybackWorkflow.hpp"
 #include "../services/MusicCatalog.hpp"
 #include "../services/MusicWorkflow.hpp"
 #include "../services/PowerService.hpp"
@@ -28,7 +27,8 @@
 Application::Application()
     : pinWorkflow_(std::make_unique<KiddosPin::PinWorkflow>(
           "/storage/.config/kiddos")),
-      musicWorkflow_(std::make_unique<KiddosServices::MusicWorkflow>()) {}
+      musicWorkflow_(std::make_unique<KiddosServices::MusicWorkflow>()),
+      mediaPlaybackWorkflow_(std::make_unique<KiddosServices::MediaPlaybackWorkflow>()) {}
 
 Application::~Application() = default;
 
@@ -45,6 +45,8 @@ int Application::run() {
     Screen& screen = navigation.currentRef();
     KiddosPin::PinWorkflow& pinWorkflow = *pinWorkflow_;
     KiddosServices::MusicWorkflow& musicWorkflow = *musicWorkflow_;
+    KiddosServices::MediaPlaybackWorkflow& mediaPlaybackWorkflow =
+       *mediaPlaybackWorkflow_;
     int& parentSelected = parentSelected_;
     ParentCenterController parentCenter;
     bool& running = running_;
@@ -187,40 +189,7 @@ int Application::run() {
             return updateNowPlayingResources(!resuming);
         };
 
-      auto moveMovieSelection = [&](int delta) {
-            const int count = std::min(
-                4, static_cast<int>(KiddosServices::movies().size()));
-            if (count == 0) {
-                ui.mediaBrowser->movies.selectedRow = 0;
-                ui.mediaBrowser->movies.scrollOffset = 0;
-                return;
-            }
-            ui.mediaBrowser->movies.selectedRow = std::clamp(
-                ui.mediaBrowser->movies.selectedRow + delta, 0, count - 1);
-            ui.mediaBrowser->movies.scrollOffset = 0;
-        };
-
-        auto moveTVSelection = [&](int delta) {
-            const int count = std::min(
-                4, static_cast<int>(KiddosServices::tvShows().size()));
-            if (count <= 0) {
-                ui.mediaBrowser->tvShows.selectedRow = 0;
-                ui.mediaBrowser->tvShows.scrollOffset = 0;
-                return;
-            }
-            ui.mediaBrowser->tvShows.selectedRow = std::clamp(
-                ui.mediaBrowser->tvShows.selectedRow + delta, 0, count - 1);
-            ui.mediaBrowser->tvShows.scrollOffset = 0;
-        };
-
         bool launchTVShow = false;
-        auto confirmTVSelection = [&]() {
-            const int count = static_cast<int>(KiddosServices::tvShows().size());
-            if (ui.mediaBrowser->tvShows.selectedRow >= 0 &&
-                ui.mediaBrowser->tvShows.selectedRow < std::min(4, count))
-                launchTVShow = true;
-        };
-
         auto beginPinChange = [&]() {
             pinWorkflow.beginChange();
             refreshPinPrompt();
@@ -357,12 +326,13 @@ int Application::run() {
                             else
                                 SDL_Delay(1200);
                         } else if (screen == Movies) {
-                            const auto& list = KiddosServices::movies();
-                            if (ui.mediaBrowser->movies.selectedRow >= 0 &&
-                                ui.mediaBrowser->movies.selectedRow < static_cast<int>(list.size()))
+                            if (mediaPlaybackWorkflow.hasMovie(
+                                    ui.mediaBrowser->movies.selectedRow))
                                 launchMovie = true;
                         } else if (screen == TVShows) {
-                            confirmTVSelection();
+                            if (mediaPlaybackWorkflow.hasTVShow(
+                                    ui.mediaBrowser->tvShows.selectedRow))
+                                launchTVShow = true;
                         } else if (screen == Games) {
                             if (KiddosServices::games()[selected].available) {
                                 screen = SelectedGame;
@@ -436,9 +406,13 @@ int Application::run() {
                         } else if (screen == Music) {
                             moveMusicSelection(-2);
                         } else if (screen == Movies) {
-                            moveMovieSelection(-2);
+                            ui.mediaBrowser->movies.selectedRow = mediaPlaybackWorkflow.moveMovieSelection(
+                                ui.mediaBrowser->movies.selectedRow, -2);
+                            ui.mediaBrowser->movies.scrollOffset = 0;
                         } else if (screen == TVShows) {
-                            moveTVSelection(-2);
+                            ui.mediaBrowser->tvShows.selectedRow = mediaPlaybackWorkflow.moveTVSelection(
+                                ui.mediaBrowser->tvShows.selectedRow, -2);
+                            ui.mediaBrowser->tvShows.scrollOffset = 0;
                         } else if (screen == Games) {
                             gameGrid.moveUp();
                             updateSelectedGameText(ui, selected);
@@ -467,9 +441,13 @@ int Application::run() {
                         } else if (screen == Music) {
                             moveMusicSelection(2);
                         } else if (screen == Movies) {
-                            moveMovieSelection(2);
+                            ui.mediaBrowser->movies.selectedRow = mediaPlaybackWorkflow.moveMovieSelection(
+                                ui.mediaBrowser->movies.selectedRow, 2);
+                            ui.mediaBrowser->movies.scrollOffset = 0;
                         } else if (screen == TVShows) {
-                            moveTVSelection(2);
+                            ui.mediaBrowser->tvShows.selectedRow = mediaPlaybackWorkflow.moveTVSelection(
+                                ui.mediaBrowser->tvShows.selectedRow, 2);
+                            ui.mediaBrowser->tvShows.scrollOffset = 0;
                         } else if (screen == Games) {
                             gameGrid.moveDown();
                             updateSelectedGameText(ui, selected);
@@ -498,9 +476,13 @@ int Application::run() {
                         } else if (screen == Music) {
                             moveMusicSelection(-1);
                         } else if (screen == Movies) {
-                            moveMovieSelection(-1);
+                            ui.mediaBrowser->movies.selectedRow = mediaPlaybackWorkflow.moveMovieSelection(
+                                ui.mediaBrowser->movies.selectedRow, -1);
+                            ui.mediaBrowser->movies.scrollOffset = 0;
                         } else if (screen == TVShows) {
-                            moveTVSelection(-1);
+                            ui.mediaBrowser->tvShows.selectedRow = mediaPlaybackWorkflow.moveTVSelection(
+                                ui.mediaBrowser->tvShows.selectedRow, -1);
+                            ui.mediaBrowser->tvShows.scrollOffset = 0;
                         } else if (screen == Games) {
                             gameGrid.moveLeft();
                             updateSelectedGameText(ui, selected);
@@ -517,9 +499,13 @@ int Application::run() {
                         } else if (screen == Music) {
                             moveMusicSelection(1);
                         } else if (screen == Movies) {
-                            moveMovieSelection(1);
+                            ui.mediaBrowser->movies.selectedRow = mediaPlaybackWorkflow.moveMovieSelection(
+                                ui.mediaBrowser->movies.selectedRow, 1);
+                            ui.mediaBrowser->movies.scrollOffset = 0;
                         } else if (screen == TVShows) {
-                            moveTVSelection(1);
+                            ui.mediaBrowser->tvShows.selectedRow = mediaPlaybackWorkflow.moveTVSelection(
+                                ui.mediaBrowser->tvShows.selectedRow, 1);
+                            ui.mediaBrowser->tvShows.scrollOffset = 0;
                         } else if (screen == Games) {
                             gameGrid.moveRight();
                             updateSelectedGameText(ui, selected);
@@ -730,24 +716,15 @@ int Application::run() {
             screen = Games;
         }
         if (running && launchTVShow) {
-            const auto& list = KiddosServices::tvShows();
-            if (mediaBrowser_.tvShows.selectedRow >= 0 &&
-                mediaBrowser_.tvShows.selectedRow < std::min(
-                    4, static_cast<int>(list.size()))) {
-                if (!KiddosServices::launchTVShow(
-                        list[static_cast<std::size_t>(mediaBrowser_.tvShows.selectedRow)]))
-                    SDL_Delay(1500);
-            }
+            if (!mediaPlaybackWorkflow.launchTVShow(
+                    mediaBrowser_.tvShows.selectedRow))
+                SDL_Delay(1500);
             screen = TVShows;
         }
         if (running && launchMovie) {
-            const auto& list = KiddosServices::movies();
-            if (mediaBrowser_.movies.selectedRow >= 0 &&
-                mediaBrowser_.movies.selectedRow < static_cast<int>(list.size())) {
-                if (!KiddosServices::launchMovie(
-                        list[static_cast<std::size_t>(mediaBrowser_.movies.selectedRow)]))
-                    SDL_Delay(1500);
-            }
+            if (!mediaPlaybackWorkflow.launchMovie(
+                    mediaBrowser_.movies.selectedRow))
+                SDL_Delay(1500);
             screen = Movies;
         }
 
