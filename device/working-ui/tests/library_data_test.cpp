@@ -44,11 +44,15 @@ int main() {
     file(root / "music/.hidden/Hidden/hidden.mp3");
 
     file(root / "tvshows/Show/poster.jpg");
-    file(root / "tvshows/Show/Season 1/Episode 01.mkv");
+
     file(root / "tvshows/No-Poster/Episode 01.mkv");
     file(root / "tvshows/MixedCase/poster.PNG");
     file(root / "tvshows/MixedCase/Episode.MKV");
-
+    file(root / "tvshows/Show/Season 01/Show - S01E01 - First Episode.mp4");
+    file(root / "tvshows/Show/Season 01/Show - S01E02 - Second Episode.mp4");
+    file(root / "tvshows/Show/Season 01/Show - S01E10 - Tenth Episode.mp4");
+    file(root / "tvshows/Show/Season 02/Show - S02E01 - Season Two.mp4");
+    file(root / "tvshows/Show/Season 10/Show - S10E01 - Season Ten.mp4");
     file(root / "gb/Tetris.gb");
     file(root / "gb/Tetris.jpg");
     file(root / "gb/Tetris.png");
@@ -85,6 +89,23 @@ int main() {
           "music playlists require artwork and accept mixed-case extensions");
     check(shows.size() == 2,
           "TV shows require artwork and accept mixed-case extensions");
+
+    bool foundOrderedShow = false;
+    for (const auto& item : shows) {
+        if (item.title == "Show") {
+            const std::vector<std::string> expected = {
+                (root / "tvshows/Show/Season 01/Show - S01E01 - First Episode.mp4").string(),
+                (root / "tvshows/Show/Season 01/Show - S01E02 - Second Episode.mp4").string(),
+                (root / "tvshows/Show/Season 01/Show - S01E10 - Tenth Episode.mp4").string(),
+                (root / "tvshows/Show/Season 02/Show - S02E01 - Season Two.mp4").string(),
+                (root / "tvshows/Show/Season 10/Show - S10E01 - Season Ten.mp4").string()
+            };
+            foundOrderedShow = item.files == expected;
+        }
+    }
+
+    check(foundOrderedShow,
+          "TV episodes sort by zero-padded season and episode numbers");
 
     bool foundPlaylist = false;
     for (const auto& item : music) {

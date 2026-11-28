@@ -58,7 +58,10 @@ Movies and games have their artwork beside the content file. Music and TV artwor
 - Movie files go directly inside `movies/`.
 - Each immediate subfolder of `music/` is one playlist. Put its audio tracks inside that folder; nested track folders are allowed.
 - Each immediate subfolder of `tvshows/` is one show. Put episodes inside season folders.
-- Name TV episodes using `SHOW NAME - S##E## - EPISODE NAME.ext`, such as `Pokemon - S01E01 - Episode Name.mp4`. Seasons and episodes are intended to play in numeric order, from the first episode through the final episode, then loop back to the beginning.
+- The SD-card organizer will standardize season folder names (`Season 01`, `Season 02`, etc.) and episode filenames during import. It will rename only the SD-card copies, not the parent's original files.
+- Episode filenames use `SHOW NAME - S##E## - EPISODE NAME.ext`, such as `Pokemon - S01E01 - Pokemon I Choose You.mp4`.
+- The organizer should identify season and episode numbers where possible, flag uncertain files for the parent to resolve, and show the resulting episode order before copying.
+- TV shows play sequentially in numeric season and episode order, resume from the saved position, and return to the library after the final episode. TV shows do not loop.
 - File extensions are matched without regard to letter case. Hidden files and folders (names beginning with `.`) are ignored.
 
 The folder conventions cover eight game platforms, but not every platform is currently enabled for Parent Center assignment. The current native library reader supports raw GB and GBC game files; consult the full contract for the precise conventions and current implementation boundaries.

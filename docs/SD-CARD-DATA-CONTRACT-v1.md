@@ -84,19 +84,25 @@ Example:
       track-02.mp3
 ```
 
-### TV shows
+### TV Shows
 
 - Directory: `tvshows/`
 - Each immediate child directory is one show.
-- The show folder is the assignable item. Individual seasons and episodes are not separate Parent Center items.
+- The show folder is the assignable Parent Center item. Individual seasons and episodes are not separate Parent Center items.
 - A show requires one of these artwork files, in preference order: `poster.jpg`, `poster.png`, `cover.jpg`, `cover.png`.
-- The show must contain at least one supported episode file. Episodes may be in nested subdirectories.
+- The show must contain at least one supported episode file.
 - Accepted episode extensions: `.mp4`, `.mkv`, `.avi`, `.mov`, `.m4v`, `.webm`.
-- Season folders should use the naming convention `Season 01`, `Season 02`, and so on.
-- Episode filenames must include a season and episode identifier in the format `SHOW NAME - S##E## - EPISODE NAME.ext`. For example: `Pokemon - S01E01 - Pokemon I Choose You.mp4`.
-- Episodes play sequentially across the entire show: seasons in numeric order, with episodes in numeric order within each season. After the final episode, playback loops back to the first episode.
-- The organizer must identify the `S##E##` season and episode numbers and flag missing or duplicate identifiers for parent review. It must not silently guess an episode's position.
-- Season and episode ordering is numeric, not alphabetical. For example, Season 10 follows Season 9, and Episode 10 follows Episode 9.
+- Each show's episodes are stored in season subfolders.
+- Season folders use zero-padded numeric names: `Season 01`, `Season 02`, etc.
+- The SD-card organizer standardizes season folders and episode filenames during import. It renames only the SD-card copies; original source files must not be renamed or modified.
+- Episode filenames use this format: `SHOW NAME - S##E## - EPISODE NAME.ext`.
+
+  Example: `Pokemon - S01E01 - Pokemon I Choose You.mp4`
+
+- Season and episode numbers are zero-padded so ordinary alphabetical sorting produces the correct playback order.
+- The organizer should identify season and episode numbers where possible and standardize filenames automatically. If it cannot confidently determine an episode's season or number, it must flag the file for the parent to resolve rather than guessing.
+- Before copying, the organizer should show the parent the resulting episode order.
+- The device plays episodes sequentially in season and episode order, resumes from the saved position, and exits the show after the final episode. TV shows do not loop.
 
 Example:
 

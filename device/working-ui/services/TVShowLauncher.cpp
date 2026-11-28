@@ -370,7 +370,13 @@ bool launchTVShow(const TVShow& show) {
         }
     }
 
-    if (ipcReady) {
+    const bool completedNaturally =
+        childReaped && !quitting &&
+        WIFEXITED(childStatus) && WEXITSTATUS(childStatus) == 0;
+
+    if (completedNaturally) {
+        saveEpisode(statePath, 0);
+    } else if (ipcReady) {
         lastKnownPosition =
             queryPlaylistPosition(socketPath, lastKnownPosition);
         lastKnownPosition = std::clamp(
