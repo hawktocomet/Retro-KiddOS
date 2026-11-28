@@ -19,7 +19,7 @@
 #include "../services/TVShowLauncher.hpp"
 #include "../services/MovieLauncher.hpp"
 #include "../services/MusicCatalog.hpp"
-#include "../services/MusicLauncher.hpp"
+#include "../services/MusicWorkflow.hpp"
 #include "../services/PowerService.hpp"
 #include "../services/LibraryData.hpp"
 #include <filesystem>
@@ -27,7 +27,8 @@
 
 Application::Application()
     : pinWorkflow_(std::make_unique<KiddosPin::PinWorkflow>(
-          "/storage/.config/kiddos")) {}
+          "/storage/.config/kiddos")),
+      musicWorkflow_(std::make_unique<KiddosServices::MusicWorkflow>()) {}
 
 Application::~Application() = default;
 
@@ -43,12 +44,10 @@ int Application::run() {
     Navigation& navigation = navigation_;
     Screen& screen = navigation.currentRef();
     KiddosPin::PinWorkflow& pinWorkflow = *pinWorkflow_;
+    KiddosServices::MusicWorkflow& musicWorkflow = *musicWorkflow_;
     int& parentSelected = parentSelected_;
     ParentCenterController parentCenter;
     bool& running = running_;
-    int currentMusicPlaylist = -1;
-    int currentMusicTrack = -1;
-    std::string currentMusicPath;
     Screen nowPlayingReturnScreen = Home;
 
     if (!parentCenter.initialize())
@@ -82,42 +81,23 @@ int Application::run() {
         ui.mediaBrowser = &mediaBrowser_;
         updateSelectedGameText(ui, selected);
 
-        // Restore Now Playing resources by the playing file path. Catalog
-        // slots may have changed while an external player was running.
-        if (!currentMusicPath.empty() && KiddosServices::musicPlaying()) {
-            const auto& playlists = KiddosServices::musicPlaylists();
-            bool restored = false;
-            for (std::size_t playlistIndex = 0;
-                 playlistIndex < playlists.size() && !restored;
-                 ++playlistIndex) {
-                const auto& playlist = playlists[playlistIndex];
-                for (std::size_t trackIndex = 0;
-                     trackIndex < playlist.tracks.size(); ++trackIndex) {
-                    const auto& track = playlist.tracks[trackIndex];
-                    if (track.path != currentMusicPath) continue;
+        // Restore Now Playing resources after UI recreation.
+       if (musicWorkflow.restoreCurrentTrack()) {
+           const auto* playlist = musicWorkflow.currentPlaylist();
+           const auto* track = musicWorkflow.currentTrack();
+           if (playlist && track) {
+               ui.musicNowPlayingPlaylist = makeText(
+                   ui.renderer, ui.footerFont, playlist->title.c_str(),
+                   {155, 177, 215, 255});
+               ui.musicNowPlayingTitle = makeText(
+                   ui.renderer, ui.labelFont, track->title.c_str(),
+                   {245, 248, 255, 255});
+               loadMusicArtwork(ui, playlist->artwork.empty()
+                   ? track->path : playlist->artwork);
+           }
+       }
 
-                    currentMusicPlaylist = static_cast<int>(playlistIndex);
-                    currentMusicTrack = static_cast<int>(trackIndex);
-                    ui.musicNowPlayingPlaylist = makeText(
-                        ui.renderer, ui.footerFont, playlist.title.c_str(),
-                        {155, 177, 215, 255});
-                    ui.musicNowPlayingTitle = makeText(
-                        ui.renderer, ui.labelFont, track.title.c_str(),
-                        {245, 248, 255, 255});
-                    loadMusicArtwork(ui, playlist.artwork.empty()
-                        ? track.path : playlist.artwork);
-                    restored = true;
-                    break;
-                }
-            }
-
-            if (!restored) {
-                currentMusicPlaylist = -1;
-                currentMusicTrack = -1;
-            }
-        }
-
-        // Parent Center atomically replaces the native slot configuration.
+       // Parent Center atomically replaces the native slot configuration.
         constexpr const char* slotsPath =
             "/storage/.config/kiddos/slots.conf";
         struct stat lastSlotsStat {};
@@ -174,49 +154,40 @@ int Application::run() {
                 selection.scrollOffset, 0, std::max(0, count - visibleRows));
         };
 
-        auto playMusicTrack = [&](int playlistIndex, int trackIndex) {
-            const auto& playlists = KiddosServices::musicPlaylists();
-            if (playlistIndex < 0 ||
-                playlistIndex >= static_cast<int>(playlists.size()))
+        auto updateNowPlayingResources = [&](bool updateArtwork) {
+            const auto* playlist = musicWorkflow.currentPlaylist();
+            const auto* track = musicWorkflow.currentTrack();
+            if (!playlist || !track)
                 return false;
 
-            const auto& playlist =
-                playlists[static_cast<std::size_t>(playlistIndex)];
-            if (trackIndex < 0 ||
-                trackIndex >= static_cast<int>(playlist.tracks.size()))
-                return false;
-
-            const auto& track = playlist.tracks[static_cast<std::size_t>(trackIndex)];
-            const bool resuming =
-                playlistIndex == currentMusicPlaylist &&
-                trackIndex == currentMusicTrack &&
-                currentMusicPath == track.path &&
-                KiddosServices::musicPaused();
-
-            const bool started = resuming
-                ? KiddosServices::resumeMusic()
-                : KiddosServices::launchMusic(track);
-            if (!started) return false;
-
-            currentMusicPlaylist = playlistIndex;
-            currentMusicTrack = trackIndex;
-            currentMusicPath = track.path;
-
-            if (!resuming) loadMusicArtwork(ui, playlist.artwork.empty()
-                ? track.path : playlist.artwork);
+            if (updateArtwork) loadMusicArtwork(ui, playlist->artwork.empty()
+                ? track->path : playlist->artwork);
 
             destroyText(ui.musicNowPlayingPlaylist);
             ui.musicNowPlayingPlaylist = makeText(
-                ui.renderer, ui.footerFont, playlist.title.c_str(),
+                ui.renderer, ui.footerFont, playlist->title.c_str(),
                 {155, 177, 215, 255});
             destroyText(ui.musicNowPlayingTitle);
             ui.musicNowPlayingTitle = makeText(
-                ui.renderer, ui.labelFont, track.title.c_str(),
+                ui.renderer, ui.labelFont, track->title.c_str(),
                 {245, 248, 255, 255});
             return true;
         };
 
-        auto moveMovieSelection = [&](int delta) {
+        auto playMusicTrack = [&](int playlistIndex, int trackIndex) {
+            const bool resuming =
+                playlistIndex == musicWorkflow.currentPlaylistIndex() &&
+                trackIndex == musicWorkflow.currentTrackIndex() &&
+                !musicWorkflow.currentPath().empty() &&
+                musicWorkflow.paused();
+
+            if (!musicWorkflow.playTrack(playlistIndex, trackIndex))
+                return false;
+
+            return updateNowPlayingResources(!resuming);
+        };
+
+      auto moveMovieSelection = [&](int delta) {
             const int count = std::min(
                 4, static_cast<int>(KiddosServices::movies().size()));
             if (count == 0) {
@@ -288,27 +259,20 @@ int Application::run() {
                         KiddosInput::fromJoystickButton(event.jbutton.button);
 
                     if (inputAction == KiddosInput::Action::OpenNowPlaying) {
-                        if (KiddosServices::musicPlaying()) {
+                        if (musicWorkflow.playing()) {
                             if (screen != NowPlaying) nowPlayingReturnScreen = screen;
                             screen = NowPlaying;
                         }
                     } else if (inputAction == KiddosInput::Action::PreviousSection ||
                                inputAction == KiddosInput::Action::NextSection) {
-                        const auto& playlists = KiddosServices::musicPlaylists();
-                        if (currentMusicPlaylist >= 0 &&
-                            currentMusicPlaylist < static_cast<int>(playlists.size())) {
-                            const auto& tracks =
-                                playlists[static_cast<std::size_t>(currentMusicPlaylist)].tracks;
-                            if (!tracks.empty() && currentMusicTrack >= 0 &&
-                                currentMusicTrack < static_cast<int>(tracks.size())) {
-                                const int direction =
-                                    inputAction == KiddosInput::Action::PreviousSection ? -1 : 1;
-                                const int count = static_cast<int>(tracks.size());
-                                const int next = (currentMusicTrack + direction + count) % count;
-                                if (!playMusicTrack(currentMusicPlaylist, next))
-                                    SDL_Delay(1200);
-                            }
-                        }
+                        const bool changed =
+                            inputAction == KiddosInput::Action::PreviousSection
+                                ? musicWorkflow.previousTrack()
+                                : musicWorkflow.nextTrack();
+                        if (changed)
+                            updateNowPlayingResources(true);
+                        else if (musicWorkflow.currentTrackIndex() >= 0)
+                            SDL_Delay(1200);
                     } else if (inputAction == KiddosInput::Action::Back) {
                         if (screen == WifiPassword) {
                             if (!ui.wifi.password.empty())
@@ -346,10 +310,7 @@ int Application::run() {
                             screen = Home;
                     } else if (inputAction == KiddosInput::Action::Confirm) {
                         if (screen == NowPlaying) {
-                            if (KiddosServices::musicPaused()) {
-                                KiddosServices::resumeMusic();
-                            } else if (KiddosServices::pauseMusic()) {
-                            }
+                            musicWorkflow.togglePause();
                         } else if (screen == WifiPassword) {
                             if (activateWifiKeyboardKey(ui)) {
                                 screen = WifiSettings;
@@ -640,38 +601,12 @@ int Application::run() {
                 }
             }
 
-            if (currentMusicTrack >= 0 &&
-                !KiddosServices::musicPaused() &&
-                !KiddosServices::musicPlaying()) {
-                const auto& playlists = KiddosServices::musicPlaylists();
-                if (currentMusicPlaylist >= 0 &&
-                    currentMusicPlaylist < static_cast<int>(playlists.size())) {
-                    const auto& tracks =
-                        playlists[static_cast<std::size_t>(currentMusicPlaylist)].tracks;
-                    if (!tracks.empty() && currentMusicTrack >= 0 &&
-                        currentMusicTrack < static_cast<int>(tracks.size())) {
-                        const int next =
-                            (currentMusicTrack + 1) % static_cast<int>(tracks.size());
-                        if (!playMusicTrack(currentMusicPlaylist, next)) {
-                            currentMusicPlaylist = -1;
-                            currentMusicTrack = -1;
-                            currentMusicPath.clear();
-                        }
-                    } else {
-                        currentMusicPlaylist = -1;
-                        currentMusicTrack = -1;
-                        currentMusicPath.clear();
-                    }
-                } else {
-                    currentMusicPlaylist = -1;
-                    currentMusicTrack = -1;
-                    currentMusicPath.clear();
-                }
-            }
+            if (musicWorkflow.advanceIfFinished())
+                updateNowPlayingResources(true);
 
             if (screen == NowPlaying &&
-                !KiddosServices::musicPlaying() &&
-                !KiddosServices::musicPaused()) {
+                !musicWorkflow.playing() &&
+                !musicWorkflow.paused()) {
                 screen = nowPlayingReturnScreen;
             }
 
@@ -775,22 +710,16 @@ int Application::run() {
         cancelWifiConnection(ui);
         std::fill(ui.wifi.password.begin(), ui.wifi.password.end(), '\0');
 
-        bool resumeMusicAfterHandoff = false;
         if (!running) {
-            KiddosServices::stopMusic();
+            musicWorkflow.stop();
         } else if (launch || launchMovie || launchTVShow) {
-            if (KiddosServices::musicPlaying() &&
-                !KiddosServices::musicPaused()) {
-                if (KiddosServices::pauseMusic()) {
-                    resumeMusicAfterHandoff = true;
-                } else {
-                    std::fprintf(stderr,
-                        "KiddOS: could not pause music for media handoff\n");
-                    launch = false;
-                    launchMovie = false;
-                    launchTVShow = false;
-                    SDL_Delay(1000);
-                }
+            if (!musicWorkflow.pauseForHandoff()) {
+                std::fprintf(stderr,
+                    "KiddOS: could not pause music for media handoff\n");
+                launch = false;
+                launchMovie = false;
+                launchTVShow = false;
+                SDL_Delay(1000);
             }
         }
 
@@ -822,8 +751,8 @@ int Application::run() {
             screen = Movies;
         }
 
-        if (running && resumeMusicAfterHandoff)
-            KiddosServices::resumeMusic();
+        if (running)
+            musicWorkflow.resumeAfterHandoff();
     }
 
     return 0;

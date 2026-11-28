@@ -11,6 +11,7 @@
 #include <memory>
 
 namespace KiddosPin { class PinWorkflow; }
+namespace KiddosServices { class MusicWorkflow; }
 
 class Application {
 public:
@@ -28,6 +29,7 @@ private:
     int menuSelected_ = 0;
     KiddosNavigation::Navigation navigation_;
     std::unique_ptr<KiddosPin::PinWorkflow> pinWorkflow_;
+    std::unique_ptr<KiddosServices::MusicWorkflow> musicWorkflow_;
     int parentSelected_ = 0;
     KiddosScreens::MediaBrowserState mediaBrowser_;
     bool running_ = true;
