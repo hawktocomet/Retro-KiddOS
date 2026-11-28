@@ -23,6 +23,8 @@ build_kiddos() {
         "$SCRIPT_DIR/main.cpp"
         "$SCRIPT_DIR/app/Application.cpp"
         "$SCRIPT_DIR/app/ParentCenter.cpp"
+        "$SCRIPT_DIR/security/pin_store.cpp"
+        "$SCRIPT_DIR/security/PinWorkflow.cpp"
         "$SCRIPT_DIR/ui/UI.cpp"
         "$SCRIPT_DIR/screens/GameScreens.cpp"
         "$SCRIPT_DIR/screens/MovieScreens.cpp"

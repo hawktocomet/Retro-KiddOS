@@ -9,5 +9,8 @@ trap 'rm -rf "$TEMP_DIR"' EXIT
 
 CXX="${CXX:-g++}"
 "$CXX" -std=c++17 -Wall -Wextra -Werror -I"$SCRIPT_DIR/.." \
-    "$SCRIPT_DIR/architecture_test.cpp" -o "$TEMP_DIR/architecture-test"
+    "$SCRIPT_DIR/architecture_test.cpp" \
+    "$SCRIPT_DIR/../security/pin_store.cpp" \
+    "$SCRIPT_DIR/../security/PinWorkflow.cpp" \
+    -o "$TEMP_DIR/architecture-test"
 "$TEMP_DIR/architecture-test"

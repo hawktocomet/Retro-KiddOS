@@ -11,6 +11,7 @@
 
 #include "../ui/UI.hpp"
 #include "../security/PinWorkflow.hpp"
+#include "../security/pin_store.h"
 #include "../services/GameCatalog.hpp"
 #include "../services/GameLauncher.hpp"
 #include "../services/MovieCatalog.hpp"

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hawktocomet
 
+#include <sys/stat.h>
+
 #include "../security/pin_store.h"
 #include <cstdlib>
 #include <cstdio>

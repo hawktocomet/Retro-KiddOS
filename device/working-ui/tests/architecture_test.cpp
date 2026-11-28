@@ -6,6 +6,7 @@
 #include "../navigation/LibraryGrid.hpp"
 #include "../navigation/LibraryNavigator.hpp"
 #include "../security/PinWorkflow.hpp"
+#include "../security/pin_store.h"
 #include "../screens/ScreenState.hpp"
 
 #include <cstdio>
